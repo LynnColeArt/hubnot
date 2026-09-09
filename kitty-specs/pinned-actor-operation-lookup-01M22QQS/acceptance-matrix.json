@@ -2,7 +2,7 @@
   "mission_slug": "pinned-actor-operation-lookup-01M22QQS",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -58,10 +58,10 @@
       "criterion_id": "FR-006",
       "description": "Verify FR-006 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "TestAutomationPublicDetails, TestAutomationPublicLegacyOpeningMetadata; full current and immutable opening maps, null conflict and mode-bound pagination; reviewed source2356a295f77808363e60030895e53013d857b833; independent approval event01M22TGXXXTX9G0V55WXTQY6GK; work/hn-prerequisite-review/cycle2-review.md (5.620s); /tmp/hn-prerequisite-cycle1-full-race.log (279.117s); /tmp/hn-prerequisite-cycle1-focused-race.log (16.923s)",
+      "pass_fail": "pass",
+      "verified_by": "codex-host-author",
+      "verified_at": "2026-09-09T10:15:41.445505+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     }
   ],
