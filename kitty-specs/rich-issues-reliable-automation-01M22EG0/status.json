@@ -87,32 +87,34 @@
     "WP03": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "planned",
       "last_event_id": "01M22K144FP0XR71RREBYRJDJF",
       "last_transition_at": "2026-09-09T08:02:27.599466+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Source c0b6f6d9 changes only four WP03-owned files; clean lane, T008-T012 done, no generated binary. Focused race 11.862s, full race 215.648s, vet/external-build/format/diff passed. Force resolves inherited runtime planning metadata hygiene falsepositive only; independent review remains required."
+        "Source c0b6f6d9 changes only four WP03-owned files; clean lane, T008-T012 done, no generated binary. Focused race 11.862s, full race 215.648s, vet/external-build/format/diff passed. Force resolves inherited runtime planning metadata hygiene falsepositive only; independent review remains required.",
+        "Independent review of c0b6f6d922cd876dc58793beade4182f6fada4d8 requests two bounded fixes: accepted boolean JSON forms omit failure envelopes; malformed Unicode is silently repaired and signed. Public overlay reproduces both. Existing focused race suite passes9.956s. See committed review feedback for test-first reproduction and checklist."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP03-rich-human-and-machine-issue-commands/review-cycle-1.md",
         "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP03-rich-human-and-machine-issue-commands/review-cycle-1.md",
         "reviewer": "codex-independent-cli-review",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 1023231,
-      "shell_pid_created_at": "1788940709.92",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T008": "done",
-        "T009": "done",
-        "T010": "done",
-        "T011": "done",
-        "T012": "done"
+        "T008": "planned",
+        "T009": "planned",
+        "T010": "planned",
+        "T011": "planned",
+        "T012": "planned"
       }
     },
     "WP04": {
