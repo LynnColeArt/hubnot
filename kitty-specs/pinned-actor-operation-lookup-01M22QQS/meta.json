@@ -24,7 +24,6 @@
   "purpose_context": "Automation must discover its public signing identity, pin that identity on each issue mutation, and recover an original signed operation after a lost response without relying on a separate adapter database. Preserve existing CLI defaults and repository authority.",
   "purpose_tldr": "Make public automation retries attributable to one signer and recoverable from verified history.",
   "slug": "pinned-actor-operation-lookup-01M22QQS",
-  "status_phase": "1",
   "target_branch": "feat/pinned-actor-operation-lookup",
   "topology": "lanes",
   "vcs": "git",

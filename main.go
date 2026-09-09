@@ -67,6 +67,7 @@ func printUsage() {
 Usage:
   hn init [--name NAME]
   hn identity show|list|public|authorize|accept|rotate
+  hn identity show [--json]
   hn memory record --kind KIND --at REV --applies MODE [record fields]
   hn memory record --input FILE|- --json
   hn memory handoff --at REV --applies MODE --input FILE|- --json
@@ -81,7 +82,10 @@ Usage:
   hn issue revise|resolve ISSUE --expect REV ... --input FILE|- [--json]
   hn issue close|reopen ISSUE --expect REV [--operation KEY] [--json]
   hn issue comment ISSUE [--body TEXT] [--operation KEY] [--json] [TEXT]
-  hn issue list|show|heads|history|graph [ISSUE] [--limit N] [--cursor TOKEN] [--json]
+  hn issue list [--details] [--limit N] [--cursor TOKEN] [--json]
+  hn issue show|heads|history|graph ISSUE [--limit N] [--cursor TOKEN] [--json]
+  hn issue operation --actor ACTOR --operation KEY [--json]
+  Issue mutations accept optional --actor ACTOR to pin the signing identity.
   hn proposal open --base REV --head REV [--body TEXT] TITLE
   hn proposal revise PREDECESSOR --base REV --head REV [--body TEXT]
   hn proposal list

@@ -6,7 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -345,13 +347,61 @@ func successorCycleIDs(outgoing map[string][]string, targets map[string]string) 
 	return cycles
 }
 
-func cmdIdentityShow(args []string) error {
-	if len(args) != 0 {
-		return usageError("usage: hn identity show")
+// inspectIdentity validates the existing signer without initializing or migrating
+// private keyring state. Human commands retain the ordinary migration loader.
+func inspectIdentity() (*Identity, error) {
+	actor, err := loadActiveActor()
+	if err == nil {
+		return loadIdentityRecord(actor)
 	}
-	identity, err := loadIdentity()
+	if !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+	return loadLegacyIdentity()
+}
+
+func cmdIdentityShow(args []string) error {
+	flags := flag.NewFlagSet("identity show", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	machine := flags.Bool("json", false, "JSON output")
+	requested := issueMachineRequested(args, flags)
+	err := flags.Parse(args)
+	if err == nil && flags.NArg() != 0 {
+		err = errors.New("unexpected identity show arguments")
+	}
+	fail := func(code string, cause error) error {
+		failure := issueFailure(code, cause)
+		if requested {
+			var typed *issueCommandError
+			errors.As(failure, &typed)
+			if err := json.NewEncoder(os.Stdout).Encode(issueEnvelope{Schema: "hn.identity/1", OK: false, Error: typed}); err != nil {
+				return err
+			}
+		}
+		return failure
+	}
 	if err != nil {
-		return err
+		return fail("invalid_input", err)
+	}
+	var identity *Identity
+	if *machine {
+		identity, err = inspectIdentity()
+	} else {
+		identity, err = loadIdentity()
+	}
+	if err != nil {
+		if !requested {
+			return err
+		}
+		return fail("repository_error", errors.New("active identity unavailable; inspect identity configuration"))
+	}
+	if *machine {
+		public := struct {
+			Actor     string `json:"actor"`
+			Name      string `json:"name"`
+			PublicKey string `json:"public_key"`
+		}{identity.Actor, identity.Name, identity.PublicKey}
+		return json.NewEncoder(os.Stdout).Encode(issueEnvelope{Schema: "hn.identity/1", OK: true, Data: public})
 	}
 	fmt.Printf("Name:   %s\n", oneLine(identity.Name))
 	fmt.Printf("Actor:  %s\n", identity.Actor)
