@@ -25,6 +25,9 @@ requirement_refs:
 planning_base_branch: feat/rich-issues-reliable-automation
 merge_target_branch: feat/rich-issues-reliable-automation
 branch_strategy: Planning artifacts for this mission were generated on feat/rich-issues-reliable-automation. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/rich-issues-reliable-automation unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-rich-issues-reliable-automation-01M22EG0
+base_commit: 2d5cde20d697dedb9503b2d4279ef7b73c29998e
+created_at: '2026-09-09T08:17:40.630782+00:00'
 subtasks:
 - T013
 - T014
