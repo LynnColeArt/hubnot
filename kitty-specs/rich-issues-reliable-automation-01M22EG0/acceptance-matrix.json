@@ -8,10 +8,10 @@
       "criterion_id": "FR-001",
       "description": "Compatible simple issues: Preserve title-only creation, legacy signed issues, comments and human-readable list/show with stable opening identity.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:44:36.240736+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
@@ -126,62 +126,62 @@
     },
     {
       "criterion_id": "NFR-001",
+      "description": "Bounded inputs and outputs: New JSON request inputs are at most 256 KiB; page size defaults to 50 and caps at 200; field, graph and traversal bounds are documented and enforced before append.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "description": "Bounded inputs and outputs: New JSON request inputs are at most 256 KiB; page size defaults to 50 and caps at 200; field, graph and traversal bounds are documented and enforced before append.",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "NFR-002",
+      "description": "Efficient verified reads: Reading a 1000-issue fixture must use batched event-object access without per-event Git subprocesses; measure duration and process counts, and verify semantic equality with the existing loader.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "description": "Efficient verified reads: Reading a 1000-issue fixture must use batched event-object access without per-event Git subprocesses; measure duration and process counts, and verify semantic equality with the existing loader.",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "NFR-003",
+      "description": "Regression evidence: Formatting, go test -race ./..., go vet ./..., go build ./..., and git diff --check pass for the integrated candidate; black-box tests include two-replica conflicts and replay failure boundaries.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "description": "Regression evidence: Formatting, go test -race ./..., go vet ./..., go build ./..., and git diff --check pass for the integrated candidate; black-box tests include two-replica conflicts and replay failure boundaries.",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "C-001",
+      "description": "Repository authority: Signed Git histories remain the only durable authority; no mandatory service, database or third-party dependency.",
       "proof_type": "code_review",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "description": "Repository authority: Signed Git histories remain the only durable authority; no mandatory service, database or third-party dependency.",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "C-002",
+      "description": "Consumer independence: Issue status, assignment, criteria and metadata are descriptive; no Go Kitty leases, execution authorization, review acceptance or integration authority. No Beads cutover in this mission.",
       "proof_type": "code_review",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "description": "Consumer independence: Issue status, assignment, criteria and metadata are descriptive; no Go Kitty leases, execution authorization, review acceptance or integration authority. No Beads cutover in this mission.",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "C-003",
+      "description": "Compatibility and scope: Preserve hn namespaces, existing signed bytes, proposal/CI/identity/replication/memory behavior and unrelated historical work. No web UI or new sync protocol.",
       "proof_type": "code_review",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "description": "Compatibility and scope: Preserve hn namespaces, existing signed bytes, proposal/CI/identity/replication/memory behavior and unrelated historical work. No web UI or new sync protocol.",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     }
   ],
