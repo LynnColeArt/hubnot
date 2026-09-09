@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "mission_slug": "rich-issues-reliable-automation-01M22EG0",
+  "mission_id": "01M22EG0MEQ2A4QB7MJFRMT4KQ",
+  "mission_branch": "kitty/mission-rich-issues-reliable-automation-01M22EG0",
+  "target_branch": "feat/rich-issues-reliable-automation",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "event.go",
+        "issue_model.go",
+        "issue_model_test.go",
+        "issue_projection.go",
+        "issue_projection_test.go",
+        "issue_replication_test.go",
+        "quarantine.go",
+        "shallow.go",
+        "store.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "issue_read.go",
+        "issue_read_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "commands.go",
+        "issue_commands.go",
+        "issue_commands_test.go",
+        "main.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "README.md",
+        "docs/issues-v1.md",
+        "docs/protocol-v0.md",
+        "docs/threat-model.md",
+        "examples/issue-consumer/**",
+        "issue_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-09-09T06:59:09.563126+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "a1f36e3418f0167707e923e5852bdad4ec92f011"
+}
