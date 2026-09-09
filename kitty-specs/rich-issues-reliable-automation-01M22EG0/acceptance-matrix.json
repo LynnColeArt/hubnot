@@ -6,123 +6,183 @@
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "Verify FR-001 is satisfied",
+      "description": "Compatible simple issues: Preserve title-only creation, legacy signed issues, comments and human-readable list/show with stable opening identity.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "Optional rich state: Support title, description, criteria with stable local IDs, labels, assignees, open/closed status and namespaced string metadata; round-trip without loss.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-003",
-      "description": "Verify FR-003 is satisfied",
+      "description": "Immutable revisions: Edits append signed full-state revisions referencing the stable issue and predecessor revisions; retain inspectable history and author attribution.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-004",
-      "description": "Verify FR-004 is satisfied",
+      "description": "Conflict preservation: Compute all current heads; unresolved issues expose each head and no authoritative single state; do not use timestamps to resolve concurrent edits.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-005",
-      "description": "Verify FR-005 is satisfied",
+      "description": "Guarded edit and resolution: Local edits require the exact observed head; ordinary resolution requires the complete observed head set; explicit staged resolution names current parents and validates its observed snapshot, preserving unconsumed heads. Stale requests append nothing. Distributed races remain explicit conflicts.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-006",
-      "description": "Verify FR-006 is satisfied",
+      "description": "Typed relationships: Support blocks, related and parent links using full issue IDs; reject self/missing targets on local writes; expose incoming/outgoing links and diagnose blocks/parent cycles, including after sync.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-007",
-      "description": "Verify FR-007 is satisfied",
+      "description": "Reliable operation replay: Optional actor-scoped operation IDs on create, revise/resolve and comment return the original event for identical requests; divergent key reuse fails without a write.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-008",
-      "description": "Verify FR-008 is satisfied",
+      "description": "Machine interface: Document JSON input and versioned JSON output for issue mutation/query, full IDs, typed stable errors and nonzero failure exit. Machine mode emits no human prose on stdout.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-009",
-      "description": "Verify FR-009 is satisfied",
+      "description": "Bounded navigation: List, heads, history and graph offer deterministic bounded pages and snapshot-aware continuation; reject stale continuations rather than silently skip work.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-010",
-      "description": "Verify FR-010 is satisfied",
+      "description": "Verified read model: Derive the issue catalog, revision heads, comments and graph from verified signed histories; rebuild produces identical results and never depends on an authoritative cache.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-011",
-      "description": "Verify FR-011 is satisfied",
+      "description": "General consumer example: Ship a runnable public-CLI consumer example/test demonstrating read/update/replay/stale rejection with no Go Kitty runtime dependency.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
       "criterion_id": "FR-012",
-      "description": "Verify FR-012 is satisfied",
+      "description": "Discoverable behavior: Update CLI help and current protocol/user documentation together with tested ordinary-user and conflict-recovery examples.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "description": "Bounded inputs and outputs: New JSON request inputs are at most 256 KiB; page size defaults to 50 and caps at 200; field, graph and traversal bounds are documented and enforced before append.",
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "description": "Efficient verified reads: Reading a 1000-issue fixture must use batched event-object access without per-event Git subprocesses; measure duration and process counts, and verify semantic equality with the existing loader.",
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "description": "Regression evidence: Formatting, go test -race ./..., go vet ./..., go build ./..., and git diff --check pass for the integrated candidate; black-box tests include two-replica conflicts and replay failure boundaries.",
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
+    },
+    {
+      "criterion_id": "C-001",
+      "proof_type": "code_review",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "description": "Repository authority: Signed Git histories remain the only durable authority; no mandatory service, database or third-party dependency.",
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
+    },
+    {
+      "criterion_id": "C-002",
+      "proof_type": "code_review",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "description": "Consumer independence: Issue status, assignment, criteria and metadata are descriptive; no Go Kitty leases, execution authorization, review acceptance or integration authority. No Beads cutover in this mission.",
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
+    },
+    {
+      "criterion_id": "C-003",
+      "proof_type": "code_review",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "description": "Compatibility and scope: Preserve hn namespaces, existing signed bytes, proposal/CI/identity/replication/memory behavior and unrelated historical work. No web UI or new sync protocol.",
+      "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     }
   ],
   "negative_invariants": []
