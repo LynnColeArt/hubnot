@@ -2,7 +2,7 @@
 
 Candidate: `9f799ba5fb4e0b32067c3ff466ec29f97382544a` in the WP04 integration lane. Baseline: `a4d4bbfb9ba7275275b8d1bb281cf988baadeb9f`.
 
-This records executed evidence, not an acceptance verdict. The canonical acceptance matrix remains authoritative; WP04 independent review and the final gate are pending at this revision.
+This records executed evidence and completed independent reviews. All four packages are approved; the canonical acceptance matrix and acceptance command remain authoritative for the final gate.
 
 ## Executed candidate gates
 
@@ -64,3 +64,13 @@ The controlled201head fixture uses synthetic valid signed actor histories solely
 Wrong-query, changed-limit, malformed and out-of-range cursors are invalid_input; changed accepted-ref snapshots are stale_cursor. Partial-resolution stale snapshot is stale_revision. This matches the independently approved implementation; no dependency source changes were required.
 
 Requests generated from Go state structs must use empty arrays/maps or omit optional fields; explicit null is rejected. Acceptance helper serialization now emits valid empty collections. Missing supplier diagnostics name an exact unavailable fact but do not prioritize root before other missing references; tests isolate each supplier case in a fresh receiver.
+
+## Independent review disposition
+
+WP01 approved source `cb52d48ee80d57868f5311b66d32f8c8457fd2f1` after correcting the raw signed-payload cap; generated executable cleanup is retained at `2f79abb0`. WP02 approved `adcc6e7ad5486db271ec04e270e0aa2534fb5ceb` after correcting subprocess-cause preservation. WP03 approved `43d5c0f795b297cf3b56bbd3ca1daaee176e61ad` after correcting machine-flag grammar and malformed Unicode input. The independent original reproductions passed after each fix.
+
+WP04 independent reviewer `codex-independent-acceptance-review` approved `9f799ba5fb4e0b32067c3ff466ec29f97382544a`. Representative public acceptance with race detection passed in 10.811 seconds; the reviewer assessed the 201-head and 1000-item assertions, complete gate evidence, documentation and all eighteen requirement mappings as adequate. All eight required review checklist items passed.
+
+Canonical approval events: WP01 `01M22HFRBNTENVJFA6YMFDCXA7`; WP02 `01M22H9808621AD3KE0JEXWEE6`; WP03 `01M22KW00ZEWVYA4QDYBX6GPRH`; WP04 `01M22N92YCPKHMJPJTDQ7GWVDE`.
+
+The host recorded these actual independent verdicts through the canonical transition command. Its force flag addressed only the recurring inherited planning-metadata hygiene false positive. Independent review, source ownership, actual Go quality gates and acceptance were not waived. The Python architectural auto-gate reported unavailable coverage in this Go repository; this is not claimed as a passing Python gate. See traces/tooling-friction.md and each review cycle.
