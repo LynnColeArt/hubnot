@@ -506,3 +506,114 @@ func TestIssueCommandsCrossActorRacePreservesBothEdits(t *testing.T) {
 		t.Fatal("race loser retry did not find original operation")
 	}
 }
+
+func TestIssueCommandsPublicStrictBoundaries(t *testing.T) {
+	binary := buildOperationalBinary(t)
+	root := issueCommandTestRepo(t)
+	call := func(input string, args ...string) (string, error) {
+		t.Helper()
+		cmd := exec.Command(binary, append([]string{"issue"}, args...)...)
+		cmd.Dir = root
+		cmd.Stdin = strings.NewReader(input)
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout, cmd.Stderr = &stdout, &stderr
+		err := cmd.Run()
+		return stdout.String(), err
+	}
+	decode := func(t *testing.T, stdout string) map[string]any {
+		t.Helper()
+		var result map[string]any
+		decoder := json.NewDecoder(strings.NewReader(stdout))
+		if err := decoder.Decode(&result); err != nil {
+			t.Fatalf("missing JSON envelope: %v; stdout %q", err, stdout)
+		}
+		if _, err := decoder.Token(); err != io.EOF {
+			t.Fatal("stdout must contain exactly one JSON document")
+		}
+		if result["schema"] != issueJSONSchema {
+			t.Fatalf("wrong schema: %v", result)
+		}
+		return result
+	}
+	for _, spelling := range []string{"1", "t", "T", "TRUE", "true", "True"} {
+		t.Run("true_"+spelling, func(t *testing.T) {
+			stdout, err := call("", "list", "--json="+spelling, "--limit", "0")
+			assertIssueCode(t, decode(t, stdout), err, "invalid_input")
+			stdout, err = call("", "list", "--json="+spelling)
+			issueResultData(t, decode(t, stdout), err)
+		})
+	}
+	for _, spelling := range []string{"0", "f", "F", "FALSE", "false", "False"} {
+		t.Run("false_"+spelling, func(t *testing.T) {
+			stdout, err := call("", "list", "--json", "--json="+spelling, "--limit", "0")
+			if err == nil || stdout != "" {
+				t.Fatalf("explicit false must retain human failure: %q %v", stdout, err)
+			}
+		})
+	}
+	for _, tc := range []struct {
+		name    string
+		args    []string
+		machine bool
+	}{
+		{"repeat_true", []string{"list", "--json=false", "-json=T", "--limit", "0"}, true},
+		{"parse_error_before_flag", []string{"list", "--limit", "bad", "--json=1"}, true},
+		{"parse_error_last_false", []string{"list", "--json", "--limit", "bad", "--json=0"}, false},
+		{"unknown_flag", []string{"list", "--unknown", "--json=1"}, true},
+		{"malformed_boolean", []string{"list", "--json=bad"}, false},
+		{"malformed_after_true", []string{"list", "--json=T", "--json=bad"}, true},
+		{"delimiter", []string{"list", "--", "--json"}, false},
+		{"free_text", []string{"open", "title", "--json"}, false},
+		{"option_value", []string{"open", "--body", "--json", "--input", "-"}, false},
+		{"actual_flag_after_value", []string{"open", "--body", "--json", "--input", "-", "--json"}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			stdout, err := call("", tc.args...)
+			if tc.machine {
+				assertIssueCode(t, decode(t, stdout), err, "invalid_input")
+			} else if err == nil || stdout != "" {
+				t.Fatalf("human failure expected: stdout %q error %v", stdout, err)
+			}
+		})
+	}
+	for name, input := range map[string]string{
+		"invalid_utf8":          "{\"title\":\"before\xffafter\"}",
+		"invalid_metadata_utf8": "{\"title\":\"x\",\"metadata\":{\"ns/\xff\":\"value\"}}",
+		"high_surrogate":        `{"title":"before\ud800after"}`,
+		"low_surrogate":         `{"title":"before\udc00after"}`,
+		"reversed_pair":         `{"title":"\udc00\ud800"}`,
+		"two_high_surrogates":   `{"title":"\ud800\ud800"}`,
+		"separated_pair":        `{"title":"\ud800x\udc00"}`,
+		"metadata_key":          `{"title":"x","metadata":{"ns/\ud800":"value"}}`,
+		"metadata_value":        `{"title":"x","metadata":{"ns/key":"\udfff"}}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			before := mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn")
+			stdout, err := call(input, "open", "--input", "-", "--json")
+			assertIssueCode(t, decode(t, stdout), err, "invalid_input")
+			if before != mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn") {
+				t.Fatal("invalid Unicode published a signed event")
+			}
+		})
+	}
+	for name, tc := range map[string]struct{ input, title string }{
+		"unicode":           {`{"title":"日本語 café 🐈"}`, "日本語 café 🐈"},
+		"paired":            {`{"title":"\uD83D\uDC08"}`, "🐈"},
+		"replacement":       {`{"title":"�\ufffd"}`, "��"},
+		"escaped_backslash": {`{"title":"literal \\ud800"}`, `literal \ud800`},
+		"metadata_unicode":  {`{"title":"metadata","metadata":{"ns/🐈":"\uD83D\uDC08�"}}`, "metadata"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			stdout, err := call(tc.input, "open", "--input", "-", "--json")
+			id := issueResultData(t, decode(t, stdout), err)["issue_id"].(string)
+			stdout, err = call("", "show", id, "--json")
+			state := issueResultData(t, decode(t, stdout), err)["state"].(map[string]any)
+			if state["title"] != tc.title {
+				t.Fatalf("Unicode changed: got %q want %q", state["title"], tc.title)
+			}
+			if name == "metadata_unicode" && state["metadata"].(map[string]any)["ns/🐈"] != "🐈�" {
+				t.Fatal("Unicode metadata changed")
+			}
+		})
+	}
+}

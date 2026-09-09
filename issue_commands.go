@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 const issueJSONSchema = "hn.issue/1"
@@ -83,27 +84,42 @@ and the exact observed snapshot, preserving unconsumed heads. Operation retries
 return the original event. Snapshot checks and actor CAS are not global issue locks.
 `
 
-func issueMachineRequested(args []string) bool {
+// Scan the same registered flag grammar even when a value later fails parsing.
+// The last valid json flag selects output; malformed booleans leave that choice
+// intact. Values, positional text and text after -- cannot select machine mode.
+func issueMachineRequested(args []string, flags *flag.FlagSet) bool {
 	machine := false
-	for _, arg := range args {
-		if arg == "--" {
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if arg == "--" || arg == "-" || !strings.HasPrefix(arg, "-") {
 			break
 		}
-		switch arg {
-		case "--json", "-json", "--json=true", "-json=true":
-			machine = true
-		case "--json=false", "-json=false":
-			machine = false
+		name, value, assigned := strings.Cut(strings.TrimPrefix(strings.TrimPrefix(arg, "-"), "-"), "=")
+		registered := flags.Lookup(name)
+		if registered == nil {
+			continue
+		}
+		boolean, isBoolean := registered.Value.(interface{ IsBoolFlag() bool })
+		if isBoolean && boolean.IsBoolFlag() {
+			if name == "json" {
+				if !assigned {
+					value = "true"
+				}
+				if parsed, err := strconv.ParseBool(value); err == nil {
+					machine = parsed
+				}
+			}
+		} else if !assigned {
+			i++ // A value may itself look like --json or --.
 		}
 	}
 	return machine
 }
 
 func cmdIssue(args []string) error {
-	machine := issueMachineRequested(args)
 	options, err := parseIssueOptions(args)
 	if err == nil && options.command == "help" {
-		if machine {
+		if options.json {
 			return json.NewEncoder(os.Stdout).Encode(issueEnvelope{Schema: issueJSONSchema, OK: true, Data: map[string]string{"help": issueHelp}})
 		}
 		fmt.Print(issueHelp)
@@ -120,7 +136,7 @@ func cmdIssue(args []string) error {
 	}
 	if err != nil {
 		err = issueFailure("repository_error", err)
-		if machine {
+		if options.json {
 			var typed *issueCommandError
 			errors.As(err, &typed)
 			if outputErr := json.NewEncoder(os.Stdout).Encode(issueEnvelope{Schema: issueJSONSchema, OK: false, Error: typed}); outputErr != nil {
@@ -159,22 +175,20 @@ func parseIssueOptions(args []string) (issueOptions, error) {
 	}
 	o.command = args[0]
 	args = args[1:]
+	var commandError string
 	switch o.command {
 	case "help", "--help", "-h":
 		o.command = "help"
-		if len(args) > 1 || (len(args) == 1 && !issueMachineRequested(args)) {
-			return invalid("unexpected help arguments")
-		}
-		return o, nil
 	case "open", "list":
 	case "revise", "resolve", "close", "reopen", "comment", "show", "heads", "history", "graph":
 		if len(args) == 0 || strings.HasPrefix(args[0], "-") {
-			return invalid("issue ID required before flags")
+			commandError = "issue ID required before flags"
+		} else {
+			o.id = args[0]
+			args = args[1:]
 		}
-		o.id = args[0]
-		args = args[1:]
 	default:
-		return invalid("unknown issue command; run 'hn issue help'")
+		commandError = "unknown issue command; run 'hn issue help'"
 	}
 	flags := flag.NewFlagSet("issue "+o.command, flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
@@ -198,15 +212,27 @@ func parseIssueOptions(args []string) (issueOptions, error) {
 				flags.StringVar(&o.snapshot, "snapshot", "", "observed snapshot")
 			}
 		}
-	} else {
+	} else if o.command != "help" {
 		flags.IntVar(&o.limit, "limit", 50, "page size")
 		flags.StringVar(&o.cursor, "cursor", "", "continuation")
 		if o.command == "history" {
 			flags.StringVar(&o.kind, "kind", "all", "all|revisions|comments")
 		}
 	}
-	if err := flags.Parse(args); err != nil {
-		return invalid(err.Error())
+	machine := issueMachineRequested(args, flags)
+	parseErr := flags.Parse(args)
+	o.json = machine
+	if commandError != "" {
+		return invalid(commandError)
+	}
+	if parseErr != nil {
+		return invalid(parseErr.Error())
+	}
+	if o.command == "help" {
+		if flags.NArg() != 0 {
+			return invalid("unexpected help arguments")
+		}
+		return o, nil
 	}
 	literal := false
 	for _, arg := range args {
@@ -335,6 +361,9 @@ func readIssueState(path string) (IssueState, error) {
 	if len(raw) > maxIssuePayload {
 		return IssueState{}, issueFailure("resource_limit", errors.New("issue input exceeds 256 KiB"))
 	}
+	if err := validateIssueJSONUnicode(raw); err != nil {
+		return IssueState{}, issueFailure("invalid_input", err)
+	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.UseNumber()
 	value, err := parseIssueJSONValue(decoder, 0)
@@ -373,6 +402,49 @@ func readIssueState(path string) (IssueState, error) {
 	canonical, err := CanonicalIssueState(state)
 	return canonical, issueFailure("invalid_input", err)
 }
+
+// encoding/json repairs malformed Unicode. Reject it before decoding new input
+// so the immutable signed state preserves the submitted strings losslessly.
+func validateIssueJSONUnicode(raw []byte) error {
+	if !utf8.Valid(raw) {
+		return errors.New("issue JSON must contain valid UTF-8")
+	}
+	if !json.Valid(raw) {
+		return errors.New("issue input must be valid JSON")
+	}
+	inString := false
+	for i := 0; i < len(raw); i++ {
+		if raw[i] == '"' {
+			inString = !inString
+			continue
+		}
+		if !inString || raw[i] != '\\' {
+			continue
+		}
+		i++
+		if raw[i] != 'u' {
+			continue // Includes escaped quotes and literal backslashes.
+		}
+		unit, _ := strconv.ParseUint(string(raw[i+1:i+5]), 16, 16)
+		i += 4 // json.Valid guarantees a complete hexadecimal escape.
+		if unit >= 0xdc00 && unit <= 0xdfff {
+			return errors.New("unpaired low surrogate in issue JSON")
+		}
+		if unit < 0xd800 || unit > 0xdbff {
+			continue
+		}
+		if i+6 >= len(raw) || raw[i+1] != '\\' || raw[i+2] != 'u' {
+			return errors.New("unpaired high surrogate in issue JSON")
+		}
+		low, err := strconv.ParseUint(string(raw[i+3:i+7]), 16, 16)
+		if err != nil || low < 0xdc00 || low > 0xdfff {
+			return errors.New("unpaired high surrogate in issue JSON")
+		}
+		i += 6
+	}
+	return nil
+}
+
 func issueInputKeys(object map[string]any, allowed []string) error {
 	for key := range object {
 		found := false
