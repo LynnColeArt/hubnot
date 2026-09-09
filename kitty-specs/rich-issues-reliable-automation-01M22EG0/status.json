@@ -87,8 +87,8 @@
     "WP03": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 3,
       "lane": "for_review",
       "last_event_id": "01M22KQN0PYG2C40CZTDXS4B33",
@@ -96,7 +96,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Source c0b6f6d9 changes only four WP03-owned files; clean lane, T008-T012 done, no generated binary. Focused race 11.862s, full race 215.648s, vet/external-build/format/diff passed. Force resolves inherited runtime planning metadata hygiene falsepositive only; independent review remains required.",
-        "Independent review of c0b6f6d922cd876dc58793beade4182f6fada4d8 requests two bounded fixes: accepted boolean JSON forms omit failure envelopes; malformed Unicode is silently repaired and signed. Public overlay reproduces both. Existing focused race suite passes9.956s. See committed review feedback for test-first reproduction and checklist."
+        "Independent review of c0b6f6d922cd876dc58793beade4182f6fada4d8 requests two bounded fixes: accepted boolean JSON forms omit failure envelopes; malformed Unicode is silently repaired and signed. Public overlay reproduces both. Existing focused race suite passes9.956s. See committed review feedback for test-first reproduction and checklist.",
+        "Cycle2 source 43d5c0f7 corrects machine flag grammar and predecode Unicode validation in two owned CLI files. Clean lane; T008-T012 reverified done. Original reviewer overlay passes 0.337s, focused race 10.614s, full race 219.057s, vet/external-build/gofmt/diff pass. Force only resolves inherited runtime planning metadata hygiene falsepositive; independent cycle2 review remains required."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
