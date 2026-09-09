@@ -58,10 +58,10 @@
       "criterion_id": "FR-006",
       "description": "Typed relationships: Support blocks, related and parent links using full issue IDs; reject self/missing targets on local writes; expose incoming/outgoing links and diagnose blocks/parent cycles, including after sync.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:23.444012+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
