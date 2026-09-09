@@ -35,7 +35,7 @@ Details list uses existing catalog once, with rows {id,creator,state,conflict,he
 
 ## Contract
 
-See contracts/public-cli.md. Actor is the full current public-key fingerprint in repository's canonical format (reuse validActorID). Lookup requires explicit actor and operation; mutations omit pin by default. Public identity schema is hn.identity/1; issue schema stays hn.issue/1. No distributed CAS claim.
+See contracts/public-cli.md. Actor is the full current public-key fingerprint in repository's canonical format (reuse validActorFingerprint). Lookup requires explicit actor and operation; mutations omit pin by default. Public identity schema is hn.identity/1; issue schema stays hn.issue/1. No distributed CAS claim.
 
 ## Project Structure
 
