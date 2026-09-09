@@ -148,10 +148,10 @@
       "criterion_id": "NFR-003",
       "description": "Regression evidence: Formatting, go test -race ./..., go vet ./..., go build ./..., and git diff --check pass for the integrated candidate; black-box tests include two-replica conflicts and replay failure boundaries.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:57.510810+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
