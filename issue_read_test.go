@@ -344,24 +344,43 @@ func TestIssueReadAttachments(t *testing.T) {
 }
 
 func TestIssueReadChildFailure(t *testing.T) {
-	withMemoryRepository(t, func() {
-		identity := testIdentity(t, "reader")
-		appendIdentityTestEvent(t, identity, "issue.open", func(e *Event) { e.Title = "one" })
-		realGit, err := exec.LookPath("git")
-		if err != nil {
-			t.Fatal(err)
-		}
-		wrapper := t.TempDir()
-		script := "#!/bin/sh\nif [ \"$1\" = cat-file ]; then printf '%s\\n' 'failed child' >&2; exit 9; fi\nexec \"$HN_TEST_REAL_GIT\" \"$@\"\n"
-		if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
-			t.Fatal(err)
-		}
-		t.Setenv("HN_TEST_REAL_GIT", realGit)
-		t.Setenv("PATH", wrapper+string(os.PathListSeparator)+os.Getenv("PATH"))
-		if got, token, err := collectIssueEvents(); err == nil || len(got) != 0 || token != "" {
-			t.Fatalf("child failure yielded result: %v", err)
-		}
-	})
+	for _, tt := range []struct {
+		name, script, code string
+		exitCode           int
+	}{
+		{"failed child", "printf '%s\\n' 'failed child' >&2; exit 9", "repository_error", 9},
+		{"failed truncated body", "read request; printf '%s\\n' 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa blob 3'; printf a; printf '%s\\n' 'failed child' >&2; exit 9", "repository_error", 9},
+		{"successful malformed stream", "read request; printf '%s\\n' 'malformed'; exit 0", "invalid_history", 0},
+		{"cancel malformed stream", "read request; printf '%s\\n' 'malformed'; read more", "invalid_history", 0},
+		{"cancel over budget", "read request; printf '%s\\n' 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa blob 8388609'; read more", "resource_limit", 0},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			withMemoryRepository(t, func() {
+				identity := testIdentity(t, "reader")
+				appendIdentityTestEvent(t, identity, "issue.open", func(e *Event) { e.Title = "one" })
+				realGit, err := exec.LookPath("git")
+				if err != nil {
+					t.Fatal(err)
+				}
+				wrapper := t.TempDir()
+				script := "#!/bin/sh\nif [ \"$1\" = cat-file ]; then " + tt.script + "; exit; fi\nexec \"$HN_TEST_REAL_GIT\" \"$@\"\n"
+				if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
+					t.Fatal(err)
+				}
+				t.Setenv("HN_TEST_REAL_GIT", realGit)
+				t.Setenv("PATH", wrapper+string(os.PathListSeparator)+os.Getenv("PATH"))
+				err = assertIssueReadError(t, tt.code)
+				var child *exec.ExitError
+				if tt.exitCode != 0 {
+					if !strings.Contains(err.Error(), "failed child") || !errors.As(err, &child) || child.ExitCode() != tt.exitCode {
+						t.Fatalf("lost child diagnostic/exit cause: %v", err)
+					}
+				} else if errors.As(err, &child) {
+					t.Fatalf("cleanup cancellation replaced reader diagnosis: %v", err)
+				}
+			})
+		})
+	}
 }
 
 func TestIssueReadSHA256Git(t *testing.T) {

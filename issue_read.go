@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // IssueReadError classifies ingestion failures without erasing their underlying
@@ -231,7 +232,7 @@ func issueGitLines(input io.Reader, visit func(string) error, args ...string) er
 	return nil
 }
 
-func issueReadStoredEvents(commits []string, limits issueReadLimits) ([]StoredEvent, error) {
+func issueReadStoredEvents(commits []string, limits issueReadLimits) (result []StoredEvent, resultErr error) {
 	cmd := exec.Command("git", "cat-file", "--batch")
 	stderr := &issueReadStderr{}
 	cmd.Stderr = stderr
@@ -250,11 +251,29 @@ func issueReadStoredEvents(commits []string, limits issueReadLimits) ([]StoredEv
 	}
 	finished := false
 	defer func() {
-		if !finished {
-			_ = input.Close()
-			_ = cmd.Process.Kill()
-			_ = cmd.Wait()
+		if finished {
+			return
 		}
+		// Give a naturally terminating child a bounded opportunity to report
+		// its real exit cause. Closing stdin first could itself cause a child
+		// failure and misclassify a deliberate parser/limit cancellation.
+		exited := make(chan error, 1)
+		go func() { exited <- cmd.Wait() }()
+		timer := time.NewTimer(100 * time.Millisecond)
+		defer timer.Stop()
+		select {
+		case waitErr := <-exited:
+			var readerErr *IssueReadError
+			limited := errors.As(resultErr, &readerErr) && readerErr.Code == "resource_limit"
+			if waitErr != nil && !limited {
+				resultErr = issueReadFailure("repository_error", fmt.Errorf("git cat-file: %s: %w", strings.TrimSpace(string(stderr.data)), waitErr))
+			}
+		case <-timer.C:
+			// This kill is our cancellation, not evidence of repository failure.
+			_ = cmd.Process.Kill()
+			<-exited
+		}
+		_ = input.Close()
 	}()
 	reader := bufio.NewReaderSize(output, 4096)
 	used := int64(0)
@@ -306,7 +325,7 @@ func issueReadStoredEvents(commits []string, limits issueReadLimits) ([]StoredEv
 	err = cmd.Wait()
 	finished = true
 	if err != nil {
-		return nil, issueReadFailure("repository_error", fmt.Errorf("git cat-file: %s", commandFailure(err, string(stderr.data))))
+		return nil, issueReadFailure("repository_error", fmt.Errorf("git cat-file: %s: %w", strings.TrimSpace(string(stderr.data)), err))
 	}
 	return events, nil
 }
