@@ -20,8 +20,8 @@
     "WP01": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "for_review",
       "last_event_id": "01M22TCCS11Q56HKESQGFFBG8G",
@@ -29,7 +29,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: source bfd9c5789573b205d80fd647b0059534cdcc3d76. Final full race passed 248.573s; focused race passed 13.674s; go vet ./..., external go build, diff-scoped gofmt and git diff --check passed. Public subprocess tests cover identity pins, original operation recovery, typed failures and immutable opening_metadata. Earlier compatibility gate failures were fixed and final suite passed. Logs: /tmp/hn-prerequisite-complete-race.log and /tmp/hn-prerequisite-opening-focused-race.log.",
-        "Independent review of bfd9c578: R1 public machine identity discovery migrates legacy private keyring state; public reproduction fails. Focused Automation race passes 3.445s; no other blocker. Preserve human compatibility and add read-only machine discovery regression."
+        "Independent review of bfd9c578: R1 public machine identity discovery migrates legacy private keyring state; public reproduction fails. Focused Automation race passes 3.445s; no other blocker. Preserve human compatibility and add read-only machine discovery regression.",
+        "R1 corrected in source 2356a295f77808363e60030895e53013d857b833: JSON identity discovery validates existing active or legacy records without migration; default human migration preserved. Permanent public regression compares private paths/bytes/modes and all refs for normal, legacy, invalid and absent identity. Test-first red 1.164s; focused race 16.923s; full race 279.117s; vet/external build/gofmt/git diff --check all passed. Logs /tmp/hn-prerequisite-cycle1-red.log /tmp/hn-prerequisite-cycle1-focused-race.log /tmp/hn-prerequisite-cycle1-full-race.log. Ready for independent re-review, not self-approved."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
