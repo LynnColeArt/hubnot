@@ -28,10 +28,10 @@
       "criterion_id": "FR-003",
       "description": "Immutable revisions: Edits append signed full-state revisions referencing the stable issue and predecessor revisions; retain inspectable history and author attribution.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:13.335811+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
