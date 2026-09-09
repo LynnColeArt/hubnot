@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "mission_slug": "pinned-actor-operation-lookup-01M22QQS",
+  "mission_id": "01M22QQSE5KYP72ZPH75W437R9",
+  "mission_branch": "kitty/mission-pinned-actor-operation-lookup-01M22QQS",
+  "target_branch": "feat/pinned-actor-operation-lookup",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "automation_public_test.go",
+        "docs/identity-v0.md",
+        "docs/issues-v1.md",
+        "docs/threat-model.md",
+        "identity_continuity.go",
+        "issue_commands.go",
+        "main.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-09T09:31:18.104973+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "9d293d9631b5743f7bfcf36498d8ee0ccae5f81a"
+}
