@@ -48,10 +48,10 @@
       "criterion_id": "FR-005",
       "description": "Guarded edit and resolution: Local edits require the exact observed head; ordinary resolution requires the complete observed head set; explicit staged resolution names current parents and validates its observed snapshot, preserving unconsumed heads. Stale requests append nothing. Distributed races remain explicit conflicts.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:20.084929+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
