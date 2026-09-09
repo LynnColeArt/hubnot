@@ -88,10 +88,10 @@
       "criterion_id": "FR-009",
       "description": "Bounded navigation: List, heads, history and graph offer deterministic bounded pages and snapshot-aware continuation; reject stale continuations rather than silently skip work.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:34.577891+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
