@@ -125,8 +125,12 @@ current global consensus or execution permission.
 ## T003 — Complete catalog pages
 
 Add optional bool --details only to issue list. Default summaries remain
-unchanged. Detail rows contain id, creator, state, conflict, head_count.
+unchanged. Detail rows contain id, creator, state, opening_metadata, conflict, head_count.
 State is complete canonical IssueState or explicit null under conflict.
+Opening metadata is the full signed opening event map, or {} for legacy,
+located in each issue history by its opening event ID. Preserve it after later
+metadata rewrites and even when current state is null. No namespace semantics
+or extra subprocesses: this remains a generic verified historical projection.
 Do not include nested head lists: callers use the existing heads command.
 Keep items,total,conflict,cycle_count envelope data and existing page50/max200.
 
@@ -137,7 +141,8 @@ fail invalid_input. Existing stale snapshot behavior remains unchanged.
 Test at least three issues with metadata and small pages, follow all pages,
 assert no duplicates/omissions and full state equality. Include a conflicted
 issue and assert null state and correct head_count. Assert no hidden truncation
-for large body/metadata and no default-summary shape change. Test explicit
+for large body/metadata and no default-summary shape change. Assert original
+opening metadata after a later rewrite, under conflict, and {} for legacy. Test explicit
 false details and wrong-query cursors. Human details may render full state
 using existing human helpers, while preserving human default list output.
 

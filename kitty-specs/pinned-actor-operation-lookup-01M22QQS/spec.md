@@ -47,7 +47,7 @@ Malformed/full actor IDs, empty/oversized/non-printable operation keys, missing/
 | FR-002 | Pinned mutation | Every issue mutation accepts an optional full expected actor and refuses mismatches against the identity actually used for append, with zero writes. | High | Open |
 | FR-003 | Original operation | A read-only explicit actor/key lookup returns complete original signed request semantics, operation and timestamp after subsequent edits. | High | Open |
 | FR-004 | Honest errors | Missing, malformed, absent, duplicate, invalid-history and resource failures are stable typed machine responses; lookup never silently selects a duplicate. | High | Open |
-| FR-006 | Complete catalog pages | A client can optionally page complete current issue states, with explicit null conflicts, without individual issue reads; continuation is bound to detail mode. | High | Open |
+| FR-006 | Complete catalog pages | A client can optionally page complete current issue states and full immutable opening metadata (empty for legacy), with explicit null conflicts, without individual issue reads; continuation is bound to detail mode. | High | Open |
 | FR-005 | Compatible public contract | Existing human/JSON commands retain defaults; help and protocol documentation explain new schemas, pinning and recovery limits. | High | Open |
 
 ### Non-Functional Requirements

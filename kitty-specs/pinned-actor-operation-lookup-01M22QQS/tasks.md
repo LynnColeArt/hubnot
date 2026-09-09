@@ -6,7 +6,7 @@ Priority P1. One cohesive command-boundary package; no dependencies. Independent
 
 T001 Add public identity JSON and optional pinned issue signer.
 T002 Add verified exact actor/key operation lookup.
-T003 Add complete detailed catalog pages with mode-bound cursors.
+T003 Add complete detailed catalog pages and immutable opening metadata with mode-bound cursors.
 T004 Qualify public errors, races and compatibility; publish docs and evidence.
 
 Prompt: [WP01-reliable-public-automation-observations.md](tasks/WP01-reliable-public-automation-observations.md)
