@@ -138,10 +138,10 @@
       "criterion_id": "NFR-002",
       "description": "Efficient verified reads: Reading a 1000-issue fixture must use batched event-object access without per-event Git subprocesses; measure duration and process counts, and verify semantic equality with the existing loader.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:54.144080+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
