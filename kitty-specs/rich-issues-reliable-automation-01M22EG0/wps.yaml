@@ -1,0 +1,166 @@
+{
+  "work_packages": [
+    {
+      "id": "WP01",
+      "title": "Signed issue revisions and replication closure",
+      "dependencies": [],
+      "owned_files": [
+        "event.go",
+        "store.go",
+        "quarantine.go",
+        "shallow.go",
+        "issue_model.go",
+        "issue_projection.go",
+        "issue_model_test.go",
+        "issue_projection_test.go",
+        "issue_replication_test.go"
+      ],
+      "requirement_refs": [
+        "FR-001",
+        "FR-002",
+        "FR-003",
+        "FR-004",
+        "FR-005",
+        "FR-006",
+        "FR-007",
+        "FR-010",
+        "NFR-001",
+        "C-001",
+        "C-002",
+        "C-003"
+      ],
+      "plan_concern_refs": [
+        "IC-01"
+      ],
+      "subtasks": [
+        "T001",
+        "T002",
+        "T003",
+        "T004"
+      ],
+      "prompt_file": "tasks/WP01-signed-issue-revisions-and-replication-closure.md",
+      "agent_profile": "implementer-ivan",
+      "role": "implementer",
+      "agent": "codex"
+    },
+    {
+      "id": "WP02",
+      "title": "Bounded verified batch reader",
+      "dependencies": [],
+      "owned_files": [
+        "issue_read.go",
+        "issue_read_test.go"
+      ],
+      "requirement_refs": [
+        "FR-010",
+        "NFR-001",
+        "NFR-002",
+        "C-001",
+        "C-003"
+      ],
+      "plan_concern_refs": [
+        "IC-02"
+      ],
+      "subtasks": [
+        "T005",
+        "T006",
+        "T007"
+      ],
+      "prompt_file": "tasks/WP02-bounded-verified-batch-reader.md",
+      "agent_profile": "implementer-ivan",
+      "role": "implementer",
+      "agent": "codex"
+    },
+    {
+      "id": "WP03",
+      "title": "Rich human and machine issue commands",
+      "dependencies": [
+        "WP01",
+        "WP02"
+      ],
+      "owned_files": [
+        "commands.go",
+        "main.go",
+        "issue_commands.go",
+        "issue_commands_test.go"
+      ],
+      "requirement_refs": [
+        "FR-001",
+        "FR-002",
+        "FR-003",
+        "FR-004",
+        "FR-005",
+        "FR-006",
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-012",
+        "NFR-001",
+        "C-002",
+        "C-003"
+      ],
+      "plan_concern_refs": [
+        "IC-03"
+      ],
+      "subtasks": [
+        "T008",
+        "T009",
+        "T010",
+        "T011",
+        "T012"
+      ],
+      "prompt_file": "tasks/WP03-rich-human-and-machine-issue-commands.md",
+      "agent_profile": "implementer-ivan",
+      "role": "implementer",
+      "agent": "codex"
+    },
+    {
+      "id": "WP04",
+      "title": "Public consumer acceptance and documentation",
+      "dependencies": [
+        "WP03"
+      ],
+      "owned_files": [
+        "issue_acceptance_test.go",
+        "examples/issue-consumer/**",
+        "README.md",
+        "docs/issues-v1.md",
+        "docs/protocol-v0.md",
+        "docs/threat-model.md"
+      ],
+      "requirement_refs": [
+        "FR-001",
+        "FR-002",
+        "FR-003",
+        "FR-004",
+        "FR-005",
+        "FR-006",
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-010",
+        "FR-011",
+        "FR-012",
+        "NFR-001",
+        "NFR-002",
+        "NFR-003",
+        "C-001",
+        "C-002",
+        "C-003"
+      ],
+      "plan_concern_refs": [
+        "IC-04"
+      ],
+      "subtasks": [
+        "T013",
+        "T014",
+        "T015",
+        "T016"
+      ],
+      "prompt_file": "tasks/WP04-public-consumer-acceptance-and-documentation.md",
+      "agent_profile": "implementer-ivan",
+      "role": "implementer",
+      "agent": "codex"
+    }
+  ]
+}
