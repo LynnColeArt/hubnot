@@ -16,3 +16,5 @@
 2026-09-09 — Log seeded during WP03. The committed approach has four packages: signed model/projection, bounded verified reader, public commands, then independent consumer acceptance and documentation. Foundations were implemented separately and each went through independent review and a corrective cycle before CLI integration.
 
 2026-09-09 — Independent reviewers exposed two boundary defects: sizing re-encoded JSON missed excess raw signed bytes, and parser failure could conceal a naturally failed Git child. Both fixes received failing reproductions, focused verification, full race gates and independent re-review; the public dependency interfaces stayed stable.
+
+2026-09-09 — WP03 passed the full race gate, but independent public-command probes found that alternate accepted boolean spellings lost JSON errors and encoding/json silently repaired malformed Unicode before signing. The package was rejected with executable reproductions and returned for narrow input/output corrections; the main model and reader contracts did not change.
