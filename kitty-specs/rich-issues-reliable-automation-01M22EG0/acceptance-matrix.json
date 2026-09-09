@@ -98,10 +98,10 @@
       "criterion_id": "FR-010",
       "description": "Verified read model: Derive the issue catalog, revision heads, comments and graph from verified signed histories; rebuild produces identical results and never depends on an authoritative cache.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:38.654358+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
