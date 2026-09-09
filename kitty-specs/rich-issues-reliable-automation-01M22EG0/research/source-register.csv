@@ -1,0 +1,6 @@
+source_id,location,description
+S1,event.go,Signed event schema and content validation
+S2,store.go,Actor append CAS and event collection and relationship validation
+S3,commands.go,Existing issue CLI
+S4,docs/protocol-v0.md,Current public protocol
+S5,prior Hubnot-Beads evaluation,User-approved richer issue direction and baseline smoke

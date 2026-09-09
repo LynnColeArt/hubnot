@@ -1,0 +1,6 @@
+evidence_id,source_id,finding,decision
+E1,S1,Issue open and comment exist,Evolve stable issue identity
+E2,S2,Git processes per event,Batch reads and verified in-memory projection
+E3,S2,Actor-local CAS only,Expose concurrent heads rather than claim global CAS
+E4,S3,Human-only basic issue commands,Add opt-in machine contract
+E5,S5,User delegates richer general model,Keep consumer execution authority external
