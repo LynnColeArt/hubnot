@@ -76,10 +76,12 @@ Usage:
   hn memory show MEMORY [--json]
   hn memory recall [filters] [bounds] [--json]
   hn memory index rebuild|verify
-  hn issue open [--body TEXT] TITLE
-  hn issue comment ISSUE [--body TEXT] [TEXT]
-  hn issue list
-  hn issue show ISSUE
+  hn issue help
+  hn issue open [--body TEXT] TITLE | --input FILE|- [--operation KEY] [--json]
+  hn issue revise|resolve ISSUE --expect REV ... --input FILE|- [--json]
+  hn issue close|reopen ISSUE --expect REV [--operation KEY] [--json]
+  hn issue comment ISSUE [--body TEXT] [--operation KEY] [--json] [TEXT]
+  hn issue list|show|heads|history|graph [ISSUE] [--limit N] [--cursor TOKEN] [--json]
   hn proposal open --base REV --head REV [--body TEXT] TITLE
   hn proposal revise PREDECESSOR --base REV --head REV [--body TEXT]
   hn proposal list

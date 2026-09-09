@@ -1,0 +1,85 @@
+{
+  "event_count": 43,
+  "last_event_id": "01M22P3QHX0DAQYTYA5EBHNPN8",
+  "materialized_at": "2026-09-09T08:56:18.749110+00:00",
+  "mission_number": "",
+  "mission_slug": "rich-issues-reliable-automation-01M22EG0",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 4,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "codex",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M22P3FDQXHJ3HDEMHFYCE0XV",
+      "last_transition_at": "2026-09-09T08:56:10.423672+00:00",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP01-signed-issue-revisions-and-replication-closure/review-cycle-2.md",
+        "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP01-signed-issue-revisions-and-replication-closure/review-cycle-2.md",
+        "reviewer": "codex-independent-foundation-review",
+        "verdict": "approved"
+      },
+      "shell_pid": 792675,
+      "shell_pid_created_at": "1788938568.58"
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "codex",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M22P3JQZBX3MG66DP78EB0PH",
+      "last_transition_at": "2026-09-09T08:56:13.823842+00:00",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP02-bounded-verified-batch-reader/review-cycle-2.md",
+        "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP02-bounded-verified-batch-reader/review-cycle-2.md",
+        "reviewer": "codex-independent-foundation-review",
+        "verdict": "approved"
+      },
+      "shell_pid": 790397,
+      "shell_pid_created_at": "1788938488.29"
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "codex",
+      "force_count": 4,
+      "lane": "done",
+      "last_event_id": "01M22P3N9XTWD0T4XF45Q8W9J1",
+      "last_transition_at": "2026-09-09T08:56:16.445559+00:00",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP03-rich-human-and-machine-issue-commands/review-cycle-2.md",
+        "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP03-rich-human-and-machine-issue-commands/review-cycle-2.md",
+        "reviewer": "codex-independent-cli-review",
+        "verdict": "approved"
+      },
+      "shell_pid": 1033026,
+      "shell_pid_created_at": "1788940972.6"
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "codex",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01M22P3QHX0DAQYTYA5EBHNPN8",
+      "last_transition_at": "2026-09-09T08:56:18.749110+00:00",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP04-public-consumer-acceptance-and-documentation/review-cycle-1.md",
+        "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP04-public-consumer-acceptance-and-documentation/review-cycle-1.md",
+        "reviewer": "codex-independent-acceptance-review",
+        "verdict": "approved"
+      },
+      "shell_pid": 1123425,
+      "shell_pid_created_at": "1788941853.81"
+    }
+  }
+}

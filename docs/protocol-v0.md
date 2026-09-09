@@ -60,7 +60,12 @@ version-0 field order is:
   "platform": "linux/amd64",
   "runner": "hn/<version>",
   "policy": "<full-policy-digest>",
-  "evidence": ["<full-evidence-event-id>"]
+  "evidence": ["<full-evidence-event-id>"],
+  "issue": {"title": "Current work", "body": "Description", "status": "open", "criteria": [], "labels": [], "assignees": [], "relations": [], "metadata": {}},
+  "parents": ["<full-prior-issue-revision-id>"],
+  "operation": "actor-scoped-operation-key",
+  "request": "<canonical-request-sha256-id>",
+  "intent": "revise"
 }
 ```
 
@@ -87,6 +92,7 @@ The implemented kinds are:
 ```text
 issue.open
 issue.comment
+issue.revise
 proposal.open
 proposal.revise
 review.submit
@@ -97,6 +103,47 @@ proposal.merged
 identity.authorize
 identity.accept
 ```
+
+## Issue roots, revisions and reliable operations
+
+The optional `issue`, `parents`, `operation`, `request`, and `intent` fields
+are appended to the Event field inventory. When absent they are omitted, so
+existing signed payload bytes and IDs remain unchanged. The `hn.issue/1`
+versioned CLI envelope is separate from the signed `hn/0` event protocol.
+
+`issue.open` establishes stable identity. A legacy title/body opening maps to
+an open issue; a rich opening additionally signs full IssueState with matching
+title/body. `issue.revise` signs `subject` equal to the opening ID, a complete
+`issue` state, and sorted unique `parents` identifying 1–200 same-issue opening
+or revision events. It carries no separate title/body fields. `issue.comment`
+signs its opening subject and body, without state or revision parents.
+
+`previous` is the previous event in this actor's history; `parents` are the
+issue-content ancestors and may belong to other actors. The verified projection
+computes all maximal issue revisions and preserves conflicts without a selected
+state. Explicit reconciliation appends a successor referencing the consumed
+heads; staged reconciliation preserves all unconsumed heads.
+
+IssueState contains title, body, open/closed status, criteria with local IDs,
+labels, assignees, typed relations and namespaced string metadata. Criteria
+order is preserved; label/assignee/relation sets are canonically sorted and
+reject duplicates. Assignment, criteria and status confer no policy or consumer
+execution authority. Root/parent/relation dependencies participate in exact
+replication closure and stay quarantined if suppliers are absent.
+
+`intent` distinguishes open/revise/resolve/close/reopen/comment. When an
+operation key is present, `operation` and `request` are both signed. The request
+digest is SHA-256 over the canonical intent/kind/subject/parents/state/title/body
+encoding; actor sequence, timestamp and operation key are excluded from that
+encoding, while the operation key is separately scoped to its signer. The
+reader recomputes the digest from signed semantics. Reusing a key for different
+semantics fails; identical retries return the original event before checking
+current issue heads. No cross-actor atomicity or shared operation authority is
+implied.
+
+See [issues-v1](issues-v1.md) for complete limits, machine schema, directed graph,
+retry and staged-resolution examples. Older executables may reject the new
+kind; reverting an executable does not erase newly signed facts.
 
 ## Identity continuity events
 

@@ -42,12 +42,13 @@ go build -trimpath -o hn .
 go test -count=1 ./...
 ```
 
-The two end-to-end acceptance scenarios compile the CLI and exercise the
-self-hosted governance/CI loop and repository-native agent memory through real
-Git repositories:
+The end-to-end acceptance scenarios compile the CLI and exercise the
+self-hosted governance/CI loop, repository-native agent memory, and rich issues
+through real Git repositories:
 
 ```sh
 go test -count=1 -run 'TestOperational(SelfHostingAlpha|AgentMemory)$' ./...
+go test -count=1 -run '^TestOperationalRichIssue' -v ./...
 ```
 
 Run the full local release checks with:
@@ -80,6 +81,27 @@ actor:
 ```text
 refs/hn/actors/<full-actor-fingerprint>
 ```
+
+## Issues that grow with the work
+
+Start with a title and add structured descriptions, criteria, labels,
+assignees, relationships and namespaced metadata when useful. Edits, close and
+reopen append signed revisions under the same opening identity. Concurrent
+heads remain visible until explicitly resolved; assignment and status grant
+no execution or review authority.
+
+```sh
+hn issue list
+hn issue show <issue-id>
+hn issue heads <issue-id> --json
+hn issue help
+```
+
+[Rich issue guidance](docs/issues-v1.md) covers full-state JSON input,
+expected-head guards, actor-scoped operation retries, bounded pages and
+conflict recovery. The [runnable consumer](examples/issue-consumer/README.md)
+creates, reads, revises and retries demonstration work using only the public
+CLI. No Beads migration or consumer-specific runtime integration is performed.
 
 ## Distinct device actors
 
