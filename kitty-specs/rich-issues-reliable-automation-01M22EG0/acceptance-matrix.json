@@ -168,10 +168,10 @@
       "criterion_id": "C-002",
       "description": "Consumer independence: Issue status, assignment, criteria and metadata are descriptive; no Go Kitty leases, execution authorization, review acceptance or integration authority. No Beads cutover in this mission.",
       "proof_type": "code_review",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:46:04.108165+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
