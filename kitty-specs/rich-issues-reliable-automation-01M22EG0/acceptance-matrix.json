@@ -108,10 +108,10 @@
       "criterion_id": "FR-011",
       "description": "General consumer example: Ship a runnable public-CLI consumer example/test demonstrating read/update/replay/stale rejection with no Go Kitty runtime dependency.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:42.785687+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
