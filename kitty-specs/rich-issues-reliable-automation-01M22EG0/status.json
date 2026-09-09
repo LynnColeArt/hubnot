@@ -2,9 +2,9 @@
   "event_count": 43,
   "last_event_id": "01M22P3QHX0DAQYTYA5EBHNPN8",
   "materialized_at": "2026-09-09T08:56:18.749110+00:00",
-  "mission_number": "2",
+  "mission_number": "",
   "mission_slug": "rich-issues-reliable-automation-01M22EG0",
-  "mission_type": "software-dev",
+  "mission_type": "",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -20,135 +20,66 @@
     "WP01": {
       "actor": "merge",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M22P3FDQXHJ3HDEMHFYCE0XV",
       "last_transition_at": "2026-09-09T08:56:10.423672+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Coordinator verified clean worktree and source commit 74126762 changes only eight owned Go files; T001-T004 complete; race/vet/build/gofmt/diff passed. Force addresses only inherited runtime planning metadata from lane bootstrap/coordination merges falsely flagged by lane hygiene; independent review remains required.",
-        "Independent review by codex-review-wp01 of source 74126762e4f6f1d2df1219a9a142e23adedc308e: reject rich signed-payload raw byte-cap bypass; focused race passes; tracked source unchanged.",
-        "Cycle2 correction cb52d48e enforces raw rich payload cap with passing full race186.087s, focused/regression/vet/build/diff. Generated runtime-added executable removed in2f79abb0; T001-T004done. Coordinator override only inherited runtime planning/review metadata hygiene falsepositive; independent re-review required.",
-        "Root records independent cycle2 reviewer approval of cb52d48e with generated binary cleanup verified at 2f79abb0. Focused race model/projection/replication passed 1.625s; original oversized-payload reproduction now passes 0.006s; implementing full race 186.087s and vet/build/diff passed. Force resolves only inherited runtime planning metadata hygiene falsepositive; independent review was performed without implementation edits."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP01-signed-issue-revisions-and-replication-closure/review-cycle-2.md",
         "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP01-signed-issue-revisions-and-replication-closure/review-cycle-2.md",
         "reviewer": "codex-independent-foundation-review",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 904576,
-      "shell_pid_created_at": "1788938998.61",
-      "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done"
-      }
+      "shell_pid": 792675,
+      "shell_pid_created_at": "1788938568.58"
     },
     "WP02": {
       "actor": "merge",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M22P3JQZBX3MG66DP78EB0PH",
       "last_transition_at": "2026-09-09T08:56:13.823842+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Coordinator verified clean worktree and source commit 988a3f91 changes only issue_read.go and issue_read_test.go; T005-T007 complete; race/vet/build/gofmt/diff passed. Force addresses only inherited runtime planning metadata from lane bootstrap/coordination merges falsely flagged by lane hygiene; independent review remains required.",
-        "Independent review by codex-review-wp02 of source 988a3f91890c79d0f75a75b5152dc2cf7d4132d4: P2 batch child failure loses repository_error classification and bounded stderr; see structured feedback.",
-        "Cycle2 correction source adcc6e7a preserves child failure causes with passing focused/full race215.895s, vet/build/gofmt/diff; clean tree and T005-T007 done. Coordinator override only for inherited runtime planning metadata lane-hygiene falsepositive; independent re-review required.",
-        "Independent cycle2 reviewer codex-independent-foundation-review approved unchanged source adcc6e7a: exit9/stderr cause preservation, deliberate cancellation precedence, bounded cleanup and prior transport/admission/attachment cases verified; focused race2.701s and diff clean; implementing fullrace215.895s/vet/build/gofmt passed. Root records that independent verdict; force only resolves inherited runtime planning metadata hygiene falsepositive, not self-review."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP02-bounded-verified-batch-reader/review-cycle-2.md",
         "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP02-bounded-verified-batch-reader/review-cycle-2.md",
         "reviewer": "codex-independent-foundation-review",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 903280,
-      "shell_pid_created_at": "1788938947.72",
-      "subtasks": {
-        "T005": "done",
-        "T006": "done",
-        "T007": "done"
-      }
+      "shell_pid": 790397,
+      "shell_pid_created_at": "1788938488.29"
     },
     "WP03": {
       "actor": "merge",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "lane": "done",
       "last_event_id": "01M22P3N9XTWD0T4XF45Q8W9J1",
       "last_transition_at": "2026-09-09T08:56:16.445559+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Source c0b6f6d9 changes only four WP03-owned files; clean lane, T008-T012 done, no generated binary. Focused race 11.862s, full race 215.648s, vet/external-build/format/diff passed. Force resolves inherited runtime planning metadata hygiene falsepositive only; independent review remains required.",
-        "Independent review of c0b6f6d922cd876dc58793beade4182f6fada4d8 requests two bounded fixes: accepted boolean JSON forms omit failure envelopes; malformed Unicode is silently repaired and signed. Public overlay reproduces both. Existing focused race suite passes9.956s. See committed review feedback for test-first reproduction and checklist.",
-        "Cycle2 source 43d5c0f7 corrects machine flag grammar and predecode Unicode validation in two owned CLI files. Clean lane; T008-T012 reverified done. Original reviewer overlay passes 0.337s, focused race 10.614s, full race 219.057s, vet/external-build/gofmt/diff pass. Force only resolves inherited runtime planning metadata hygiene falsepositive; independent cycle2 review remains required.",
-        "Root records independent cycle2 approval by codex-independent-cli-review of unchanged source43d5c0f7. Both P2 boundary fixes verified; independent focused race10.818s, original public overlay0.319s, checklist8 PASS, diff clean. Implementer fullrace219.057s/vet/build/format pass. Force only resolves inherited runtime planning metadata hygiene falsepositive; independent reviewer performed no source edits."
-      ],
-      "provider": "__resolved_provider_absent__",
-      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP03-rich-human-and-machine-issue-commands/review-cycle-2.md",
         "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP03-rich-human-and-machine-issue-commands/review-cycle-2.md",
         "reviewer": "codex-independent-cli-review",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 1115056,
-      "shell_pid_created_at": "1788941693.95",
-      "subtasks": {
-        "T008": "done",
-        "T009": "done",
-        "T010": "done",
-        "T011": "done",
-        "T012": "done"
-      }
+      "shell_pid": 1033026,
+      "shell_pid_created_at": "1788940972.6"
     },
     "WP04": {
       "actor": "merge",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "done",
       "last_event_id": "01M22P3QHX0DAQYTYA5EBHNPN8",
       "last_transition_at": "2026-09-09T08:56:18.749110+00:00",
-      "model": "__resolved_model_absent__",
-      "notes": [
-        "Source9f799ba5 changes exactly seven owned acceptance/example/docs paths; cleanlane/no generated binaries or keys; T013-T016 done. Full race246.221s, vet/external-all-package-build/gofmt/diff pass; actual consumer, replicas,201heads and1000issue equality/process evidence recorded. Only ID-guidance docs wording changed during gate, executable source and testedJSON unchanged and guidance separately verified. Force solely resolves inherited runtime planning metadata hygiene falsepositive; independent review required.",
-        "Root records independent approval by codex-independent-acceptance-review of unchanged9f799ba5 source. Representative public race acceptance10.811s passed consumer/invalidpaths/lifecycle/no-write replay/strictJSON/realreplicas/graphs/supplierrecovery/docsJSON;201heads and1000equality/process assertions reviewed with fullrace246.221s. Requirements map adequate, checklist8 PASS. Force only resolves inherited planning-metadata hygiene falsepositive; no independent review bypass or selfapproval."
-      ],
-      "provider": "__resolved_provider_absent__",
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/rich-issues-reliable-automation-01M22EG0/tasks/WP04-public-consumer-acceptance-and-documentation/review-cycle-1.md",
         "reference": "review-cycle://rich-issues-reliable-automation-01M22EG0/WP04-public-consumer-acceptance-and-documentation/review-cycle-1.md",
         "reviewer": "codex-independent-acceptance-review",
         "verdict": "approved"
       },
-      "role": "reviewer",
-      "shell_pid": 1282419,
-      "shell_pid_created_at": "1788943153.58",
-      "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done",
-        "T016": "done"
-      }
+      "shell_pid": 1123425,
+      "shell_pid_created_at": "1788941853.81"
     }
   }
 }
