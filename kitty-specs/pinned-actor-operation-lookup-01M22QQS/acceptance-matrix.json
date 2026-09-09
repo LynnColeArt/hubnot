@@ -1,0 +1,69 @@
+{
+  "mission_slug": "pinned-actor-operation-lookup-01M22QQS",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "TestAutomationPublicIdentityDiscoveryReadOnly, TestAutomationPublicIdentityAndPin; public identity read-only and private-state invariant; reviewed source2356a295f77808363e60030895e53013d857b833; independent approval event01M22TGXXXTX9G0V55WXTQY6GK; work/hn-prerequisite-review/cycle2-review.md (5.620s); /tmp/hn-prerequisite-cycle1-full-race.log (279.117s); /tmp/hn-prerequisite-cycle1-focused-race.log (16.923s)",
+      "pass_fail": "pass",
+      "verified_by": "codex-host-author",
+      "verified_at": "2026-09-09T10:15:21.353460+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "TestAutomationPublicIdentityAndPin, TestAutomationCapturedSigner; zero-ref writes on mismatch and captured signer; reviewed source2356a295f77808363e60030895e53013d857b833; independent approval event01M22TGXXXTX9G0V55WXTQY6GK; work/hn-prerequisite-review/cycle2-review.md (5.620s); /tmp/hn-prerequisite-cycle1-full-race.log (279.117s); /tmp/hn-prerequisite-cycle1-focused-race.log (16.923s)",
+      "pass_fail": "pass",
+      "verified_by": "codex-host-author",
+      "verified_at": "2026-09-09T10:15:25.420286+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "TestAutomationPublicOperation; original signed semantics after subsequent edits and comments; reviewed source2356a295f77808363e60030895e53013d857b833; independent approval event01M22TGXXXTX9G0V55WXTQY6GK; work/hn-prerequisite-review/cycle2-review.md (5.620s); /tmp/hn-prerequisite-cycle1-full-race.log (279.117s); /tmp/hn-prerequisite-cycle1-focused-race.log (16.923s)",
+      "pass_fail": "pass",
+      "verified_by": "codex-host-author",
+      "verified_at": "2026-09-09T10:15:29.222779+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "TestAutomationPublicOperation, TestAutomationPublicLookupResourceFailure; strict flags, absent and duplicate, invalid history and bounded resource failures; reviewed source2356a295f77808363e60030895e53013d857b833; independent approval event01M22TGXXXTX9G0V55WXTQY6GK; work/hn-prerequisite-review/cycle2-review.md (5.620s); /tmp/hn-prerequisite-cycle1-full-race.log (279.117s); /tmp/hn-prerequisite-cycle1-focused-race.log (16.923s)",
+      "pass_fail": "pass",
+      "verified_by": "codex-host-author",
+      "verified_at": "2026-09-09T10:15:33.077670+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "TestAutomationPublicIdentityDiscoveryReadOnly, TestIssueCommands, TestIdentity and full suite; human migration, output defaults, current protocol documentation; reviewed source2356a295f77808363e60030895e53013d857b833; independent approval event01M22TGXXXTX9G0V55WXTQY6GK; work/hn-prerequisite-review/cycle2-review.md (5.620s); /tmp/hn-prerequisite-cycle1-full-race.log (279.117s); /tmp/hn-prerequisite-cycle1-focused-race.log (16.923s)",
+      "pass_fail": "pass",
+      "verified_by": "codex-host-author",
+      "verified_at": "2026-09-09T10:15:36.646961+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "TestAutomationPublicDetails, TestAutomationPublicLegacyOpeningMetadata; full current and immutable opening maps, null conflict and mode-bound pagination; reviewed source2356a295f77808363e60030895e53013d857b833; independent approval event01M22TGXXXTX9G0V55WXTQY6GK; work/hn-prerequisite-review/cycle2-review.md (5.620s); /tmp/hn-prerequisite-cycle1-full-race.log (279.117s); /tmp/hn-prerequisite-cycle1-focused-race.log (16.923s)",
+      "pass_fail": "pass",
+      "verified_by": "codex-host-author",
+      "verified_at": "2026-09-09T10:15:41.445505+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

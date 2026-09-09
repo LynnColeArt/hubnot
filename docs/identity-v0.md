@@ -27,7 +27,26 @@ shared actor key and not a policy principal created by inference.
 
 `hn identity public` emits only display name, full actor fingerprint, and
 raw-base64 public key. `hn identity show` emits the active name, actor, and
-actor ref; it never emits key material.
+actor ref; it never emits private key material.
+
+`hn identity show --json` emits exactly one `hn.identity/1` envelope containing
+`{schema,ok:true,data:{actor,name,public_key}}`. The key is public raw-base64;
+private keys and identity filesystem paths are never included. Failures have
+`{schema,ok:false,error:{code,message}}` and a nonzero exit; `invalid_input`
+means invalid flags/arguments, `repository_error` means identity unavailable.
+Machine discovery is read-only: it validates the active identity record or a
+legacy identity without initializing, migrating, rotating, or repairing private
+state. Valid legacy public fields can be inspected before explicit migration.
+Invalid or absent identity state returns `repository_error`; it does not fall
+back past an invalid active pointer. Private file paths, bytes, modes and Git
+refs remain unchanged. Default human output and legacy migration remain unchanged.
+
+Use the full lowercase actor fingerprint as `--actor ACTOR` on issue mutations
+to pin the actual signing identity. Omission retains the current active-identity
+default. A mismatch gives `actor_mismatch` without appending, even for a replay;
+repair the caller binding deliberately. The command captures one identity and
+uses that same signer through append: changing the active pointer afterward
+does not substitute another signer. Pinning is not a distributed issue lock.
 
 ## Mutual relationship facts
 

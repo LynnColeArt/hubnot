@@ -76,3 +76,28 @@ facts; they do not rewrite history. Older executables may reject `issue.revise`
 or new rich payload shapes. Rolling back a binary cannot remove already
 published signed facts, and this feature provides no implicit history rewrite
 or Beads migration. Preserve a compatible reader when retaining rich histories.
+
+## Automation identity and historical observations
+
+Public identity JSON explicitly selects actor, name and public key; it never
+serializes the private identity record. Issue mutations may pin an expected
+actor fingerprint. The comparison binds the captured identity actually used
+for append, before operation replay; a mismatch produces no issue append. The
+active identity file changing after capture cannot substitute another signer.
+This is signer attribution, not a cross-actor lock or new execution authority.
+
+Actor/key operation lookup runs the existing bounded verified reader and
+returns one original signed event's request semantics, never current issue
+state. Duplicate signed keys fail explicitly. Invalid/over-budget history
+cannot be interpreted as an absent operation. Detailed list pages use the
+same verified catalog and mode-bound cursors; conflicting state is null and
+full state is never truncated. Detailed rows also expose the immutable opening
+event metadata (empty for legacy), so clients can compare original and current
+claims without separate history calls. No namespace interpretation is applied.
+Neither read creates an index, bypasses trust
+admission, or grants review, execution, assignment or merge authority.
+
+Machine identity discovery reads and validates existing active or legacy identity
+state without writing private keyring files or Git refs. It never performs the
+legacy migration retained by default human identity commands. Invalid private
+state yields a typed public error without exposing private fields or paths.

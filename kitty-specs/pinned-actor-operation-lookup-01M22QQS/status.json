@@ -1,0 +1,55 @@
+{
+  "event_count": 12,
+  "last_event_id": "01M22TP3618QEHA5CRZ7R0PCTS",
+  "materialized_at": "2026-09-09T10:16:14.785484+00:00",
+  "mission_number": "",
+  "mission_slug": "pinned-actor-operation-lookup-01M22QQS",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 1,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M22TP3618QEHA5CRZ7R0PCTS",
+      "last_transition_at": "2026-09-09T10:16:14.785484+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: source bfd9c5789573b205d80fd647b0059534cdcc3d76. Final full race passed 248.573s; focused race passed 13.674s; go vet ./..., external go build, diff-scoped gofmt and git diff --check passed. Public subprocess tests cover identity pins, original operation recovery, typed failures and immutable opening_metadata. Earlier compatibility gate failures were fixed and final suite passed. Logs: /tmp/hn-prerequisite-complete-race.log and /tmp/hn-prerequisite-opening-focused-race.log.",
+        "Independent review of bfd9c578: R1 public machine identity discovery migrates legacy private keyring state; public reproduction fails. Focused Automation race passes 3.445s; no other blocker. Preserve human compatibility and add read-only machine discovery regression.",
+        "R1 corrected in source 2356a295f77808363e60030895e53013d857b833: JSON identity discovery validates existing active or legacy records without migration; default human migration preserved. Permanent public regression compares private paths/bytes/modes and all refs for normal, legacy, invalid and absent identity. Test-first red 1.164s; focused race 16.923s; full race 279.117s; vet/external build/gofmt/git diff --check all passed. Logs /tmp/hn-prerequisite-cycle1-red.log /tmp/hn-prerequisite-cycle1-focused-race.log /tmp/hn-prerequisite-cycle1-full-race.log. Ready for independent re-review, not self-approved.",
+        "Independent cycle2 approval of fixed source2356a295: R1 resolved by nonmutating machine identity discovery; normal/legacy/invalid/absent private-state invariants and human migration compatibility pass. Original public reproduction and all Automation tests pass race5.620s, full implementer race279.117s/vet/build/format pass, owned source equality verified. Checklist all8 PASS; no remaining findings. Evidence work/hn-prerequisite-review/cycle2-review.md and cycle2-focused-race.log."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/pinned-actor-operation-lookup-01M22QQS/tasks/WP01-reliable-public-automation-observations/review-cycle-2.md",
+        "reference": "review-cycle://pinned-actor-operation-lookup-01M22QQS/WP01-reliable-public-automation-observations/review-cycle-2.md",
+        "reviewer": "codex-independent-automation-review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 2938782,
+      "shell_pid_created_at": "1788890913.28",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done"
+      }
+    }
+  }
+}

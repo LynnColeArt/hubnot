@@ -1,0 +1,33 @@
+{
+  "accept_commit": "b8f8c1bc0c4680dd30c16f4c8220923c9090d6a8",
+  "acceptance_history": [
+    {
+      "accept_commit": "b8f8c1bc0c4680dd30c16f4c8220923c9090d6a8",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-09-09T10:15:54.679746+00:00",
+      "accepted_by": "codex-host-author",
+      "accepted_from_commit": "6dd1056619c43afdf06bf73304166c501277a453"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-09-09T10:15:54.679746+00:00",
+  "accepted_by": "codex-host-author",
+  "accepted_from_commit": "6dd1056619c43afdf06bf73304166c501277a453",
+  "baseline_merge_commit": "068c7cdb020b01717ec10e02580700387da5dbec",
+  "created_at": "2026-09-09T09:24:44.614308+00:00",
+  "flattened": false,
+  "friendly_name": "Pinned Actor and Operation Lookup",
+  "mission_id": "01M22QQSE5KYP72ZPH75W437R9",
+  "mission_number": null,
+  "mission_slug": "pinned-actor-operation-lookup-01M22QQS",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Automation must discover its public signing identity, pin that identity on each issue mutation, and recover an original signed operation after a lost response without relying on a separate adapter database. Preserve existing CLI defaults and repository authority.",
+  "purpose_tldr": "Make public automation retries attributable to one signer and recoverable from verified history.",
+  "slug": "pinned-actor-operation-lookup-01M22QQS",
+  "status_phase": "1",
+  "target_branch": "feat/pinned-actor-operation-lookup",
+  "topology": "lanes",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-09T09:32:53.671062+00:00"
+}

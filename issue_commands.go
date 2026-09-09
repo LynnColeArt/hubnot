@@ -47,12 +47,12 @@ type issueEnvelope struct {
 	NextCursor string             `json:"next_cursor,omitempty"`
 }
 type issueOptions struct {
-	command, id, input, body, operation, snapshot, cursor, kind string
-	expected                                                    []string
-	limit                                                       int
-	json, partial                                               bool
-	state                                                       *IssueState
-	title                                                       string
+	command, id, input, body, operation, snapshot, cursor, kind, actor string
+	expected                                                           []string
+	limit                                                              int
+	json, partial, details                                             bool
+	state                                                              *IssueState
+	title                                                              string
 }
 type issueExpected []string
 
@@ -67,10 +67,15 @@ const issueHelp = `Usage:
   hn issue resolve ISSUE --expect REV --expect REV ... --input FILE|- [--operation KEY] [--json]
   hn issue resolve ISSUE --partial --snapshot TOKEN --expect REV ... --input FILE|- [--operation KEY] [--json]
   hn issue comment ISSUE [--body TEXT] [--operation KEY] [--json] [TEXT]
-  hn issue list [--limit N] [--cursor TOKEN] [--json]
+  hn issue operation --actor ACTOR --operation KEY [--json]
+  hn issue list [--details] [--limit N] [--cursor TOKEN] [--json]
   hn issue show|heads|graph ISSUE [--limit N] [--cursor TOKEN] [--json]
   hn issue history ISSUE [--kind all|revisions|comments] [--limit N] [--cursor TOKEN] [--json]
 
+All issue mutations accept optional --actor ACTOR to pin the signing identity.
+Operation lookup requires an explicit full actor fingerprint and operation key.
+List --details returns complete current state and immutable opening metadata.
+Conflict state is null; detail mode is bound to its continuation cursors.
 Mutation ISSUE and REV identifiers must be full sha256:<64-hex> IDs.
 Read commands accept unique prefixes. Flags follow ISSUE, and precede free text.
 Input is a full issue state: title, body, status, criteria, labels, assignees,
@@ -179,7 +184,7 @@ func parseIssueOptions(args []string) (issueOptions, error) {
 	switch o.command {
 	case "help", "--help", "-h":
 		o.command = "help"
-	case "open", "list":
+	case "open", "list", "operation":
 	case "revise", "resolve", "close", "reopen", "comment", "show", "heads", "history", "graph":
 		if len(args) == 0 || strings.HasPrefix(args[0], "-") {
 			commandError = "issue ID required before flags"
@@ -194,6 +199,9 @@ func parseIssueOptions(args []string) (issueOptions, error) {
 	flags.SetOutput(io.Discard)
 	flags.BoolVar(&o.json, "json", false, "JSON output")
 	var expected issueExpected
+	if issueIsMutation(o.command) || o.command == "operation" {
+		flags.StringVar(&o.actor, "actor", "", "expected public signing actor")
+	}
 	if issueIsMutation(o.command) {
 		flags.StringVar(&o.operation, "operation", "", "actor-scoped operation key")
 		switch o.command {
@@ -212,7 +220,12 @@ func parseIssueOptions(args []string) (issueOptions, error) {
 				flags.StringVar(&o.snapshot, "snapshot", "", "observed snapshot")
 			}
 		}
+	} else if o.command == "operation" {
+		flags.StringVar(&o.operation, "operation", "", "actor-scoped operation key")
 	} else if o.command != "help" {
+		if o.command == "list" {
+			flags.BoolVar(&o.details, "details", false, "complete issue states")
+		}
 		flags.IntVar(&o.limit, "limit", 50, "page size")
 		flags.StringVar(&o.cursor, "cursor", "", "continuation")
 		if o.command == "history" {
@@ -251,6 +264,12 @@ func parseIssueOptions(args []string) (issueOptions, error) {
 	provided := map[string]bool{}
 	flags.Visit(func(f *flag.Flag) { provided[f.Name] = true })
 	o.expected = append([]string{}, expected...)
+	if provided["actor"] && !validActorFingerprint(o.actor) {
+		return invalid("actor must be a full lowercase public fingerprint")
+	}
+	if o.command == "operation" && (!provided["actor"] || !provided["operation"]) {
+		return invalid("operation lookup requires --actor and --operation")
+	}
 	if o.id != "" && issueIsMutation(o.command) {
 		if err := requireFullEventID(o.id); err != nil {
 			return o, issueFailure("invalid_input", err)
@@ -540,6 +559,9 @@ func executeIssueMutation(o issueOptions) (any, error) {
 	if err != nil {
 		return nil, issueFailure("repository_error", err)
 	}
+	if err := checkIssueActor(o, identity); err != nil {
+		return nil, err
+	}
 	captured, err := nextEvent(identity, issueEventKind(o.command))
 	if err != nil {
 		return nil, issueFailure("repository_error", err)
@@ -553,7 +575,17 @@ func executeIssueMutation(o issueOptions) (any, error) {
 
 // applyIssueMutation keeps the actor sequence captured before the verified read.
 // Keeping this seam explicit also allows deterministic race-boundary tests.
+func checkIssueActor(o issueOptions, identity *Identity) error {
+	if o.actor != "" && o.actor != identity.Actor {
+		return issueFailure("actor_mismatch", errors.New("active signing actor differs from the expected actor; repair the binding"))
+	}
+	return nil
+}
+
 func applyIssueMutation(o issueOptions, identity *Identity, captured Event, events []StoredEvent, snapshot string) (*issueMutationResult, error) {
+	if err := checkIssueActor(o, identity); err != nil {
+		return nil, err
+	}
 	cat, err := BuildIssueCatalog(events)
 	if err != nil {
 		return nil, issueFailure("invalid_history", err)
@@ -752,8 +784,60 @@ type issueGraphItem struct {
 	IssueID   string     `json:"issue_id,omitempty"`
 }
 
+type issueOperationResult struct {
+	IssueID   string      `json:"issue_id"`
+	EventID   string      `json:"event_id"`
+	Actor     string      `json:"actor"`
+	Operation string      `json:"operation"`
+	Intent    string      `json:"intent"`
+	Kind      string      `json:"kind"`
+	Timestamp string      `json:"timestamp"`
+	Parents   []string    `json:"parents"`
+	State     *IssueState `json:"state,omitempty"`
+	Body      *string     `json:"body,omitempty"`
+	Request   string      `json:"request"`
+}
+
+type issueDetail struct {
+	OpeningMetadata map[string]string `json:"opening_metadata"`
+	ID              string            `json:"id"`
+	Creator         string            `json:"creator"`
+	State           *IssueState       `json:"state"`
+	Conflict        bool              `json:"conflict"`
+	HeadCount       int               `json:"head_count"`
+}
+
+func observeIssueOperation(events []StoredEvent, actor, operation string) (*issueOperationResult, error) {
+	var match *StoredEvent
+	for i := range events {
+		e := &events[i]
+		if e.Event.Actor != actor || e.Event.Operation != operation {
+			continue
+		}
+		if match != nil && match.ID != e.ID {
+			return nil, issueFailure("operation_conflict", errors.New("actor operation key has multiple signed records; inspect history"))
+		}
+		match = e
+	}
+	if match == nil {
+		return nil, issueFailure("not_found", errors.New("actor operation was not found in verified history"))
+	}
+	e := match.Event
+	result := &issueOperationResult{IssueID: issueRootID(*match), EventID: match.ID, Actor: e.Actor,
+		Operation: e.Operation, Intent: e.Intent, Kind: e.Kind, Timestamp: e.Timestamp,
+		Parents: append([]string{}, e.Parents...), State: e.Issue, Request: e.Request}
+	if e.Kind == "issue.comment" {
+		result.Body = &e.Body
+	}
+	return result, nil
+}
+
 func issueQueryFingerprint(o issueOptions) string {
-	encoded, _ := json.Marshal([]string{o.command, o.id, o.kind, strconv.Itoa(o.limit)})
+	query := []string{o.command, o.id, o.kind, strconv.Itoa(o.limit)}
+	if o.details {
+		query = append(query, "details")
+	}
+	encoded, _ := json.Marshal(query)
 	return eventID(encoded)
 }
 func issuePageBounds(o issueOptions, snapshot string, total int) (int, int, string, error) {
@@ -828,6 +912,10 @@ func executeIssueQuery(o issueOptions) (any, string, string, error) {
 	if err != nil {
 		return nil, "", "", issueFailure("repository_error", err)
 	}
+	if o.command == "operation" {
+		result, err := observeIssueOperation(events, o.actor, o.operation)
+		return result, snapshot, "", err
+	}
 	cat, err := BuildIssueCatalog(events)
 	if err != nil {
 		return nil, "", "", issueFailure("invalid_history", err)
@@ -846,6 +934,25 @@ func executeIssueQuery(o issueOptions) (any, string, string, error) {
 	cycleCount := 0
 	switch o.command {
 	case "list":
+		if o.details {
+			rows := []issueDetail{}
+			for _, id := range cat.IDs {
+				v := cat.Issues[id]
+				opening := map[string]string{}
+				for _, historical := range v.History {
+					if historical.ID == v.ID && historical.Event.Issue != nil {
+						for key, value := range historical.Event.Issue.Metadata {
+							opening[key] = value
+						}
+						break
+					}
+				}
+				rows = append(rows, issueDetail{OpeningMetadata: opening, ID: v.ID, Creator: v.Creator,
+					State: v.State, Conflict: v.Conflict, HeadCount: len(v.Heads)})
+			}
+			items, total = rows, len(rows)
+			break
+		}
 		rows := []issueSummary{}
 		for _, id := range cat.IDs {
 			v := cat.Issues[id]
@@ -919,6 +1026,8 @@ func executeIssueQuery(o issueOptions) (any, string, string, error) {
 		return nil, "", "", err
 	}
 	switch rows := items.(type) {
+	case []issueDetail:
+		items = rows[start:end]
 	case []issueSummary:
 		items = rows[start:end]
 	case []IssueHead:
@@ -945,6 +1054,14 @@ func executeIssueQuery(o issueOptions) (any, string, string, error) {
 
 func renderIssueHuman(o issueOptions, data any, cursor string) {
 	switch value := data.(type) {
+	case *issueOperationResult:
+		fmt.Printf("Operation %s by %s\nIssue: %s\nEvent: %s (%s, %s)\n", oneLine(value.Operation), value.Actor, value.IssueID, value.EventID, value.Intent, value.Timestamp)
+		if value.State != nil {
+			renderIssueState(*value.State)
+		}
+		if value.Body != nil {
+			fmt.Println(safeText(*value.Body))
+		}
 	case *issueMutationResult:
 		verb := "Updated"
 		if o.command == "open" {
@@ -981,6 +1098,15 @@ func renderIssueHuman(o issueOptions, data any, cursor string) {
 		fmt.Printf("%d revisions, %d comments. Inspect with hn issue history %s\n", value.RevisionCount, value.CommentCount, value.ID)
 	case issuePage:
 		switch rows := value.Items.(type) {
+		case []issueDetail:
+			for _, row := range rows {
+				fmt.Printf("Issue %s (opened by %s)\n", row.ID, row.Creator)
+				if row.State != nil {
+					renderIssueState(*row.State)
+				} else {
+					fmt.Printf("Conflict: %d heads\n", row.HeadCount)
+				}
+			}
 		case []issueSummary:
 			if len(rows) == 0 {
 				fmt.Println("No issues.")

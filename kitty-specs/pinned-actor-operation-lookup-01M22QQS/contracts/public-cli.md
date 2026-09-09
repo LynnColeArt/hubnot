@@ -1,0 +1,10 @@
+# Public CLI Additions
+
+- `hn identity show --json`: `{schema:"hn.identity/1",ok:true,data:{actor,name,public_key}}`. Machine errors same ok/error structure and stable invalid_input/repository_error; human default unchanged.
+- Every `hn issue open|revise|resolve|close|reopen|comment` accepts optional `--actor ACTOR`. Full actor required when present, including rejecting empty. Omitted selects current active identity as before. Mismatch is `actor_mismatch` in hn.issue/1, nonzero exit and zero append, including replay attempts.
+- `hn issue operation --actor ACTOR --operation KEY --json`: both flags required, no positional input or pagination. `hn.issue/1` envelope with snapshot and original data `{issue_id,event_id,actor,operation,intent,kind,timestamp,parents,state?,body?,request}`. Exact actor/key match; absent not_found; duplicate operation_conflict. Unverified/over-budget reads retain typed failures. No selection by timestamp. Body always present for comment even if empty; state present for opening/revisions. No result truncation.
+- `hn issue list --details --limit N --cursor TOKEN --json`: usual envelope and list counters, details rows `{id,creator,state,opening_metadata,conflict,head_count}`. State complete or null. Same50/200 limits. Cursor binds details; summary/detail token reuse invalid_input. Human details rendering shows useful state without changing default summaries.
+- Bool spellings and output selection match existing issue contract; malformed/repeated flags remain deterministic; scalar flag repeats use final value. Full actor shape is existing actor fingerprint validation.
+- No private identity fields, new authority, event schema, automatic conflict resolution, global lock or execution claim.
+
+opening_metadata is the complete immutable issue.open state metadata, or {} for legacy openings, and remains present when current state is null.

@@ -120,6 +120,44 @@ lock. Another actor can write after your snapshot. Both valid edits remain
 visible after synchronization. A mutation's `head_count` and `conflict` describe
 the catalog observed by that command plus its own fact, not global consensus.
 
+## Public signer pinning and operation recovery
+
+Discover public signer information with `hn identity show --json` (read-only; no identity initialization or migration), whose schema
+is `hn.identity/1` and data is `{actor,name,public_key}`. The issue command schema
+remains independently versioned as `hn.issue/1`.
+
+Every issue mutation accepts optional `--actor ACTOR`, where ACTOR is the full
+64-character lowercase public fingerprint. Omitting it preserves the existing
+active-identity behavior. A malformed or empty supplied actor is `invalid_input`.
+A valid pin differing from the identity actually used by the command is
+`actor_mismatch`, with zero append, including retries. Repair the caller's
+identity binding before retrying; do not silently select another actor.
+
+```sh
+hn issue open --actor ACTOR --operation create-example --json "An issue"
+hn issue operation --actor ACTOR --operation create-example --json
+```
+
+`issue operation` requires explicit actor and operation flags and accepts no
+issue ID or pagination flags. It reads verified history once. A unique result
+has the usual envelope plus `snapshot` and data:
+`{issue_id,event_id,actor,operation,intent,kind,timestamp,parents,state?,body?,request}`.
+The state or comment body, parents, request digest and timestamp come from the
+original signed event, even after later revisions or conflicts. Comment results
+include `body`; rich opening/revision results include full `state`. No original
+content is summarized or truncated. Existing commands still reject blank comments.
+
+No match is `not_found`; multiple distinct signed events for one actor/key are
+`operation_conflict`. Another actor's equal key is independent. Invalid history
+or reader budget failures remain errors and never imply absence. Lookup does
+not require that the queried actor be the active local identity.
+
+For response-loss recovery, validate echoed actor/key and original semantics,
+then reuse the recorded parents and complete requested state for an identical
+mutation retry. Reconstructing a request from the latest state can produce
+`operation_conflict`. Lookup proves an observed accepted fact, not global
+consensus, distributed CAS, or permission to execute work. There is no new store.
+
 ## Conflict inspection and resolution
 
 An unresolved issue has several maximal revision heads. `show` returns
@@ -194,6 +232,7 @@ Success is `{schema,ok:true,data,snapshot?,next_cursor?}`. Failure is
 | Command | `data` |
 |---|---|
 | Mutation | `issue_id,event_id,replayed,conflict,head_count` |
+| Operation lookup | `issue_id,event_id,actor,operation,intent,kind,timestamp,parents,state?,body?,request` |
 | List | `items,total,conflict,cycle_count`; items have `id,title,status,creator,conflict,head_count` |
 | Show | `id,creator,state,conflict,head_ids,head_count,revision_count,comment_count` |
 | Heads/history/graph | `items,total,issue_id,conflict,head_count?,cycle_count` |
@@ -206,6 +245,18 @@ comments/revisions. History accepts `--kind all|revisions|comments`: revisions
 are topological with event-ID tie breaks; comments follow by timestamp/ID.
 `all` emits revisions before comments, not one mixed chronological stream.
 List and heads use stable full-ID ordering. There are currently no list filters.
+
+`issue list --details` returns full current states in the same bounded page
+envelope. Rows are `{id,creator,state,opening_metadata,conflict,head_count}`; `state` is complete
+or explicitly null under conflict. `opening_metadata` is the complete original
+signed opening state metadata, or `{}` for legacy openings without rich state.
+It stays unchanged after later metadata edits and remains present under current
+conflicts; Hubnot does not interpret consumer metadata namespaces. Use `heads` for head IDs and attributed
+conflicting states. The default summary shape is unchanged. Detail mode is
+bound into continuation tokens: switching between summary and detail pages
+returns `invalid_input`. Full states are never silently truncated; use a smaller
+page limit when large states increase response size. One reader pass supplies
+each page, without an additional history read per issue.
 
 ```sh
 hn issue list --limit 50 --json
@@ -225,7 +276,8 @@ changed-limit, malformed and out-of-range tokens return `invalid_input`.
 | Code | Meaning / next action |
 |---|---|
 | `invalid_input` | Correct request, ID, field, option or cursor; no local append. |
-| `not_found` | Required issue is absent from accepted history. |
+| `not_found` | Required issue or actor/key operation is absent from accepted history. |
+| `actor_mismatch` | Actual signer differs from the requested pin; repair the identity binding before retrying. |
 | `ambiguous_id` | Use a longer unique read prefix or full ID. |
 | `stale_revision` | Re-read heads/snapshot and decide on a new request. |
 | `issue_conflict` | Inspect all heads and resolve explicitly. |
