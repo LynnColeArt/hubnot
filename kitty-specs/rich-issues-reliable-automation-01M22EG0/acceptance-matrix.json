@@ -128,10 +128,10 @@
       "criterion_id": "NFR-001",
       "description": "Bounded inputs and outputs: New JSON request inputs are at most 256 KiB; page size defaults to 50 and caps at 200; field, graph and traversal bounds are documented and enforced before append.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:50.776045+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
