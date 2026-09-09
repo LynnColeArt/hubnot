@@ -29,7 +29,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Coordinator verified clean worktree and source commit 74126762 changes only eight owned Go files; T001-T004 complete; race/vet/build/gofmt/diff passed. Force addresses only inherited runtime planning metadata from lane bootstrap/coordination merges falsely flagged by lane hygiene; independent review remains required.",
-        "Independent review by codex-review-wp01 of source 74126762e4f6f1d2df1219a9a142e23adedc308e: reject rich signed-payload raw byte-cap bypass; focused race passes; tracked source unchanged."
+        "Independent review by codex-review-wp01 of source 74126762e4f6f1d2df1219a9a142e23adedc308e: reject rich signed-payload raw byte-cap bypass; focused race passes; tracked source unchanged.",
+        "Cycle2 correction cb52d48e enforces raw rich payload cap with passing full race186.087s, focused/regression/vet/build/diff. Generated runtime-added executable removed in2f79abb0; T001-T004done. Coordinator override only inherited runtime planning/review metadata hygiene falsepositive; independent re-review required."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
