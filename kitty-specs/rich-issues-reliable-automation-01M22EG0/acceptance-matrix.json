@@ -2,7 +2,7 @@
   "mission_slug": "rich-issues-reliable-automation-01M22EG0",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -178,10 +178,10 @@
       "criterion_id": "C-003",
       "description": "Compatibility and scope: Preserve hn namespaces, existing signed bytes, proposal/CI/identity/replication/memory behavior and unrelated historical work. No web UI or new sync protocol.",
       "proof_type": "code_review",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:46:07.420866+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     }
   ],
