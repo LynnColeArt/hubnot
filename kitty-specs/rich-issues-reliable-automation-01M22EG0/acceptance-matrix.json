@@ -78,10 +78,10 @@
       "criterion_id": "FR-008",
       "description": "Machine interface: Document JSON input and versioned JSON output for issue mutation/query, full IDs, typed stable errors and nonzero failure exit. Machine mode emits no human prose on stdout.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:30.452694+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
