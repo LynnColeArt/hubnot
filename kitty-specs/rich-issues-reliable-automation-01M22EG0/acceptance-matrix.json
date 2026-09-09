@@ -38,10 +38,10 @@
       "criterion_id": "FR-004",
       "description": "Conflict preservation: Compute all current heads; unresolved issues expose each head and no authoritative single state; do not use timestamps to resolve concurrent edits.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/rich-issues-reliable-automation-01M22EG0/acceptance-evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex-mission-acceptance",
+      "verified_at": "2026-09-09T08:45:16.703473+00:00",
       "notes": "Await integrated candidate and independent review evidence; baseline tests do not establish this requirement."
     },
     {
