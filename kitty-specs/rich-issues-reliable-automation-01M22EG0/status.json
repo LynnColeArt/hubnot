@@ -122,13 +122,16 @@
     "WP04": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "for_review",
       "last_event_id": "01M22N3TEKS6YC2Z76DVS3T105",
       "last_transition_at": "2026-09-09T08:38:53.139922+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Source9f799ba5 changes exactly seven owned acceptance/example/docs paths; cleanlane/no generated binaries or keys; T013-T016 done. Full race246.221s, vet/external-all-package-build/gofmt/diff pass; actual consumer, replicas,201heads and1000issue equality/process evidence recorded. Only ID-guidance docs wording changed during gate, executable source and testedJSON unchanged and guidance separately verified. Force solely resolves inherited runtime planning metadata hygiene falsepositive; independent review required."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 1123425,
