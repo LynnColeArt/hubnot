@@ -20,31 +20,33 @@
     "WP01": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "planned",
       "last_event_id": "01M22SVZ646ERF2TMY70P8E3GM",
       "last_transition_at": "2026-09-09T10:01:58.724977+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: source bfd9c5789573b205d80fd647b0059534cdcc3d76. Final full race passed 248.573s; focused race passed 13.674s; go vet ./..., external go build, diff-scoped gofmt and git diff --check passed. Public subprocess tests cover identity pins, original operation recovery, typed failures and immutable opening_metadata. Earlier compatibility gate failures were fixed and final suite passed. Logs: /tmp/hn-prerequisite-complete-race.log and /tmp/hn-prerequisite-opening-focused-race.log."
+        "Ready for independent review: source bfd9c5789573b205d80fd647b0059534cdcc3d76. Final full race passed 248.573s; focused race passed 13.674s; go vet ./..., external go build, diff-scoped gofmt and git diff --check passed. Public subprocess tests cover identity pins, original operation recovery, typed failures and immutable opening_metadata. Earlier compatibility gate failures were fixed and final suite passed. Logs: /tmp/hn-prerequisite-complete-race.log and /tmp/hn-prerequisite-opening-focused-race.log.",
+        "Independent review of bfd9c578: R1 public machine identity discovery migrates legacy private keyring state; public reproduction fails. Focused Automation race passes 3.445s; no other blocker. Preserve human compatibility and add read-only machine discovery regression."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/pinned-actor-operation-lookup-01M22QQS/tasks/WP01-reliable-public-automation-observations/review-cycle-1.md",
         "reference": "review-cycle://pinned-actor-operation-lookup-01M22QQS/WP01-reliable-public-automation-observations/review-cycle-1.md",
         "reviewer": "codex-independent-automation-review",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 2938782,
-      "shell_pid_created_at": "1788890913.28",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done"
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned",
+        "T004": "planned"
       }
     }
   }
