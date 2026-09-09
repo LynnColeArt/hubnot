@@ -293,6 +293,9 @@ func collectEvents() ([]StoredEvent, error) {
 }
 
 func validateEventRelationships(events []StoredEvent) error {
+	if _, err := validateIssueRelationships(events); err != nil {
+		return err
+	}
 	byID := make(map[string]StoredEvent, len(events))
 	for _, stored := range events {
 		byID[stored.ID] = stored

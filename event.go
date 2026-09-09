@@ -43,6 +43,12 @@ type Event struct {
 	Runner       string   `json:"runner,omitempty"`
 	Policy       string   `json:"policy,omitempty"`
 	Evidence     []string `json:"evidence,omitempty"`
+
+	Issue     *IssueState `json:"issue,omitempty"`
+	Parents   []string    `json:"parents,omitempty"`
+	Operation string      `json:"operation,omitempty"`
+	Request   string      `json:"request,omitempty"`
+	Intent    string      `json:"intent,omitempty"`
 }
 
 type StoredEvent struct {
@@ -96,6 +102,11 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return Event{}, "", fmt.Errorf("invalid event JSON: %w", err)
 	}
+	// Bound the authenticated bytes, not a re-encoding which can omit unknown
+	// fields and whitespace. Legacy signed issues retain their original bounds.
+	if len(payload) > maxIssuePayload && isIssueKind(event.Kind) && (event.Kind == "issue.revise" || hasIssueFields(event)) {
+		return Event{}, "", fmt.Errorf("issue payload exceeds %d bytes", maxIssuePayload)
+	}
 	if event.Protocol != protocolVersion {
 		return Event{}, "", fmt.Errorf("unsupported protocol %q", event.Protocol)
 	}
@@ -123,6 +134,9 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 }
 
 func validateEventContent(event Event) error {
+	if err := validateIssueEvent(event); err != nil {
+		return err
+	}
 	if event.Previous != "" && !validEventID(event.Previous) {
 		return fmt.Errorf("invalid previous event ID")
 	}
@@ -131,6 +145,8 @@ func validateEventContent(event Event) error {
 		if strings.TrimSpace(event.Title) == "" {
 			return fmt.Errorf("issue title cannot be empty")
 		}
+	case "issue.revise":
+		// The complete issue-specific shape is validated above.
 	case "issue.comment":
 		if !validEventID(event.Subject) || strings.TrimSpace(event.Body) == "" {
 			return fmt.Errorf("issue comment requires a subject and body")

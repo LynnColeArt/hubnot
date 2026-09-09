@@ -399,12 +399,17 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 		}
 	}
 	classifyReplicationMemoryDependencies(selection, quarantineDir, mainGitDir, acceptedEvents, outcomes)
+	// Exclude dependents of quarantined suppliers before checking exact closure.
+	propagateReplicationFailures(outcomes)
 	projectionEvents := selectedProjectionEvents(acceptedEvents, outcomes)
 	if err := validateActorChains(projectionEvents); err != nil {
 		return result, replicationPhaseError(selection.Remote, "actor-chain projection")
 	}
 	if err := validateExactEventReferenceClosure(projectionEvents); err != nil {
 		return result, replicationPhaseError(selection.Remote, "event-reference projection")
+	}
+	if _, err := validateIssueRelationships(projectionEvents); err != nil {
+		return result, replicationPhaseError(selection.Remote, "issue-revision projection")
 	}
 	if _, err := ProjectIdentityContinuity(projectionEvents); err != nil {
 		for _, outcome := range outcomes {
@@ -952,6 +957,15 @@ func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent
 		return nil, nil
 	}
 	e := event.Event
+	if isIssueKind(e.Kind) {
+		for _, reference := range issueReferences(e) {
+			if _, exists := byID[reference]; !exists {
+				return &replicationDependency{EventID: event.ID, EventKind: e.Kind, Missing: reference,
+					Recovery: "select the full actor history supplying " + reference, Key: eventOwners[reference], Reason: "issue dependency is absent"}, nil
+			}
+		}
+		return nil, validateIssueReferences(event, byID)
+	}
 	if isProposalKind(e.Kind) {
 		head, exists := codeHeads[event.ID]
 		if !exists {
@@ -1026,11 +1040,12 @@ func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent
 
 func replicationEventReferences(event Event) []string {
 	references := append([]string(nil), event.Evidence...)
+	references = append(references, issueReferences(event)...)
 	switch event.Kind {
 	case "issue.comment", "proposal.revise", "review.submit", "run.request", "run.result", "proposal.decision", "proposal.merged", "identity.accept":
 		references = append(references, event.Subject)
 	}
-	return references
+	return sortedUniqueStrings(references...)
 }
 
 func loadReplicationPolicyAt(gitDir, acceptedGitDir, commit string) (PolicyDocument, string, error) {
