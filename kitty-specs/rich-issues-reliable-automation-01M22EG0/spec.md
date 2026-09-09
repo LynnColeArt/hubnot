@@ -28,7 +28,7 @@ Two collaborators edit the same issue before syncing. Both changes remain visibl
 **Independent test**: Two actors in temporary clones produce sibling revisions, sync, inspect both heads, then resolve them into one successor. Repeat with timestamp ordering reversed.
 **Acceptance scenarios**:
 1. A conflict has no silently selected current state; every head is inspectable with attribution.
-2. Resolution consumes the complete observed head set; incomplete or stale local resolution fails.
+2. Ordinary resolution consumes the complete observed head set; incomplete or stale local resolution fails. Explicit staged resolution can consume selected current heads under a matching observed snapshot, preserving the others.
 3. Invalid revision parents, missing issues and forged signed content cannot become valid work state.
 
 ### User Story 4 — Inspect relationships efficiently (P2)
@@ -47,11 +47,11 @@ Missing or ambiguous IDs; self-links; missing relation targets; invalid namespac
 | FR-002 | Optional rich state | Support title, description, criteria with stable local IDs, labels, assignees, open/closed status and namespaced string metadata; round-trip without loss. | High | Open |
 | FR-003 | Immutable revisions | Edits append signed full-state revisions referencing the stable issue and predecessor revisions; retain inspectable history and author attribution. | High | Open |
 | FR-004 | Conflict preservation | Compute all current heads; unresolved issues expose each head and no authoritative single state; do not use timestamps to resolve concurrent edits. | High | Open |
-| FR-005 | Guarded edit and resolution | Local edits require the exact observed head; explicit resolution requires the complete observed head set. Stale requests append nothing. Distributed races remain explicit conflicts. | High | Open |
+| FR-005 | Guarded edit and resolution | Local edits require the exact observed head; ordinary resolution requires the complete observed head set. Stale requests append nothing. Distributed races remain explicit conflicts. | High | Open |
 | FR-006 | Typed relationships | Support blocks, related and parent links using full issue IDs; reject self/missing targets on local writes; expose incoming/outgoing links and diagnose blocks/parent cycles, including after sync. | High | Open |
 | FR-007 | Reliable operation replay | Optional actor-scoped operation IDs on create, revise/resolve and comment return the original event for identical requests; divergent key reuse fails without a write. | High | Open |
 | FR-008 | Machine interface | Document JSON input and versioned JSON output for issue mutation/query, full IDs, typed stable errors and nonzero failure exit. Machine mode emits no human prose on stdout. | High | Open |
-| FR-009 | Bounded navigation | List, history and graph offer deterministic bounded pages and snapshot-aware continuation; reject stale continuations rather than silently skip work. | High | Open |
+| FR-009 | Bounded navigation | List, heads, history and graph offer deterministic bounded pages and snapshot-aware continuation; reject stale continuations rather than silently skip work. | High | Open |
 | FR-010 | Verified read model | Derive the issue catalog, revision heads, comments and graph from verified signed histories; rebuild produces identical results and never depends on an authoritative cache. | High | Open |
 | FR-011 | General consumer example | Ship a runnable public-CLI consumer example/test demonstrating read/update/replay/stale rejection with no Go Kitty runtime dependency. | Medium | Open |
 | FR-012 | Discoverable behavior | Update CLI help and current protocol/user documentation together with tested ordinary-user and conflict-recovery examples. | High | Open |
