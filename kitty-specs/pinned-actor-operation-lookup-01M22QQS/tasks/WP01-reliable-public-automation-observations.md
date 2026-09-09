@@ -12,6 +12,9 @@ requirement_refs:
 planning_base_branch: feat/pinned-actor-operation-lookup
 merge_target_branch: feat/pinned-actor-operation-lookup
 branch_strategy: Planning artifacts for this mission were generated on feat/pinned-actor-operation-lookup. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/pinned-actor-operation-lookup unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-pinned-actor-operation-lookup-01M22QQS
+base_commit: 9ba9795819810d13f639633267d4cbaedc803a53
+created_at: '2026-09-09T09:32:53.728862+00:00'
 subtasks:
 - T001
 - T002
