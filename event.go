@@ -102,6 +102,11 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return Event{}, "", fmt.Errorf("invalid event JSON: %w", err)
 	}
+	// Bound the authenticated bytes, not a re-encoding which can omit unknown
+	// fields and whitespace. Legacy signed issues retain their original bounds.
+	if len(payload) > maxIssuePayload && isIssueKind(event.Kind) && (event.Kind == "issue.revise" || hasIssueFields(event)) {
+		return Event{}, "", fmt.Errorf("issue payload exceeds %d bytes", maxIssuePayload)
+	}
 	if event.Protocol != protocolVersion {
 		return Event{}, "", fmt.Errorf("unsupported protocol %q", event.Protocol)
 	}

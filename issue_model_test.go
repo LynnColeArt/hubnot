@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -197,5 +198,70 @@ func TestRichIssueCollectionAndAggregateLimits(t *testing.T) {
 	state.Relations = append(state.Relations, IssueRelation{"blocks", eventID([]byte("extra"))})
 	if _, err := CanonicalIssueState(state); err == nil {
 		t.Fatal("129 relations accepted")
+	}
+}
+
+func TestRichIssueRawSignedPayloadLimit(t *testing.T) {
+	identity := testIdentity(t, "Raw payload")
+	key, err := identity.privateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	opening := newEvent(identity, "issue.open", 1, "")
+	opening.Title = "rich"
+	opening.Intent = "open"
+	opening.Issue = &IssueState{Title: opening.Title, Status: "open"}
+	comment := newEvent(identity, "issue.comment", 1, "")
+	comment.Subject = eventID([]byte("root"))
+	comment.Body = "comment"
+	comment.Intent = "comment"
+	revision := newEvent(identity, "issue.revise", 1, "")
+	revision.Subject = comment.Subject
+	revision.Parents = []string{comment.Subject}
+	revision.Issue = opening.Issue
+	revision.Intent = "revise"
+	for _, event := range []Event{opening, comment, revision} {
+		t.Run(event.Kind, func(t *testing.T) {
+			canonical, _, err := encodeAndSign(event, identity)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, style := range []string{"unknown-field", "whitespace"} {
+				t.Run(style, func(t *testing.T) {
+					for _, size := range []int{maxIssuePayload, maxIssuePayload + 1} {
+						payload := append([]byte{}, canonical...)
+						if style == "unknown-field" {
+							payload = append(payload[:len(payload)-1], []byte(`,"unknown":""}`)...)
+							padding := bytes.Repeat([]byte("x"), size-len(payload))
+							payload = append(append(payload[:len(payload)-2], padding...), '"', '}')
+						} else {
+							payload = append(payload, bytes.Repeat([]byte(" "), size-len(payload))...)
+						}
+						if len(payload) != size {
+							t.Fatalf("fixture bytes = %d, want %d", len(payload), size)
+						}
+						signature := ed25519.Sign(key, payload)
+						_, _, err := verifyEvent(payload, signature)
+						if (err != nil) != (size > maxIssuePayload) {
+							t.Fatalf("verify signed %s payload of %d bytes: %v", style, size, err)
+						}
+					}
+				})
+			}
+		})
+	}
+	legacy := newEvent(identity, "issue.open", 1, "")
+	legacy.Title = "legacy"
+	legacy.Body = strings.Repeat("x", maxIssuePayload+1)
+	payload, signature, err := encodeAndSign(legacy, identity)
+	if err != nil {
+		t.Fatal(err)
+	}
+	verified, id, err := verifyEvent(payload, signature)
+	if err != nil {
+		t.Fatalf("legacy large signed event rejected: %v", err)
+	}
+	if verified.Body != legacy.Body || id != eventID(payload) {
+		t.Fatal("legacy signed content changed")
 	}
 }
