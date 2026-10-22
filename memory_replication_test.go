@@ -191,7 +191,7 @@ func TestMemoryReplicationPublishUsesExactLocalRefs(t *testing.T) {
 	identity := deterministicMemoryIdentity()
 	stored := appendReplicableMemory(t, identity, defaultMemoryStream(identity.Actor), nil, "publish")
 	ref, _ := memoryRef(identity.Actor, stored.Envelope.Stream)
-	if err := publishLocalFacts("origin"); err != nil {
+	if err := publishLocalFacts("origin", nil); err != nil {
 		t.Fatal(err)
 	}
 	advertised := mustGitText(t, "ls-remote", "--refs", remote, ref)

@@ -52,6 +52,22 @@ explicit saved selection remains authoritative until replaced.
 
 ## Exact fetch and quarantine lifecycle
 
+### Actor publication after import
+
+After importing, `hn sync` publishes local actor refs with ordinary non-forced
+Git pushes. A local copy can be older than the same actor's history on the
+remote, particularly in older clones. If the exact actor history verified and
+promoted during this sync already contains that local copy, publication skips
+the redundant push. The local ref is retained and the accepted remote ref
+records the newer verified history. Other local actors can still publish their
+new events normally.
+
+This check uses only successful actor selections from the current import, not
+cached accepted refs or unvalidated advertisements. Missing remote actors are
+still published; newer local histories still fast-forward. Divergent histories
+still fail publication rather than being force-pushed or silently ignored.
+Proposal and memory publication behavior is unchanged.
+
 For each selected actor, Hubnot requests exactly:
 
 ```text

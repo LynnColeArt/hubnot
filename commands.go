@@ -98,7 +98,13 @@ func cmdSync(args []string) error {
 		}
 	}
 
-	publicationErr := publishLocalFacts(remote)
+	verifiedActorHeads := make(map[string]string)
+	for _, outcome := range result.Outcomes {
+		if outcome.Kind == replicationActor && outcome.Status == replicationPromoted {
+			verifiedActorHeads[outcome.request.SourceRef] = outcome.request.OID
+		}
+	}
+	publicationErr := publishLocalFacts(remote, verifiedActorHeads)
 	events, collectErr := collectEvents()
 	if collectErr == nil {
 		fmt.Printf("Synchronized %d verified events with %s; promoted %d selections\n", len(events), remote, result.Promoted)
@@ -121,12 +127,15 @@ func cmdSync(args []string) error {
 	return nil
 }
 
-func publishLocalFacts(remote string) error {
+func publishLocalFacts(remote string, verifiedActorHeads map[string]string) error {
 	actorRefs, err := gitText("for-each-ref", "--format=%(refname)", "refs/hn/actors")
 	if err != nil {
 		return replicationPhaseError(remote, "actor publication inspection")
 	}
 	for _, ref := range strings.Fields(actorRefs) {
+		if actorPublicationCovered(ref, verifiedActorHeads[ref]) {
+			continue
+		}
 		if _, err := gitOutput("push", remote, ref+":"+ref); err != nil {
 			return replicationPhaseError(remote, "actor publication")
 		}
@@ -153,6 +162,21 @@ func publishLocalFacts(remote string) error {
 		}
 	}
 	return nil
+}
+
+// Only histories verified and promoted in this sync can cover a stale local
+// copy. Cached accepted refs and unvalidated advertisements are not evidence
+// that publication is unnecessary. Divergence still reaches the ordinary push.
+func actorPublicationCovered(ref, verifiedHead string) bool {
+	if verifiedHead == "" {
+		return false
+	}
+	localHead, exists, err := refValue(ref)
+	if err != nil || !exists {
+		return false
+	}
+	_, err = gitOutput("--no-replace-objects", "merge-base", "--is-ancestor", localHead, verifiedHead)
+	return err == nil
 }
 
 func cmdLog(args []string) error {
