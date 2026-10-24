@@ -345,3 +345,7 @@ promise global erasure from every replica.
 - [CI and runner threat model](docs/ci-v0.md)
 - [Hosted Git compatibility](docs/host-compatibility.md)
 - [Operational self-hosting proof](docs/self-hosting-alpha.md)
+
+## License
+
+Hubnot is licensed under the [MIT License](LICENSE).
