@@ -577,15 +577,35 @@ func removeReplicationPendingAnchor(gitDir, transaction string) error {
 	return syncPrivateDirectory(directory)
 }
 
-func replicationPendingError(gitDir, objectID string) error {
+// A reader is scoped to one immutable-ref read, never cached across commands
+// or transactions. Re-reading the complete journal for every event turns normal
+// history traversal into journal-size times event-count work.
+type replicationAcceptanceReader struct {
+	denied  map[string]bool
+	pending map[string]replicationTransactionRecord
+}
+
+func newReplicationAcceptanceReader(gitDir string) (replicationAcceptanceReader, error) {
 	denied, pending, err := loadReplicationAcceptanceState(gitDir)
 	if err != nil {
-		return &ReplicationAcceptancePendingError{Cause: err}
+		return replicationAcceptanceReader{}, &ReplicationAcceptancePendingError{Cause: err}
 	}
-	if !denied[objectID] {
+	return replicationAcceptanceReader{denied: denied, pending: pending}, nil
+}
+
+func replicationPendingError(gitDir, objectID string) error {
+	reader, err := newReplicationAcceptanceReader(gitDir)
+	if err != nil {
+		return err
+	}
+	return reader.check(objectID)
+}
+
+func (reader replicationAcceptanceReader) check(objectID string) error {
+	if !reader.denied[objectID] {
 		return nil
 	}
-	for _, record := range pending {
+	for _, record := range reader.pending {
 		if record.PendingObjects == nil {
 			continue
 		}
@@ -1052,6 +1072,15 @@ func collectAcceptedEventsForReplication(selection ReplicationSelection) ([]Stor
 	if err != nil {
 		return nil, err
 	}
+	gitDir, err := requireGitRepository()
+	if err != nil {
+		return nil, err
+	}
+	acceptance, err := newReplicationAcceptanceReader(gitDir)
+	if err != nil {
+		return nil, err
+	}
+	verified := make(map[string]*StoredEvent)
 	byID := make(map[string]StoredEvent)
 	fields := strings.Fields(refText)
 	for index := 0; index+1 < len(fields); index += 2 {
@@ -1060,15 +1089,7 @@ func collectAcceptedEventsForReplication(selection ReplicationSelection) ([]Stor
 		if actor == "" {
 			continue
 		}
-		gitDir, err := requireGitRepository()
-		if err != nil {
-			return nil, err
-		}
-		denied, err := replicationObjectIsUnaccepted(gitDir, head)
-		if err != nil {
-			return nil, err
-		}
-		if denied && selectedActors[actor] {
+		if acceptance.denied[head] && selectedActors[actor] {
 			continue
 		}
 		chainText, err := gitText("rev-list", "--reverse", head)
@@ -1082,11 +1103,7 @@ func collectAcceptedEventsForReplication(selection ReplicationSelection) ([]Stor
 		selectedPending := false
 		if selectedActors[actor] {
 			for _, commit := range commits {
-				denied, err := replicationObjectIsUnaccepted(gitDir, commit)
-				if err != nil {
-					return nil, err
-				}
-				if denied {
+				if acceptance.denied[commit] {
 					selectedPending = true
 					break
 				}
@@ -1097,9 +1114,16 @@ func collectAcceptedEventsForReplication(selection ReplicationSelection) ([]Stor
 		}
 		chain := make([]StoredEvent, 0, len(commits))
 		for _, commit := range commits {
-			stored, err := loadStoredEvent(commit)
-			if err != nil {
+			if err := acceptance.check(commit); err != nil {
 				return nil, err
+			}
+			stored := verified[commit]
+			if stored == nil {
+				stored, err = loadStoredEventAt("", commit)
+				if err != nil {
+					return nil, err
+				}
+				verified[commit] = stored
 			}
 			chain = append(chain, *stored)
 		}

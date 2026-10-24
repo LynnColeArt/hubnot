@@ -269,9 +269,20 @@ func collectEvents() ([]StoredEvent, error) {
 		}
 	}
 
+	gitDir, err := requireGitRepository()
+	if err != nil {
+		return nil, err
+	}
+	acceptance, err := newReplicationAcceptanceReader(gitDir)
+	if err != nil {
+		return nil, err
+	}
 	events := make([]StoredEvent, 0, len(commits))
 	for commit := range commits {
-		stored, err := loadStoredEvent(commit)
+		if err := acceptance.check(commit); err != nil {
+			return nil, err
+		}
+		stored, err := loadStoredEventAt("", commit)
 		if err != nil {
 			return nil, err
 		}
