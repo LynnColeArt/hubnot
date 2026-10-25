@@ -1117,6 +1117,9 @@ func validateReplicationDecisionAt(gitDir, acceptedGitDir string, decision, prop
 	if decision.Event.Verdict == "reject" {
 		return nil
 	}
+	if err := validateProtectedDecisionAt(gitDir, acceptedGitDir, policy, decision, proposal, byID); err != nil {
+		return err
+	}
 	approvers := make(map[string]bool)
 	pipelineRunners := make(map[string]map[string]bool)
 	pipelineDefinitions := make(map[string]string)

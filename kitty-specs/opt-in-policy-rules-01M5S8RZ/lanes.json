@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "mission_slug": "opt-in-policy-rules-01M5S8RZ",
+  "mission_id": "01M5S8RZS9K85MQ915K59HED71",
+  "mission_branch": "kitty/mission-opt-in-policy-rules-01M5S8RZ",
+  "target_branch": "feat/opt-in-policy-rules",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "governance.go",
+        "policy.go",
+        "policy_commands.go",
+        "protected_checks.go",
+        "protected_checks_test.go",
+        "quarantine.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "automerge.go",
+        "automerge_test.go",
+        "main.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "README.md",
+        "docs/governance-v0.md",
+        "docs/protocol-v0.md",
+        "docs/threat-model.md",
+        "policy_rules_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-10-25T10:20:50.728065+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "9af24f9aacbe5391fbcdfcde69d00b8a9f9cbfa2"
+}

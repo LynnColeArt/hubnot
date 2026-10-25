@@ -218,6 +218,7 @@ func comparePolicies(base, proposed policySource) []policyChange {
 		}
 		changes = append(changes, actorChanges("pipeline "+name+" trusted runners", baseRunners, proposedRunners)...)
 	}
+	changes = append(changes, compareOptionalPolicies(base.Policy, proposed.Policy)...)
 	return changes
 }
 
@@ -226,6 +227,7 @@ func printPolicySource(source policySource) {
 	fmt.Printf("Policy digest: %s\n", source.Digest)
 	printActors(fmt.Sprintf("Maintainers (required accepts %d):", source.Policy.Proposals.RequiredAccepts), source.Policy.Maintainers)
 	printActors(fmt.Sprintf("Trusted reviewers (required approvals %d; author approval %t):", source.Policy.Proposals.RequiredApprovals, source.Policy.Proposals.AllowAuthorApproval), source.Policy.Proposals.TrustedReviewers)
+	printOptionalPolicy(source.Policy)
 	fmt.Println("Pipelines:")
 	if len(source.Policy.Pipelines) == 0 {
 		fmt.Println("  (none)")
@@ -366,4 +368,80 @@ func optionalScalarChange(base int, inBase bool, proposed int, inProposed bool) 
 	default:
 		return scalarChange(base, proposed)
 	}
+}
+
+func printOptionalPolicy(policy PolicyDocument) {
+	if p := policy.ProtectedChecks; p != nil {
+		fmt.Printf("Protected checks: enabled (required designated approvals %d; author excluded)\n", p.RequiredApprovals)
+		printActors("Designated reviewers:", p.TrustedReviewers)
+		fmt.Println("Protected paths (including policy and required pipelines):")
+		for _, path := range protectedPaths(policy) {
+			fmt.Printf("  %q\n", path)
+		}
+	} else {
+		fmt.Println("Protected checks: disabled")
+	}
+	if p := policy.Automerge; p != nil {
+		fmt.Println("Automerge: enabled (explicit execution only)")
+		rules := append([]AutomergeRule(nil), p.Rules...)
+		sort.Slice(rules, func(i, j int) bool { return rules[i].Name < rules[j].Name })
+		for _, r := range rules {
+			fmt.Printf("Rule %s; target branch %s:\n", r.Name, r.TargetBranch)
+			printActors("  Executing maintainers:", r.Actors)
+			printActors("  Proposal authors:", r.Authors)
+			fmt.Println("  Allowed literal paths:")
+			for _, path := range sortedStrings(r.Paths) {
+				fmt.Printf("    %q\n", path)
+			}
+		}
+	} else {
+		fmt.Println("Automerge: disabled")
+	}
+}
+
+func compareOptionalPolicies(base, proposed PolicyDocument) []policyChange {
+	changes := []policyChange{{Label: "protected checks enabled", Value: boolChange(base.ProtectedChecks != nil, proposed.ProtectedChecks != nil)}, {Label: "automerge enabled", Value: boolChange(base.Automerge != nil, proposed.Automerge != nil)}}
+	var a, b ProtectedChecksPolicy
+	if base.ProtectedChecks != nil {
+		a = *base.ProtectedChecks
+	}
+	if proposed.ProtectedChecks != nil {
+		b = *proposed.ProtectedChecks
+	}
+	threshold := "unchanged (disabled)"
+	if base.ProtectedChecks != nil || proposed.ProtectedChecks != nil {
+		threshold = optionalScalarChange(a.RequiredApprovals, base.ProtectedChecks != nil, b.RequiredApprovals, proposed.ProtectedChecks != nil)
+	}
+	changes = append(changes, policyChange{Label: "protected checks required approvals", Value: threshold})
+	changes = append(changes, actorChanges("protected checks designated reviewers", a.TrustedReviewers, b.TrustedReviewers)...)
+	added, removed := sortedDifference(sortedStrings(a.Paths), sortedStrings(b.Paths))
+	changes = append(changes, policyChange{Label: "protected paths added", Value: joinedOrNone(added)}, policyChange{Label: "protected paths removed", Value: joinedOrNone(removed)})
+	oldRules, newRules := map[string]AutomergeRule{}, map[string]AutomergeRule{}
+	if base.Automerge != nil {
+		for _, r := range base.Automerge.Rules {
+			oldRules[r.Name] = r
+		}
+	}
+	if proposed.Automerge != nil {
+		for _, r := range proposed.Automerge.Rules {
+			newRules[r.Name] = r
+		}
+	}
+	names := []string{}
+	for name := range oldRules {
+		names = append(names, name)
+	}
+	for name := range newRules {
+		names = append(names, name)
+	}
+	for _, name := range sortedUniqueStrings(names...) {
+		old, was := oldRules[name]
+		next, is := newRules[name]
+		changes = append(changes, policyChange{Label: "automerge rule " + name + " enabled", Value: boolChange(was, is)}, policyChange{Label: "automerge rule " + name + " target branch", Value: fmt.Sprintf("%q -> %q", old.TargetBranch, next.TargetBranch)})
+		changes = append(changes, actorChanges("automerge rule "+name+" actors", old.Actors, next.Actors)...)
+		changes = append(changes, actorChanges("automerge rule "+name+" authors", old.Authors, next.Authors)...)
+		added, removed := sortedDifference(sortedStrings(old.Paths), sortedStrings(next.Paths))
+		changes = append(changes, policyChange{Label: "automerge rule " + name + " paths added", Value: joinedOrNone(added)}, policyChange{Label: "automerge rule " + name + " paths removed", Value: joinedOrNone(removed)})
+	}
+	return changes
 }

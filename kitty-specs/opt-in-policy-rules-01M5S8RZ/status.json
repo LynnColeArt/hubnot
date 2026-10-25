@@ -1,0 +1,118 @@
+{
+  "event_count": 27,
+  "last_event_id": "01M5SHC1FX3FCG65TBDE2E1XYK",
+  "materialized_at": "2026-10-25T12:43:05.597438+00:00",
+  "mission_number": "",
+  "mission_slug": "opt-in-policy-rules-01M5S8RZ",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 3,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M5SHBVP5MY4NBJCPX559NP0H",
+      "last_transition_at": "2026-10-25T12:42:59.654684+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: ae33a60a; final go test -race ./... passed hubnot394.083s; focused protected authority/real replica tests passed; vet/build/gofmt/diff checks pass; optional sections remain disabled.",
+        "Independent reviewer-renata review of ae33a60ad9d74727ceee3207c575b84deec7af87: PASS. Closed old-base target opt-in bypass and shared quarantine decision-evidence admission; exact nonauthor designated approval, withdrawal, literal deletion/rename/mode/ancestor protection and bounded Git output verified. Fresh focused race TestProtected PASS 3.503s; diff check PASS; supplied full race394.083s and vet/build evidence inspected. Anti-pattern checklist: dead code PASS (live production callsites), synthetic fixture PASS (native Git and actual evaluation/admission), silent empty return PASS (explicit disabled/empty semantics), FR coverage PASS FR001-005, frozen surface PASS (six owned source/test files only), locked decision PASS (no implicit activation or authority), shared-file ownership PASS (governance merge seam handed off to WP02), production fragility PASS (explicit fail-closed errors). No product edits, no blockers. Automerge exact expected-ref advancement remains WP02 scope; publication and semantic lint analysis remain excluded.",
+        "Post-approval independent adversarial review confirmed same-policy old-base protected lint reversion; exact native reproduction requires prospective protected-target-path revision gate. See review-feedback-2.md.",
+        "Cycle 2 correction ready: ef14e4c5 closes same-policy protected target baseline reversion; permanent red/green plus allowed unprotected/exact-base regressions; final full race438.761s, focused race7.365s and vet/build/diff pass; no API change or default enablement.",
+        "Independent reviewer-renata re-review PASS at ef14e4c56ab5d1666039631a029586115b9b2d35. Review-feedback-2 blocker closed: exact scratch adversarial B<T<H same-policy lint-reversion reproduction now refuses with protected-target-baseline revision message before target/worktree changes. Fresh race overlay plus permanent protected baseline three-case and legacy gates PASS2.711s; unprotected target movement and exact-base eligible native merges succeed. Diff limited to shared gate and behavior tests; contained historical repair precedes gate unchanged. Prior protected evidence/quarantine/default review stands; supplied final full race438.761s and vet/build/diff evidence accepted for unchanged source. Anti-pattern checklist all PASS: live callsite, genuine production/native fixture tests, explicit fail-closed errors, FR001-005 coverage, frozen history untouched, locked optionality/authority respected, two owned files only with API unchanged, no production fragility. No product edits, no unresolved blocker. WP02 may integrate this approved dependency."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks/WP01-protected-check-policy-and-enforcement/review-cycle-3.md",
+        "reference": "review-cycle://opt-in-policy-rules-01M5S8RZ/WP01-protected-check-policy-and-enforcement/review-cycle-3.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5SHBYPRFHCWJ275NYFGE3FZ",
+      "last_transition_at": "2026-10-25T12:43:02.744823+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Native automerge implemented; integrated approved protected-baseline fix; full race 428.626s, focused race 29.293s, vet/default+nogithub build/diff passed at 38a7200374b3da96dab5ea2763fca588b77af4f8",
+        "Independent reviewer-renata WP02 review PASS at integrated38a7200374b3da96dab5ea2763fca588b77af4f8 (reapproved WP01 ef14e4c included; W2 three files byte-identical to45657dc5). Fresh go test -race -count=1 -run ^TestAutomerge . PASS18.356s; diff checks PASS. Reviewed keyless read-only default, explicit named rule and signer/author/full-ref/literal-path constraints, current readiness and acceptance with failure/change-request veto, protected/policy manual-only boundaries, target=signedbase actual expected-old prepared ref transaction, safe checkout and ignored collisions, held lease and bounded per-ack waits, uncertain ref outcome observation and nondestructive rollback, no implicit pipeline/publication, full nonpromisor/unfinished-operation preflight and manual missing-event repair. Supplied integrated full race428.626s and static/default+nogithub build evidence accepted for frozen source. Anti-pattern checklist all PASS: live main dispatch and complete helper callsites; tests invoke real Git/native/evidence paths; empty returns represent explicit states; FR006-009 coverage; frozen history untouched; locked optionality and no fabricated reviews/decisions respected; three owned files only with common merge seam coordination; fail-closed errors preserve inspected state. No product edits or blockers."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks/WP02-explicit-native-rule-based-automerge/review-cycle-1.md",
+        "reference": "review-cycle://opt-in-policy-rules-01M5S8RZ/WP02-explicit-native-rule-based-automerge/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T006": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5SHC1FX3FCG65TBDE2E1XYK",
+      "last_transition_at": "2026-10-25T12:43:05.597438+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready at250224e8: public default/nogithub race matrix71.770s; final full race516.200s, full nogithub248.517s, vet/build/diff and5JSONexamples pass; product bytes unchanged. Parent-approved one-line docs/github-interoperability.md clarification No transfer command keeps living docs accurate; no other WP owns it. No gate bypass or fabricated evidence.",
+        "Independent reviewer-renata WP03 review PASS at250224e8812141e948f950ac23619662aebe0068. Runtime Go/module/.hn tree verified identical to approved integrated38a72003. Fresh public CLI race spot go test -race -count=1 -run ^TestPolicyRulesPublicAcceptance$/^default$/^(protection-only|both-opt-ins)$ . PASS27.789s; diff check PASS. Full456-line black-box test and all doc changes reviewed: independent absent/null opt-outs, real passing no-op lint plus ordinary approval refusal until exact guardian evidence, bare transport, policy self-disable, stale target policy and same-policy protected reversion, keyless whole-repository snapshots, explicit merge without fabricated facts or remote publication, full-repository/unfinished-operation preflight and manual repair. Docs match actual limits, commit-tree and native pipeline check authority, unknown-null old-client fail-closed behavior and raw Git boundary. Supplied frozen full race516.200s/full nogithub248.517s/public dual-build race71.770s/static/build/5JSON evidence inspected; no broad repeat needed. Checklist: dead code N/A no runtime additions; synthetic fixture PASS actual public binary/Git paths; silent empty return N/A no runtime change; FR010/NFR/constraint coverage PASS with prior bounds tests; frozen surface PASS; locked optionality/authority decisions PASS; ownership PASS incl parent-approved one-line docs/github-interoperability.md scope clarification with no other WP owner; production fragility N/A runtime unchanged. No product edits or blockers."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks/WP03-public-acceptance-and-optionality-documentation/review-cycle-1.md",
+        "reference": "review-cycle://opt-in-policy-rules-01M5S8RZ/WP03-public-acceptance-and-optionality-documentation/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
+    }
+  }
+}

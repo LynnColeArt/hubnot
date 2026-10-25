@@ -171,5 +171,61 @@ associations and need native/provenance/content checks; ordinary marker-like
 prose is inert data. Remote-only edits are preserved or refused for manual
 recovery, never silently made a new overwrite baseline. External APIs do not
 supply atomic compare-and-swap for every field, so a single publisher and
-explicit reconciliation remain necessary. There is no global exactly-once,
-background-sync, automerge or new protected-check authority claim.
+explicit reconciliation remain necessary. There is no global exactly-once or background-sync guarantee. Provider transfer
+never grants native review, protected-check, execution or automerge authority.
+
+## Optional protected checks and native automerge
+
+Both capabilities require explicit native repository policy. Initialization,
+upgrades, imported metadata and actor names do not enable either or infer roles.
+Omission or `null` disables a section in supporting clients; older clients reject
+unknown present policy fields. GitHub accounts, `gh`, hosted checks and provider
+permissions confer no native authority.
+
+Protection gates literal file changes rather than detecting every semantic
+weakening of lint. It automatically covers policy and required pipeline
+definitions while enabled; maintainers must also select relevant configuration,
+scripts and indirect inputs. Deletion, rename, mode/type and ancestor replacement
+cannot escape a selected path. Inline suppressions or changes to unselected
+source files still need ordinary code review.
+
+Designated approvals require exact candidate IDs and distinct listed actors
+other than its author. They are signed claims, not proof of honest review.
+Current reviews govern readiness; immutable acceptances carry exact evidence
+IDs and retain their original meaning. Local and quarantine admission both
+validate designated evidence. A proposal cannot disable protection to authorize
+itself. A new manual merge also requires revision after current-target policy
+or protected-baseline changes, including identical-policy target tightening
+hidden by restoring old base bytes in the candidate.
+
+Automerge permits only explicitly listed executing maintainers, authors, branch
+and allowed paths after existing current approval, CI and acceptance requirements
+hold. It does not create those facts. Named rules are data, not executable
+expressions or instructions. Policy amendments and protected changes remain
+manual even after review. An eligible preview does not grant its reader signing
+authority or carry authorization into a later execution.
+
+Preview loads no signing key and changes no collaboration refs, target, index or
+private identity state. It refuses shallow and active partial/promisor clones
+before object evaluation, preventing lazy fetch or recovery writes in this
+command. The supported automatic path uses complete local Git data. Neither
+preview nor execution fetches, starts a daemon, executes a workflow, synchronizes
+or publishes; normal native operation does not need a provider or network
+service. Existing explicit local CI host execution remains separately unsafe
+and separately opted in per invocation.
+
+Execution rechecks current candidate/evidence and target, binds its actual
+signer, and advances the target using the signed-base expected-old ref lease.
+It refuses an unfinished Git operation, dirty index/worktree or an ignored-file
+collision. Automatic `commit-tree` creation does not invoke `pre-merge-commit`
+or `pre-commit` hooks: required checks must be configured as native pipelines.
+Operator-controlled Git `reference-transaction` hooks remain outside proposal
+instructions and retain Git behavior.
+
+The ref lease is local; it does not make actor evidence and branch updates an
+atomic distributed transaction or constrain arbitrary host/Git writers. Direct
+Git writes can bypass Hubnot's path, so these rules are not host access control.
+Interrupted checkout/ref/event steps can leave inspectable work or a missing
+merge fact. Recovery observes the actual target, preserves local changes and
+uses the existing manual missing-event repair where applicable; uncertain
+outcomes do not authorize a second merge or destructive reset.

@@ -1,0 +1,133 @@
+schema_version: 1
+mission_id: 01M5S8RZS9K85MQ915K59HED71
+mission_slug: opt-in-policy-rules-01M5S8RZ
+mission_number:
+friendly_name: Opt-in protected checks and automerge
+mission_type: software-dev
+target_branch: feat/opt-in-policy-rules
+created_at: '2026-10-25T12:43:11.723684+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-25T12:43:11.723684+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP01 completed without rejection cycles
+  evidence_refs:
+  - e-008
+- id: h-002
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-008
+- id: h-003
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-008
+not_helpful:
+- id: n-003
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-011
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-002
+  category: implementation
+  summary: WP01 needed 2 implementation cycles
+  evidence_refs:
+  - e-010
+  details: WP WP01 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-001
+  category: process
+  summary: WP01 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-009
+  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+gaps:
+- id: g-001
+  category: doc
+  summary: research.md absent
+  evidence_refs:
+  - e-002
+  details: spec.md is present but research.md is missing. Research artifacts help future maintainers understand design
+    decisions.
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks/WP01-protected-check-policy-and-enforcement.md
+- id: e-006
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks/WP02-explicit-native-rule-based-automerge.md
+- id: e-007
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks/WP03-public-acceptance-and-optionality-documentation.md
+- id: e-008
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/status.events.jsonl
+- id: e-009
+  kind: event_range
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/status.events.jsonl
+  range: 01M5SC8EG6F1GWMW29B1BWWMDN
+- id: e-010
+  kind: event_range
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/status.events.jsonl
+  range: implementation_cycles
+- id: e-011
+  kind: file
+  path: kitty-specs/opt-in-policy-rules-01M5S8RZ/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

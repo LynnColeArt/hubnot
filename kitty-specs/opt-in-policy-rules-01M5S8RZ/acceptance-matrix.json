@@ -1,0 +1,109 @@
+{
+  "mission_slug": "opt-in-policy-rules-01M5S8RZ",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Both capabilities are absent/disabled by default and independent. Initialization, upgrade and imports never enable them.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:20:16.734723+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Enabled protection requires designated, distinct, non-author approvals for changes to configured literal files/directories, the policy itself and required pipeline definitions.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:33.656408+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Additions, deletions, renames, content and mode/type changes are evaluated from signed base/head trees; candidate rules cannot weaken their own gate.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:36.598288+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Protection affects status, acceptance validation, manual merge and fetched evidence admission. Exact candidate review evidence remains signed and independently verifiable. Current withdrawal blocks subsequent enabled merge. A target with protection enabled refuses manual merges governed by a different base-policy digest, including newly opened candidates against pre-opt-in ancestors; historical signed evidence remains valid.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:39.447127+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Policy inspection and amendment comparison expose activation, protected paths, thresholds, reviewers and automerge rule changes.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:42.382258+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Explicitly configured automerge rules select a target branch, allowed executing actors, proposal authors and literal allowed paths. Only matching rules may run.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:45.262926+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Automerge defaults to read-only preview; execution is explicit and requires existing current approvals, passes and maintainer acceptances. It never manufactures reviews or decisions.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:48.324933+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Execution rechecks exact candidate, current evidence, policy, actor, branch and expected target. Stale targets, current change requests/rejections, protected changes, policy amendments and unmatched changes refuse automatic merge.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:51.454395+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Successful automation records the existing native merge event and retains manual merge repair behavior; neither preview nor execution implicitly syncs, pushes, starts a daemon or executes pipelines.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:55.019573+00:00",
+      "notes": "Verification pending implementation and independent review."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Public CLI tests prove opt-out compatibility, both independent opt-ins, rejection paths and successful local native automerge without GitHub support.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:58.245991+00:00",
+      "notes": "Verification pending implementation and independent review."
+    }
+  ],
+  "negative_invariants": []
+}

@@ -14,11 +14,13 @@ const (
 )
 
 type PolicyDocument struct {
-	Version     string                    `json:"version"`
-	Maintainers []string                  `json:"maintainers"`
-	Proposals   ProposalPolicy            `json:"proposals"`
-	Pipelines   map[string]PipelinePolicy `json:"pipelines"`
-	Memory      *MemoryPolicy             `json:"memory,omitempty"`
+	Version         string                    `json:"version"`
+	Maintainers     []string                  `json:"maintainers"`
+	Proposals       ProposalPolicy            `json:"proposals"`
+	Pipelines       map[string]PipelinePolicy `json:"pipelines"`
+	Memory          *MemoryPolicy             `json:"memory,omitempty"`
+	ProtectedChecks *ProtectedChecksPolicy    `json:"protectedChecks,omitempty"`
+	Automerge       *AutomergePolicy          `json:"automerge,omitempty"`
 }
 
 // MemoryPolicy is deliberately optional so repositories with an hn.policy/0
@@ -66,6 +68,7 @@ type ProposalEvaluation struct {
 	Rejected        bool
 	Merged          bool
 	Evidence        []string
+	ProtectedChecks *ProtectedChecksEvaluation
 }
 
 func loadPolicy(commit string) (PolicyDocument, []byte, string, error) {
@@ -156,7 +159,7 @@ func validatePolicy(policy PolicyDocument) error {
 			return err
 		}
 	}
-	return nil
+	return validateOptionalPolicy(policy)
 }
 
 func validateActorList(name string, actors []string) error {
@@ -370,7 +373,22 @@ func evaluateProposal(proposal *StoredEvent, events []StoredEvent) (*ProposalEva
 			evaluation.Evidence = append(evaluation.Evidence, result.ID)
 		}
 	}
-	sort.Strings(evaluation.Evidence)
+	if policy.ProtectedChecks != nil {
+		changed, err := changedPathsAt("", proposal.Event.Base, proposal.Event.Head)
+		if err != nil {
+			return nil, fmt.Errorf("protected checks: %w", err)
+		}
+		evaluation.ProtectedChecks = evaluateProtectedChecks(policy, *proposal, events, changed)
+		if len(evaluation.ProtectedChecks.ChangedPaths) > 0 {
+			if len(evaluation.ProtectedChecks.Approvals) < evaluation.ProtectedChecks.Required {
+				evaluation.Ready = false
+			}
+			for _, review := range evaluation.ProtectedChecks.Approvals {
+				evaluation.Evidence = append(evaluation.Evidence, review.ID)
+			}
+		}
+	}
+	evaluation.Evidence = sortedUniqueStrings(evaluation.Evidence...)
 	evaluation.Rejected = len(evaluation.RejectDecisions) > 0
 	evaluation.Accepted = !evaluation.Rejected && len(evaluation.AcceptDecisions) >= policy.Proposals.RequiredAccepts
 	evaluation.Merged = len(evaluation.MergeEvents) > 0
@@ -387,6 +405,9 @@ func validateDecisionEvent(decision, proposal StoredEvent, byID map[string]Store
 	}
 	if decision.Event.Verdict == "reject" {
 		return nil
+	}
+	if err := validateProtectedDecisionAt("", "", policy, decision, proposal, byID); err != nil {
+		return err
 	}
 	approvers := make(map[string]bool)
 	pipelineRunners := make(map[string]map[string]bool)
@@ -530,6 +551,12 @@ func cmdProposalStatus(query string) error {
 			fmt.Printf("; %d trusted failure(s)", len(pipeline.Failed))
 		}
 		fmt.Println()
+	}
+	if protection := evaluation.ProtectedChecks; protection != nil {
+		fmt.Printf("Protected checks: enabled; %d changed path(s); %d/%d designated approvals\n", len(protection.ChangedPaths), len(protection.Approvals), protection.Required)
+		for _, p := range protection.ChangedPaths {
+			fmt.Printf("  %q\n", p)
+		}
 	}
 	fmt.Printf("Decision: %d/%d accepts; %d rejects\n", len(evaluation.AcceptDecisions), evaluation.Policy.Proposals.RequiredAccepts, len(evaluation.RejectDecisions))
 	fmt.Printf("Status:   %s\n", proposalStatus(evaluation))
