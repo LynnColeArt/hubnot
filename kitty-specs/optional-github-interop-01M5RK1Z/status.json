@@ -1,7 +1,7 @@
 {
-  "event_count": 37,
-  "last_event_id": "01M5RQNR8J4GCHYEB7J4CJTEDA",
-  "materialized_at": "2026-10-25T05:14:00.849875+00:00",
+  "event_count": 39,
+  "last_event_id": "01M5RQP5TF6C37YKZZPJEJ3ZW8",
+  "materialized_at": "2026-10-25T05:14:14.735120+00:00",
   "mission_number": "",
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 2,
+    "in_progress": 3,
     "in_review": 0,
-    "planned": 7
+    "planned": 6
   },
   "work_packages": {
     "WP01": {
@@ -184,11 +184,14 @@
       "shell_pid_created_at": "1792905236.4"
     },
     "WP08": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M5RP0ZHX53FDYBPS21XX4EY7",
-      "last_transition_at": "2026-10-25T04:45:11.613177+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M5RQP5TF6C37YKZZPJEJ3ZW8",
+      "last_transition_at": "2026-10-25T05:14:14.735120+00:00",
+      "shell_pid": 3671245,
+      "shell_pid_created_at": "1792905236.4"
     },
     "WP09": {
       "actor": "finalize-tasks",
