@@ -18,6 +18,10 @@ const forgeCommentSchema = "hn.forge-comment/1"
 const forgeCommentPrefix = "\n\n<!-- hn:forge-comment:"
 const forgeExportIssuePrefix = "\n\n<!-- hn:forge-issue:"
 
+// Optional exporter integration verifies an exact reverse comment association
+// against the mapped issue and actual signed native comment before skipping it.
+var forgeSkipExportedComment func(forgeSource, string, string, []issueHistoryItem) (bool, error)
+
 type forgeSource struct {
 	Schema    string `json:"schema"`
 	Provider  string `json:"provider"`
@@ -378,8 +382,9 @@ func forgeApplyImport(ctx context.Context, scope string, p forgePreparedImport, 
 	}
 	state = canonical
 	known := map[string]bool{}
+	var nativeComments []issueHistoryItem
 	if found {
-		nativeComments, err := forgeNativeComments(id)
+		nativeComments, err = forgeNativeComments(id)
 		if err != nil {
 			return err
 		}
@@ -397,6 +402,23 @@ func forgeApplyImport(ctx context.Context, scope string, p forgePreparedImport, 
 			}
 			known[key] = true
 		}
+	}
+	if found && forgeSkipExportedComment != nil {
+		kept := make([]forgePreparedComment, 0, len(p.comments))
+		for _, comment := range p.comments {
+			_, raw, _, err := forgeParseComment(comment.body)
+			if err != nil {
+				return err
+			}
+			skip, err := forgeSkipExportedComment(p.source, id, raw, nativeComments)
+			if err != nil {
+				return err
+			}
+			if !skip {
+				kept = append(kept, comment)
+			}
+		}
+		p.comments = kept
 	}
 	var actor string
 	var identity *Identity
