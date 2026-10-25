@@ -145,7 +145,8 @@
       "last_transition_at": "2026-10-25T05:13:12.134369+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review at 8c2c187884f5055375af146d9fb40ddf4070cf13; exact full Go race passed 233.922s, vet/build/nogithub resource lifecycle/build/format/diff and independent race overlay pass"
+        "Ready for independent review at 8c2c187884f5055375af146d9fb40ddf4070cf13; exact full Go race passed 233.922s, vet/build/nogithub resource lifecycle/build/format/diff and independent race overlay pass",
+        "Independent review approves source 8c2c1878: nested missing-ancestor classification reproduced red/fixed green; strict union/raw bounds, exact crossrefs, actor-global replay, conflicts, pre-promotion closure and old signed bytes verified. Full exact-head Go race and other charter gates pass; source-bound report in independent-review-1.md."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
