@@ -63,3 +63,13 @@ Product tree with user docs:   6f2f47907158e796d53b8aa2fe33ca848371a2362672e7e0d
 ```
 
 Runtime Go/module is identical to the independently reviewed implementation at `38a7200374b3da96dab5ea2763fca588b77af4f8`. Consolidation must preserve these tested product fingerprints; its result and final mission audit will be recorded after the local feature merge.
+
+## Consolidation and final audit
+
+Canonical acceptance passed in local mode (`7b7b924e5920cc8bac7ea78ccf532b980f68606c`) after the required real contract reference was added. Canonical lane consolidation merged into `feat/opt-in-policy-rules`, marked all three independently approved packages done, and removed the three clean execution worktrees. Public main remained `faf975be30ef29d898eea1d113bed3c3f6f7fe58`; no main merge or implicit publication occurred.
+
+Root and independent recomputation after consolidation matched all three tested fingerprints exactly (109 Go/module files; 243 product/doc files). There was no new product code or user-documentation change to justify repeating the same full suites solely for changed Git history.
+
+The independent post-consolidation Go mission audit in `mission-review-report.md` is PASS with all ten FRs traced and zero unresolved product/security blocker. The generic framework helper is unavailable because its Python interpreter lacks pytest; that failure remains separately and losslessly archived in `mission-review-tool-report.raw.gz` with a SHA-256 manifest/readable companion. The archive decompresses byte-for-byte to the original captured tool blob. No scanner success, test waiver, fake fixture, global dependency installation or format-check exemption was substituted. Whole-PR `git diff --check main...HEAD` passes after representing the padded raw diagnostic losslessly.
+
+The runtime-authored retrospective was preserved. The audit explains its heuristic `force` label: a normal feedback-backed backward rejection revoked WP01 approval when the hidden target-baseline bug was found. Spec Kitty's shared wire bridge internally marks that rewind as force; this was not a forward approval override or a skipped gate. Subsequent correction, full tests and independent reapproval are all source-bound in the event history. Process lessons cover current protected target context, bounded writer ReaderFrom behavior, meaningful public negative controls and freezing before long release gates.
