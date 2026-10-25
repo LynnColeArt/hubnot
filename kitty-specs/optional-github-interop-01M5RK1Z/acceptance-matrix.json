@@ -188,10 +188,10 @@
       "criterion_id": "FR-019",
       "description": "Import/export workflow definitions with exact source bytes/digests, explicit branch and execution/environment mappings, conservative write recovery and honest runnable/native-versus-foreign status. Never execute an imported definition implicitly.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:49.030814+00:00",
       "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
     },
     {
