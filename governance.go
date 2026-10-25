@@ -113,7 +113,17 @@ func cmdDecide(args []string) error {
 	return nil
 }
 
-func cmdMerge(args []string) error {
+// proposalMergeGuard adds an optional policy gate and an expected-old advancement
+// implementation without duplicating native merge evidence or repair semantics.
+type proposalMergeGuard struct {
+	ExpectedActor string
+	Check         func(*StoredEvent, *ProposalEvaluation, string, string) error
+	Advance       func(*StoredEvent, *ProposalEvaluation, string, string, string) (string, error)
+}
+
+func cmdMerge(args []string) error { return mergeProposal(args, nil) }
+
+func mergeProposal(args []string, guard *proposalMergeGuard) error {
 	if len(args) != 1 {
 		return usageError("usage: hn merge PROPOSAL")
 	}
@@ -160,6 +170,9 @@ func cmdMerge(args []string) error {
 	if err != nil {
 		return err
 	}
+	if guard != nil && (guard.ExpectedActor == "" || identity.Actor != guard.ExpectedActor) {
+		return fmt.Errorf("selected signing identity changed or is not bound to merge authorization")
+	}
 	if !actorListed(identity.Actor, evaluation.Policy.Maintainers) {
 		return fmt.Errorf("identity %s is not a maintainer under proposal policy", shortID(identity.Actor))
 	}
@@ -190,6 +203,9 @@ func cmdMerge(args []string) error {
 			Operation: "proposal merge", Kind: shallowMergeAncestor, MissingID: missing,
 			ObjectType: "commit", OwnerKind: replicationProposal, OwnerID: proposal.ID,
 		}, fmt.Errorf("exact proposal containment requires unavailable parent %s", missing))
+	}
+	if contained && guard != nil {
+		return fmt.Errorf("proposal head is already in target; use 'hn merge %s' for manual merge-event repair", proposal.ID)
 	}
 	if contained {
 		currentEvents, err := collectEvents()
@@ -233,16 +249,85 @@ func cmdMerge(args []string) error {
 		fmt.Printf("Recorded missing merge event %s for proposal %s at %s with %d acceptance decision(s)\n", shortID(stored.ID), shortID(currentProposal.ID), shortOID(mergeCommit), len(stored.Event.Evidence))
 		return nil
 	}
-	message := fmt.Sprintf("Merge HN proposal %s: %s", shortID(proposal.ID), oneLine(evaluation.DisplayTitle))
-	if _, err := gitOutput("merge", "--no-ff", "-m", message, proposal.Event.Head); err != nil {
-		if _, abortErr := gitOutput("merge", "--abort"); abortErr != nil {
-			return fmt.Errorf("merge failed and automatic abort also failed: %v; abort error: %v", err, abortErr)
-		}
-		return fmt.Errorf("merge failed and was aborted for proposal %s; recover with 'hn proposal revise %s --base REV --head REV': %w", proposal.ID, proposal.ID, err)
+	// Prospective enforcement only: recording a missing historical merge event
+	// above is governed by its signed base, not a policy the merge itself amended.
+	if err := guardTargetProtectedPolicy(current, evaluation); err != nil {
+		return err
 	}
-	mergeCommit, err := resolveCommit("HEAD")
+	if evaluation.Policy.ProtectedChecks != nil || guard != nil {
+		currentEvents, err := collectEvents()
+		if err != nil {
+			return err
+		}
+		currentProposal, err := resolveFullEvent(currentEvents, proposal.ID)
+		if err != nil {
+			return err
+		}
+		if err := guardProposalEvaluationDependencies("proposal merge", currentProposal, currentEvents); err != nil {
+			return err
+		}
+		evaluation, err = evaluateProposal(currentProposal, currentEvents)
+		if err != nil {
+			return err
+		}
+		if err := requireLineageTerminalEligibility("merge", currentProposal.ID, evaluation.Lineage); err != nil {
+			return err
+		}
+		if evaluation.Merged || evaluation.Rejected || !evaluation.Accepted || !evaluation.Ready {
+			return fmt.Errorf("cannot merge: current approval, protected check, CI or acceptance evidence no longer satisfies proposal policy")
+		}
+		if err := requireProposalCode(currentProposal); err != nil {
+			return err
+		}
+		if !actorListed(identity.Actor, evaluation.Policy.Maintainers) {
+			return fmt.Errorf("identity %s is not a maintainer under proposal policy", identity.Actor)
+		}
+		proposal = currentProposal
+	}
+	finalBranch, err := gitText("symbolic-ref", "--quiet", "--short", "HEAD")
+	if err != nil || finalBranch != branch {
+		return fmt.Errorf("target branch changed before merge")
+	}
+	finalHead, err := resolveCommit("HEAD")
 	if err != nil {
-		return fmt.Errorf("code merged but resulting commit could not be resolved: %w", err)
+		return err
+	}
+	if finalHead != current {
+		return fmt.Errorf("target head changed before merge; retry against current target")
+	}
+	if err := guardTargetProtectedPolicy(finalHead, evaluation); err != nil {
+		return err
+	}
+	finalWorktree, err := gitText("status", "--porcelain", "--untracked-files=normal")
+	if err != nil {
+		return err
+	}
+	if finalWorktree != "" {
+		return fmt.Errorf("worktree must remain clean before merging")
+	}
+	if guard != nil && guard.Check != nil {
+		if err := guard.Check(proposal, evaluation, branch, current); err != nil {
+			return err
+		}
+	}
+	message := fmt.Sprintf("Merge HN proposal %s: %s", shortID(proposal.ID), oneLine(evaluation.DisplayTitle))
+	var mergeCommit string
+	if guard != nil && guard.Advance != nil {
+		mergeCommit, err = guard.Advance(proposal, evaluation, branch, current, message)
+		if err != nil {
+			return err
+		}
+	} else {
+		if _, err := gitOutput("merge", "--no-ff", "-m", message, proposal.Event.Head); err != nil {
+			if _, abortErr := gitOutput("merge", "--abort"); abortErr != nil {
+				return fmt.Errorf("merge failed and automatic abort also failed: %v; abort error: %v", err, abortErr)
+			}
+			return fmt.Errorf("merge failed and was aborted for proposal %s; recover with 'hn proposal revise %s --base REV --head REV': %w", proposal.ID, proposal.ID, err)
+		}
+		mergeCommit, err = resolveCommit("HEAD")
+		if err != nil {
+			return fmt.Errorf("code merged but resulting commit could not be resolved: %w", err)
+		}
 	}
 	stored, err := appendProposalMergeEvent(identity, proposal, evaluation, mergeCommit)
 	if err != nil {
