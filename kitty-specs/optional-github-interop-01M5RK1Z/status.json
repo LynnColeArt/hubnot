@@ -220,7 +220,8 @@
       "last_transition_at": "2026-10-25T05:33:12.678261+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review at 2882cc1d: native discussions and replies, immutable answer revisions, metadata-preserving edits, signed conflicts/replay; full Go race, vet, builds, format and diff passed; nogithub suite running."
+        "Ready for independent review at 2882cc1d: native discussions and replies, immutable answer revisions, metadata-preserving edits, signed conflicts/replay; full Go race, vet, builds, format and diff passed; nogithub suite running.",
+        "Independent native discussion review passed at 2882cc1d; structured evidence committed 002fcf0d. Exact answers, preserved metadata, immutable replay, thread constraints, conflict resolution and pagination checked. Full race and final nogithub suite plus other Go gates pass; owned command files only."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
