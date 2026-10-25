@@ -544,7 +544,7 @@ func githubPlanProject(s forgeResourceSnapshot, o transferOptions, endpoint stri
 					return nil, nil, errors.New("project target type changed; manual target migration required")
 				}
 				body := target.Body
-				if !sameSource {
+				if !sameSource || n.Metadata[forgeResourceSourceKey] == "" {
 					body = githubProjectDraftBody(s, n)
 				}
 				if old.Content.Title != target.Title || old.Content.Body != body {
@@ -1082,6 +1082,7 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 	}
 	var remote *githubapi.ProjectV2
 	previousExport := false
+	previousBindings := map[string]string{}
 	fetch := func(id string) (*githubapi.ProjectV2, error) {
 		p, e := g.client.GetProject(ctx, "node:"+id)
 		if e != nil {
@@ -1123,6 +1124,7 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 				return nil
 			}
 			previousExport = true
+			previousBindings = githubProjectCopyBindings(cp.Bindings)
 			exists = false
 		}
 	}
@@ -1176,6 +1178,14 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 					}
 				}
 				cp.Bindings = bindings
+				if previousExport {
+					for key, value := range previousBindings {
+						if existing := cp.Bindings[key]; existing != "" && existing != value {
+							return errors.New("completed source binding differs from immutable source identity")
+						}
+						cp.Bindings[key] = value
+					}
+				}
 			} else {
 				_, proof, valid := githubParseProjectBody(remote.Readme)
 				if !valid || proof.NativeID != current.NativeID {
@@ -1503,8 +1513,16 @@ func githubProjectValidatePlan(ctx context.Context, g *githubForge, cp githubPro
 		}
 	} else if cp.SameSource {
 		expected, same, err := githubProjectSourceBindings(cp.Snapshot, *cp.Start, cp.Endpoint)
-		if err != nil || !same || forgeDigestJSON(expected) != forgeDigestJSON(cp.InitialBindings) {
+		if err != nil || !same {
 			return errors.New("initial project source bindings differ from signed immutable identity")
+		}
+		// The verified journal may carry bindings created by earlier completed exports.
+		// Every original source binding is still rederived from immutable native facts;
+		// additional bindings are authenticated by the selected identity's whole-journal signature.
+		for key, value := range expected {
+			if cp.InitialBindings[key] != value {
+				return errors.New("initial project source binding differs from immutable source identity")
+			}
 		}
 	} else {
 		_, proof, ok := githubParseProjectBody(cp.Start.Readme)

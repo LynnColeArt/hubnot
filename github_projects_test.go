@@ -818,3 +818,33 @@ func TestGithubProjectUnrepresentableNativeNumberZeroWrites(t *testing.T) {
 		t.Fatal("precision failed after write")
 	}
 }
+
+func TestGithubProjectSourceNewNativeDraftRetainsBindingAcrossUpdates(t *testing.T) {
+	issueCommandTestRepo(t)
+	p := projectFixture()
+	fake := &githubProjectFake{p: &p}
+	endpoint := githubProjectServer(t, fake)
+	if err := runForgeTransfer(githubProjectOptions("import", endpoint, "user:a/1", "")); err != nil {
+		t.Fatal(err)
+	}
+	root := bridgeFamily(bridgeCatalog(t), ResourceProject)[0]
+	state := ProjectItemState{Schema: "hn.project-item/1", ProjectID: root.ID, ProjectRevision: root.Heads[0].ID, Target: ProjectTarget{Kind: "draft", Title: "Native addition", Body: "native draft"}, Position: "2", Values: map[string]ProjectValue{githubProjectID("F_n"): {Type: "number", Number: "2.5"}}}
+	item, err := MutateResource(ResourceMutation{Family: ResourceProjectItem, Intent: "open", State: resourceState(t, ResourceProjectItem, state)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	o := githubProjectOptions("export", endpoint, "user:a/1", root.ID)
+	if err := runForgeTransfer(o); err != nil {
+		t.Fatal("first addition", err)
+	}
+	state.Values[githubProjectID("F_n")] = ProjectValue{Type: "number", Number: "3.5"}
+	if _, err := MutateResource(ResourceMutation{Family: ResourceProjectItem, Intent: "revise", ID: item.ResourceID, Expected: []string{item.EventID}, State: resourceState(t, ResourceProjectItem, state)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := runForgeTransfer(o); err != nil {
+		t.Fatal("subsequent addition update", err)
+	}
+	if len(fake.p.Items) != 2 {
+		t.Fatal("new native draft duplicated")
+	}
+}
