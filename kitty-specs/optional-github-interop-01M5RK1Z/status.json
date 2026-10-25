@@ -89,6 +89,9 @@
       "last_event_id": "01M5RPBC75N83N60WY7QSXVTZE",
       "last_transition_at": "2026-10-25T04:50:52.261899+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at bf0ca830: neutral optional issue import, immutable producer-bound baselines, exact source/comment provenance and intent recovery, resource reports/maps/local dispatch. Focused race + independent R1/R2 overlays green; full Go race at final source 230.752s; vet/default/nogithub build/diff passed."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
