@@ -63,6 +63,8 @@ func run(args []string) error {
 		return cmdDecide(args[1:])
 	case "merge":
 		return cmdMerge(args[1:])
+	case "automerge":
+		return cmdAutomerge(args[1:])
 	case "sync":
 		return cmdSync(args[1:])
 	case "log":
@@ -120,6 +122,7 @@ Usage:
   hn runner watch --accept-pipeline NAME --accept-actor ACTOR
   hn decide PROPOSAL <--accept|--reject> [--body TEXT]
   hn merge PROPOSAL
+  hn automerge PROPOSAL --rule NAME [--execute]
   hn replication select|show [REMOTE] [full actor fingerprints and event IDs] [budgets]
   hn sync [REMOTE] [--recover-shallow]
   hn log
