@@ -2,7 +2,7 @@
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -198,10 +198,10 @@
       "criterion_id": "FR-020",
       "description": "Provider-neutral migration plans cover issues, projects, discussions and workflows, including dependency/reference mappings, supported/manual/unsupported semantics and explicit dry-run validation. Missing mappings or inaccessible dependencies prevent silent data loss.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:52.121381+00:00",
       "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
     }
   ],
