@@ -106,6 +106,18 @@ func resourceReferences(e Event) []string {
 	}
 	return sortedUniqueStrings(refs...)
 }
+
+// resourceDependencyMissing distinguishes recoverable exact-history omissions
+// found while walking nested containers from present but invalid relationships.
+type resourceDependencyMissing struct {
+	ID     string
+	Family string
+}
+
+func (e *resourceDependencyMissing) Error() string {
+	return fmt.Sprintf("resource requires unavailable %s %s", e.Family, e.ID)
+}
+
 func validateResourceReferences(stored StoredEvent, byID map[string]StoredEvent) error {
 	e := stored.Event
 	family := resourceFamily(e.Kind)
@@ -115,7 +127,10 @@ func validateResourceReferences(stored StoredEvent, byID map[string]StoredEvent)
 	rootID := resourceRootID(stored)
 	require := func(id, family string, root bool) (StoredEvent, error) {
 		v, ok := byID[id]
-		if !ok || resourceFamily(v.Event.Kind) != family || root && !strings.HasSuffix(v.Event.Kind, ".open") {
+		if !ok {
+			return StoredEvent{}, &resourceDependencyMissing{ID: id, Family: family}
+		}
+		if resourceFamily(v.Event.Kind) != family || root && !strings.HasSuffix(v.Event.Kind, ".open") {
 			return StoredEvent{}, fmt.Errorf("resource %s requires available %s %s", stored.ID, family, id)
 		}
 		return v, nil

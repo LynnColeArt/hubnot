@@ -966,7 +966,12 @@ func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent
 				return &replicationDependency{EventID: event.ID, EventKind: e.Kind, Missing: reference, Recovery: "select the full actor history supplying " + reference, Key: eventOwners[reference], Reason: "resource dependency is absent"}, nil
 			}
 		}
-		return nil, validateResourceReferences(event, byID)
+		relationErr := validateResourceReferences(event, byID)
+		var missing *resourceDependencyMissing
+		if errors.As(relationErr, &missing) {
+			return &replicationDependency{EventID: event.ID, EventKind: e.Kind, Missing: missing.ID, Recovery: "select the full actor history supplying " + missing.ID, Key: eventOwners[missing.ID], Reason: "nested resource dependency is absent"}, nil
+		}
+		return nil, relationErr
 	}
 	if isIssueKind(e.Kind) {
 		for _, reference := range issueReferences(e) {

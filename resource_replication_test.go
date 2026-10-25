@@ -103,3 +103,20 @@ func TestResourceReplicationQuarantineRecoveryAndSignedBytes(t *testing.T) {
 		t.Fatal("old signed bytes changed", err)
 	}
 }
+
+func TestResourceNestedMissingAncestorRecoveryClassification(t *testing.T) {
+	thread := resourceFixture(t, "thread", "discussion", "", nil, DiscussionState{Schema: "hn.discussion/1", Title: "Q", Category: "q", Status: "open"})
+	grandparent := eventID([]byte("grandparent"))
+	parent := resourceFixture(t, "parent", "discussion-reply", "", nil, DiscussionReplyState{Schema: "hn.discussion-reply/1", DiscussionID: thread.ID, ReplyTo: grandparent, Body: "parent"})
+	child := resourceFixture(t, "child", "discussion-reply", "", nil, DiscussionReplyState{Schema: "hn.discussion-reply/1", DiscussionID: thread.ID, ReplyTo: parent.ID, Body: "child"})
+	byID := map[string]StoredEvent{thread.ID: thread, parent.ID: parent, child.ID: child}
+	dependency, err := replicationEventDependency("", "", child, byID, nil, nil, nil)
+	if err != nil || dependency == nil || dependency.Missing != grandparent {
+		t.Fatalf("missing ancestor must stay recoverable: %#v %v", dependency, err)
+	}
+	wrong := resourceFixture(t, "grandparent", "project", "", nil, projectState())
+	byID[grandparent] = wrong
+	if dep, err := replicationEventDependency("", "", child, byID, nil, nil, nil); dep != nil || err == nil {
+		t.Fatalf("present wrong-kind ancestor must stay invalid: %#v %v", dep, err)
+	}
+}
