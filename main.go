@@ -36,6 +36,12 @@ func run(args []string) error {
 		return cmdMemory(args[1:])
 	case "issue":
 		return cmdIssue(args[1:])
+	case "gh":
+		return cmdGH(args[1:])
+	case "github":
+		return cmdGitHub(args[1:])
+	case "transfer":
+		return cmdTransfer(args[1:])
 	case "proposal":
 		return cmdProposal(args[1:])
 	case "policy":
@@ -78,6 +84,9 @@ Usage:
   hn memory recall [filters] [bounds] [--json]
   hn memory index rebuild|verify
   hn issue help
+  hn gh issue create|list|view|edit|comment|close|reopen (local compatibility)
+  hn github help (optional GitHub convenience commands)
+  hn transfer help (explicit provider-neutral issue import/export)
   hn issue open [--body TEXT] TITLE | --input FILE|- [--operation KEY] [--json]
   hn issue revise|resolve ISSUE --expect REV ... --input FILE|- [--json]
   hn issue close|reopen ISSUE --expect REV [--operation KEY] [--json]
