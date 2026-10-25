@@ -48,10 +48,10 @@
       "criterion_id": "FR-005",
       "description": "Discover stable source mappings, reject duplicates, preserve local edits and refuse competing remote/local changes; use guarded native mutations and retry-safe operations.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:07.774607+00:00",
       "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
     },
     {
