@@ -187,3 +187,202 @@ There is no timestamp or delivery-order winner among siblings. A candidate
 with successors is superseded; a lineage with a merged member is closed; and
 multiple valid merge facts produce a visible merge conflict rather than an
 invented winner.
+
+## Optional check protection and automerge
+
+Check protection and automerge are independent repository opt-ins. Omit either
+section from `.hn/policy.json` to keep it disabled; `null` also disables it in
+clients that support these fields. An empty or incomplete object is invalid.
+Initialization, upgrades and imports do not install rules or enable automation.
+Enabling either capability is an ordinary governed policy amendment.
+
+The following complete example enables both. Replace every `<...-actor>` with a
+full lowercase 64-hex actor fingerprint from `hn identity public`; these are
+placeholders, not actor names or provider accounts. The required `lint` pipeline
+must exist at `.hn/pipelines/lint.json`.
+
+```json
+{
+  "version": "hn.policy/0",
+  "maintainers": ["<maintainer-actor>"],
+  "proposals": {
+    "requiredApprovals": 1,
+    "requiredAccepts": 1,
+    "trustedReviewers": ["<reviewer-actor>"],
+    "allowAuthorApproval": false
+  },
+  "pipelines": {
+    "lint": {
+      "requiredResults": 1,
+      "trustedRunners": ["<runner-actor>"]
+    }
+  },
+  "protectedChecks": {
+    "paths": [".golangci.yml", "scripts/lint/"],
+    "trustedReviewers": ["<check-reviewer-actor>"],
+    "requiredApprovals": 1
+  },
+  "automerge": {
+    "rules": [
+      {
+        "name": "docs-only",
+        "targetBranch": "main",
+        "actors": ["<maintainer-actor>"],
+        "authors": ["<author-actor>"],
+        "paths": ["docs/"]
+      }
+    ]
+  }
+}
+```
+
+For protection alone, omit `automerge`. For automerge alone, omit
+`protectedChecks`. A rule never creates a missing review, passing run, or
+acceptance, and it never lowers the existing thresholds.
+
+Inspect the configuration and proposed amendment before committing it:
+
+```sh
+hn policy show main
+hn policy check --base main --file .hn/policy.json
+```
+
+Inspection and comparison expose activation, protected paths, designated
+reviewers, thresholds and every automerge rule's actors, authors, paths and target.
+Older clients that do not recognize these fields reject policies containing
+them, including a `null` field. Omit the fields for compatibility with such
+clients. Existing signed bytes and historical facts are not rewritten.
+
+### Protected paths and exact review
+
+While `protectedChecks` is enabled, these paths require designated approval:
+
+- Every configured literal file or directory.
+- `.hn/policy.json`, including changes that remove or disable protection.
+- `.hn/pipelines/<name>.json` for every pipeline required by the signed base policy.
+
+A path is repository-relative. A directory selector ends in `/` and covers its
+descendants. Selectors have no glob or expression syntax; absolute paths,
+traversal, noncanonical paths, control characters, backslashes, wildcard
+characters, colons and `.git` components are rejected. Configuration permits at
+most 64 selectors, each at most 4096 bytes. `paths: []` is allowed for protection;
+the policy and required pipelines are still protected.
+Changed-path Git output is limited to 8 MiB; exceeding the bound refuses the
+operation rather than evaluating a truncated change list.
+
+Protection compares Git trees, not the working copy. Additions, removals,
+renames, content changes, mode/type changes and replacement of an ancestor count.
+A required pipeline cannot evade review by moving or replacing its definition.
+Select lint configurations, invoked scripts and other check inputs deliberately.
+Protection gates changes to those files; it does not determine whether every
+possible source-code or linter change is semantically weaker.
+
+Designated approvals are ordinary `hn review C --approve` events for that exact
+candidate. They count only from distinct listed actors other than the candidate
+author, even when ordinary policy allows author approval. A designated actor
+need not be an ordinary trusted reviewer. An approval may satisfy both roles
+only when that exact actor is listed in both places; both thresholds still apply.
+There may be 1–64 designated reviewers, and the required approval count must be
+between 1 and that reviewer count.
+
+`hn proposal status C` reports changed protected paths and current designated
+approval counts. An acceptance signs the exact qualifying review IDs alongside
+its ordinary review and run evidence; local and fetched evidence admission
+validate those bindings. Revisions need new exact-candidate evidence. A later
+withdrawal blocks a new protected merge without invalidating what an earlier
+decision originally signed.
+
+### Signed-base status and the current target
+
+Status and immutable acceptance evidence are evaluated against the candidate's
+signed base. A new manual merge also checks the actual target. If protection
+is enabled there, revise against the current target when either:
+
+- Its exact policy digest differs from the candidate's base-policy digest.
+- Any protected path changed from the signed base to the current target,
+  even when policy bytes stayed identical.
+
+This prevents a candidate from incorporating a target's stricter lint check,
+restoring the weaker old base bytes, and hiding that restoration in an otherwise
+documentation-only base-to-head diff. An older acceptance is not authority to
+ignore the target's protected baseline. Unprotected target changes alone do not
+impose this additional revision requirement. The existing contained-merge repair
+path remains governed by the original signed base and evidence.
+
+### Rule-based native automerge
+
+An automerge policy contains 1–64 uniquely named rules. Every rule explicitly
+names a local target branch, 1–64 executing actors, 1–64 authors and 1–64 literal
+allowed paths. Executing actors must also be base-policy maintainers. Directory
+allowlists permit descendants only; allowing `docs/` does not permit replacing
+the `docs` ancestor itself. Every changed path must match a rule selector.
+
+```sh
+hn proposal status <full-candidate-event-id>
+hn automerge <full-candidate-event-id> --rule docs-only
+hn automerge <full-candidate-event-id> --rule docs-only --execute
+```
+
+The default command is a read-only, keyless preview. It prints full candidate,
+base, head and policy identities, the observed target, allowed executing actors,
+changed paths and blockers. A blocked preview returns failure. An eligible
+preview establishes candidate/target eligibility; execution additionally checks
+the selected private signing identity. A preview result never authorizes a later
+execution without reevaluation.
+
+Execution requires current ordinary and designated approvals, required passing
+pipeline results, and the existing maintainer acceptances. It also refuses current
+trusted change requests or pipeline failures, maintainer rejections, superseded
+or closed lineages, mismatched code refs, disallowed authors or changed paths,
+policy amendments, and protected-check changes. The latter two take the manual
+path even after they receive the required review and acceptance.
+
+The checked-out branch must match the named rule, be clean, and still equal the
+candidate's exact signed base. After target movement, create a revision and obtain
+fresh evidence. Unfinished merges, rebases, cherry-picks, reverts, sequencer
+operations or bisects refuse automation until finished or aborted.
+
+Automerge also refuses shallow repositories and active partial/promisor
+configuration before object evaluation. Use a full clone, or explicitly hydrate
+and reconcile its configuration outside this command. Downloading some missing
+objects alone does not make a configured partial clone eligible. Selected data
+that suffices for an ordinary manual merge does not waive this full-repository
+requirement. Automerge does not fetch or invoke shallow recovery.
+
+### Commit path, publication and recovery
+
+Automatic execution creates a native two-parent merge commit from the verified
+head tree and uses an expected-old Git ref transaction for the actual target
+advance. It rechecks current evidence and target while holding that lease, then
+records the existing signed `proposal.merged` fact with the exact acceptances.
+Ignored files that the checkout would overwrite cause refusal.
+
+This commit path uses `git commit-tree`, not ordinary `git merge`/`git commit`.
+It does not run `pre-merge-commit` or `pre-commit` hooks. Put required checks in
+native pipelines and configure their trusted runners in policy; a local Git
+merge hook is not an automerge acceptance gate. Operator-controlled Git
+`reference-transaction` hooks retain their normal behavior.
+
+No command here starts a daemon, executes a pipeline, creates an approval or
+acceptance, synchronizes, or pushes. Publication remains explicit:
+
+```sh
+hn sync origin
+
+git push origin main:main
+```
+
+If code merged but its signed fact could not be recorded, inspect the target
+and retry `hn merge C` for the existing manual repair. Repair requires current
+qualifying evidence and one unique first-parent merge that directly names C's
+head; it adds only the missing event. Repeating automerge does not create a
+second merge when the target already moved. A failure before ref advancement
+can leave unreferenced Git objects; an interrupted checkout can leave staged
+candidate changes on the old target. Preserve local work, inspect `git status`
+and the target, and reconcile the checkout before retrying. Do not discard local
+changes merely to make a retry eligible.
+
+These gates enforce Hubnot's native merge path. They do not prevent a process
+with direct host or Git write access from changing branches outside Hubnot, and
+the local ref lease is not a distributed transaction across arbitrary writers
+or remote replicas.
