@@ -908,6 +908,9 @@ func forgeRunResourceJournal(ctx context.Context, p forge.Identity, o transferOp
 	if j.Actor != identity.Actor {
 		return errors.New("resource recovery signing actor changed")
 	}
+	if err := forgeValidateResourceSigningBudget(*j, identity, original); err != nil {
+		return err
+	}
 	for j.Next < len(j.Steps) {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -1006,6 +1009,9 @@ func forgeImportResources(ctx context.Context, p forge.Identity, o transferOptio
 		return err
 	}
 	journal.Actor = identity.Actor
+	if err := forgeValidateResourceSigningBudget(journal, identity, events); err != nil {
+		return forgeResourcePlanFailure(graph, o, err)
+	}
 	if err := forgeStoreJSON(name, &journal); err != nil {
 		return err
 	}
@@ -1333,4 +1339,34 @@ func forgeResourcePlanFailure(g forge.Graph, o transferOptions, err error) error
 	}
 	plan.Findings = append(plan.Findings, forge.Finding{Status: status, Path: string(o.resource), Message: message})
 	return &forgeResourceBlocked{plan}
+}
+
+// Source-only previews reserve an envelope budget without reading private keys.
+// Before publishing, also validate every full envelope with the actual signer:
+// an unusually long local actor name must not break a later child after a root
+// has already been signed. Preview IDs here stay in memory and are never facts.
+func forgeValidateResourceSigningBudget(j forgeResourceJournal, identity *Identity, original []StoredEvent) error {
+	simulated := append([]StoredEvent{}, original...)
+	j.Replacements = map[string]string{}
+	for i, step := range j.Steps {
+		mutation, err := forgeResourceStepMutation(j, i, simulated)
+		if err != nil {
+			return err
+		}
+		event := newEvent(identity, mutation.Family+"."+mutation.Intent, ^uint64(0), eventID([]byte("envelope-preview")))
+		event.Intent = mutation.Intent
+		event.Subject = mutation.ID
+		event.Parents = mutation.Expected
+		event.Body = string(mutation.State)
+		event.Operation = mutation.Operation
+		event.Request, err = ResourceRequestDigest(event)
+		if err != nil {
+			return err
+		}
+		if err := validateResourceEvent(event); err != nil {
+			return fmt.Errorf("complete graph signer envelope preflight: %w", err)
+		}
+		simulated = append(simulated, StoredEvent{ID: step.Output, Event: event})
+	}
+	return nil
 }

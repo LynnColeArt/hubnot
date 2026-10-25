@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -630,5 +631,27 @@ func TestResourceBridgeAllFamiliesSurviveNativeGitTransport(t *testing.T) {
 		if err := forgeAuthenticateResourceSnapshot(snapshot); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestResourceBridgePreflightsActualSignerEnvelope(t *testing.T) {
+	issueCommandTestRepo(t)
+	writeActiveTestIdentity(t, testIdentity(t, strings.Repeat("n", 60000)))
+	graph := bridgeProjectGraph()
+	graph.Nodes[0].Project.Fields = nil
+	graph.Nodes[0].Project.Views = nil
+	graph.Nodes[1].Item.Values = map[string]forge.Value{}
+	for i := 0; i < 49; i++ {
+		id := fmt.Sprintf("f%d", i)
+		graph.Nodes[0].Project.Fields = append(graph.Nodes[0].Project.Fields, forge.Field{ID: id, Name: id, Type: "text"})
+		graph.Nodes[1].Item.Values[id] = forge.Value{Type: "text", Text: strings.Repeat("x", 4096)}
+	}
+	p := &bridgeProvider{graph: graph}
+	bridgeRegister(t, p)
+	if err := runForgeTransfer(bridgeOptions(forge.ResourceProject)); err == nil {
+		t.Fatal("authenticated payload ceiling ignored")
+	}
+	if len(bridgeCatalog(t).IDs) != 0 {
+		t.Fatal("signed a partial graph before validating later actual signer envelope")
 	}
 }
