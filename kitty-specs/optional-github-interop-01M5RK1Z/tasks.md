@@ -32,7 +32,7 @@ T008 Verify client bounds, same-origin handling and omission from nogithub build
 
 **Dependencies**: WP01, WP02
 
-**Requirement Refs**: FR-003, FR-004, FR-005, FR-008, FR-009, NFR-001
+**Requirement Refs**: FR-003, FR-004, FR-005, FR-008, FR-009, FR-011, FR-012, NFR-001
 
 **Prompt**: `tasks/WP03-native-github-import-and-optional-command-boundary.md`
 
@@ -41,12 +41,13 @@ T010 Wire hn gh and hn github dispatch; parse strict import/export commands and 
 T011 Implement complete native source discovery and validated attributed issue/comment imports.
 T012 Implement guarded three-way updates, safe operation retries and checkpoint helpers for later export.
 T013 Validate real native storage against fake paginated provider and nogithub build.
+T023 Implement provider-neutral models, adapter boundary and pre-write migration capability reports.
 
 ## Work Package WP04: Explicit recoverable issue export
 
 **Dependencies**: WP03
 
-**Requirement Refs**: FR-004, FR-005, FR-006, FR-007, FR-008, NFR-001
+**Requirement Refs**: FR-004, FR-005, FR-006, FR-007, FR-008, FR-011, FR-012, NFR-001
 
 **Prompt**: `tasks/WP04-explicit-recoverable-issue-export.md`
 
@@ -60,7 +61,7 @@ T018 Validate no duplicate issues/comments, no blind retries, no token leaks and
 
 **Dependencies**: WP01, WP04
 
-**Requirement Refs**: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, NFR-001, NFR-002, NFR-003, C-001, C-002, C-003
+**Requirement Refs**: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012, NFR-001, NFR-002, NFR-003, C-001, C-002, C-003
 
 **Prompt**: `tasks/WP05-offline-acceptance-and-operator-documentation.md`
 

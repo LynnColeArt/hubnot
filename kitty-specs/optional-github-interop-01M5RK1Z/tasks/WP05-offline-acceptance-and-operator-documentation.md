@@ -21,9 +21,14 @@ requirement_refs:
 - C-001
 - C-002
 - C-003
+- FR-011
+- FR-012
 planning_base_branch: feat/optional-github-interop
 merge_target_branch: feat/optional-github-interop
-branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop.
+  During /spec-kitty.implement this WP may branch from a dependency-specific base,
+  but completed changes must merge back into feat/optional-github-interop unless the
+  human explicitly redirects the landing branch.
 subtasks:
 - T019
 - T020
@@ -77,3 +82,12 @@ T022 Run final full gates and record actual results, fixing only owned acceptanc
 ## Review criteria
 
 Behavior matches every referenced requirement; scoped and full required gates pass; no unrelated files, private data or binaries staged. Unsupported behavior fails explicitly. Reviewer independently probes hostile/failure cases and the standalone boundary.
+
+
+## Binding provider-neutral amendment from user steering
+
+Read the Provider portability amendment in primary plan.md. Generic coordination/models/checkpoints/markers/source identity must use internal/forge, not githubapi DTOs. githubapi is only the optional first adapter in forge_github.go. Canonical commands: hn transfer import/export --provider github --project ...; hn github is an alias. New signed keys use forge/source, forge/baseline, forge/observation with provider-qualified source IDs. The user wants future alternate providers and project/workflow migration. Implement neutral resource/capability reports now, explicitly reporting project/workflow conversion unsupported or mapping-required before any write; don't invent arbitrary provider CI equivalence or claim those migrations shipped. No mandatory service/provider dependency. nogithub excludes GitHub client dependency while local hn gh/native workflows remain functional.
+
+Reference T023 (owned by WP03): implement and behavior-test provider-neutral models, adapter boundary, canonical provider-selecting commands and pre-write migration resource/capability reports.
+
+Exporter uses forge.Provider and neutral options/models. GitHub adapter validates provider-specific selectors. Native export re-import without verified mapping must refuse duplicate/remapping; source import/export keeps original body and validates structured comment provenance to avoid feedback. Document exact first delivery limits and provider extension path.

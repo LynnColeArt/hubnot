@@ -41,6 +41,9 @@ Missing credentials; permission/rate-limit failures; token-shaped error response
 | FR-009 | Independent core | Build/test/use native and compatibility issue commands with GitHub transport completely excluded. Removing transport must not affect imported issues. | High | Open |
 | FR-010 | Honest boundary/docs | Publish exact command examples, supported compatibility subset, conflict/recovery behavior, bounds, attribution and offline-build instructions. | High | Open |
 
+| FR-011 | Provider-neutral transfer | Keep transfer orchestration, source identities, checkpoints and issue/comment data independent of provider-specific DTOs. Expose explicit provider/project selection; GitHub is the first optional adapter. | High | Open |
+| FR-012 | Honest migration capabilities | Represent issues, projects and workflows as distinct migration resources and report implemented, mapping-required or unsupported resources before any write. Document extension contracts and the first delivery boundary; never claim arbitrary workflow equivalence. | High | Open |
+
 ### Non-Functional Requirements
 | ID | Title | Requirement | Category | Priority | Status |
 |---|---|---|---|---|---|
@@ -53,7 +56,7 @@ Missing credentials; permission/rate-limit failures; token-shaped error response
 |---|---|---|---|---|---|
 | C-001 | Standalone | No mandatory GitHub/gh dependency, API service, database, external Go module, workflow or Docker requirement. Transport is optional CLI functionality within Hubnot. | Product | High | Open |
 | C-002 | Existing authority | Do not alter signed wire schemas, identity/policy authority or existing issue behavior; descriptive external metadata grants no authority. | Protocol | High | Open |
-| C-003 | Bounded scope | No continuous sync, complete GitHub API emulation, PR/run compatibility, new protected-check policy or automerge. CLI compatibility is a documented issue-command subset. | Scope | High | Open |
+| C-003 | Bounded scope | No continuous sync, complete GitHub API emulation, PR/run compatibility, new protected-check policy or automerge. CLI compatibility is a documented issue-command subset. GitHub issues are the first working adapter; provider-neutral project/workflow capability reports distinguish future mappings from implemented migration. | Scope | High | Open |
 
 ## Key Entities
 Native issue and signed revision; imported external issue and comment; source provenance; field baseline; export checkpoint; external publication marker. External attribution never substitutes for a native cryptographic signer.
@@ -67,3 +70,7 @@ Native issue and signed revision; imported external issue and comment; source pr
 
 ## Assumptions
 Compatibility preserves useful command/flag/JSON conventions, while native identifiers and conflict rules stay explicit. External read snapshots cannot supply distributed locks. Exports require a single local publisher and do not promise globally exactly-once concurrent publication. Unsupported GitHub-only fields are documented rather than silently claimed as preserved.
+
+## Additional user steering: provider portability
+
+The user requested alternate providers and eventual import/export/migration of projects and workflows at will. The immediate design therefore uses a provider-neutral transfer system, with GitHub as its first adapter. No specific alternate provider or workflow format was named. This delivery establishes explicit resource/capability reports and provider extension contracts, and implements issue transfer; concrete project/workflow conversion requires source/destination mappings and must report manual or unsupported semantics before writes. A scope question is pending; independent provider-neutral issue work continues meanwhile.

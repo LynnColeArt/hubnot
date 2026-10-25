@@ -11,9 +11,14 @@ requirement_refs:
 - FR-008
 - FR-009
 - NFR-001
+- FR-011
+- FR-012
 planning_base_branch: feat/optional-github-interop
 merge_target_branch: feat/optional-github-interop
-branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop.
+  During /spec-kitty.implement this WP may branch from a dependency-specific base,
+  but completed changes must merge back into feat/optional-github-interop unless the
+  human explicitly redirects the landing branch.
 base_branch: kitty/mission-optional-github-interop-01M5RK1Z
 base_commit: ea90761f5a98d0a5e0286970ff3913982107e537
 created_at: '2026-10-25T04:16:03.656382+00:00'
@@ -23,6 +28,7 @@ subtasks:
 - T011
 - T012
 - T013
+- T023
 history: []
 agent_profile: implementer-ivan
 authoritative_surface: github_commands.go
@@ -31,6 +37,9 @@ create_intent:
 - github_disabled.go
 - github_import.go
 - github_import_test.go
+- internal/forge/model.go
+- internal/forge/model_test.go
+- forge_github.go
 execution_mode: code_change
 lane: planned
 owned_files:
@@ -39,6 +48,9 @@ owned_files:
 - github_import.go
 - github_import_test.go
 - main.go
+- internal/forge/model.go
+- internal/forge/model_test.go
+- forge_github.go
 tags: []
 tracker_refs: []
 ---
@@ -83,3 +95,12 @@ Behavior matches every referenced requirement; scoped and full required gates pa
 ## Recovery contract refinement (pre-implementation review)
 
 Export checkpoint phases are prepared/in-flight/confirmed. A complete negative marker scan after an uncertain POST is not proof that the POST never executed: refuse another POST and require manual reconciliation. Positive marker recovery must validate immutable destination identity and exact intended transmitted projection, not marker alone. Export baseline digests cover the normalized transmitted representation including generated provenance/markers; they are distinct from import managed-state digests. The first export back to an imported issue's source may use the signed imported source projection as baseline only if it matches current remote content; missing or mismatched baseline refuses overwrite. Imports validate a complete issue/comment set before the first mutation, but multiple signed events are not atomic: interrupted imports can leave valid partial work and resume through the journal/provenance checks. Do not claim transactionality.
+
+
+## Binding provider-neutral amendment from user steering
+
+Read the Provider portability amendment in primary plan.md. Generic coordination/models/checkpoints/markers/source identity must use internal/forge, not githubapi DTOs. githubapi is only the optional first adapter in forge_github.go. Canonical commands: hn transfer import/export --provider github --project ...; hn github is an alias. New signed keys use forge/source, forge/baseline, forge/observation with provider-qualified source IDs. The user wants future alternate providers and project/workflow migration. Implement neutral resource/capability reports now, explicitly reporting project/workflow conversion unsupported or mapping-required before any write; don't invent arbitrary provider CI equivalence or claim those migrations shipped. No mandatory service/provider dependency. nogithub excludes GitHub client dependency while local hn gh/native workflows remain functional.
+
+T023 (WP03) Implement and behavior-test provider-neutral models, adapter boundary, canonical provider-selecting commands and pre-write migration resource/capability reports.
+
+Exporter uses forge.Provider and neutral options/models. GitHub adapter validates provider-specific selectors. Native export re-import without verified mapping must refuse duplicate/remapping; source import/export keeps original body and validates structured comment provenance to avoid feedback. Document exact first delivery limits and provider extension path.
