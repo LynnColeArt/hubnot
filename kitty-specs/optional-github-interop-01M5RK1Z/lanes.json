@@ -46,10 +46,13 @@
         "WP03"
       ],
       "write_scope": [
+        "forge_github.go",
         "github_commands.go",
         "github_disabled.go",
         "github_import.go",
         "github_import_test.go",
+        "internal/forge/provider.go",
+        "internal/forge/provider_test.go",
         "main.go"
       ],
       "predicted_surfaces": [
@@ -83,15 +86,192 @@
       "parallel_group": 2
     },
     {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "docs/protocol-v0.md",
+        "docs/resources-v1.md",
+        "event.go",
+        "issue_commands.go",
+        "issue_model.go",
+        "quarantine.go",
+        "resource_engine.go",
+        "resource_engine_test.go",
+        "resource_model.go",
+        "resource_replication_test.go",
+        "shallow.go",
+        "store.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "project_commands.go",
+        "project_commands_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "discussion_commands.go",
+        "discussion_commands_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "workflow_commands.go",
+        "workflow_commands_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "internal/forge/resources.go",
+        "internal/forge/resources_test.go",
+        "resource_transfer.go",
+        "resource_transfer_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-d",
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "github_discussions.go",
+        "github_discussions_test.go",
+        "internal/githubapi/discussions.go",
+        "internal/githubapi/discussions_test.go",
+        "internal/githubapi/graphql.go",
+        "internal/githubapi/graphql_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-h",
+        "lane-j"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "github_projects.go",
+        "github_projects_test.go",
+        "internal/githubapi/projects.go",
+        "internal/githubapi/projects_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-g",
+        "lane-j",
+        "lane-k"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "github_workflows.go",
+        "github_workflows_test.go",
+        "internal/githubapi/workflows.go",
+        "internal/githubapi/workflows_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-i",
+        "lane-j",
+        "lane-k"
+      ],
+      "parallel_group": 5
+    },
+    {
       "lane_id": "lane-e",
       "wp_ids": [
         "WP05"
       ],
       "write_scope": [
         "README.md",
+        "docs/discussions-v1.md",
         "docs/github-interoperability.md",
         "docs/issues-v1.md",
+        "docs/projects-v1.md",
         "docs/threat-model.md",
+        "docs/workflows-v1.md",
         "github_acceptance_test.go"
       ],
       "predicted_surfaces": [
@@ -101,13 +281,19 @@
       ],
       "depends_on_lanes": [
         "lane-a",
-        "lane-d"
+        "lane-d",
+        "lane-g",
+        "lane-h",
+        "lane-i",
+        "lane-k",
+        "lane-l",
+        "lane-m"
       ],
-      "parallel_group": 3
+      "parallel_group": 6
     }
   ],
-  "computed_at": "2026-10-25T04:00:35.412835+00:00",
+  "computed_at": "2026-10-25T04:49:53.111021+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "750be273eff998516118af8c7d99af8ddb184f86"
+  "planning_commit_sha": "9a6a19309fdba2d560bd231a9bb0b372d06c14dd"
 }

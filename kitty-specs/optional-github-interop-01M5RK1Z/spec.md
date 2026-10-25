@@ -41,6 +41,18 @@ Missing credentials; permission/rate-limit failures; token-shaped error response
 | FR-009 | Independent core | Build/test/use native and compatibility issue commands with GitHub transport completely excluded. Removing transport must not affect imported issues. | High | Open |
 | FR-010 | Honest boundary/docs | Publish exact command examples, supported compatibility subset, conflict/recovery behavior, bounds, attribution and offline-build instructions. | High | Open |
 
+| FR-011 | Provider-neutral transfer | Keep transfer orchestration, source identities, checkpoints and issue/comment data independent of provider-specific DTOs. Expose explicit provider/project selection; GitHub is the first optional adapter. | High | Open |
+| FR-012 | Honest migration capabilities | Represent issues, projects and workflows as distinct migration resources and report implemented, mapping-required or unsupported resources before any write. Document extension contracts and the first delivery boundary; never claim arbitrary workflow equivalence. | High | Open |
+
+| FR-013 | Native discussions | Provide signed Git-backed discussion threads and independently revisioned replies, categories, open/closed state and accepted-answer revision references, with native CLI and explicit conflict handling. | High | Open |
+| FR-014 | Native projects | Provide signed Git-backed planning projects with bounded typed fields/views and independently revisioned work items, typed targets and field values pinned to an exact project-schema revision. | High | Open |
+| FR-015 | Native workflows | Provide signed versioned native workflow definitions using existing pipeline/runner semantics, native CLI, explicit materialization and exact proposal-definition binding before governed run requests. Foreign definitions remain inert until mapped. | High | Open |
+| FR-016 | Resource integrity/portability | New resources use verified signed actor histories and existing Git transport, strict bounded type-specific states, actor-pinned replay-safe writes, exact revision guards, visible concurrent heads and explicit resolution. No provider is needed for native operation. | High | Open |
+| FR-017 | Discussion transfers | Import/export supported GitHub discussion threads/replies, source attribution, categories, state and answer references through optional adapters, with explicit category/unsupported-semantics mapping and safe repeat/recovery. | High | Open |
+| FR-018 | Project transfers | Import/export supported GitHub Projects V2 definitions and items, remapping field/option/content identities and reporting unsupported field/layout/automation semantics before mutation. Board ownership/selectors are separate from repository selectors. | High | Open |
+| FR-019 | Workflow transfers | Import/export workflow definitions with exact source bytes/digests, explicit branch and execution/environment mappings, conservative write recovery and honest runnable/native-versus-foreign status. Never execute an imported definition implicitly. | High | Open |
+| FR-020 | Whole-resource migration planning | Provider-neutral migration plans cover issues, projects, discussions and workflows, including dependency/reference mappings, supported/manual/unsupported semantics and explicit dry-run validation. Missing mappings or inaccessible dependencies prevent silent data loss. | High | Open |
+
 ### Non-Functional Requirements
 | ID | Title | Requirement | Category | Priority | Status |
 |---|---|---|---|---|---|
@@ -52,8 +64,8 @@ Missing credentials; permission/rate-limit failures; token-shaped error response
 | ID | Title | Constraint | Category | Priority | Status |
 |---|---|---|---|---|---|
 | C-001 | Standalone | No mandatory GitHub/gh dependency, API service, database, external Go module, workflow or Docker requirement. Transport is optional CLI functionality within Hubnot. | Product | High | Open |
-| C-002 | Existing authority | Do not alter signed wire schemas, identity/policy authority or existing issue behavior; descriptive external metadata grants no authority. | Protocol | High | Open |
-| C-003 | Bounded scope | No continuous sync, complete GitHub API emulation, PR/run compatibility, new protected-check policy or automerge. CLI compatibility is a documented issue-command subset. | Scope | High | Open |
+| C-002 | Existing authority | Preserve existing signed bytes, issue behavior and identity/policy authority. Explicit new native resource event kinds are allowed for projects, discussions/replies and workflows; descriptive external metadata grants no authority. | Protocol | High | Open |
+| C-003 | Bounded scope | No continuous sync, complete GitHub API emulation, PR/run compatibility, new protected-check policy or automerge. CLI compatibility is a documented issue-command subset. GitHub is the first external provider adapter. Native projects, discussions, and workflows plus their import/export are now explicitly in scope; unsupported provider-specific semantics require explicit mapping reports before writes. | Scope | High | Open |
 
 ## Key Entities
 Native issue and signed revision; imported external issue and comment; source provenance; field baseline; export checkpoint; external publication marker. External attribution never substitutes for a native cryptographic signer.
@@ -67,3 +79,11 @@ Native issue and signed revision; imported external issue and comment; source pr
 
 ## Assumptions
 Compatibility preserves useful command/flag/JSON conventions, while native identifiers and conflict rules stay explicit. External read snapshots cannot supply distributed locks. Exports require a single local publisher and do not promise globally exactly-once concurrent publication. Unsupported GitHub-only fields are documented rather than silently claimed as preserved.
+
+## Additional user steering: provider portability
+
+The user requested alternate providers and eventual import/export/migration of projects and workflows at will. The immediate design therefore uses a provider-neutral transfer system, with GitHub as its first adapter. No specific alternate provider or workflow format was named. This delivery implements native issues, discussions, projects and workflows with optional GitHub transfer adapters and explicit resource/capability reports. Concrete provider mappings must report manual or unsupported semantics before writes. The user explicitly confirmed native features plus import/export.
+
+## Confirmed scope expansion
+
+The user explicitly chose native Hubnot features plus import/export for workflows, discussions, issues and projects. This supersedes the earlier foundation-only assumption. Projects mean planning boards/fields/items; workflows build on existing repository automation and runners; discussions have threads/replies. GitHub remains the first named external adapter; native Git transport remains independent of all forges. No unspecified alternate forge is guessed. Supported provider subsets and manual mappings must be visible; exact preservation of foreign workflow bytes is not a claim of equivalent execution.
