@@ -209,6 +209,9 @@
       "last_event_id": "01M5RRGEK3R0HCSZX4F2YZ89MR",
       "last_transition_at": "2026-10-25T05:28:35.683431+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 2882cc1d: native discussions and replies, immutable answer revisions, metadata-preserving edits, signed conflicts/replay; full Go race, vet, builds, format and diff passed; nogithub suite running."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 3671245,
