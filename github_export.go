@@ -666,7 +666,10 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 	}
 	remoteID := cp.RemoteID
 	if remoteID == "" {
-		remoteID = strings.Repeat("r", 1024)
+		// The provider ID is unknown until creation. Its contract permits
+		// 1024 bytes; '<' reserves encoding/json's maximum six-byte escape
+		// per permitted byte before the first external mutation.
+		remoteID = strings.Repeat("<", 1024)
 	}
 	for _, id := range s.CommentIDs {
 		comment := selected[id]

@@ -19,6 +19,7 @@ type forgeExportFake struct {
 	comments                                            map[string][]forge.Comment
 	creates, updates, commentCreates                    int
 	lostCreate, absentCreate, lostComment, ignoreLabels bool
+	createdID                                           string
 	afterCreate                                         func()
 }
 
@@ -68,6 +69,9 @@ func (f *forgeExportFake) CreateIssue(_ context.Context, project string, input f
 	}
 	key := fmt.Sprint(len(f.issues) + 1)
 	v := forge.Issue{ID: "issue:" + key, Key: key, Title: input.Title, Body: input.Body, State: "open", Labels: append([]string{}, input.Labels...), Assignees: append([]string{}, input.Assignees...), Author: "publisher", URL: "https://other.example/issues/" + key, CreatedAt: "2026-10-25T01:00:00Z", UpdatedAt: "2026-10-25T01:00:00Z"}
+	if f.createdID != "" {
+		v.ID = f.createdID
+	}
 	f.issues[key] = v
 	if f.afterCreate != nil {
 		f.afterCreate()
@@ -469,5 +473,19 @@ func TestForgeExportRefusesIgnoredFields(t *testing.T) {
 	}
 	if f.updates != 1 {
 		t.Fatal("unexpected writes")
+	}
+}
+
+func TestForgeExportPreflightsWorstCaseOpaqueIdentityEncoding(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	f.createdID = strings.Repeat("<", 1024)
+	id := forgeExportNativeOpen(t, IssueState{Title: "bounded opaque identity"})
+	forgeExportNativeComment(t, id, strings.Repeat("x", 60000))
+	if _, err := forgeExportTestRun(t, id); err == nil {
+		t.Fatal("oversized attributed comment accepted")
+	}
+	if f.creates != 0 {
+		t.Fatal("published issue before validating worst-case attributed comment size")
 	}
 }
