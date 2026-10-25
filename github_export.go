@@ -88,7 +88,7 @@ func forgeExecuteRemoteIntent(ctx context.Context, i *forgeRemoteIntent, save fu
 	return result, nil
 }
 func forgeValidateRemoteIntent(i forgeRemoteIntent) error {
-	if i.Schema != "hn.forge-remote-intent/1" || !validEventID(i.Scope) || !issueIdentifier(i.Provider, 64) || !forgeValidURL(i.Endpoint, true) || !forge.KnownResource(forge.Resource(i.Kind)) || !issueIdentifier(i.Action, 64) || !validEventID(i.NativeID) || !validEventID(i.NativeRevision) || i.TargetID != "" && !issueIdentifier(i.TargetID, 1024) || i.TargetKey != "" && !issueIdentifier(i.TargetKey, 256) || i.ExpectedRevision != "" && !issueIdentifier(i.ExpectedRevision, 1024) || len(i.Payload) > forgeCheckpointLimit || !json.Valid(i.Payload) || i.PayloadDigest != eventID(i.Payload) || (i.Phase != "prepared" && i.Phase != "in_flight" && i.Phase != "confirmed") {
+	if i.Schema != "hn.forge-remote-intent/1" || !validEventID(i.Scope) || !issueIdentifier(i.Provider, 64) || !forgeValidLocator(i.Endpoint) || !forge.KnownResource(forge.Resource(i.Kind)) || !issueIdentifier(i.Action, 64) || !validEventID(i.NativeID) || !validEventID(i.NativeRevision) || i.TargetID != "" && !issueIdentifier(i.TargetID, 1024) || i.TargetKey != "" && !issueIdentifier(i.TargetKey, 256) || i.ExpectedRevision != "" && !issueIdentifier(i.ExpectedRevision, 1024) || len(i.Payload) > forgeCheckpointLimit || !json.Valid(i.Payload) || i.PayloadDigest != eventID(i.Payload) || (i.Phase != "prepared" && i.Phase != "in_flight" && i.Phase != "confirmed") {
 		return errors.New("invalid exact external write intent")
 	}
 	return nil

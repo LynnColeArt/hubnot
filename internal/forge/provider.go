@@ -18,8 +18,7 @@ type IssueInput struct {
 // Provider translates an explicit external project and opaque provider key.
 // ID is immutable identity; Key is only the provider's lookup/display selector.
 type Provider interface {
-	Kind() string
-	Endpoint() string
+	Identity
 	GetIssue(context.Context, string, string) (Issue, error)
 	ListIssues(context.Context, string) ([]Issue, error)
 	ListComments(context.Context, string, string) ([]Comment, error)
