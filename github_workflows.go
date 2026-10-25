@@ -252,8 +252,9 @@ func githubRenderNativeWorkflow(s WorkflowState, c githubWorkflowExportConfig) (
 	if err != nil {
 		return nil, err
 	}
+	runnerYAML, _ := json.Marshal(c.Runner)
 	var out strings.Builder
-	fmt.Fprintf(&out, "%s%s\nname: Hubnot native workflow\non:\n  %s:\npermissions:\n  contents: read\njobs:\n  native:\n    runs-on: %s\n    timeout-minutes: %d\n    steps:\n", githubWorkflowManifestPrefix, base64.StdEncoding.EncodeToString(raw), c.Trigger, c.Runner, total+5)
+	fmt.Fprintf(&out, "%s%s\nname: Hubnot native workflow\non:\n  %s:\npermissions:\n  contents: read\njobs:\n  native:\n    runs-on: %s\n    timeout-minutes: %d\n    steps:\n", githubWorkflowManifestPrefix, base64.StdEncoding.EncodeToString(raw), c.Trigger, runnerYAML, total+5)
 	if c.Checkout != "none" {
 		fmt.Fprintf(&out, "      - name: Explicit checkout\n        uses: %s\n        with:\n          persist-credentials: false\n", c.Checkout)
 	}
@@ -508,14 +509,13 @@ func githubExportWorkflow(ctx context.Context, p forge.Identity, o transferOptio
 	if err != nil {
 		return err
 	}
-	content, err := githubWorkflowContent(snapshot, config)
-	if err != nil {
-		return err
-	}
+	var content []byte
 	destination := githubWorkflowDestination{"github", p.Endpoint(), o.project, o.id, config}
 	scope := githubWorkflowScope(destination)
 	name := "workflow-export-" + strings.TrimPrefix(scope, "sha256:") + ".json"
-	checkpoint := githubWorkflowCheckpoint{Schema: "hn.github-workflow-export/1", Scope: scope, Destination: destination, Snapshot: snapshot}
+	// Decode into zero state: absent fields in an older snapshot must not
+	// inherit pointers or slices from the newer native snapshot.
+	var checkpoint githubWorkflowCheckpoint
 	loaded, err := forgeLoadJSON(name, &checkpoint)
 	if err != nil {
 		return err
@@ -525,7 +525,7 @@ func githubExportWorkflow(ctx context.Context, p forge.Identity, o transferOptio
 			return errors.New("workflow checkpoint destination differs from explicit selection")
 		}
 		if err := forgeAuthenticateResourceSnapshot(checkpoint.Snapshot); err != nil {
-			return err
+			return fmt.Errorf("saved workflow snapshot: %w", err)
 		}
 		oldContent, err := githubWorkflowContent(checkpoint.Snapshot, config)
 		if err != nil {
@@ -550,11 +550,22 @@ func githubExportWorkflow(ctx context.Context, p forge.Identity, o transferOptio
 		if !exists || current.SHA != checkpoint.Pending.ResultRevision || !bytes.Equal(current.Content, oldContent) {
 			return errors.New("workflow destination changed since the last confirmed exact export")
 		}
+		// A newer native projection cannot prevent confirmation of the exact
+		// previously dispatched intent. It is considered only after recovery.
+		content, err = githubWorkflowContent(snapshot, config)
+		if err != nil {
+			return err
+		}
 		if bytes.Equal(content, oldContent) {
 			return githubWorkflowReport(checkpoint, "exact intended source already present; no mutation")
 		}
 		return errors.New("native workflow changed after this export; repeat with current remote expected-sha for a fresh explicit content-CAS transfer")
 	} else {
+		checkpoint = githubWorkflowCheckpoint{Schema: "hn.github-workflow-export/1", Scope: scope, Destination: destination, Snapshot: snapshot}
+		content, err = githubWorkflowContent(snapshot, config)
+		if err != nil {
+			return err
+		}
 		current, exists, err := githubWorkflowReadDestination(ctx, g, o.project, config)
 		if err != nil {
 			return err
@@ -623,7 +634,7 @@ func githubWorkflowCheckImportedSource(ctx context.Context, g *githubForge, o tr
 				sameIdentity = true
 				break
 			}
-			if originalPath == o.mappings["path"] && source.Project == o.project {
+			if originalPath == o.mappings["path"] {
 				return errors.New("source workflow moved; map its current path or a distinct explicit destination")
 			}
 		}
@@ -631,7 +642,7 @@ func githubWorkflowCheckImportedSource(ctx context.Context, g *githubForge, o tr
 	// Mutable repository/path selectors do not replace immutable workflow identity.
 	// An explicitly different target file remains an ordinary cross-project export.
 	if !sameIdentity {
-		if source.Project == o.project && originalPath == o.mappings["path"] {
+		if originalPath == o.mappings["path"] {
 			return errors.New("original source workflow identity cannot be re-established")
 		}
 		return nil

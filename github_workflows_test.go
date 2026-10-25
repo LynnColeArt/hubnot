@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -441,5 +442,104 @@ func TestGitHubWorkflowCheckpointCannotSubstituteAnotherSignedWorkflow(t *testin
 	args := []string{"export", first.ResourceID, "--map", "format=actions", "--map", "branch=main", "--map", "path=.github/workflows/ci.yml", "--map", "expected-sha=" + config.ExpectedSHA, "--map", "runner=ubuntu-24.04", "--map", "trigger=workflow_dispatch", "--map", "checkout=none", "--map", "runtime=python3-posix"}
 	if _, err := workflowTransfer(t, f, args...); err == nil || f.writes != 0 || string(f.content) != "old\n" {
 		t.Fatal("substituted another signed workflow", err, f.writes)
+	}
+}
+
+// Regression cases from independent WP13 review.
+func TestGitHubWorkflowReviewRegressionRenamedRepoStillProtectsSource(t *testing.T) {
+	githubWorkflowReviewRepoRename(t, false)
+}
+func TestGitHubWorkflowReviewRegressionMovedSourceRepoRenameCannotBecomeCopy(t *testing.T) {
+	githubWorkflowReviewRepoRename(t, true)
+}
+func githubWorkflowReviewRepoRename(t *testing.T, moved bool) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "fixture-token")
+	f := newWorkflowGHFixture(t, "on: workflow_dispatch\n# original imported source\n")
+	original := f.server.Config.Handler
+	phase := false
+	f.server.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/repos/a/renamed/") {
+			copy := r.Clone(r.Context())
+			urlCopy := *r.URL
+			urlCopy.Path = strings.Replace(r.URL.Path, "/repos/a/renamed/", "/repos/a/b/", 1)
+			copy.URL = &urlCopy
+			r = copy
+		}
+		if phase && moved && r.URL.Path == "/repos/a/b/actions/workflows" {
+			json.NewEncoder(w).Encode(map[string]any{"total_count": 1, "workflows": []any{map[string]any{"id": 1, "node_id": "W_1", "name": "CI", "path": ".github/workflows/moved.yml", "state": "active"}}})
+			return
+		}
+		original.ServeHTTP(w, r)
+	})
+	if _, err := workflowTransfer(t, f, "import"); err != nil {
+		t.Fatal(err)
+	}
+	native := bridgeFamily(bridgeCatalog(t), ResourceWorkflow)[0].ID
+	f.content = []byte("on: push\n# independent human source at the old path\n")
+	phase = true
+	_, err := captureTestOutput(t, func() error {
+		return cmdTransfer([]string{"export", native, "--provider", "github", "--resource", "workflow", "--project", "a/renamed", "--endpoint", f.server.URL, "--map", "format=source", "--map", "branch=main", "--map", "path=.github/workflows/ci.yml", "--map", "expected-sha=" + workflowGHBlob(f.content)})
+	})
+	if err == nil || f.writes != 0 {
+		t.Fatalf("repository rename bypassed stable workflow source baseline: moved=%v error=%v writes=%d", moved, err, f.writes)
+	}
+}
+func TestGitHubWorkflowReviewRegressionRunnerRemainsYAMLString(t *testing.T) {
+	state := workflowTestState()
+	for _, runner := range []string{"true", "false", "null", "123", "1.2"} {
+		content, err := githubRenderNativeWorkflow(state, githubWorkflowExportConfig{Format: "actions", Runner: runner, Trigger: "workflow_dispatch", Checkout: "none", Runtime: "python3-posix"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(content), "    runs-on: "+strconv.Quote(runner)+"\n") {
+			t.Fatalf("runner lost exact string encoding: %s", content)
+		}
+		roundtrip, err := githubDecodeGeneratedWorkflow(content)
+		if err != nil || roundtrip.Name != state.Name {
+			t.Fatal(roundtrip, err)
+		}
+		if strings.Contains(string(content), "    runs-on: "+runner+"\n") {
+			t.Fatalf("explicit runner label %q is emitted as a YAML non-string scalar", runner)
+		}
+	}
+
+}
+
+func TestGitHubWorkflowReviewRegressionRecoveryPrecedesNewInvalidExportProjection(t *testing.T) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "fixture-token")
+	f := newWorkflowGHFixture(t, "old\n")
+	old := workflowGHBlob(f.content)
+	source := "on: workflow_dispatch\n"
+	opened := workflowOpenTest(t, WorkflowState{Schema: "hn.workflow/1", Name: "ci", Title: "Exact", SourceDocuments: []WorkflowSourceDocument{{Format: "github-actions-yaml", Content: source, Digest: eventID([]byte(source))}}})
+	args := []string{"export", opened.ResourceID, "--map", "format=source", "--map", "branch=main", "--map", "path=.github/workflows/ci.yml", "--map", "expected-sha=" + old}
+	f.lose = true
+	if _, err := workflowTransfer(t, f, args...); err == nil || f.writes != 1 {
+		t.Fatal(err, f.writes)
+	}
+	changed := WorkflowState{Schema: "hn.workflow/1", Name: "ci", Title: "Now native only", Pipeline: workflowTestState().Pipeline}
+	raw, err := ResourceStateJSON(ResourceWorkflow, changed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := MutateResource(ResourceMutation{Family: ResourceWorkflow, Intent: "revise", ID: opened.ResourceID, Expected: []string{opened.EventID}, State: raw}); err != nil {
+		t.Fatal(err)
+	}
+	// The remote exact old intent is visible and can be confirmed despite the
+	// latest local workflow no longer having a source document for this format.
+	_, recoveryErr := workflowTransfer(t, f, args...)
+	if recoveryErr == nil || !strings.Contains(recoveryErr.Error(), "source export requires exactly one") {
+		t.Fatalf("expected newer source projection to fail after reconciliation: %v", recoveryErr)
+	}
+	config := githubWorkflowExportConfig{Format: "source", Branch: "main", Path: ".github/workflows/ci.yml", ExpectedSHA: old}
+	destination := githubWorkflowDestination{"github", f.server.URL, "a/b", opened.ResourceID, config}
+	scope := githubWorkflowScope(destination)
+	var checkpoint githubWorkflowCheckpoint
+	if found, err := forgeLoadJSON("workflow-export-"+strings.TrimPrefix(scope, "sha256:")+".json", &checkpoint); err != nil || !found {
+		t.Fatal(err)
+	}
+	if checkpoint.Pending == nil || checkpoint.Pending.Phase != "confirmed" || f.writes != 1 {
+		t.Fatalf("new source projection blocked exact prior positive reconciliation: phase=%v writes=%d", checkpoint.Pending.Phase, f.writes)
 	}
 }
