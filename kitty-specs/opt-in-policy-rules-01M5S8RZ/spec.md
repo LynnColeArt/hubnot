@@ -49,3 +49,7 @@ All scenarios pass through native CLI/repository boundaries. A protected check c
 ## Assumptions and conservative first-version decisions
 
 Paths are literal repository-relative files, or directories ending in `/`; there are no globs. Automerge targets must exactly equal the proposal signed base, requiring a new candidate after target movement. Automated changes to protected checks or policy take the manual path even when reviewed. Protected approvals reuse exact existing review events and count independently from ordinary reviewer membership. Automation uses an explicitly listed maintainer identity and does not create a machine account.
+
+## Implementation boundary: automatic operation
+
+First-version automerge requires a full, non-promisor local repository. It refuses shallow and configured partial/promisor repositories before object reads, with explicit hydration or manual-merge guidance. This preserves read-only preview and no implicit network or recovery-record writes; existing manual collaboration and selected shallow recovery are unchanged. No new shallow or partial-clone support is claimed.

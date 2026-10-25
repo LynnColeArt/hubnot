@@ -58,3 +58,7 @@ Path protection does not cover unlisted indirect scripts or arbitrary source-lev
 ## Planning review resolutions
 
 Independent review found the pre-opt-in-base bypass and separate quarantine admission. Both are explicitly covered in FR-004/WP01. For automatic advancement, the expected base must reach the actual Git ref transaction, not only a check before launching git merge. A prepared update-ref transaction can lock the expected target while a safe index/worktree update completes; because auto requires target=base and head descended from base, the head tree can form the merge tree. Implementation must verify this or use an equally sound lease, preserve unrelated work on refusal, and retain signed merge fact/repair semantics.
+
+## Read-only automatic preflight
+
+Existing Git readers can lazily fetch promised objects, and shallow-dependency classification may write recovery metadata. Avoid a broad Git/shallow API refactor: auto preflight reads bounded local metadata and refuses shallow or configured partial/promisor repositories before object reads. This is an explicit first-version auto-only support boundary; existing manual commands retain their behavior. Public acceptance proves full default/nogithub and keyless preview, plus metadata-only refusals.
