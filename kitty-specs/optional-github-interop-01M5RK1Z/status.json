@@ -1,7 +1,7 @@
 {
-  "event_count": 64,
-  "last_event_id": "01M5RV8N9MQRSQY5SBR65RTHE2",
-  "materialized_at": "2026-10-25T06:16:46.132270+00:00",
+  "event_count": 65,
+  "last_event_id": "01M5RVBEW5ZQ8907PHKP48QSY4",
+  "materialized_at": "2026-10-25T06:18:17.861755+00:00",
   "mission_number": "",
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
-    "in_progress": 1,
+    "for_review": 2,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 4
   },
@@ -330,9 +330,9 @@
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 1,
-      "lane": "in_progress",
-      "last_event_id": "01M5RTTE0FJ2ZQ9204AY4K8Z3K",
-      "last_transition_at": "2026-10-25T06:08:59.918886+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M5RVBEW5ZQ8907PHKP48QSY4",
+      "last_transition_at": "2026-10-25T06:18:17.861755+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review at 3ca117ae: bounded GraphQL and typed discussions; all 15 documents official-schema validated; full Go race, package race, vet/build, nogithub build/exclusion, formatting and diff checks pass",
@@ -350,10 +350,10 @@
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
-        "T048": "planned",
-        "T063": "planned",
-        "T064": "planned",
-        "T065": "planned"
+        "T048": "done",
+        "T063": "done",
+        "T064": "done",
+        "T065": "done"
       }
     }
   }
