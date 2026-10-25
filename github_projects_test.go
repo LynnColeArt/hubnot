@@ -848,3 +848,170 @@ func TestGithubProjectSourceNewNativeDraftRetainsBindingAcrossUpdates(t *testing
 		t.Fatal("new native draft duplicated")
 	}
 }
+
+func TestGithubProjectRecoveryPreservesConcurrentRemoteChanges(t *testing.T) {
+	issueCommandTestRepo(t)
+	p := projectFixture()
+	fake := &githubProjectFake{p: &p}
+	endpoint := githubProjectServer(t, fake)
+	if err := runForgeTransfer(githubProjectOptions("import", endpoint, "user:a/1", "")); err != nil {
+		t.Fatal(err)
+	}
+	root := bridgeFamily(bridgeCatalog(t), ResourceProject)[0]
+	var project ProjectState
+	json.Unmarshal(root.State, &project)
+	project.Title = "Local new title"
+	if _, err := MutateResource(ResourceMutation{Family: ResourceProject, Intent: "revise", ID: root.ID, Expected: []string{root.Heads[0].ID}, State: resourceState(t, ResourceProject, project)}); err != nil {
+		t.Fatal(err)
+	}
+	item := bridgeFamily(bridgeCatalog(t), ResourceProjectItem)[0]
+	var state ProjectItemState
+	json.Unmarshal(item.State, &state)
+	state.Target.Body = "Local draft edit"
+	if _, err := MutateResource(ResourceMutation{Family: ResourceProjectItem, Intent: "revise", ID: item.ID, Expected: []string{item.Heads[0].ID}, State: resourceState(t, ResourceProjectItem, state)}); err != nil {
+		t.Fatal(err)
+	}
+	o := githubProjectOptions("export", endpoint, "user:a/1", root.ID)
+	fake.lost = "draft-update"
+	if err := runForgeTransfer(o); err == nil {
+		t.Fatal("missing lost response")
+	}
+	fake.p.Title = "Concurrent remote title"
+	before := fake.mutations
+	if err := runForgeTransfer(o); err == nil {
+		t.Fatal("adopted concurrent edit")
+	}
+	if fake.mutations != before || fake.p.Title != "Concurrent remote title" {
+		t.Fatal("overwrote remote title during recovery")
+	}
+}
+func TestGithubProjectLiteralBindingLikeContentIsOpaque(t *testing.T) {
+	issueCommandTestRepo(t)
+	p := projectFixture()
+	p.Fields = append(p.Fields, githubapi.ProjectField{ID: "F_t", Name: "Text", DataType: "TEXT"})
+	fake := &githubProjectFake{p: &p}
+	endpoint := githubProjectServer(t, fake)
+	if err := runForgeTransfer(githubProjectOptions("import", endpoint, "user:a/1", "")); err != nil {
+		t.Fatal(err)
+	}
+	root := bridgeFamily(bridgeCatalog(t), ResourceProject)[0]
+	var project ProjectState
+	json.Unmarshal(root.State, &project)
+	project.Title = "$hn:project"
+	project.Body = "$hn:readme"
+	project.Fields[0].Name = "$hn:owner"
+	revised, err := MutateResource(ResourceMutation{Family: ResourceProject, Intent: "revise", ID: root.ID, Expected: []string{root.Heads[0].ID}, State: resourceState(t, ResourceProject, project)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	item := bridgeFamily(bridgeCatalog(t), ResourceProjectItem)[0]
+	var state ProjectItemState
+	json.Unmarshal(item.State, &state)
+	state.ProjectRevision = revised.EventID
+	state.Target.Title = "$hn:owner"
+	state.Target.Body = "$hn:project"
+	state.Values[githubProjectID("F_t")] = ProjectValue{Type: "text", Text: "$hn:project"}
+	if _, err := MutateResource(ResourceMutation{Family: ResourceProjectItem, Intent: "revise", ID: item.ID, Expected: []string{item.Heads[0].ID}, State: resourceState(t, ResourceProjectItem, state)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := runForgeTransfer(githubProjectOptions("export", endpoint, "user:a/1", root.ID)); err != nil {
+		t.Fatal(err)
+	}
+	if fake.p.Title != project.Title || fake.p.Readme != project.Body || fake.p.Fields[0].Name != project.Fields[0].Name || fake.p.Items[0].Content.Title != state.Target.Title || fake.p.Items[0].Content.Body != state.Target.Body {
+		t.Fatal("literal content was interpreted as a binding")
+	}
+	found := false
+	for _, v := range fake.p.Items[0].Values {
+		if v.FieldID == "F_t" && v.Text == "$hn:project" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("literal text value changed")
+	}
+}
+
+func TestGithubProjectEachRecoveredMutationPreservesUnrelatedState(t *testing.T) {
+	for _, action := range []string{"field-update", "draft-update", "value-set", "update"} {
+		t.Run(action, func(t *testing.T) {
+			issueCommandTestRepo(t)
+			p := projectFixture()
+			fake := &githubProjectFake{p: &p}
+			endpoint := githubProjectServer(t, fake)
+			if err := runForgeTransfer(githubProjectOptions("import", endpoint, "user:a/1", "")); err != nil {
+				t.Fatal(err)
+			}
+			root := bridgeFamily(bridgeCatalog(t), ResourceProject)[0]
+			var project ProjectState
+			json.Unmarshal(root.State, &project)
+			project.Title = "Local title"
+			project.Fields[0].Name = "Local field"
+			revision, err := MutateResource(ResourceMutation{Family: ResourceProject, Intent: "revise", ID: root.ID, Expected: []string{root.Heads[0].ID}, State: resourceState(t, ResourceProject, project)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			item := bridgeFamily(bridgeCatalog(t), ResourceProjectItem)[0]
+			var state ProjectItemState
+			json.Unmarshal(item.State, &state)
+			state.ProjectRevision = revision.EventID
+			state.Target.Body = "Local body"
+			state.Values[githubProjectID("F_n")] = ProjectValue{Type: "number", Number: "2.5"}
+			if _, err := MutateResource(ResourceMutation{Family: ResourceProjectItem, Intent: "revise", ID: item.ID, Expected: []string{item.Heads[0].ID}, State: resourceState(t, ResourceProjectItem, state)}); err != nil {
+				t.Fatal(err)
+			}
+			o := githubProjectOptions("export", endpoint, "user:a/1", root.ID)
+			fake.lost = action
+			if err := runForgeTransfer(o); err == nil {
+				t.Fatal("missing lost response")
+			}
+			if fake.lost != "" {
+				t.Fatal("did not reach selected mutation")
+			}
+			if action == "update" {
+				fake.p.Items[0].Content.Body = "Concurrent item body"
+			} else {
+				fake.p.Readme = "Concurrent readme"
+			}
+			before := fake.mutations
+			if err := runForgeTransfer(o); err == nil {
+				t.Fatal("adopted unrelated state")
+			}
+			if fake.mutations != before {
+				t.Fatal("wrote after concurrent change")
+			}
+			if action == "update" && fake.p.Items[0].Content.Body != "Concurrent item body" || action != "update" && fake.p.Readme != "Concurrent readme" {
+				t.Fatal("lost concurrent content")
+			}
+		})
+	}
+}
+func TestGithubProjectRecoveredNewItemCannotAdoptHumanValues(t *testing.T) {
+	issueCommandTestRepo(t)
+	p := projectFixture()
+	fake := &githubProjectFake{p: &p}
+	endpoint := githubProjectServer(t, fake)
+	if err := runForgeTransfer(githubProjectOptions("import", endpoint, "user:a/1", "")); err != nil {
+		t.Fatal(err)
+	}
+	root := bridgeFamily(bridgeCatalog(t), ResourceProject)[0]
+	state := ProjectItemState{Schema: "hn.project-item/1", ProjectID: root.ID, ProjectRevision: root.Heads[0].ID, Target: ProjectTarget{Kind: "draft", Title: "Native addition", Body: "Native body"}, Position: "2", Values: map[string]ProjectValue{githubProjectID("F_n"): {Type: "number", Number: "2.5"}}}
+	if _, err := MutateResource(ResourceMutation{Family: ResourceProjectItem, Intent: "open", State: resourceState(t, ResourceProjectItem, state)}); err != nil {
+		t.Fatal(err)
+	}
+	o := githubProjectOptions("export", endpoint, "user:a/1", root.ID)
+	fake.lost = "item-draft"
+	if err := runForgeTransfer(o); err == nil {
+		t.Fatal("missing lost response")
+	}
+	if len(fake.p.Items) != 2 {
+		t.Fatal("draft did not apply")
+	}
+	fake.p.Items[1].Values = []githubapi.ProjectValue{{Type: "ProjectV2ItemFieldNumberValue", FieldID: "F_n", Number: "9"}}
+	before := fake.mutations
+	if err := runForgeTransfer(o); err == nil {
+		t.Fatal("adopted human field value on created item")
+	}
+	if fake.mutations != before || fake.p.Items[1].Values[0].Number != "9" {
+		t.Fatal("overwrote human field value")
+	}
+}

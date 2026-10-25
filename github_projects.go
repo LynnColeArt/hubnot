@@ -251,6 +251,7 @@ type githubProjectCheckpoint struct {
 	Next                                             int
 	Pending                                          *forgeRemoteIntent
 	RemoteDigest                                     string
+	PendingInvariant                                 string
 	Complete                                         bool
 }
 
@@ -268,64 +269,221 @@ func githubProjectRoot(s forgeResourceSnapshot) (forge.Node, error) {
 	}
 	return forge.Node{}, errors.New("native project root missing")
 }
+func githubProjectCopyRemote(p githubapi.ProjectV2) (githubapi.ProjectV2, error) {
+	raw, err := json.Marshal(p)
+	if err != nil {
+		return p, err
+	}
+	var out githubapi.ProjectV2
+	if err = json.Unmarshal(raw, &out); err != nil {
+		return p, err
+	}
+	return out, nil
+}
 func githubProjectRemoteDigest(p githubapi.ProjectV2) string {
+	p, _ = githubProjectCopyRemote(p)
 	p.UpdatedAt = ""
 	p.CreatedAt = ""
 	p.Creator = ""
+	if len(p.Fields) == 0 {
+		p.Fields = nil
+	}
+	if len(p.Items) == 0 {
+		p.Items = nil
+	}
+	if len(p.Views) == 0 {
+		p.Views = nil
+	}
+	for i := range p.Fields {
+		if len(p.Fields[i].Options) == 0 {
+			p.Fields[i].Options = nil
+		}
+	}
 	for i := range p.Items {
 		p.Items[i].UpdatedAt = ""
 		p.Items[i].CreatedAt = ""
 		p.Items[i].Creator = ""
+		if len(p.Items[i].Values) == 0 {
+			p.Items[i].Values = nil
+		}
 	}
 	return forgeDigestJSON(p)
 }
+
+// The journal authenticates this pre-step invariant as well as the exact write.
+// Positive recovery may change only the mutation's declared target fields; all
+// unrelated remote state must still equal the original pre-step observation.
+func githubProjectStepInvariant(p githubapi.ProjectV2, step githubProjectStep, input map[string]any) (string, error) {
+	var err error
+	p, err = githubProjectCopyRemote(p)
+	if err != nil {
+		return "", err
+	}
+	str := func(k string) string { v, _ := input[k].(string); return v }
+	switch step.Action {
+	case "create":
+		if p.Readme != "" || p.Closed || p.ShortDescription != "" || len(p.Items) != 0 {
+			return "", errors.New("new project has changes outside its exact create intent")
+		}
+		return eventID([]byte("hn.github-project-absent/1")), nil
+	case "update":
+		p.Title = ""
+		p.Readme = ""
+		p.Closed = false
+	case "field-create":
+		fields := []githubapi.ProjectField{}
+		for _, f := range p.Fields {
+			if f.Name != str("name") {
+				fields = append(fields, f)
+			}
+		}
+		p.Fields = fields
+	case "field-update":
+		for i := range p.Fields {
+			if p.Fields[i].ID == str("fieldId") {
+				p.Fields[i].Name = ""
+			}
+		}
+	case "view-create":
+		views := []githubapi.ProjectView{}
+		for _, v := range p.Views {
+			if v.Name != str("name") {
+				views = append(views, v)
+			}
+		}
+		p.Views = views
+	case "view-update":
+		for i := range p.Views {
+			if p.Views[i].ID == str("viewId") {
+				p.Views[i].Name = ""
+				p.Views[i].Layout = ""
+			}
+		}
+	case "item-draft", "item-content":
+		items := []githubapi.ProjectItem{}
+		for _, item := range p.Items {
+			match := item.Content != nil && (step.Action == "item-draft" && item.Content.Type == "DraftIssue" && item.Content.Title == str("title") && item.Content.Body == str("body") || step.Action == "item-content" && item.Content.ID == str("contentId"))
+			if !match {
+				items = append(items, item)
+				continue
+			}
+			for _, v := range item.Values {
+				for _, field := range p.Fields {
+					if v.FieldID == field.ID {
+						switch field.DataType {
+						case "TEXT", "NUMBER", "DATE", "SINGLE_SELECT":
+							return "", errors.New("new item acquired custom values outside the exact add intent")
+						}
+					}
+				}
+			}
+		}
+		p.Items = items
+	case "draft-update":
+		for i := range p.Items {
+			if p.Items[i].Content != nil && p.Items[i].Content.ID == str("draftIssueId") {
+				p.Items[i].Content.Title = ""
+				p.Items[i].Content.Body = ""
+			}
+		}
+	case "value-set", "value-clear":
+		for i := range p.Items {
+			if p.Items[i].ID == str("itemId") {
+				values := []githubapi.ProjectValue{}
+				for _, v := range p.Items[i].Values {
+					if v.FieldID != str("fieldId") {
+						values = append(values, v)
+					}
+				}
+				p.Items[i].Values = values
+			}
+		}
+	case "item-archive", "item-unarchive":
+		for i := range p.Items {
+			if p.Items[i].ID == str("itemId") {
+				p.Items[i].Archived = false
+			}
+		}
+	case "item-position":
+		others := []githubapi.ProjectItem{}
+		var moving *githubapi.ProjectItem
+		for _, item := range p.Items {
+			if item.ID == str("itemId") {
+				copy := item
+				moving = &copy
+			} else {
+				others = append(others, item)
+			}
+		}
+		if moving == nil {
+			return "", errors.New("positioned item is absent from pre-step snapshot")
+		}
+		p.Items = append(others, *moving)
+	default:
+		return "", errors.New("unknown project mutation invariant")
+	}
+	return githubProjectRemoteDigest(p), nil
+}
+
 func githubProjectCompact(id string) forgeRemoteResult {
 	return forgeRemoteObserved(id, "", "", struct {
 		ID string `json:"id"`
 	}{id})
 }
-func githubProjectInput(raw map[string]any, bindings map[string]string) (map[string]any, error) {
-	b, _ := json.Marshal(raw)
+
+// Bindings are typed records in action-specific identity slots. Native text is
+// always opaque, even when it happens to spell a former placeholder token.
+type githubProjectInputRef struct {
+	Binding string `json:"hn_binding"`
+}
+
+func githubProjectInput(action string, raw map[string]any, bindings map[string]string) (map[string]any, error) {
+	b, err := json.Marshal(raw)
+	if err != nil {
+		return nil, errors.New("invalid project step")
+	}
 	var out map[string]any
 	if json.Unmarshal(b, &out) != nil {
 		return nil, errors.New("invalid project step")
 	}
-	var replace func(any) (any, error)
-	replace = func(v any) (any, error) {
-		switch x := v.(type) {
-		case string:
-			if strings.HasPrefix(x, "$hn:") {
-				r, ok := bindings[strings.TrimPrefix(x, "$hn:")]
-				if !ok || r == "" {
-					return nil, errors.New("missing exact project step binding")
-				}
-				return r, nil
-			}
-			return x, nil
-		case map[string]any:
-			for k, v := range x {
-				r, e := replace(v)
-				if e != nil {
-					return nil, e
-				}
-				x[k] = r
-			}
-		case []any:
-			for i, v := range x {
-				r, e := replace(v)
-				if e != nil {
-					return nil, e
-				}
-				x[i] = r
+	slots, known := map[string]string{"create": "ownerId", "update": "projectId readme", "field-create": "projectId", "field-update": "fieldId", "item-content": "projectId contentId", "item-draft": "projectId", "draft-update": "draftIssueId", "value-set": "projectId itemId fieldId", "value-clear": "projectId itemId fieldId", "item-archive": "projectId itemId", "item-unarchive": "projectId itemId", "item-position": "projectId itemId afterId", "view-create": "projectId", "view-update": "viewId"}[action]
+	if !known {
+		return nil, errors.New("unknown typed project step")
+	}
+	resolve := func(v any) (any, error) {
+		ref, ok := v.(map[string]any)
+		if !ok {
+			return v, nil
+		}
+		key, ok := ref["hn_binding"].(string)
+		if !ok || len(ref) != 1 {
+			return nil, errors.New("invalid typed project identity binding")
+		}
+		value, ok := bindings[key]
+		if !ok || value == "" {
+			return nil, errors.New("missing exact project step binding")
+		}
+		return value, nil
+	}
+	for _, slot := range strings.Fields(slots) {
+		if v, ok := out[slot]; ok {
+			out[slot], err = resolve(v)
+			if err != nil {
+				return nil, err
 			}
 		}
-		return v, nil
 	}
-	v, err := replace(out)
-	if err != nil {
-		return nil, err
+	if action == "value-set" {
+		if value, ok := out["value"].(map[string]any); ok {
+			if v, exists := value["singleSelectOptionId"]; exists {
+				value["singleSelectOptionId"], err = resolve(v)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
-	return v.(map[string]any), nil
+	return out, nil
 }
 
 func githubProjectNativeItems(s forgeResourceSnapshot) []forge.Node {
@@ -351,7 +509,7 @@ func githubProjectNativeItems(s forgeResourceSnapshot) []forge.Node {
 	})
 	return out
 }
-func githubProjectBinding(id string) string { return "$hn:" + id }
+func githubProjectBinding(id string) githubProjectInputRef { return githubProjectInputRef{id} }
 func githubProjectFieldType(typ string) string {
 	return map[string]string{"text": "TEXT", "number": "NUMBER", "date": "DATE", "single_select": "SINGLE_SELECT"}[typ]
 }
@@ -362,9 +520,9 @@ func githubProjectValueInput(v forge.Value, field string, bindings bool) (map[st
 	case "date":
 		return map[string]any{"date": v.Date}, nil
 	case "single_select":
-		id := v.OptionID
+		id := any(v.OptionID)
 		if bindings {
-			id = githubProjectBinding("option:" + field + ":" + id)
+			id = githubProjectBinding("option:" + field + ":" + v.OptionID)
 		}
 		return map[string]any{"singleSelectOptionId": id}, nil
 	case "number":
@@ -571,7 +729,7 @@ func githubPlanProject(s forgeResourceSnapshot, o transferOptions, endpoint stri
 			valueInput := map[string]any{"projectId": projectID, "itemId": githubProjectBinding(key), "fieldId": githubProjectBinding("field:" + field), "value": v}
 			already := false
 			if remote != nil && rid != "" {
-				resolved, e := githubProjectInput(valueInput, bindings)
+				resolved, e := githubProjectInput("value-set", valueInput, bindings)
 				if e == nil {
 					_, already, _ = githubProjectVerifyStep(githubProjectStep{Action: "value-set"}, resolved, *remote)
 				}
@@ -658,11 +816,11 @@ func githubPlanProject(s forgeResourceSnapshot, o transferOptions, endpoint stri
 			return nil, nil, errors.New("unrecognized or unused project export mapping key")
 		}
 	}
-	body := root.Project.Body
+	body := any(root.Project.Body)
 	if !sameSource {
 		body = githubProjectBinding("readme")
 	}
-	expectedBody := body
+	expectedBody := root.Project.Body
 	if !sameSource {
 		expectedBody = githubProjectReadme(githubProjectCheckpoint{Snapshot: s, Bindings: bindings})
 	}
@@ -691,7 +849,7 @@ func githubProjectResolveStep(cp githubProjectCheckpoint, step githubProjectStep
 		b[k] = v
 	}
 	b["readme"] = githubProjectReadme(cp)
-	return githubProjectInput(step.Input, b)
+	return githubProjectInput(step.Action, step.Input, b)
 }
 
 // Preflight every future journal form, reserving the maximum escaped remote ID
@@ -740,6 +898,7 @@ func githubProjectCheckpointBudget(cp githubProjectCheckpoint) error {
 			largest = payload
 		}
 	}
+	worst.PendingInvariant = eventID([]byte("worst invariant"))
 	worst.Next = len(worst.Steps)
 	worst.Pending = &forgeRemoteIntent{Schema: "hn.forge-remote-intent/1", Scope: cp.Scope, Provider: "github", Endpoint: cp.Endpoint, Kind: "project", Action: strings.Repeat("a", 64), NativeID: cp.Snapshot.NativeID, NativeRevision: cp.Snapshot.NativeRevision, TargetID: maxID, Payload: largest, PayloadDigest: eventID(largest), Phase: "confirmed", ResultID: maxID, ResultPayload: json.RawMessage(`{"id":"` + maxID + `"}`), ResultDigest: eventID([]byte(maxID))}
 	b, err := json.Marshal(worst)
@@ -1279,9 +1438,20 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 			if remote != nil && cp.RemoteDigest != "" && githubProjectRemoteDigest(*remote) != cp.RemoteDigest {
 				return errors.New("remote project changed between transfer steps")
 			}
+			if remote == nil {
+				cp.PendingInvariant = eventID([]byte("hn.github-project-absent/1"))
+			} else {
+				cp.PendingInvariant, e = githubProjectStepInvariant(*remote, step, input)
+				if e != nil {
+					return e
+				}
+			}
 			cp.Pending = &forgeRemoteIntent{Schema: "hn.forge-remote-intent/1", Scope: scope, Provider: "github", Endpoint: g.Endpoint(), Kind: "project", Action: step.Action, NativeID: step.NativeID, NativeRevision: step.NativeRevision, TargetID: cp.Bindings["project"], Payload: payload, PayloadDigest: eventID(payload), Phase: "prepared"}
 		}
 		intent := cp.Pending
+		if !validEventID(cp.PendingInvariant) {
+			return errors.New("project recovery lacks authenticated pre-step invariant; reconcile manually")
+		}
 		if intent.Scope != scope || intent.Provider != "github" || intent.Endpoint != g.Endpoint() || intent.Kind != "project" || intent.Action != step.Action || intent.NativeID != step.NativeID || intent.NativeRevision != step.NativeRevision || string(intent.Payload) != string(payload) || intent.TargetID != cp.Bindings["project"] {
 			return errors.New("saved project intent differs from frozen native step")
 		}
@@ -1318,6 +1488,10 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 				return forgeRemoteResult{}, false, e
 			}
 			if found {
+				invariant, err := githubProjectStepInvariant(*p, step, input)
+				if err != nil || invariant != cp.PendingInvariant {
+					return forgeRemoteResult{}, false, errors.New("remote project changed outside the exact pending mutation; manual reconciliation required")
+				}
 				remote = p
 				return githubProjectCompact(id), true, nil
 			}
@@ -1350,6 +1524,10 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 				if e != nil || !found {
 					return forgeRemoteResult{}, errors.New("project mutation result differs from exact intent")
 				}
+				invariant, err := githubProjectStepInvariant(*p, step, input)
+				if err != nil || invariant != cp.PendingInvariant {
+					return forgeRemoteResult{}, errors.New("created project differs from exact pending construction; reconcile manually")
+				}
 				remote = p
 				return githubProjectCompact(rid), nil
 			}
@@ -1374,6 +1552,10 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 			if e != nil || !found || r.ID != id {
 				return errors.New("confirmed project result differs from exact observed intent")
 			}
+			invariant, e := githubProjectStepInvariant(*remote, step, input)
+			if e != nil || invariant != cp.PendingInvariant {
+				return errors.New("confirmed project observation includes an unrelated remote change; reconcile manually")
+			}
 			return nil
 		})
 		if e != nil {
@@ -1391,6 +1573,7 @@ func githubExportProject(ctx context.Context, identity forge.Identity, o transfe
 		cp.RemoteDigest = githubProjectRemoteDigest(*remote)
 		cp.Next++
 		cp.Pending = nil
+		cp.PendingInvariant = ""
 		if e = save(); e != nil {
 			return e
 		}
@@ -1457,7 +1640,7 @@ func githubProjectMatchesSnapshot(cp githubProjectCheckpoint, p githubapi.Projec
 			if err != nil {
 				return err
 			}
-			input, err := githubProjectInput(map[string]any{"itemId": rid, "fieldId": cp.Bindings["field:"+field], "value": value}, cp.Bindings)
+			input, err := githubProjectInput("value-set", map[string]any{"itemId": rid, "fieldId": cp.Bindings["field:"+field], "value": value}, cp.Bindings)
 			if err != nil {
 				return err
 			}
