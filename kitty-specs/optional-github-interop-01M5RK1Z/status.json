@@ -1,7 +1,7 @@
 {
-  "event_count": 53,
-  "last_event_id": "01M5RSBJYPY60AVJWR11DZDMP8",
-  "materialized_at": "2026-10-25T05:43:24.886104+00:00",
+  "event_count": 54,
+  "last_event_id": "01M5RSHNCWMVZTD7QHVAQCX04K",
+  "materialized_at": "2026-10-25T05:46:43.996145+00:00",
   "mission_number": "",
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 2,
+    "for_review": 1,
+    "in_progress": 1,
     "in_review": 0,
     "planned": 5
   },
@@ -253,14 +253,20 @@
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M5RR7V1CNAX0BNNTY5AJ9W8G",
-      "last_transition_at": "2026-10-25T05:23:53.516466+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M5RSHNCWMVZTD7QHVAQCX04K",
+      "last_transition_at": "2026-10-25T05:46:43.996145+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
-      "shell_pid_created_at": "1792851034.54"
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T039": "done",
+        "T040": "done",
+        "T041": "done",
+        "T042": "done"
+      }
     },
     "WP10": {
       "actor": "codex",
