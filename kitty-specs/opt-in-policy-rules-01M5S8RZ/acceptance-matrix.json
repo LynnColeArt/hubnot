@@ -8,10 +8,10 @@
       "criterion_id": "FR-001",
       "description": "Both capabilities are absent/disabled by default and independent. Initialization, upgrade and imports never enable them.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:20:16.734723+00:00",
       "notes": "Verification pending implementation and independent review."
     },
     {
