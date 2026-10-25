@@ -121,7 +121,9 @@ func runForgeTransfer(o transferOptions) error {
 	if registration.TokenEnv != "" {
 		token = os.Getenv(registration.TokenEnv)
 	}
-	if registration.NewResource != nil {
+	if o.resource == forge.ResourceIssue && registration.New != nil {
+		provider, err = registration.New(o.endpoint, token)
+	} else if registration.NewResource != nil {
 		provider, err = registration.NewResource(o.endpoint, token)
 	} else if registration.New != nil {
 		provider, err = registration.New(o.endpoint, token)

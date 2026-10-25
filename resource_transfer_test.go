@@ -713,3 +713,30 @@ func TestResourceBridgeBindsWholeFutureGraphAfterInterruption(t *testing.T) {
 		t.Fatal("changed future graph signed")
 	}
 }
+
+func TestResourceBridgeKeepsIssueFactoryIndependent(t *testing.T) {
+	issueCommandTestRepo(t)
+	newForgeExportFake(t)
+	registration := forgeProviders["other"]
+	resourceCalls := 0
+	registration.NewResource = func(string, string) (forge.Identity, error) {
+		resourceCalls++
+		return nil, errors.New("resource-only factory selected")
+	}
+	registration.Capabilities = append(registration.Capabilities, forge.Capability{Resource: forge.ResourceProject, Import: true})
+	forgeProviders["other"] = registration
+	o := transferOptions{command: "import", provider: "other", project: "scope", resource: forge.ResourceIssue}
+	if err := runForgeTransfer(o); err != nil {
+		t.Fatal("resource-only factory intercepted existing issue provider", err)
+	}
+	if resourceCalls != 0 {
+		t.Fatal("issue factory bypassed")
+	}
+	o.resource = forge.ResourceProject
+	if err := runForgeTransfer(o); err == nil || !strings.Contains(err.Error(), "resource-only factory") {
+		t.Fatal("resource factory not selected", err)
+	}
+	if resourceCalls != 1 {
+		t.Fatal("resource factory call count")
+	}
+}
