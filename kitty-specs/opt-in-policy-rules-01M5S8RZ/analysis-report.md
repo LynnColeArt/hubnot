@@ -4,15 +4,15 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: opt-in-policy-rules-01M5S8RZ
 mission_id: 01M5S8RZS9K85MQ915K59HED71
-generated_at: '2026-10-25T10:51:45.049571+00:00'
+generated_at: '2026-10-25T11:14:48.933543+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
     path: kitty-specs/opt-in-policy-rules-01M5S8RZ/spec.md
-    sha256: 114f9482d274b663951a8f5f12968176999136b1217f56826864e8c72505018b
+    sha256: 38f89b14d78ff629d7fbbef74909b8056a2ae93297f87b6e404d24557863c186
   plan.md:
     path: kitty-specs/opt-in-policy-rules-01M5S8RZ/plan.md
-    sha256: 4e7656a5396811206a7a2740994533955d87e3e8a7f6d0c6fe4fb814fe9155ab
+    sha256: d11ec38264eb0acf1ad023bc0873932e8b35ac53c32f0676ff94bed528ab6203
   tasks.md:
     path: kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks.md
     sha256: e536f1052e06264c8b9183213b4cf29eadf1a9f7017c937f92c5b07fecce0623
@@ -21,10 +21,10 @@ input_artifacts:
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
 verdict: ready
 issue_counts:
-  high: 0
+  medium: 0
   low: 0
   critical: 0
-  medium: 0
+  high: 0
   info: 0
 findings: []
 ---
@@ -44,3 +44,5 @@ Spec, plan, tasks and project charter reviewed. Independent planning review iden
 Charter alignment: HN-001 native Git; HN-002 exact base/candidate/review/run evidence; HN-003 bounded changes and explicit authority; HN-004 revisions refresh evidence; HN-005 protocol/threat/user docs in WP03. Test-first and independent source-bound review are mandatory. No unmapped tasks or unresolved discovery decisions. Implementation must demonstrate actual lease and read-only preview semantics; tests alone do not substitute for code-path review.
 
 Automatic read-only preflight boundary refined during implementation: auto only refuses shallow or configured partial/promisor repositories before object reads, avoiding existing lazy Git fetch and shallow recovery-record side effects. Full local repositories are the supported automatic topology; existing manual recovery unchanged. This is recorded in spec/plan assumptions, not a hidden change to optional defaults or trust authority. WP02/public CLI tests and docs must cover the refusal. No additional authority or unresolved requirement gap.
+
+Post-approval adversarial code finding: same-policy target lint reversion was reproduced exactly (B protected lenient lint, T tighter samepolicy, H includes T then restores B lint plus docs). Base-to-head docs-only previously passed acceptance/manual merge without designation. Spec/plan/WP01 now explicitly require revision if protected paths changed from signed base to current target; canonical WP01 approval was cleared and package reopened with feedback2. This report approves planning for the correction, not the flawed implementation; independent code approval and source verification remain required before acceptance/consolidation. Auto exactbase target already excludes this route. No planning ambiguity remains; FR-004 mapped to reopened WP01.
