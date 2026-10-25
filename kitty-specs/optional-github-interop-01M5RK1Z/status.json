@@ -155,7 +155,8 @@
       "last_transition_at": "2026-10-25T08:28:08.979330+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Exact integrated source 4ee9ed8b independently pre-audited clean; original integration RED-fix-GREEN retained. Full race main497.342s/API10.855s and full nogithub158.833s pass; both vet/builds/deps/format/diff/JSON docs checks pass. Five explicit source ownership exceptions are authorized in primary WP05. Root executed final suites and handoff for implementer."
+        "Exact integrated source 4ee9ed8b independently pre-audited clean; original integration RED-fix-GREEN retained. Full race main497.342s/API10.855s and full nogithub158.833s pass; both vet/builds/deps/format/diff/JSON docs checks pass. Five explicit source ownership exceptions are authorized in primary WP05. Root executed final suites and handoff for implementer.",
+        "Independent Renata approval at exact 4ee9ed8b: public default/nogithub/Git/keyless/workflow acceptance, complete issue-journal signature and future budget, populated historical project schema preflight, all FR001-FR020 trace and final exact full gates pass. Explicit coordinated source exceptions: main.go, github_export.go/test, github_projects.go/test. Evidence ebb85dd914edba5b6dfc5cc5ab4a7c58f6ebd737; no source edits or bypass."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
