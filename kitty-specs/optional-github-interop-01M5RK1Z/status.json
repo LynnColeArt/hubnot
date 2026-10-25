@@ -59,7 +59,8 @@
       "last_transition_at": "2026-10-25T04:15:46.631859+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: bounded optional GitHub REST client; full Go race suite, latest package race/vet/build/nogithub/gofmt/diff passed; pagination whitespace/case review finding fixed"
+        "Ready for independent review: bounded optional GitHub REST client; full Go race suite, latest package race/vet/build/nogithub/gofmt/diff passed; pagination whitespace/case review finding fixed",
+        "Independent review approves bb36153; R1 mixed-case Link truncation fixed and independently red/green verified; Unicode/limits/token safety and nogithub probes pass; complete source-bound evidence in independent-review-1.md; native coordinators remain WP03/WP04 scope."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
