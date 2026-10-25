@@ -82,7 +82,7 @@ Compatibility preserves useful command/flag/JSON conventions, while native ident
 
 ## Additional user steering: provider portability
 
-The user requested alternate providers and eventual import/export/migration of projects and workflows at will. The immediate design therefore uses a provider-neutral transfer system, with GitHub as its first adapter. No specific alternate provider or workflow format was named. This delivery establishes explicit resource/capability reports and provider extension contracts, and implements issue transfer; concrete project/workflow conversion requires source/destination mappings and must report manual or unsupported semantics before writes. A scope question is pending; independent provider-neutral issue work continues meanwhile.
+The user requested alternate providers and eventual import/export/migration of projects and workflows at will. The immediate design therefore uses a provider-neutral transfer system, with GitHub as its first adapter. No specific alternate provider or workflow format was named. This delivery implements native issues, discussions, projects and workflows with optional GitHub transfer adapters and explicit resource/capability reports. Concrete provider mappings must report manual or unsupported semantics before writes. The user explicitly confirmed native features plus import/export.
 
 ## Confirmed scope expansion
 
