@@ -21,7 +21,7 @@ import (
 
 func init() {
 	r := forgeProviders["github"]
-	r.Capabilities = append(r.Capabilities, forge.Capability{Resource: forge.ResourceProject, Import: true, Export: true, MappedFields: []string{"explicit user/org board selectors", "title/readme/closed state", "text/number/date/single-select fields", "draft or explicitly mapped content items", "values/order/archive", "table/board view names/layouts", "source claims"}, Unsupported: []string{"iteration/multi-select and content properties require explicit per-finding omission", "view filters/grouping/sort/visible columns require explicit omission", "project automation, linked teams/repositories and permissions are not migrated", "schema deletion/type/option changes require manual migration", "remote API has no atomic compare-and-swap; single publisher required", "real export requires active native identity for signed private recovery; identity changes require selecting original signer or manual reconciliation"}})
+	r.Capabilities = append(r.Capabilities, forge.Capability{Resource: forge.ResourceProject, Import: true, Export: true, MappedFields: []string{"explicit user/org board selectors", "title/readme/closed state", "text/number/date/single-select fields", "draft or explicitly mapped content items", "values/order/archive", "table/board view names/layouts", "source claims"}, Unsupported: []string{"iteration/multi-select and content properties require explicit per-finding omission", "view filters/grouping/sort/visible columns require explicit omission", "project automation, linked teams/repositories and permissions are not migrated", "schema deletion/type/option changes require manual migration", "item-add recovery requires an unarchived appended item with no custom values; conflicting constructor state needs manual reconciliation", "remote API has no atomic compare-and-swap; single publisher required", "real export requires active native identity for signed private recovery; identity changes require selecting original signer or manual reconciliation"}})
 	forgeProviders["github"] = r
 	forgeResourceExporters[forgeResourceRoute{"github", forge.ResourceProject}] = githubExportProject
 }
@@ -361,11 +361,16 @@ func githubProjectStepInvariant(p githubapi.ProjectV2, step githubProjectStep, i
 		}
 	case "item-draft", "item-content":
 		items := []githubapi.ProjectItem{}
-		for _, item := range p.Items {
+		for index, item := range p.Items {
 			match := item.Content != nil && (step.Action == "item-draft" && item.Content.Type == "DraftIssue" && item.Content.Title == str("title") && item.Content.Body == str("body") || step.Action == "item-content" && item.Content.ID == str("contentId"))
 			if !match {
 				items = append(items, item)
 				continue
+			}
+			// Only an unarchived append with no custom values is a provable add result.
+			// Later archive/position steps must not undo a competing actor's changes.
+			if item.Archived || index != len(p.Items)-1 {
+				return "", errors.New("new item archive or append-only placement differs from the add intent; reconcile manually")
 			}
 			for _, v := range item.Values {
 				for _, field := range p.Fields {

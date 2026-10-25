@@ -1015,3 +1015,117 @@ func TestGithubProjectRecoveredNewItemCannotAdoptHumanValues(t *testing.T) {
 		t.Fatal("overwrote human field value")
 	}
 }
+
+func TestGithubProjectRecoveredNewDraftPreservesArchiveAndPosition(t *testing.T) {
+	for _, change := range []string{"archive", "position"} {
+		t.Run(change, func(t *testing.T) {
+			issueCommandTestRepo(t)
+			p := projectFixture()
+			fake := &githubProjectFake{p: &p}
+			endpoint := githubProjectServer(t, fake)
+			if err := runForgeTransfer(githubProjectOptions("import", endpoint, "user:a/1", "")); err != nil {
+				t.Fatal(err)
+			}
+			root := bridgeFamily(bridgeCatalog(t), ResourceProject)[0]
+			state := ProjectItemState{Schema: "hn.project-item/1", ProjectID: root.ID, ProjectRevision: root.Heads[0].ID, Target: ProjectTarget{Kind: "draft", Title: "Native addition", Body: "Native body"}, Position: "2", Values: map[string]ProjectValue{githubProjectID("F_n"): {Type: "number", Number: "2.5"}}}
+			if _, err := MutateResource(ResourceMutation{Family: ResourceProjectItem, Intent: "open", State: resourceState(t, ResourceProjectItem, state)}); err != nil {
+				t.Fatal(err)
+			}
+			o := githubProjectOptions("export", endpoint, "user:a/1", root.ID)
+			fake.lost = "item-draft"
+			if err := runForgeTransfer(o); err == nil {
+				t.Fatal("missing lost response")
+			}
+			if len(fake.p.Items) != 2 {
+				t.Fatal("missing created item")
+			}
+			newID := fake.p.Items[1].ID
+			if change == "archive" {
+				fake.p.Items[1].Archived = true
+			} else {
+				fake.p.Items[0], fake.p.Items[1] = fake.p.Items[1], fake.p.Items[0]
+			}
+			before := fake.mutations
+			if err := runForgeTransfer(o); err == nil {
+				t.Fatal("adopted human constructor-state change")
+			}
+			if fake.mutations != before {
+				t.Fatal("wrote after unproven constructor state")
+			}
+			if change == "archive" && !fake.p.Items[1].Archived || change == "position" && fake.p.Items[0].ID != newID {
+				t.Fatal("overwrote human archive or ordering")
+			}
+		})
+	}
+}
+func TestGithubProjectCreationRecoveryPreservesUnwrittenProviderDefaults(t *testing.T) {
+	for _, kind := range []string{"view", "option-style"} {
+		t.Run(kind, func(t *testing.T) {
+			issueCommandTestRepo(t)
+			root, _ := githubProjectCreateNative(t)
+			fake := &githubProjectFake{}
+			endpoint := githubProjectServer(t, fake)
+			o := githubProjectOptions("export", endpoint, "user:a", root.ResourceID)
+			if kind == "view" {
+				fake.lost = "view-create"
+			} else {
+				fake.lost = "field-create"
+			}
+			if err := runForgeTransfer(o); err == nil {
+				t.Fatal("missing lost response")
+			}
+			if kind == "view" {
+				fake.p.Views[0].Filter = "is:open"
+				fake.p.Views[0].Groups = 1
+				fake.p.Views[0].Sorts = 1
+				fake.p.Views[0].VisibleFields = 2
+			} else {
+				fake.p.Fields[0].Options[0].Color = "RED"
+				fake.p.Fields[0].Options[0].Description = "provider styling"
+			}
+			if err := runForgeTransfer(o); err != nil {
+				t.Fatal("preserved settings blocked rename-only recovery", err)
+			}
+			if kind == "view" {
+				v := fake.p.Views[0]
+				if v.Filter != "is:open" || v.Groups != 1 || v.Sorts != 1 || v.VisibleFields != 2 {
+					t.Fatal("view settings were overwritten")
+				}
+			} else {
+				v := fake.p.Fields[0].Options[0]
+				if v.Color != "RED" || v.Description != "provider styling" {
+					t.Fatal("option settings were overwritten")
+				}
+			}
+		})
+	}
+}
+func TestGithubProjectRecoveredNewRootPreservesOpenReadmeState(t *testing.T) {
+	for _, kind := range []string{"closed", "readme"} {
+		t.Run(kind, func(t *testing.T) {
+			issueCommandTestRepo(t)
+			root, _ := githubProjectCreateNative(t)
+			fake := &githubProjectFake{lost: "create"}
+			endpoint := githubProjectServer(t, fake)
+			o := githubProjectOptions("export", endpoint, "user:a", root.ResourceID)
+			if err := runForgeTransfer(o); err == nil {
+				t.Fatal("missing lost response")
+			}
+			if kind == "closed" {
+				fake.p.Closed = true
+			} else {
+				fake.p.Readme = "human readme"
+			}
+			before := fake.mutations
+			if err := runForgeTransfer(o); err == nil {
+				t.Fatal("adopted competing new-project state")
+			}
+			if fake.mutations != before {
+				t.Fatal("continued after unproven root defaults")
+			}
+			if kind == "closed" && !fake.p.Closed || kind == "readme" && fake.p.Readme != "human readme" {
+				t.Fatal("overwrote root state")
+			}
+		})
+	}
+}
