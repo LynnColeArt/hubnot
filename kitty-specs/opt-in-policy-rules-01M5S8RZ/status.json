@@ -19,7 +19,7 @@
   "work_packages": {
     "WP01": {
       "actor": "user",
-      "agent": "codex",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -29,9 +29,11 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: ae33a60a; final go test -race ./... passed hubnot394.083s; focused protected authority/real replica tests passed; vet/build/gofmt/diff checks pass; optional sections remain disabled.",
-        "Independent reviewer-renata review of ae33a60ad9d74727ceee3207c575b84deec7af87: PASS. Closed old-base target opt-in bypass and shared quarantine decision-evidence admission; exact nonauthor designated approval, withdrawal, literal deletion/rename/mode/ancestor protection and bounded Git output verified. Fresh focused race TestProtected PASS 3.503s; diff check PASS; supplied full race394.083s and vet/build evidence inspected. Anti-pattern checklist: dead code PASS (live production callsites), synthetic fixture PASS (native Git and actual evaluation/admission), silent empty return PASS (explicit disabled/empty semantics), FR coverage PASS FR001-005, frozen surface PASS (six owned source/test files only), locked decision PASS (no implicit activation or authority), shared-file ownership PASS (governance merge seam handed off to WP02), production fragility PASS (explicit fail-closed errors). No product edits, no blockers. Automerge exact expected-ref advancement remains WP02 scope; publication and semantic lint analysis remain excluded."
+        "Independent reviewer-renata review of ae33a60ad9d74727ceee3207c575b84deec7af87: PASS. Closed old-base target opt-in bypass and shared quarantine decision-evidence admission; exact nonauthor designated approval, withdrawal, literal deletion/rename/mode/ancestor protection and bounded Git output verified. Fresh focused race TestProtected PASS 3.503s; diff check PASS; supplied full race394.083s and vet/build evidence inspected. Anti-pattern checklist: dead code PASS (live production callsites), synthetic fixture PASS (native Git and actual evaluation/admission), silent empty return PASS (explicit disabled/empty semantics), FR coverage PASS FR001-005, frozen surface PASS (six owned source/test files only), locked decision PASS (no implicit activation or authority), shared-file ownership PASS (governance merge seam handed off to WP02), production fragility PASS (explicit fail-closed errors). No product edits, no blockers. Automerge exact expected-ref advancement remains WP02 scope; publication and semantic lint analysis remain excluded.",
+        "Post-approval independent adversarial review confirmed same-policy old-base protected lint reversion; exact native reproduction requires prospective protected-target-path revision gate. See review-feedback-2.md."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks/WP01-protected-check-policy-and-enforcement/review-cycle-2.md",
         "reference": "review-cycle://opt-in-policy-rules-01M5S8RZ/WP01-protected-check-policy-and-enforcement/review-cycle-2.md",
@@ -39,14 +41,14 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 5024,
-      "shell_pid_created_at": "1792851034.54",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done"
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned",
+        "T004": "planned",
+        "T005": "planned"
       }
     },
     "WP02": {
