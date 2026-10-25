@@ -4,6 +4,7 @@ title: Optional GitHub discussion migration
 dependencies:
 - WP08
 - WP10
+- WP14
 requirement_refs:
 - FR-004
 - FR-008
@@ -14,9 +15,11 @@ requirement_refs:
 - FR-020
 planning_base_branch: feat/optional-github-interop
 merge_target_branch: feat/optional-github-interop
-branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop.
+  During /spec-kitty.implement this WP may branch from a dependency-specific base,
+  but completed changes must merge back into feat/optional-github-interop unless the
+  human explicitly redirects the landing branch.
 subtasks:
-- T048
 - T049
 - T050
 - T051
@@ -27,19 +30,11 @@ authoritative_surface: github_discussions.go
 create_intent:
 - github_discussions.go
 - github_discussions_test.go
-- internal/githubapi/discussions.go
-- internal/githubapi/discussions_test.go
-- internal/githubapi/graphql.go
-- internal/githubapi/graphql_test.go
 execution_mode: code_change
 lane: planned
 owned_files:
 - github_discussions.go
 - github_discussions_test.go
-- internal/githubapi/discussions.go
-- internal/githubapi/discussions_test.go
-- internal/githubapi/graphql.go
-- internal/githubapi/graphql_test.go
 tags: []
 tracker_refs: []
 ---
@@ -62,7 +57,7 @@ Import whole selected thread or bounded listing with independently revisioned na
 
 ## Subtasks
 
-T048 Add bounded sanitized GraphQL transport and complete nested pagination tests.
+Shared transport and typed HTTP methods are implemented and reviewed independently in WP14; this WP owns the native resource adapter only.
 T049 Implement discussion/category/reply/answer/state reads and typed mutations via optional adapter.
 T050 Map native threads/replies/answer revisions and require explicit destination category mapping.
 T051 Implement repeatable journaled discussion export/import, conflicts and uncertain mutation recovery.
@@ -71,3 +66,7 @@ T052 Verify no implicit moderation authority, no lossy hidden fields, and nogith
 ## Review criteria
 
 All referenced requirements have source-bound behavior evidence; no incomplete/unsupported behavior is silently claimed. Full actual Go charter race/vet/build/format/diff gates and relevant tagged checks pass. Independent reviewer must probe hostile, conflict, replay, quarantine and no-provider boundaries.
+
+## Client dependency refinement
+
+Use approved WP14 bounded GraphQL/discussion client and exact exported DTO/method API. Do not edit its package files in this WP. Root adapter still owns source/native mapping, checkpoints, category/answer/reply sequencing, full preflight and migration reports. Coordinate narrow client bug fixes with author/reviewer rather than bypassing transport validation.

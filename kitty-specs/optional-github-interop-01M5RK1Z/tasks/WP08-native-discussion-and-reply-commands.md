@@ -9,6 +9,9 @@ requirement_refs:
 planning_base_branch: feat/optional-github-interop
 merge_target_branch: feat/optional-github-interop
 branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-optional-github-interop-01M5RK1Z
+base_commit: ea90761f5a98d0a5e0286970ff3913982107e537
+created_at: '2026-10-25T05:14:14.429527+00:00'
 subtasks:
 - T035
 - T036
@@ -51,3 +54,7 @@ T038 Verify thread bounds, same-thread refs, pinned answer content, offline iden
 ## Review criteria
 
 All referenced requirements have source-bound behavior evidence; no incomplete/unsupported behavior is silently claimed. Full actual Go charter race/vet/build/format/diff gates and relevant tagged checks pass. Independent reviewer must probe hostile, conflict, replay, quarantine and no-provider boundaries.
+
+## Activity Log
+
+- 2026-10-25T05:32:02Z – codex – shell_pid=5024 – Validation at 2882cc1d complete: go test -race -count=1 ./... PASS (hubnot 278.695s); go test -tags nogithub -count=1 ./... PASS (hubnot156.326s); go vet ./..., go build ./..., go build -tags nogithub ./..., gofmt owned sources, git diff --check PASS; nogithub executable dependency assertion excludes githubapi and net/http. Canonical for_review transition completed synchronously; default Python architectural authority reported pre-existing no_coverage; no bypass used.

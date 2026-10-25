@@ -4,7 +4,6 @@ title: Optional GitHub workflow migration
 dependencies:
 - WP09
 - WP10
-- WP11
 requirement_refs:
 - FR-004
 - FR-008
@@ -15,7 +14,10 @@ requirement_refs:
 - FR-020
 planning_base_branch: feat/optional-github-interop
 merge_target_branch: feat/optional-github-interop
-branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop.
+  During /spec-kitty.implement this WP may branch from a dependency-specific base,
+  but completed changes must merge back into feat/optional-github-interop unless the
+  human explicitly redirects the landing branch.
 subtasks:
 - T058
 - T059
@@ -70,3 +72,5 @@ T062 Verify no autoexecution, content-CAS conflicts, recovery, roundtrip bytes a
 ## Review criteria
 
 All referenced requirements have source-bound behavior evidence; no incomplete/unsupported behavior is silently claimed. Full actual Go charter race/vet/build/format/diff gates and relevant tagged checks pass. Independent reviewer must probe hostile, conflict, replay, quarantine and no-provider boundaries.
+
+Dependency refinement: GraphQL transport is independently provided by WP14; project adapter uses that shared package. Workflow REST contents migration has no GraphQL dependency. Root discussion/project/workflow adapters may proceed independently once their actual native/bridge/client dependencies are approved.
