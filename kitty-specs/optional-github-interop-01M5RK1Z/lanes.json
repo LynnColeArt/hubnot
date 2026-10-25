@@ -291,6 +291,7 @@
       ],
       "predicted_surfaces": [
         "api",
+        "artifact-rendering",
         "tracker-integration",
         "workspace"
       ],
@@ -307,8 +308,8 @@
       "parallel_group": 5
     }
   ],
-  "computed_at": "2026-10-25T05:43:26.213847+00:00",
+  "computed_at": "2026-10-25T06:26:50.148494+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "584670dfdbc97a48b4afbcda37f196a229b698ff"
+  "planning_commit_sha": "5e80734497e866d14ae853b4925a3d00d8adfe8b"
 }
