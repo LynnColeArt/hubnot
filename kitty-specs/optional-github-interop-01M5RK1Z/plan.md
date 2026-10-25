@@ -1,7 +1,7 @@
 # Implementation Plan: Optional GitHub issue interoperability
 
-**Branch / planning base / merge target**: `feat/optional-github-interop` (matches checkout)  
-**Date**: 2026-10-24  
+**Branch / planning base / merge target**: `feat/optional-github-interop` (matches checkout)
+**Date**: 2026-10-24
 **Spec**: [spec.md](spec.md)
 
 ## Summary

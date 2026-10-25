@@ -1,8 +1,8 @@
 # Optional GitHub issue interoperability
 
-**Mission branch**: `feat/optional-github-interop`  
-**Created**: 2026-10-24 (America/Chicago)  
-**Status**: Ready for implementation  
+**Mission branch**: `feat/optional-github-interop`
+**Created**: 2026-10-24 (America/Chicago)
+**Status**: Ready for implementation
 **Intent confirmed in chat**: Maintainers and Andrew can use a parallel gh-style issue interface within Hubnot and explicitly import/export GitHub tickets. Hubnot remains standalone. The user selected GitHub integration and CLI compatibility first, excluding protected-check rules and automerge, and requested a parallel implementation within Hubnot rather than an unmodified gh client and API service.
 
 ## User Scenarios & Testing

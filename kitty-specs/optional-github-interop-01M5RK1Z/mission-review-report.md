@@ -16,13 +16,13 @@ automated_helper_report: mission-review-tool-report.md
 
 # Independent post-merge mission review
 
-**Mission:** `optional-github-interop-01M5RK1Z` — native collaboration and optional GitHub interoperability.  
-**Reviewer:** `codex-independent-interop-review`, resolved Reviewer Renata.  
-**Date:** 2026-10-25.  
-**Target:** `feat/optional-github-interop`; public `main` has not been merged or published by this review.  
-**Merged HEAD inspected:** `b3c879cd0fde7e62b55dc2d421f60ca6b3d51f4e`.  
-**Metadata baseline:** `2fd3096a7885333e93dc60fb063767e619236912`.  
-**Approved integrated product source:** `4ee9ed8badcc29f4cd00aacd88534b9cf9cc2f23`.  
+**Mission:** `optional-github-interop-01M5RK1Z` — native collaboration and optional GitHub interoperability.
+**Reviewer:** `codex-independent-interop-review`, resolved Reviewer Renata.
+**Date:** 2026-10-25.
+**Target:** `feat/optional-github-interop`; public `main` has not been merged or published by this review.
+**Merged HEAD inspected:** `b3c879cd0fde7e62b55dc2d421f60ca6b3d51f4e`.
+**Metadata baseline:** `2fd3096a7885333e93dc60fb063767e619236912`.
+**Approved integrated product source:** `4ee9ed8badcc29f4cd00aacd88534b9cf9cc2f23`.
 **Independent final verdict:** PASS for merged product fidelity and applicable Hubnot gates. The raw canonical helper remains fail/undeterminable because its dead-code scanner does not support Go; its byte-identical output is preserved in [mission-review-tool-report.md](mission-review-tool-report.md). This canonical report records the distinct independent Go review, not a fabricated automatic pass.
 
 ## Method, source identity and review independence
