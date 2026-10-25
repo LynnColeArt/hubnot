@@ -97,3 +97,7 @@ Each subtask is implemented and verified, tests demonstrate meaningful failures 
 ## Reviewer guidance
 
 Verify absent optional sections preserve current behavior; unknown/malformed configurations fail closed. Trace both live commands and fetched-event admission. Inspect exact base/head/actor/evidence binding and negative authority cases. Review finite output bounds, path escape/type/rename handling and side effects. Match docs/acceptance claims to actual code. No self-approval; record approve or reject through canonical review capture.
+
+## Post-approval regression follow-up
+
+Critical FR-004 scenario: B has enabled protection and lenient lint.conf. Target T tightens lint.conf under unchanged policy. Head H descends T but restores lint.conf to B bytes and changes docs. Signed B-to-H looks docs-only, yet T-to-H reverts lint. Require revision before a new enabled manual merge when B-to-current-target changes any protected path, even if policy digest matches. Preserve legacy absence and contained historical repair. Add a failing regression, apply the smallest prospective guard, and independently review exact final source. Notify WP02 to rebase its dependency; shared API unchanged.

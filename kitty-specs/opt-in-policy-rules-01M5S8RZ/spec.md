@@ -53,3 +53,7 @@ Paths are literal repository-relative files, or directories ending in `/`; there
 ## Implementation boundary: automatic operation
 
 First-version automerge requires a full, non-promisor local repository. It refuses shallow and configured partial/promisor repositories before object reads, with explicit hydration or manual-merge guidance. This preserves read-only preview and no implicit network or recovery-record writes; existing manual collaboration and selected shallow recovery are unchanged. No new shallow or partial-clone support is claimed.
+
+## Protected target baseline regression
+
+A candidate based at B cannot hide a lint reversion by incorporating target T and restoring the protected file to B bytes. Even if policy bytes are unchanged and B-to-head shows only documentation, an enabled manual merge requires revision when protected paths changed from B to the current target. This is a prospective new-merge guard; existing immutable decisions and historical merge-event repair remain base-governed.
