@@ -67,6 +67,25 @@
       "parallel_group": 1
     },
     {
+      "lane_id": "lane-n",
+      "wp_ids": [
+        "WP14"
+      ],
+      "write_scope": [
+        "internal/githubapi/discussions.go",
+        "internal/githubapi/discussions_test.go",
+        "internal/githubapi/graphql.go",
+        "internal/githubapi/graphql_test.go"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
       "lane_id": "lane-d",
       "wp_ids": [
         "WP04"
@@ -197,11 +216,7 @@
       ],
       "write_scope": [
         "github_discussions.go",
-        "github_discussions_test.go",
-        "internal/githubapi/discussions.go",
-        "internal/githubapi/discussions_test.go",
-        "internal/githubapi/graphql.go",
-        "internal/githubapi/graphql_test.go"
+        "github_discussions_test.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -209,7 +224,8 @@
       ],
       "depends_on_lanes": [
         "lane-h",
-        "lane-j"
+        "lane-j",
+        "lane-n"
       ],
       "parallel_group": 4
     },
@@ -232,9 +248,9 @@
       "depends_on_lanes": [
         "lane-g",
         "lane-j",
-        "lane-k"
+        "lane-n"
       ],
-      "parallel_group": 5
+      "parallel_group": 4
     },
     {
       "lane_id": "lane-m",
@@ -254,10 +270,9 @@
       ],
       "depends_on_lanes": [
         "lane-i",
-        "lane-j",
-        "lane-k"
+        "lane-j"
       ],
-      "parallel_group": 5
+      "parallel_group": 4
     },
     {
       "lane_id": "lane-e",
@@ -289,11 +304,11 @@
         "lane-l",
         "lane-m"
       ],
-      "parallel_group": 6
+      "parallel_group": 5
     }
   ],
-  "computed_at": "2026-10-25T04:49:53.111021+00:00",
+  "computed_at": "2026-10-25T05:43:26.213847+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "9a6a19309fdba2d560bd231a9bb0b372d06c14dd"
+  "planning_commit_sha": "584670dfdbc97a48b4afbcda37f196a229b698ff"
 }

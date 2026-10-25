@@ -9,22 +9,31 @@ requirement_refs:
 - NFR-001
 - NFR-002
 - C-001
+planning_base_branch: feat/optional-github-interop
+merge_target_branch: feat/optional-github-interop
+branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
 subtasks:
 - T048
 - T063
 - T064
 - T065
-lane: planned
+history: []
 agent_profile: implementer-ivan
-execution_mode: code_change
-owned_files: &id001
+authoritative_surface: internal/githubapi/
+create_intent:
 - internal/githubapi/discussions.go
 - internal/githubapi/discussions_test.go
 - internal/githubapi/graphql.go
 - internal/githubapi/graphql_test.go
-authoritative_surface: internal/githubapi/
-create_intent: *id001
-history: []
+execution_mode: code_change
+lane: planned
+owned_files:
+- internal/githubapi/discussions.go
+- internal/githubapi/discussions_test.go
+- internal/githubapi/graphql.go
+- internal/githubapi/graphql_test.go
+tags: []
+tracker_refs: []
 ---
 
 ## ⚡ Do This First: Load Agent Profile
