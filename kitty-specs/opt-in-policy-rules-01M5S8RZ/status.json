@@ -63,6 +63,9 @@
       "last_event_id": "01M5SDSHQ2HDYJW3QX9DQTMN7X",
       "last_transition_at": "2026-10-25T11:40:33.890959+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Native automerge implemented; integrated approved protected-baseline fix; full race 428.626s, focused race 29.293s, vet/default+nogithub build/diff passed at 38a7200374b3da96dab5ea2763fca588b77af4f8"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
