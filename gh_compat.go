@@ -393,7 +393,7 @@ func ghIssueObject(id, actor string, state *IssueState, conflict bool) map[strin
 		URL     string `json:"url"`
 		HTMLURL string `json:"html_url"`
 	}
-	if json.Unmarshal([]byte(state.Metadata["github/source"]), &source) == nil {
+	if json.Unmarshal([]byte(state.Metadata["forge/source"]), &source) == nil {
 		if source.URL != "" {
 			result["url"] = source.URL
 		} else if source.HTMLURL != "" {
