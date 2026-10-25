@@ -115,3 +115,9 @@ Exporter uses forge.Provider and neutral options/models. GitHub adapter validate
 ## Binding full-delivery acceptance expansion
 
 User explicitly requires native discussions/projects/workflows PLUS import/export. Final public acceptance must cover all four resource families, native signed Git/bare-remote reconstruction, nogithub full native lifecycle, exact workflow materialization/governed request, project typed schema/item references and discussion threaded/answer revisions. Fake-provider tests must prove supported GitHub roundtrips, explicit mappings, no blind uncertain-write retries and zero writes on unsupported plans. Include accurate operator docs per resource and capability matrices; distinguish preserved foreign definition from runnable native workflow and GitHub Projects automation rule limits. This WP now depends on all native/provider WPs and remains final delivery acceptance. No live provider mutation needed.
+
+## Final discoverability and checkpoint integration checks
+
+Final default and nogithub public `hn help` must advertise registered native project/discussion/workflow commands. Authorize the minimal main.go usage-render integration needed (dynamic sorted local command registry is appropriate), with public help tests; no parser/authority behavior rewrite. Existing main.go ownership remains WP03; this is a documented final integration edit, not overlapping concurrent ownership.
+
+For every resource exporter, verify worst-case WHOLE checkpoint (snapshot + current Pending + future accumulated bindings/results) fits the private8MiB budget BEFORE first remote mutation. Shared executor persisting a Pending is necessary but does not by itself preflight the caller's later larger states. Validate declared graph/field/ID limits and no truncated migrations.
