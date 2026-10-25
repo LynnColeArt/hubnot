@@ -573,6 +573,9 @@ func githubPlanProject(s forgeResourceSnapshot, o transferOptions, endpoint stri
 	if err != nil {
 		return nil, nil, err
 	}
+	if err := githubProjectCompatibleItemSchemas(s, root); err != nil {
+		return nil, nil, err
+	}
 	steps := []githubProjectStep{}
 	findings := []forge.Finding{{Status: forge.Mapped, Path: "project", Message: "supported fields/items and explicit content mappings; provider-created defaults are retained"}, {Status: forge.Preserved, Path: "authority", Message: "no provider permission, automation or source author becomes native authority"}, {Status: forge.Mapped, Path: "recovery-identity", Message: "actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}}
 	used := map[string]bool{}
@@ -1823,6 +1826,57 @@ func githubProjectVerifyCheckpoint(cp githubProjectCheckpoint, identity *Identit
 	}
 	if !ed25519.Verify(public, payload, signature) {
 		return errors.New("project recovery signature does not authenticate exact scope, snapshot, progress, bindings and pending intent; no writes permitted")
+	}
+	return nil
+}
+
+// A native item keeps its historical schema pin. GitHub only has the board's
+// current fields, so validate every populated value before planning any write.
+// Title/body-only project revisions remain compatible; no native pin is moved.
+func githubProjectCompatibleItemSchemas(s forgeResourceSnapshot, root forge.Node) error {
+	current := map[string]forge.Field{}
+	for _, field := range root.Project.Fields {
+		current[field.ID] = field
+	}
+	for _, node := range githubProjectNativeItems(s) {
+		item := node.Item
+		var pinned *ProjectState
+		for _, version := range s.Versions {
+			if version.Family == ResourceProject && version.ID == root.Record.ID && version.Revision == item.Project.Revision {
+				state := new(ProjectState)
+				if err := DecodeResourceState(ResourceProject, version.State, state); err != nil {
+					return err
+				}
+				pinned = state
+				break
+			}
+		}
+		if pinned == nil {
+			return errors.New("historical project item schema is unavailable; explicitly reconcile native schema before export")
+		}
+		old := map[string]ProjectField{}
+		for _, field := range pinned.Fields {
+			old[field.ID] = field
+		}
+		for id, value := range item.Values {
+			before, was := old[id]
+			after, exists := current[id]
+			if !was || !exists || before.Type != value.Type || after.Type != value.Type {
+				return errors.New("populated historical item field differs from current exported schema; explicitly migrate the native item before any provider writes")
+			}
+			if value.Type == "single_select" {
+				found := false
+				for _, option := range after.Options {
+					if option.ID == value.OptionID {
+						found = true
+						break
+					}
+				}
+				if !found {
+					return errors.New("historical item selected option is absent from current exported schema; explicitly migrate the native item before any provider writes")
+				}
+			}
+		}
 	}
 	return nil
 }

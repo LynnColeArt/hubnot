@@ -554,3 +554,193 @@ func TestForgeExportLostAssociationRefusesUnpublishedNativeComments(t *testing.T
 		t.Fatalf("unpublished work was silently skipped or written: writes=%d/%d out=%q err=%v", f.updates, f.commentCreates, output, err)
 	}
 }
+
+func TestIndependentIssueJournalCannotSuppressNewComment(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "native"})
+	if _, err := forgeExportTestRun(t, id); err != nil {
+		t.Fatal(err)
+	}
+	nativeComment := forgeExportNativeComment(t, id, "new signed comment")
+	f.comments["1"] = append(f.comments["1"], forge.Comment{ID: "human:unrelated", Body: "human text", Author: "human", URL: "https://other.example/human", CreatedAt: "2026-10-25T01:00:00Z", UpdatedAt: "2026-10-25T01:00:00Z"})
+	o := transferOptions{id: id, provider: f.Kind(), endpoint: f.Endpoint(), project: "team/project"}
+	name := forgeExportCheckpointName(forgeExportScope(f, o))
+	var cp forgeIssueExportCheckpoint
+	if found, err := forgeLoadJSON(name, &cp); err != nil || !found {
+		t.Fatalf("checkpoint: %v %v", found, err)
+	}
+	cp.Comments[nativeComment] = "human:unrelated"
+	if err := forgeStoreJSON(name, cp); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := forgeExportTestRun(t, id); err == nil && f.commentCreates == 0 {
+		t.Fatal("manufactured binding silently suppresses unpublished signed comment and reports success")
+	}
+}
+
+func TestForgeExportWholeFutureJournalPreflight(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "Budget"})
+	// The supported reader can deliver this legitimate bounded backlog. Construct
+	// it once at the snapshot seam to keep this resource-bound test inexpensive.
+	snapshot, selected, err := forgeExportCurrentSnapshot(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for n := 0; n < 1400; n++ {
+		cid := eventID([]byte(fmt.Sprint("comment", n)))
+		snapshot.CommentIDs = append(snapshot.CommentIDs, cid)
+		selected[cid] = issueHistoryItem{ID: cid, Actor: snapshot.Actor, Body: "small", Timestamp: "2026-10-25T01:00:00Z"}
+	}
+	desired, err := forgeExportRender(snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cp := forgeIssueExportCheckpoint{Schema: "hn.forge-issue-export/1", Provider: f.Kind(), Endpoint: f.Endpoint(), Project: "team/project", NativeID: id, Snapshot: &snapshot, Comments: map[string]string{}}
+	if err := forgeExportBudget(cp, desired, selected); err == nil {
+		t.Fatal("whole future journal overflow accepted")
+	}
+	if f.creates != 0 || f.commentCreates != 0 {
+		t.Fatal("budget preflight wrote")
+	}
+}
+
+func TestForgeExportSignedJournalIdentityAndKeyFreePreview(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "Native"})
+	if _, err := forgeExportTestRun(t, id); err != nil {
+		t.Fatal(err)
+	}
+	original, err := loadIdentity()
+	if err != nil {
+		t.Fatal(err)
+	}
+	other := testIdentity(t, "Other exporter")
+	if _, err := storeIdentityRecord(other, identityLifecycleAvailable); err != nil {
+		t.Fatal(err)
+	}
+	if err := replaceActiveIdentity(other.Actor, original.Actor); err != nil {
+		t.Fatal(err)
+	}
+	before := f.creates + f.updates + f.commentCreates
+	if _, err := forgeExportTestRun(t, id); err == nil || !strings.Contains(err.Error(), "different native identity") {
+		t.Fatal("changed identity adopted journal", err)
+	}
+	paths, err := identityKeyringPaths()
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := filepath.Dir(paths.identities)
+	hidden := root + "-hidden"
+	if err := os.Rename(root, hidden); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Rename(hidden, root)
+	if _, err := forgeExportTestRun(t, id, "--dry-run"); err != nil {
+		t.Fatal("preview needed private key", err)
+	}
+	if _, err := forgeExportTestRun(t, id); err == nil {
+		t.Fatal("real export without private identity")
+	}
+	if before != f.creates+f.updates+f.commentCreates {
+		t.Fatal("identity/preview refusal wrote")
+	}
+}
+func TestForgeExportRejectsUnsignedAndNoncanonicalJournal(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "Native"})
+	if _, err := forgeExportTestRun(t, id); err != nil {
+		t.Fatal(err)
+	}
+	o := transferOptions{id: id, provider: f.Kind(), endpoint: f.Endpoint(), project: "team/project"}
+	name := forgeExportCheckpointName(forgeExportScope(f, o))
+	path, _ := forgeCheckpointPath(name)
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, changed := range [][]byte{append([]byte(" "), raw...), []byte(strings.Replace(string(raw), `"Provider":`, `"PROVIDER":`, 1)), []byte(strings.Replace(string(raw), `"Signature":"`, `"Signature":"invalid`, 1))} {
+		if err := os.WriteFile(path, changed, 0600); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := forgeExportTestRun(t, id); err == nil {
+			t.Fatal("unsigned/noncanonical journal accepted")
+		}
+	}
+	if f.creates != 1 || f.updates != 0 || f.commentCreates != 0 {
+		t.Fatal("tampered journal wrote")
+	}
+}
+
+func TestForgeExportWholeJournalGuardRunsBeforePublication(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "Budget flow"})
+	if _, err := forgeExportTestRun(t, id); err != nil {
+		t.Fatal(err)
+	}
+	o := transferOptions{id: id, provider: f.Kind(), endpoint: f.Endpoint(), project: "team/project"}
+	name := forgeExportCheckpointName(forgeExportScope(f, o))
+	var cp forgeIssueExportCheckpoint
+	if found, err := forgeLoadJSON(name, &cp); err != nil || !found {
+		t.Fatal(found, err)
+	}
+	// This is an already-produced receipt ledger near the private size ceiling;
+	// the guard must reserve future writes as well as accept today's file size.
+	for n := 0; n < 1335; n++ {
+		cp.Comments[eventID([]byte(fmt.Sprint("past", n)))] = strings.Repeat("<", 1024)
+	}
+	identity, err := loadIdentity()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := forgeExportSignCheckpoint(&cp, identity); err != nil {
+		t.Fatal(err)
+	}
+	if err := forgeStoreJSON(name, cp); err != nil {
+		t.Fatal("current checkpoint must fit before future step", err)
+	}
+	forgeExportNativeComment(t, id, strings.Repeat("<", 8000))
+	before := f.creates + f.updates + f.commentCreates
+	for _, args := range [][]string{{"--dry-run"}, nil} {
+		if _, err := forgeExportTestRun(t, id, args...); err == nil || !strings.Contains(err.Error(), "8MiB") {
+			t.Fatal("future checkpoint overflow not refused", err)
+		}
+	}
+	snapshot, _, err := forgeExportCurrentSnapshot(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cp.Snapshot = &snapshot
+	cp.IssueDone = true
+	if err := forgeExportSignCheckpoint(&cp, identity); err != nil {
+		t.Fatal(err)
+	}
+	if err := forgeStoreJSON(name, cp); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := forgeExportTestRun(t, id); err == nil || !strings.Contains(err.Error(), "8MiB") {
+		t.Fatal("resume did not preflight future checkpoint", err)
+	}
+	if before != f.creates+f.updates+f.commentCreates {
+		t.Fatal("checkpoint overflow followed provider mutation")
+	}
+}
+func TestForgeExportReceiptsDropUnneededProviderExtras(t *testing.T) {
+	v := forge.Issue{ID: "immutable", Key: "lookup", Title: "Title", State: "open", Author: strings.Repeat("unneeded", 1<<17)}
+	observed, err := forgeExportObservedIssue(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(observed.Payload) > 1000 || strings.Contains(string(observed.Payload), "unneeded") {
+		t.Fatal("unbounded provider extras entered recovery receipt")
+	}
+	var receipt forge.Issue
+	if err := forgeStrictJSON(observed.Payload, &receipt); err != nil || receipt.ID != v.ID || receipt.Title != v.Title {
+		t.Fatal("receipt lost checked projection", err)
+	}
+}

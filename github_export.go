@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -152,6 +154,7 @@ type forgeIssueExportSnapshot struct {
 }
 type forgeIssueExportCheckpoint struct {
 	Schema, Provider, Endpoint, Project, NativeID string
+	Signer, SignerPublicKey, Signature            string
 	RemoteID, RemoteKey                           string
 	NativeBaseline                                string
 	RemoteBaseline                                *forgeExportProjection
@@ -627,7 +630,16 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 	if !validEventID(o.id) || o.provider != p.Kind() || o.endpoint != p.Endpoint() || !issueIdentifier(o.project, 512) {
 		return errors.New("invalid selected issue export identity")
 	}
+	var identity *Identity
 	if !o.dryRun {
+		var err error
+		identity, err = loadIdentity()
+		if err != nil {
+			return errors.New("real issue export requires the active native signing identity; select the original exporter identity to recover")
+		}
+		if err = validateIdentity(identity); err != nil {
+			return err
+		}
 		if registration, ok := forgeProviders[p.Kind()]; ok && registration.TokenEnv != "" && os.Getenv(registration.TokenEnv) == "" {
 			return errors.New("external writes require the selected provider credential")
 		}
@@ -640,6 +652,9 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 		return err
 	}
 	if found {
+		if err := forgeExportVerifyCheckpoint(name, cp, identity); err != nil {
+			return err
+		}
 		if err := forgeExportCheckCheckpoint(cp, p, o, scope); err != nil {
 			return err
 		}
@@ -709,6 +724,9 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 			return err
 		}
 	}
+	if err := forgeExportBudget(cp, desired, selected); err != nil {
+		return err
+	}
 	if !resuming && cp.RemoteID != "" {
 		remote, err := forgeExportFindCurrent(ctx, p, o, &cp)
 		if err != nil {
@@ -765,7 +783,12 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 			return errors.New("native issue changed during export preparation; retry before publishing")
 		}
 	}
-	save := func() error { return forgeStoreJSON(name, cp) }
+	save := func() error {
+		if err := forgeExportSignCheckpoint(&cp, identity); err != nil {
+			return err
+		}
+		return forgeStoreJSON(name, cp)
+	}
 	if err := save(); err != nil {
 		return err
 	}
@@ -823,7 +846,10 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 					}
 					v, err = p.UpdateIssue(ctx, o.project, current.Key, input.input())
 				}
-				return forgeRemoteObserved(v.ID, v.Key, v.UpdatedAt, v), err
+				if err != nil {
+					return forgeRemoteResult{}, err
+				}
+				return forgeExportObservedIssue(v)
 			},
 			func(ctx context.Context, i forgeRemoteIntent) (forgeRemoteResult, bool, error) {
 				rows, err := forgeExportList(ctx, p, o.project, s.ID)
@@ -845,7 +871,8 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 					return forgeRemoteResult{}, false, errors.New("external issue write is not uniquely reconciled")
 				}
 				v := matches[0]
-				return forgeRemoteObserved(v.ID, v.Key, v.UpdatedAt, v), true, nil
+				observed, err := forgeExportObservedIssue(v)
+				return observed, true, err
 			},
 			func(i forgeRemoteIntent, r forgeRemoteResult) error {
 				var wanted forgeExportProjection
@@ -989,7 +1016,7 @@ func forgeExportComments(ctx context.Context, p forge.Provider, o transferOption
 					return forgeRemoteResult{}, errors.New("external comment target identity changed")
 				}
 				v, err := p.CreateComment(ctx, o.project, current.Key, payload.Body)
-				return forgeRemoteObserved(v.ID, "", v.UpdatedAt, v), err
+				return forgeRemoteObserved(v.ID, "", "", forge.Comment{ID: v.ID, Body: v.Body}), err
 			},
 			func(ctx context.Context, i forgeRemoteIntent) (forgeRemoteResult, bool, error) {
 				current, readErr := forgeExportFetchCurrent(ctx, p, o, cp)
@@ -1011,7 +1038,7 @@ func forgeExportComments(ctx context.Context, p forge.Provider, o transferOption
 					return forgeRemoteResult{}, false, nil
 				}
 				v := found[0]
-				return forgeRemoteObserved(v.ID, "", v.UpdatedAt, v), true, nil
+				return forgeRemoteObserved(v.ID, "", "", forge.Comment{ID: v.ID, Body: v.Body}), true, nil
 			},
 			func(i forgeRemoteIntent, r forgeRemoteResult) error {
 				var payload struct{ NativeID, Body string }
@@ -1029,6 +1056,154 @@ func forgeExportComments(ctx context.Context, p forge.Provider, o transferOption
 		if err := save(); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// Receipts retain only bounded immutable identity and the exact managed fields
+// checked by reconciliation. Unbounded descriptive provider extras are not a
+// recovery authority and cannot make a future confirmed checkpoint overflow.
+func forgeExportObservedIssue(v forge.Issue) (forgeRemoteResult, error) {
+	p, err := forgeExportRemoteProjection(v)
+	if err != nil {
+		return forgeRemoteResult{}, err
+	}
+	receipt := forge.Issue{ID: v.ID, Key: v.Key, Title: p.Title, Body: p.Body, State: p.State, Labels: p.Labels, Assignees: p.Assignees}
+	return forgeRemoteObserved(v.ID, v.Key, "", receipt), nil
+}
+
+const forgeIssueCheckpointDomain = "hn.forge-issue-checkpoint-signature/1\x00"
+
+func forgeExportCheckpointBytes(cp forgeIssueExportCheckpoint) ([]byte, error) {
+	cp.Signature = ""
+	raw, err := json.Marshal(cp)
+	if err != nil || len(raw) > forgeCheckpointLimit {
+		return nil, errors.New("issue checkpoint signature payload exceeds supported bounds")
+	}
+	return append([]byte(forgeIssueCheckpointDomain), raw...), nil
+}
+func forgeExportSignCheckpoint(cp *forgeIssueExportCheckpoint, identity *Identity) error {
+	if identity == nil {
+		return errors.New("real issue export requires the active native signing identity")
+	}
+	cp.Signer = identity.Actor
+	cp.SignerPublicKey = identity.PublicKey
+	payload, err := forgeExportCheckpointBytes(*cp)
+	if err != nil {
+		return err
+	}
+	key, err := identity.privateKey()
+	if err != nil {
+		return err
+	}
+	cp.Signature = base64.RawStdEncoding.EncodeToString(ed25519.Sign(key, payload))
+	return nil
+}
+func forgeExportVerifyCheckpoint(name string, cp forgeIssueExportCheckpoint, identity *Identity) error {
+	path, err := forgeCheckpointPath(name)
+	if err != nil {
+		return err
+	}
+	raw, err := readPrivateFileBounded(path, forgeCheckpointLimit)
+	if err != nil {
+		return errors.New("issue checkpoint cannot be authenticated")
+	}
+	canonical, err := json.Marshal(cp)
+	if err != nil || !bytes.Equal(raw, canonical) {
+		return errors.New("issue checkpoint is not canonical signed JSON; explicit recovery required")
+	}
+	public, err := base64.RawStdEncoding.DecodeString(cp.SignerPublicKey)
+	if err != nil || len(public) != ed25519.PublicKeySize || base64.RawStdEncoding.EncodeToString(public) != cp.SignerPublicKey || actorForPublicKey(public) != cp.Signer {
+		return errors.New("issue checkpoint signer is invalid; explicit recovery required")
+	}
+	if identity != nil && (identity.Actor != cp.Signer || identity.PublicKey != cp.SignerPublicKey) {
+		return errors.New("issue checkpoint belongs to a different native identity; select the original exporter identity for recovery")
+	}
+	signature, err := base64.RawStdEncoding.DecodeString(cp.Signature)
+	if err != nil || len(signature) != ed25519.SignatureSize || base64.RawStdEncoding.EncodeToString(signature) != cp.Signature {
+		return errors.New("issue checkpoint signature missing or invalid; explicit recovery required")
+	}
+	payload, err := forgeExportCheckpointBytes(cp)
+	if err != nil {
+		return err
+	}
+	if !ed25519.Verify(public, payload, signature) {
+		return errors.New("issue checkpoint signature does not match complete recovery state; explicit recovery required")
+	}
+	return nil
+}
+
+// Reserve the complete largest future journal, not merely today's snapshot.
+// Known receipt IDs stay exact; all unpublished IDs reserve the contract's
+// 1024-byte maximum with encoding/json's largest permitted-byte escape.
+func forgeExportBudget(cp forgeIssueExportCheckpoint, desired forgeExportProjection, selected map[string]issueHistoryItem) error {
+	if cp.Snapshot == nil {
+		return errors.New("issue export budget requires selected snapshot")
+	}
+	worst := strings.Repeat("<", 1024)
+	key := strings.Repeat("<", 256)
+	if cp.RemoteID == "" {
+		cp.RemoteID = worst
+		cp.RemoteKey = key
+	}
+	cp.Signer = strings.Repeat("a", 64)
+	cp.SignerPublicKey = strings.Repeat("a", 43)
+	cp.Signature = strings.Repeat("a", 86)
+	receipts := map[string]string{}
+	for id, remote := range cp.Comments {
+		receipts[id] = remote
+	}
+	cp.Comments = receipts
+	largest := cp.Pending
+	maxPending := 0
+	consider := func(i forgeRemoteIntent) {
+		raw, _ := json.Marshal(i)
+		if len(raw) > maxPending {
+			copy := i
+			largest = &copy
+			maxPending = len(raw)
+		}
+	}
+	if largest != nil {
+		consider(*largest)
+	}
+	raw, _ := json.Marshal(desired)
+	result := forge.Issue{ID: cp.RemoteID, Key: cp.RemoteKey, Title: desired.Title, Body: desired.Body, State: desired.State, Labels: desired.Labels, Assignees: desired.Assignees}
+	resultRaw, _ := json.Marshal(result)
+	consider(forgeRemoteIntent{Schema: "hn.forge-remote-intent/1", Scope: eventID([]byte("budget")), Provider: cp.Provider, Endpoint: cp.Endpoint, Kind: string(forge.ResourceIssue), Action: "update-issue", NativeID: cp.NativeID, NativeRevision: cp.Snapshot.Head, TargetID: cp.RemoteID, TargetKey: cp.RemoteKey, ExpectedRevision: eventID(nil), Payload: raw, PayloadDigest: eventID(raw), Phase: "confirmed", ResultID: cp.RemoteID, ResultKey: cp.RemoteKey, ResultPayload: resultRaw, ResultDigest: eventID(resultRaw)})
+	for _, id := range cp.Snapshot.CommentIDs {
+		comment, ok := selected[id]
+		if !ok {
+			return errors.New("selected comment missing during journal preflight")
+		}
+		skip, err := forgeSkipSourceComment(*cp.Snapshot, comment)
+		if err != nil {
+			return err
+		}
+		if skip {
+			continue
+		}
+		if cp.Comments[id] == "" {
+			cp.Comments[id] = worst
+		}
+		body, err := forgeFormatExportComment(cp.Provider, cp.Endpoint, cp.RemoteID, cp.NativeID, comment)
+		if err != nil {
+			return err
+		}
+		payload, _ := json.Marshal(struct{ NativeID, Body string }{id, body})
+		observed, _ := json.Marshal(forge.Comment{ID: worst, Body: body})
+		consider(forgeRemoteIntent{Schema: "hn.forge-remote-intent/1", Scope: eventID([]byte("budget")), Provider: cp.Provider, Endpoint: cp.Endpoint, Kind: string(forge.ResourceIssue), Action: "create-comment", NativeID: cp.NativeID, NativeRevision: cp.Snapshot.Head, TargetID: cp.RemoteID, TargetKey: cp.RemoteKey, Payload: payload, PayloadDigest: eventID(payload), Phase: "confirmed", ResultID: worst, ResultPayload: observed, ResultDigest: eventID(observed)})
+	}
+	before, _ := json.Marshal(cp.RemoteBaseline)
+	after, _ := json.Marshal(desired)
+	if cp.RemoteBaseline == nil || len(after) > len(before) {
+		cp.RemoteBaseline = &desired
+	}
+	cp.NativeBaseline = cp.Snapshot.NativeDigest
+	cp.Pending = largest
+	encoded, err := json.Marshal(cp)
+	if err != nil || len(encoded) > forgeCheckpointLimit {
+		return errors.New("whole future issue export checkpoint including all comment receipts and confirmed results exceeds 8MiB; no writes performed")
 	}
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 )
 
 const version = "0.0.1-dev"
@@ -93,7 +94,7 @@ Usage:
   hn issue help
   hn gh issue create|list|view|edit|comment|close|reopen (local compatibility)
   hn github help (optional GitHub convenience commands)
-  hn transfer help (explicit provider-neutral issue import/export)
+  hn transfer help (explicit provider-neutral resource import/export)
   hn issue open [--body TEXT] TITLE | --input FILE|- [--operation KEY] [--json]
   hn issue revise|resolve ISSUE --expect REV ... --input FILE|- [--json]
   hn issue close|reopen ISSUE --expect REV [--operation KEY] [--json]
@@ -124,6 +125,17 @@ Usage:
   hn log
   hn version
 `)
+	names := make([]string, 0, len(localCommands))
+	for name := range localCommands {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	if len(names) > 0 {
+		fmt.Println("\nNative resource commands:")
+	}
+	for _, name := range names {
+		fmt.Printf("  hn %s help\n", name)
+	}
 }
 
 func usageError(message string) error {

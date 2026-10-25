@@ -1129,3 +1129,54 @@ func TestGithubProjectRecoveredNewRootPreservesOpenReadmeState(t *testing.T) {
 		})
 	}
 }
+
+// GitHub has one current schema; a native historical pin must never be silently
+// repinned merely because the destination is being created for the first time.
+func TestGithubProjectHistoricalItemSchemaPreflight(t *testing.T) {
+	for _, change := range []string{"type", "field", "option", "compatible-title"} {
+		t.Run(change, func(t *testing.T) {
+			issueCommandTestRepo(t)
+			root, _ := githubProjectCreateNative(t)
+			view := bridgeCatalog(t).Resources[root.ResourceID]
+			var state ProjectState
+			if err := json.Unmarshal(view.State, &state); err != nil {
+				t.Fatal(err)
+			}
+			switch change {
+			case "type":
+				state.Fields[1].Type = "text"
+			case "field":
+				state.Fields = state.Fields[:1]
+			case "option":
+				state.Fields[0].Options = []ProjectOption{{ID: "done", Name: "Done"}}
+			case "compatible-title":
+				state.Title = "Later title"
+				state.Body = "Later description"
+			}
+			if _, err := MutateResource(ResourceMutation{Family: ResourceProject, Intent: "revise", ID: root.ResourceID, Expected: []string{root.EventID}, State: resourceState(t, ResourceProject, state)}); err != nil {
+				t.Fatal(err)
+			}
+			f := &githubProjectFake{}
+			endpoint := githubProjectServer(t, f)
+			o := githubProjectOptions("export", endpoint, "user:a", root.ResourceID)
+			if change != "compatible-title" {
+				o.dryRun = true
+				if err := runForgeTransfer(o); err == nil {
+					t.Fatal("incompatible historical item preview succeeded")
+				}
+				o.dryRun = false
+				err := runForgeTransfer(o)
+				if err == nil || f.mutations != 0 {
+					t.Fatalf("historical %s wrote %d mutations, err=%v", change, f.mutations, err)
+				}
+				return
+			}
+			if err := runForgeTransfer(o); err != nil {
+				t.Fatal("compatible old schema pin refused", err)
+			}
+			if f.p == nil || f.p.Title != "Later title" || len(f.p.Items) != 1 {
+				t.Fatal("compatible item not exported")
+			}
+		})
+	}
+}
