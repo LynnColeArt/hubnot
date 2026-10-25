@@ -33,10 +33,55 @@ not yet stable, the security boundary is intentionally narrow, and the
 deferred work in [Completed alpha boundary](#completed-alpha-boundary) is the
 post-alpha roadmap.
 
+## Download and install
+
+[Hubnot 0.0.1-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.1-dev)
+is the first packaged operational-alpha prerelease. Prebuilt executables require
+**Git 2.x** on your PATH. Running them requires no Python, Go, Docker, or forge
+account.
+
+| Platform | CPU | Standard | Native only |
+| --- | --- | --- | --- |
+| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_amd64_native-only.tar.gz) |
+| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_arm64_native-only.tar.gz) |
+| macOS 12+ | Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_amd64_native-only.tar.gz) |
+| macOS 12+ | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_arm64_native-only.tar.gz) |
+
+Standard builds include the optional GitHub transfer adapter. Native-only builds
+omit that adapter and retain every native feature, including local `hn gh issue`
+commands. Both variants install as `hn`; choose one. Protected checks and
+automerge remain independently disabled by default.
+
+Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/SHA256SUMS)
+alongside your archive and verify it before extraction. On Linux, use
+`sha256sum --ignore-missing -c SHA256SUMS`. On macOS, use
+`shasum -a 256 <archive.tar.gz>` and compare the matching checksum entry.
+Extract your archive, enter its directory, then install:
+
+```sh
+mkdir -p "$HOME/.local/bin"
+install -m 0755 hn "$HOME/.local/bin/hn"
+export PATH="$HOME/.local/bin:$PATH"
+hn version
+```
+
+Keep that PATH setting in your shell configuration if needed. The archives also
+contain the MIT license, build provenance, and product documentation. See the
+[changelog](CHANGELOG.md) for release history and next-release requirements.
+
+Both Linux architectures have been runtime-tested: AMD64 through packaged CLI
+smoke checks, and ARM64 through native resource and policy acceptance scenarios.
+Both Apple Silicon variants passed packaged CLI smoke checks on macOS; Intel Mac
+builds have been cross-compiled and inspected but have not been runtime-tested.
+macOS downloads have no Apple Developer ID signature or notarization, so a
+quarantined download may require approval in Privacy & Security. The
+[release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.1-dev)
+include the detailed platform evidence and distribution limits.
+
 ## Build and verify
 
-Go 1.26 or newer and Git 2.x are the baseline requirements. Docker is not
-required.
+Building from source requires Go 1.26 or newer and Git 2.x. Docker and Python
+are not required for the following build and test commands.
 
 ```sh
 go build -trimpath -o hn .
@@ -45,6 +90,12 @@ go test -count=1 ./...
 # Optional: omit the GitHub transport while retaining all native commands.
 go build -trimpath -tags nogithub -o hn-local .
 ```
+
+The first release's separate `build-release.py` packaging script requires
+Python 3.12+, Git, and Go 1.26.4 to reproduce its archives. That requirement is
+limited to that packaging script. For the next release, packaging must use
+**Go and Git alone** and run on Linux, macOS, and Windows. The published first
+release stays unchanged; this requirement does not announce Windows binaries.
 
 The end-to-end acceptance scenarios compile the CLI and exercise the
 self-hosted governance/CI loop, repository-native agent memory, and rich issues
@@ -66,7 +117,9 @@ git diff --check
 Bubblewrap is used by the default Linux CI executor when you choose to execute
 a pipeline. It is not required for identity, policy, proposal, review,
 replication, inspection, or verification commands. The explicit unsafe host
-executor remains available for controlled debugging.
+executor remains available for controlled debugging. macOS has no bundled safe
+CI execution backend; host execution requires the existing explicit
+`--allow-unsafe-host-execution` opt-in.
 
 ## Start a repository
 
@@ -425,6 +478,7 @@ promise global erasure from every replica.
 
 ## Documentation
 
+- [Changelog and next-release requirements](CHANGELOG.md)
 - [Rich issues](docs/issues-v1.md)
 - [Projects and typed items](docs/projects-v1.md)
 - [Discussions and pinned answers](docs/discussions-v1.md)
