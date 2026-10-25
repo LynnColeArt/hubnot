@@ -300,3 +300,18 @@ separate explicit `git push` for that outcome.
   cross-language contracts yet.
 - Hosted ref retention, large-scale behavior, and providers not listed in
   [host compatibility](host-compatibility.md) remain unproven.
+
+## Alpha native resource kinds
+
+The optional-native-resource expansion registers `project`, `project-item`,
+`discussion`, `discussion-reply` and `workflow` `.open` / `.revise` facts under the
+existing `hn/0` envelope. Typed versioned JSON lives in `body`; the existing
+`subject`, `parents`, `intent`, `operation`, `request` fields bind exact aggregate
+history and actor-global replay intent. No identity, policy or CI authority is
+added. New-kind raw JSON is strict and bounded (256 KiB, workflows 2 MiB);
+existing signed bytes and legacy admission behavior remain unchanged. Older
+alpha clients reject these new unknown kinds and must be upgraded before selecting
+histories that contain them. Exact container/schema/answer references participate
+in reader, quarantine and shallow recovery closure before promotion. See
+[Native resources](resources-v1.md) for typed schemas, command grammar, conflict
+projection, bounds and authority limits.
