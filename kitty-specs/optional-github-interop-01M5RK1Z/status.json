@@ -1,7 +1,7 @@
 {
-  "event_count": 76,
-  "last_event_id": "01M5RXT1PEW7V0TXM6DYTJQ6R4",
-  "materialized_at": "2026-10-25T07:01:13.038081+00:00",
+  "event_count": 77,
+  "last_event_id": "01M5RXTNSQ41J0Y9BA39H19E9E",
+  "materialized_at": "2026-10-25T07:01:33.623053+00:00",
   "mission_number": "",
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 2,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 1
   },
   "work_packages": {
@@ -313,18 +313,18 @@
     "WP11": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M5RXT1PEW7V0TXM6DYTJQ6R4",
-      "last_transition_at": "2026-10-25T07:01:13.038081+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M5RXTNSQ41J0Y9BA39H19E9E",
+      "last_transition_at": "2026-10-25T07:01:33.623053+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Exact source 26e4c554: independent original RED/fix/GREEN clean; full race 298.451s and full nogithub 152.701s pass; vet/both builds/format/diff pass. Root executed final gates and handoff for implementer."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 5024,
       "shell_pid_created_at": "1792851034.54",
       "subtasks": {
