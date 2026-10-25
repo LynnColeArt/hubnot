@@ -90,7 +90,8 @@
       "last_transition_at": "2026-10-25T04:52:35.569087+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review at bf0ca830: neutral optional issue import, immutable producer-bound baselines, exact source/comment provenance and intent recovery, resource reports/maps/local dispatch. Focused race + independent R1/R2 overlays green; full Go race at final source 230.752s; vet/default/nogithub build/diff passed."
+        "Ready for independent review at bf0ca830: neutral optional issue import, immutable producer-bound baselines, exact source/comment provenance and intent recovery, resource reports/maps/local dispatch. Focused race + independent R1/R2 overlays green; full Go race at final source 230.752s; vet/default/nogithub build/diff passed.",
+        "Independent source-bound approval bf0ca830: R1 editable-baseline overwrite and R2 literal-marker refusal reproduced red then fixed green; neutral provider/offline isolation, exact journal/selection, map bounds and local dispatch verified. Ownership amendment and one-line gh metadata key reviewed; native resource implementation remains subsequent WPs."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
