@@ -1,7 +1,7 @@
 {
-  "event_count": 48,
-  "last_event_id": "01M5RRRX36RF0AXNW09JGBM3V2",
-  "materialized_at": "2026-10-25T05:33:12.678261+00:00",
+  "event_count": 49,
+  "last_event_id": "01M5RRSE5NP8TD4Q8GJEVX08QP",
+  "materialized_at": "2026-10-25T05:33:30.165828+00:00",
   "mission_number": "",
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 1,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 5
   },
   "work_packages": {
@@ -115,20 +115,20 @@
     "WP04": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M5RRNS4SEGFNAW3YB1CW9QX1",
-      "last_transition_at": "2026-10-25T05:31:30.329981+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M5RRSE5NP8TD4Q8GJEVX08QP",
+      "last_transition_at": "2026-10-25T05:33:30.165828+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Exact d71dacb5 full Go race and scoped/vet/build/tagged/diff gates passed; independent source recheck clean; orchestrator recorded completed implementation handoff."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 3377930,
-      "shell_pid_created_at": "1792903966.92",
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
       "subtasks": {
         "T014": "done",
         "T015": "done",
