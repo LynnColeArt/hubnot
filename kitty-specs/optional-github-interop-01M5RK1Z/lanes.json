@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "mission_slug": "optional-github-interop-01M5RK1Z",
+  "mission_id": "01M5RK1ZVNB4KKX4FC4D030BH9",
+  "mission_branch": "kitty/mission-optional-github-interop-01M5RK1Z",
+  "target_branch": "feat/optional-github-interop",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "gh_compat.go",
+        "gh_compat_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "internal/githubapi/client.go",
+        "internal/githubapi/client_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "github_commands.go",
+        "github_disabled.go",
+        "github_import.go",
+        "github_import_test.go",
+        "main.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "github_export.go",
+        "github_export_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "README.md",
+        "docs/github-interoperability.md",
+        "docs/issues-v1.md",
+        "docs/threat-model.md",
+        "github_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-d"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-10-25T04:00:10.343308+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "18e6a4904f2cfde0425ab3855edc0eaf1ccdd7a4"
+}
