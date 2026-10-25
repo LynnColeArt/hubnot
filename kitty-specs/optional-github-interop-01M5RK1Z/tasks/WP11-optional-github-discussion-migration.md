@@ -70,3 +70,9 @@ All referenced requirements have source-bound behavior evidence; no incomplete/u
 ## Client dependency refinement
 
 Use approved WP14 bounded GraphQL/discussion client and exact exported DTO/method API. Do not edit its package files in this WP. Root adapter still owns source/native mapping, checkpoints, category/answer/reply sequencing, full preflight and migration reports. Coordinate narrow client bug fixes with author/reviewer rather than bypassing transport validation.
+
+## Recovery integrity refinement
+
+Pre-handoff independent review found manufactured checkpoint progress/bindings can redirect a child reply to a human remote parent. A bounded canonical private-checkpoint signature verified against the currently selected native identity is authorized as a focused correction, if used: real discussion export then explicitly requires that identity, dry-run remains key-free, protocol domain separation covers the complete scope/snapshot/destination/progress/bindings/pending/result, and the entire envelope participates in preflight. A valid signature does not prove remote success; exact positive reconciliation and guarded baselines remain mandatory. Identity changes require an explicit recovery report, never silent journal adoption. Preserve RED/fix/GREEN evidence for the concrete parent-binding reproducer.
+
+Source identity excludes mutable repository selectors. Verify stable discussion/repository identity before same-source decisions; a repository rename must not silently manufacture copy mode. Preserve the independent rename reproducer and zero-write correction evidence.

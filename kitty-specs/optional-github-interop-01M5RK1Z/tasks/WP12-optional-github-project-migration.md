@@ -73,3 +73,9 @@ T057 Verify clone independence, reference integrity, repeat/recovery and no fals
 All referenced requirements have source-bound behavior evidence; no incomplete/unsupported behavior is silently claimed. Full actual Go charter race/vet/build/format/diff gates and relevant tagged checks pass. Independent reviewer must probe hostile, conflict, replay, quarantine and no-provider boundaries.
 
 Dependency refinement: GraphQL transport is independently provided by WP14; project adapter uses that shared package. Workflow REST contents migration has no GraphQL dependency. Root discussion/project/workflow adapters may proceed independently once their actual native/bridge/client dependencies are approved.
+
+## Recovery integrity refinement
+
+Independent adapter review demonstrated that editable progress/binding fields can redirect later writes even when the frozen native snapshot itself is authenticated. A private canonical checkpoint integrity envelope signed and verified against the currently selected native identity is authorized for real project exports. Authenticate the complete schema/scope/destination/snapshot/progress/bindings/pending/result; use explicit protocol domain separation and strict bounded decoding. Include the whole envelope in the pre-write size budget. Dry-run remains key-free. The signature authenticates recovery intent, never provider permissions or mutation success; exact positive remote reconciliation remains mandatory. Report the real-export identity requirement and explicit manual recovery when the selected identity changes. Test manufactured progress/bindings/cleared pending as zero-write refusals. This avoids introducing extra remote publication/rename steps solely to authenticate local state.
+
+Source identity excludes mutable project/owner selectors. Resolve the stable global project identity before same-source decisions; a rename or owner transfer must not silently manufacture copy mode.
