@@ -14,7 +14,10 @@ requirement_refs:
 - C-002
 planning_base_branch: feat/optional-github-interop
 merge_target_branch: feat/optional-github-interop
-branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop.
+  During /spec-kitty.implement this WP may branch from a dependency-specific base,
+  but completed changes must merge back into feat/optional-github-interop unless the
+  human explicitly redirects the landing branch.
 subtasks:
 - T024
 - T025
@@ -46,6 +49,7 @@ owned_files:
 - shallow.go
 - docs/resources-v1.md
 - docs/protocol-v0.md
+- issue_commands.go
 tags: []
 tracker_refs: []
 ---
@@ -85,3 +89,5 @@ T030 Prove signed cross-actor bare-remote reconstruction, missing dependency qua
 ## Review criteria
 
 All referenced requirements have source-bound behavior evidence; no incomplete/unsupported behavior is silently claimed. Full actual Go charter race/vet/build/format/diff gates and relevant tagged checks pass. Independent reviewer must probe hostile, conflict, replay, quarantine and no-provider boundaries.
+
+Integration seam refinement: issue_commands.go is owned for the narrow cross-kind actor-operation query guard. Existing issue operation lookup must not expose new resource records as issue operations; actor-global key collisions remain explicit. No other existing issue CLI behavior changes.
