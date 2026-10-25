@@ -410,3 +410,36 @@ func TestGitHubWorkflowRendererExecutesLiteralArgvWithoutInjection(t *testing.T)
 		t.Fatal("argument executed as shell code", err)
 	}
 }
+
+func TestGitHubWorkflowCheckpointCannotSubstituteAnotherSignedWorkflow(t *testing.T) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "token")
+	first := workflowOpenTest(t, workflowTestState())
+	otherState := workflowTestState()
+	otherState.Name = "other"
+	otherState.Pipeline.Steps[0].Command = "printf"
+	otherState.Pipeline.Steps[0].Args = []string{"wrong workflow"}
+	other := workflowOpenTest(t, otherState)
+	otherSnapshot, err := forgeSnapshotResource(other.ResourceID, forge.ResourceWorkflow)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := newWorkflowGHFixture(t, "old\n")
+	config := githubWorkflowExportConfig{Format: "actions", Branch: "main", Path: ".github/workflows/ci.yml", ExpectedSHA: workflowGHBlob(f.content), Runner: "ubuntu-24.04", Trigger: "workflow_dispatch", Checkout: "none", Runtime: "python3-posix"}
+	content, err := githubWorkflowContent(otherSnapshot, config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	destination := githubWorkflowDestination{"github", f.server.URL, "a/b", first.ResourceID, config}
+	checkpoint := githubWorkflowCheckpoint{Schema: "hn.github-workflow-export/1", Scope: githubWorkflowScope(destination), Destination: destination, Snapshot: otherSnapshot}
+	intent := githubWorkflowIntent(checkpoint, content, config.ExpectedSHA)
+	checkpoint.Pending = &intent
+	name := "workflow-export-" + strings.TrimPrefix(checkpoint.Scope, "sha256:") + ".json"
+	if err := forgeStoreJSON(name, checkpoint); err != nil {
+		t.Fatal(err)
+	}
+	args := []string{"export", first.ResourceID, "--map", "format=actions", "--map", "branch=main", "--map", "path=.github/workflows/ci.yml", "--map", "expected-sha=" + config.ExpectedSHA, "--map", "runner=ubuntu-24.04", "--map", "trigger=workflow_dispatch", "--map", "checkout=none", "--map", "runtime=python3-posix"}
+	if _, err := workflowTransfer(t, f, args...); err == nil || f.writes != 0 || string(f.content) != "old\n" {
+		t.Fatal("substituted another signed workflow", err, f.writes)
+	}
+}

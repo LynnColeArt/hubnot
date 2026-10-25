@@ -439,6 +439,9 @@ func githubWorkflowIntent(c githubWorkflowCheckpoint, content []byte, expected s
 	return forgeRemoteIntent{Schema: "hn.forge-remote-intent/1", Scope: c.Scope, Provider: "github", Endpoint: c.Destination.Endpoint, Kind: ResourceWorkflow, Action: "put-workflow-file", NativeID: c.Snapshot.NativeID, NativeRevision: c.Snapshot.NativeRevision, TargetID: p.Project + "/" + p.Path, TargetKey: p.Path, ExpectedRevision: expected, Payload: raw, PayloadDigest: eventID(raw), Phase: "prepared"}
 }
 func githubValidateWorkflowIntent(c githubWorkflowCheckpoint, content []byte) error {
+	if c.Schema != "hn.github-workflow-export/1" || c.Scope != githubWorkflowScope(c.Destination) || c.Snapshot.NativeID != c.Destination.NativeID || c.Snapshot.Resource != forge.ResourceWorkflow || !validEventID(c.Destination.NativeID) {
+		return errors.New("workflow checkpoint snapshot differs from explicit native resource selection")
+	}
 	if c.Pending == nil {
 		return errors.New("workflow checkpoint missing exact PUT intent")
 	}
