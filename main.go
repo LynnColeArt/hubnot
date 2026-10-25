@@ -8,6 +8,10 @@ import (
 
 const version = "0.0.1-dev"
 
+// Compiled native feature families can register local dispatch without altering
+// built-in commands. Registration performs no network or repository I/O.
+var localCommands = map[string]func([]string) error{}
+
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "hn: %v\n", err)
@@ -63,6 +67,9 @@ func run(args []string) error {
 	case "log":
 		return cmdLog(args[1:])
 	default:
+		if command, ok := localCommands[args[0]]; ok {
+			return command(args[1:])
+		}
 		return fmt.Errorf("unknown command %q; run 'hn help'", args[0])
 	}
 }

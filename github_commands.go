@@ -34,7 +34,10 @@ Recovery files in the Git directory under hn/forge are private (0700/0600).
 Only one local transfer may run at a time. After a crash, verify no transfer is
 running before manually removing a stale hn/forge/transfer.lock in the Git directory.
 A nogithub build excludes the GitHub adapter and remains fully usable offline.
-Use --resource to select an import/export resource (default issue). Unsupported
+Use --resource to select an import/export resource (default issue). Explicit
+provider mappings use repeated --map KEY=VALUE (no empty/duplicate keys; 64 max).
+Issue transfer currently needs no mappings and refuses unsupported mapping keys.
+Unsupported
 project/workflow/discussion mappings refuse before any provider request or write.
 The capabilities report is read-only and lists exact supported mappings/losses;
 issue transfer does not claim automatic CI, workflow or discussion conversion.
@@ -43,6 +46,7 @@ issue transfer does not claim automatic CI, workflow or discussion conversion.
 type transferOptions struct {
 	command, provider, project, id, endpoint, key string
 	resource                                      forge.Resource
+	mappings                                      map[string]string
 	dryRun                                        bool
 }
 type forgeRegistration struct {
@@ -94,6 +98,9 @@ func runForgeTransfer(o transferOptions) error {
 	}
 	if !allowed {
 		return errors.New("requested resource has no implemented provider mapping; inspect hn transfer capabilities before migrating")
+	}
+	if o.resource == forge.ResourceIssue && len(o.mappings) > 0 {
+		return errors.New("issue transfer has no configurable field mappings; unsupported --map values refuse before provider access")
 	}
 	if !issueIdentifier(o.project, 512) || o.key != "" && !issueIdentifier(o.key, 256) {
 		return errors.New("invalid opaque project or issue selector")
@@ -149,6 +156,8 @@ func parseTransferOptions(args []string) (transferOptions, error) {
 	flags := flag.NewFlagSet("transfer "+o.command, flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	flags.StringVar(&o.provider, "provider", "", "explicit provider")
+	mappings := transferMappings{}
+	flags.Var(&mappings, "map", "explicit provider mapping KEY=VALUE (repeatable)")
 	resource := string(o.resource)
 	flags.StringVar(&resource, "resource", "", "issue, project, workflow or discussion")
 	flags.StringVar(&o.project, "project", "", "external project selector")
@@ -161,6 +170,7 @@ func parseTransferOptions(args []string) (transferOptions, error) {
 		return o, errors.New("invalid transfer flags; run 'hn transfer help'")
 	}
 	o.resource = forge.Resource(resource)
+	o.mappings = map[string]string(mappings)
 	if o.command == "capabilities" {
 		if flags.NArg() != 0 || o.provider == "" {
 			return o, errors.New("capabilities requires --provider")
@@ -416,4 +426,25 @@ func forgeCapabilityReport(provider string, selected forge.Resource) forge.Mappi
 		result.Capabilities = append(result.Capabilities, item)
 	}
 	return result
+}
+
+type transferMappings map[string]string
+
+func (m *transferMappings) String() string { return "explicit provider mappings" }
+func (m *transferMappings) Set(raw string) error {
+	key, value, ok := strings.Cut(raw, "=")
+	if !ok || !issueIdentifier(key, 128) || !issueIdentifier(value, 4096) {
+		return errors.New("mapping requires nonempty bounded KEY=VALUE")
+	}
+	if *m == nil {
+		*m = transferMappings{}
+	}
+	if _, exists := (*m)[key]; exists {
+		return errors.New("duplicate explicit mapping key")
+	}
+	if len(*m) >= 64 {
+		return errors.New("at most 64 explicit mappings are supported")
+	}
+	(*m)[key] = value
+	return nil
 }

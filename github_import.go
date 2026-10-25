@@ -251,7 +251,7 @@ func forgeSourceMappings() (map[string]issueDetail, error) {
 }
 
 func forgeImport(ctx context.Context, provider forge.Provider, o transferOptions) error {
-	scope := provider.Kind() + "\n" + provider.Endpoint() + "\n" + o.project
+	scope := forgeImportScope(provider, o)
 	if o.dryRun {
 		var pending forgeNativeIntent
 		found, err := forgeLoadJSON("native-intent.json", &pending)
@@ -312,7 +312,7 @@ func forgeApplyImport(ctx context.Context, scope string, p forgePreparedImport, 
 	existing, found := mappings[forgeSourceKey(p.source)]
 	// Export footers cannot prove a native binding. Refuse unproven reverse
 	// remapping rather than creating a second native issue or importing markers.
-	if strings.Contains(p.state.Body, forgeExportIssuePrefix) {
+	if _, _, exported := forgeParseIssueExport(p.state.Body); exported {
 		return errors.New("external ticket carries native export provenance; reverse remapping requires verified source association")
 	}
 	state := p.state
@@ -325,6 +325,9 @@ func forgeApplyImport(ctx context.Context, scope string, p forgePreparedImport, 
 		initial := existing.OpeningMetadata["forge/source"]
 		if existing.State.Metadata["forge/source"] != initial {
 			return errors.New("current source metadata differs from immutable opening provenance")
+		}
+		if err := forgeVerifyImportObservation(existing.ID, existing.State, initial); err != nil {
+			return err
 		}
 		baseline := existing.State.Metadata["forge/baseline"]
 		if !validEventID(baseline) {
@@ -570,4 +573,111 @@ func forgeResumeNative(scope string) error {
 		return err
 	}
 	return forgeRemoveCheckpoint("native-intent.json")
+}
+
+// Recovery scope includes the explicit selection, so importing a different key
+// cannot incidentally publish an earlier command's pending mutation.
+func forgeImportScope(provider forge.Provider, o transferOptions) string {
+	return provider.Kind() + "\n" + provider.Endpoint() + "\n" + o.project + "\nissue\n" + o.key
+}
+
+// Native edits may preserve import metadata, but cannot manufacture a new
+// baseline or observation merely by changing descriptive fields. Walk the
+// signed ancestry to the nearest exact producer-shaped import operation.
+func forgeVerifyImportObservation(id string, current *IssueState, initial string) error {
+	source, err := forgeParseSource(initial)
+	if err != nil {
+		return err
+	}
+	view, err := ghReadIssue(id)
+	if err != nil {
+		return err
+	}
+	if view.Conflict || len(view.HeadIDs) != 1 {
+		return errors.New("mapped issue has conflicting import ancestry")
+	}
+	rows, err := forgeNativeRevisions(id)
+	if err != nil {
+		return err
+	}
+	byID := map[string]issueHistoryItem{}
+	for _, row := range rows {
+		byID[row.ID] = row
+	}
+	queue := append([]string{}, view.HeadIDs...)
+	visited := map[string]bool{}
+	witnesses := map[string]bool{}
+	for len(queue) > 0 {
+		next := queue[len(queue)-1]
+		queue = queue[:len(queue)-1]
+		if visited[next] {
+			continue
+		}
+		visited[next] = true
+		row, ok := byID[next]
+		if !ok || row.State == nil {
+			return errors.New("native import ancestry is incomplete")
+		}
+		observation, parseErr := forgeParseSource(row.State.Metadata["forge/observation"])
+		metadataValid := row.State.Metadata["forge/source"] == initial && validEventID(row.State.Metadata["forge/baseline"]) && parseErr == nil && forgeSourceKey(observation) == forgeSourceKey(source)
+		qualified := false
+		if metadataValid {
+			switch row.Kind {
+			case "issue.open":
+				digest, digestErr := forgeManagedDigest(*row.State)
+				qualified = row.ID == id && row.Intent == "open" && digestErr == nil && row.State.Metadata["forge/baseline"] == digest && row.Operation == forgeOperation("open", forgeSourceKey(source), digest)
+			case "issue.revise":
+				qualified = row.Intent == "revise" && len(row.Parents) == 1 && row.Operation == forgeOperation("revise", forgeSourceKey(source), strings.Join(row.Parents, ","), forgeDigestJSON(*row.State))
+			}
+		}
+		if qualified {
+			witnesses[row.State.Metadata["forge/baseline"]+"\x00"+row.State.Metadata["forge/observation"]] = true
+			continue
+		}
+		queue = append(queue, row.Parents...)
+	}
+	wanted := current.Metadata["forge/baseline"] + "\x00" + current.Metadata["forge/observation"]
+	if len(witnesses) != 1 || !witnesses[wanted] {
+		return errors.New("import baseline or observation was changed outside a verified import operation; inspect signed revision history")
+	}
+	return nil
+}
+
+type forgeIssueProvenance struct {
+	Schema string `json:"schema"`
+	ID     string `json:"id"`
+	Actor  string `json:"actor"`
+	Head   string `json:"head"`
+	Digest string `json:"digest"`
+}
+
+func forgeFormatIssueExport(p forgeIssueProvenance, body string) (string, error) {
+	if p.Schema != "hn.forge-issue/1" || !validEventID(p.ID) || !validActorFingerprint(p.Actor) || !validEventID(p.Head) || p.Digest != eventID([]byte(body)) {
+		return "", errors.New("invalid native issue export provenance")
+	}
+	raw, err := json.Marshal(p)
+	if err != nil {
+		return "", err
+	}
+	return body + forgeExportIssuePrefix + base64.RawURLEncoding.EncodeToString(raw) + " -->", nil
+}
+
+// Only a complete terminal marker whose schema, identities and exact body
+// digest validate is an export claim. Marker-looking ordinary prose is data.
+func forgeParseIssueExport(body string) (forgeIssueProvenance, string, bool) {
+	var p forgeIssueProvenance
+	index := strings.LastIndex(body, forgeExportIssuePrefix)
+	if index < 0 || !strings.HasSuffix(body, " -->") {
+		return p, "", false
+	}
+	raw, err := base64.RawURLEncoding.Strict().DecodeString(body[index+len(forgeExportIssuePrefix) : len(body)-4])
+	if err != nil || len(raw) > 4096 || forgeStrictJSON(raw, &p) != nil {
+		return p, "", false
+	}
+	prefix := body[:index]
+	encoded, err := forgeFormatIssueExport(p, prefix)
+	if err != nil || encoded != body {
+		return p, "", false
+	}
+	return p, prefix, true
 }

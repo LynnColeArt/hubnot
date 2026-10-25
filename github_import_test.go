@@ -312,8 +312,8 @@ func TestForgeImportRecoversOriginalIntentWithoutRefreshingHead(t *testing.T) {
 	}
 	state := prepared.state
 	state.Metadata["forge/source"] = item.OpeningMetadata["forge/source"]
-	scope := provider.Kind() + "\n" + provider.Endpoint() + "\nacme/project"
-	pending := forgeNativeIntent{Schema: "hn.forge-native-intent/1", Scope: scope, Actor: identity.Actor, Command: "revise", IssueID: item.ID, Expected: current.HeadIDs, State: &state, Operation: forgeOperation("lost-response", item.ID)}
+	scope := forgeImportScope(provider, transferOptions{project: "acme/project"})
+	pending := forgeNativeIntent{Schema: "hn.forge-native-intent/1", Scope: scope, Actor: identity.Actor, Command: "revise", IssueID: item.ID, Expected: current.HeadIDs, State: &state, Operation: forgeOperation("revise", forgeSourceKey(prepared.source), strings.Join(current.HeadIDs, ","), forgeDigestJSON(state))}
 	if err := forgeStoreJSON("native-intent.json", pending); err != nil {
 		t.Fatal(err)
 	}
@@ -424,5 +424,122 @@ func TestForgePublicRoutingAndTransportExcludedBuild(t *testing.T) {
 	}
 	if out := runOperationalCommandFailure(t, core, root, "transfer", "import", "--provider", "github", "--project", "acme/project", "--endpoint", server.URL); !strings.Contains(out, "unavailable") {
 		t.Fatal(out)
+	}
+}
+
+func TestForgeImportRejectsManufacturedBaseline(t *testing.T) {
+	root := issueCommandTestRepo(t)
+	f, server := newGitHubImportFixture(t)
+	githubTestImport(t, server)
+	item := githubTestItems(t)[0]
+	view, err := ghReadIssue(item.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	local := *view.State
+	local.Title = "local work"
+	digest, err := forgeManagedDigest(local)
+	if err != nil {
+		t.Fatal(err)
+	}
+	local.Metadata["forge/baseline"] = digest
+	input := issueCommandInput(t, root, local)
+	result, err := issueCommandJSON(t, "revise", item.ID, "--expect", view.HeadIDs[0], "--input", input, "--json")
+	issueResultData(t, result, err)
+	f.issue.Title = "upstream competing change"
+	before := mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn")
+	if _, err := githubTestCommand(t, "import", "--repo", "acme/project", "--api-url", server.URL); err == nil {
+		t.Fatal("manufactured baseline accepted")
+	}
+	if after := mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn"); after != before {
+		t.Fatal("tampered baseline import mutated refs")
+	}
+	view, err = ghReadIssue(item.ID)
+	if err != nil || view.State.Title != "local work" {
+		t.Fatalf("local work lost: %#v %v", view.State, err)
+	}
+}
+func TestForgeImportPreservesLiteralExportMarkerProse(t *testing.T) {
+	issueCommandTestRepo(t)
+	f, server := newGitHubImportFixture(t)
+	f.issue.Body = "Document this literal prefix:\n\n<!-- hn:forge-issue:not-an-export"
+	githubTestImport(t, server)
+	if got := githubTestItems(t)[0].State.Body; got != f.issue.Body {
+		t.Fatalf("source prose changed: %q", got)
+	}
+}
+
+func TestForgeImportSelectionCannotReplayAnotherPendingIssue(t *testing.T) {
+	issueCommandTestRepo(t)
+	f, server := newGitHubImportFixture(t)
+	provider := &githubForge{client: mustGitHubClient(t, server.URL)}
+	prepared, err := forgePrepareImport(provider, "acme/project", githubForgeIssue(f.issue), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	identity, err := inspectIdentity()
+	if err != nil {
+		t.Fatal(err)
+	}
+	pending := forgeNativeIntent{Schema: "hn.forge-native-intent/1", Scope: forgeImportScope(provider, transferOptions{project: "acme/project", key: "7"}), Actor: identity.Actor, Command: "open", State: &prepared.state, Operation: forgeOperation("open", forgeSourceKey(prepared.source), prepared.baseline)}
+	if err := forgeStoreJSON("native-intent.json", pending); err != nil {
+		t.Fatal(err)
+	}
+	requests := f.requests
+	if _, err := githubTestCommand(t, "import", "--repo", "acme/project", "--issue", "8", "--api-url", server.URL); err == nil {
+		t.Fatal("different selection replayed pending mutation")
+	}
+	if f.requests != requests || len(githubTestItems(t)) != 0 {
+		t.Fatal("mismatched selection touched provider or native state")
+	}
+	githubTestImport(t, server, "--issue", "7")
+	if rows := githubTestItems(t); len(rows) != 1 {
+		t.Fatal(rows)
+	}
+}
+func TestForgeStrictMappingsAndLocalExtensionDispatch(t *testing.T) {
+	for _, maps := range [][]string{{"--map", ""}, {"--map", "=value"}, {"--map", "key="}, {"--map", "key=value", "--map", "key=other"}, {"--map", "key=value\nmore"}} {
+		args := append([]string{"import", "--provider", "example", "--project", "opaque"}, maps...)
+		if _, err := parseTransferOptions(args); err == nil {
+			t.Fatalf("accepted mappings %v", maps)
+		}
+	}
+	o, err := parseTransferOptions([]string{"import", "--provider", "example", "--project", "opaque", "--key", "TEAM-42", "--map", "category=Build tooling", "--map", "branch=feature/x"})
+	if err != nil || o.key != "TEAM-42" || o.mappings["category"] != "Build tooling" || len(o.mappings) != 2 {
+		t.Fatalf("options %#v %v", o, err)
+	}
+	t.Chdir(t.TempDir())
+	called := false
+	localCommands["example-local"] = func(args []string) error {
+		called = true
+		if len(args) != 2 || args[0] != "one" || args[1] != "two" {
+			t.Fatalf("extension args %v", args)
+		}
+		return nil
+	}
+	t.Cleanup(func() { delete(localCommands, "example-local") })
+	if err := run([]string{"example-local", "one", "two"}); err != nil || !called {
+		t.Fatalf("extension %v %v", called, err)
+	}
+}
+func TestForgeActualExportProofRefusesUnprovenReverseMapping(t *testing.T) {
+	issueCommandTestRepo(t)
+	f, server := newGitHubImportFixture(t)
+	actor := strings.Repeat("a", 64)
+	id := "sha256:" + strings.Repeat("b", 64)
+	proof := forgeIssueProvenance{Schema: "hn.forge-issue/1", ID: id, Actor: actor, Head: id, Digest: eventID([]byte("native body"))}
+	encoded, err := forgeFormatIssueExport(proof, "native body")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, plain, present := forgeParseIssueExport(encoded); !present || plain != "native body" {
+		t.Fatal("valid issue proof not recognized")
+	}
+	f.issue.Body = encoded
+	if _, err := githubTestCommand(t, "import", "--repo", "acme/project", "--api-url", server.URL); err == nil {
+		t.Fatal("unproven reverse native mapping accepted")
+	}
+	if rows := githubTestItems(t); len(rows) != 0 {
+		t.Fatal("reverse import created duplicate")
 	}
 }
