@@ -3,7 +3,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -268,6 +270,8 @@ type githubDiscussionAction struct {
 }
 type githubDiscussionCheckpoint struct {
 	Schema, Scope, Endpoint, Project, CategoryID string
+	RepositoryID, SourceRepositoryID             string
+	Signer, SignerPublicKey, Signature           string
 	Snapshot                                     *forgeResourceSnapshot
 	Previous                                     *forgeResourceSnapshot
 	Bindings                                     map[string]githubDiscussionBinding
@@ -352,7 +356,7 @@ func githubDiscussionNativeEqual(a, b forge.Node) bool {
 	return string(x) == string(y)
 }
 
-func githubDiscussionSource(n forge.Node, endpoint, project string) (forgeResourceSource, forge.Node, bool, error) {
+func githubDiscussionSource(n forge.Node, endpoint, sourceRepositoryID, destinationRepositoryID string) (forgeResourceSource, forge.Node, bool, error) {
 	var empty forgeResourceSource
 	if n.Metadata[forgeResourceSourceKey] == "" {
 		return empty, forge.Node{}, false, nil
@@ -361,7 +365,7 @@ func githubDiscussionSource(n forge.Node, endpoint, project string) (forgeResour
 	if err != nil {
 		return empty, forge.Node{}, false, err
 	}
-	if source.Provider != "github" || source.Endpoint != endpoint || source.Project != project || source.Kind != n.Kind {
+	if source.Provider != "github" || source.Endpoint != endpoint || source.Kind != n.Kind || sourceRepositoryID == "" || sourceRepositoryID != destinationRepositoryID {
 		return source, forge.Node{}, false, nil
 	}
 	v, _, err := forgeResourceStateParts(n.Kind, version.State)
@@ -448,7 +452,7 @@ func githubDiscussionCategory(ctx context.Context, g *githubForge, o transferOpt
 }
 func githubDiscussionDiscover(ctx context.Context, g *githubForge, o transferOptions, cp *githubDiscussionCheckpoint, root forge.Node, repoID string) (*githubapi.Discussion, error) {
 	binding := cp.Bindings[root.Record.ID]
-	source, _, same, err := githubDiscussionSource(root, g.Endpoint(), o.project)
+	source, _, same, err := githubDiscussionSource(root, g.Endpoint(), cp.SourceRepositoryID, cp.RepositoryID)
 	if err != nil {
 		return nil, err
 	}
@@ -534,7 +538,7 @@ func githubDiscussionBuildPlan(ctx context.Context, g *githubForge, o transferOp
 	// Recover every signed source association before resolving root answer and
 	// parent identities. Newly exported marker associations are collected too.
 	for id, n := range nodes {
-		source, _, same, e := githubDiscussionSource(n, g.Endpoint(), o.project)
+		source, _, same, e := githubDiscussionSource(n, g.Endpoint(), cp.SourceRepositoryID, cp.RepositoryID)
 		if e != nil {
 			return e
 		}
@@ -566,7 +570,7 @@ func githubDiscussionBuildPlan(ctx context.Context, g *githubForge, o transferOp
 	ordered := githubDiscussionOrdered(root, nodes)
 	for _, n := range ordered {
 		binding := cp.Bindings[n.Record.ID]
-		source, old, same, err := githubDiscussionSource(n, g.Endpoint(), o.project)
+		source, old, same, err := githubDiscussionSource(n, g.Endpoint(), cp.SourceRepositoryID, cp.RepositoryID)
 		if err != nil {
 			return err
 		}
@@ -911,6 +915,9 @@ func githubDiscussionBudget(cp githubDiscussionCheckpoint, nodes map[string]forg
 	// Reserve the largest legal escaped opaque identity in EVERY future binding
 	// and result, including the full frozen graph, action list and prior witness.
 	worst := strings.Repeat("<", 1024)
+	cp.Signer = strings.Repeat("a", 64)
+	cp.SignerPublicKey = strings.Repeat("a", 43)
+	cp.Signature = strings.Repeat("a", 86)
 	cp.Bindings = map[string]githubDiscussionBinding{}
 	cp.Baselines = map[string]githubDiscussionProjection{}
 	for id, n := range nodes {
@@ -1026,15 +1033,32 @@ func githubExportDiscussion(ctx context.Context, p forge.Identity, o transferOpt
 	if _, err := githubDiscussionMappings(forge.Selection{Mappings: o.mappings}, true); err != nil {
 		return err
 	}
-	if !o.dryRun && os.Getenv("HN_GITHUB_TOKEN") == "" {
-		return errors.New("GitHub discussion writes require HN_GITHUB_TOKEN")
+	var identity *Identity
+	if !o.dryRun {
+		if os.Getenv("HN_GITHUB_TOKEN") == "" {
+			return errors.New("GitHub discussion writes require HN_GITHUB_TOKEN")
+		}
+		var err error
+		identity, err = loadIdentity()
+		if err != nil {
+			return errors.New("real discussion export requires an active native signing identity; select the original exporter identity to recover")
+		}
+		if err = validateIdentity(identity); err != nil {
+			return err
+		}
 	}
+
 	scope := githubDiscussionScope(g.Endpoint(), o)
 	name := "discussion-export-" + strings.TrimPrefix(scope, "sha256:") + ".json"
 	cp := githubDiscussionCheckpoint{}
 	found, err := forgeLoadJSON(name, &cp)
 	if err != nil {
 		return err
+	}
+	if found {
+		if err := githubDiscussionVerifyCheckpoint(name, cp, identity); err != nil {
+			return err
+		}
 	}
 	if found && (cp.Schema != "hn.github-discussion-export/1" || cp.Scope != scope || cp.Endpoint != g.Endpoint() || cp.Project != o.project || cp.CategoryID != o.mappings["category"]) {
 		return errors.New("discussion checkpoint scope/category mismatch")
@@ -1061,6 +1085,15 @@ func githubExportDiscussion(ctx context.Context, p forge.Identity, o transferOpt
 		return err
 	}
 	cp.CategoryID = category.ID
+	sourceRepositoryID, err := githubDiscussionSourceRepository(ctx, g, root)
+	if err != nil {
+		return err
+	}
+	if found && (cp.RepositoryID != repo.ID || cp.SourceRepositoryID != sourceRepositoryID) {
+		return errors.New("stable source/destination repository identity changed; explicitly reconcile the signed export checkpoint")
+	}
+	cp.RepositoryID = repo.ID
+	cp.SourceRepositoryID = sourceRepositoryID
 	if !resuming {
 		if err := githubDiscussionBuildPlan(ctx, g, o, &cp, repo, root, nodes); err != nil {
 			return err
@@ -1079,7 +1112,7 @@ func githubExportDiscussion(ctx context.Context, p forge.Identity, o transferOpt
 		if !ok {
 			return errors.New("saved binding outside selected graph")
 		}
-		source, _, same, e := githubDiscussionSource(n, cp.Endpoint, cp.Project)
+		source, _, same, e := githubDiscussionSource(n, cp.Endpoint, cp.SourceRepositoryID, cp.RepositoryID)
 		if e != nil {
 			return e
 		}
@@ -1101,7 +1134,12 @@ func githubExportDiscussion(ctx context.Context, p forge.Identity, o transferOpt
 	if len(cp.Actions) == 0 {
 		return nil
 	}
-	save := func() error { return forgeStoreJSON(name, &cp) }
+	save := func() error {
+		if err := githubDiscussionSignCheckpoint(&cp, identity); err != nil {
+			return err
+		}
+		return forgeStoreJSON(name, &cp)
+	}
 	if !resuming {
 		if err := save(); err != nil {
 			return err
@@ -1200,7 +1238,7 @@ func githubDiscussionCheckBaseline(cp *githubDiscussionCheckpoint, id string, no
 		}
 	}
 	if !known {
-		source, old, same, err := githubDiscussionSource(n, cp.Endpoint, cp.Project)
+		source, old, same, err := githubDiscussionSource(n, cp.Endpoint, cp.SourceRepositoryID, cp.RepositoryID)
 		if err != nil {
 			return err
 		}
@@ -1273,7 +1311,7 @@ func githubDiscussionBeforeWrite(ctx context.Context, g *githubForge, o transfer
 		if !ok {
 			return errors.New("saved binding outside selected native graph")
 		}
-		source, _, same, err := githubDiscussionSource(n, cp.Endpoint, cp.Project)
+		source, _, same, err := githubDiscussionSource(n, cp.Endpoint, cp.SourceRepositoryID, cp.RepositoryID)
 		if err != nil {
 			return err
 		}
@@ -1291,6 +1329,9 @@ func githubDiscussionBeforeWrite(ctx context.Context, g *githubForge, o transfer
 	d, err := g.client.GetDiscussionByID(ctx, rootID)
 	if err != nil {
 		return err
+	}
+	if d.RepositoryID != cp.RepositoryID {
+		return errors.New("external discussion moved to another repository; reconcile before mutation")
 	}
 	if err := githubDiscussionRequireLosses(d, o); err != nil {
 		return err
@@ -1335,7 +1376,7 @@ func githubDiscussionPriorAnswer(cp *githubDiscussionCheckpoint, nodes map[strin
 			}
 		}
 	}
-	_, old, same, err := githubDiscussionSource(nodes[cp.Snapshot.NativeID], cp.Endpoint, cp.Project)
+	_, old, same, err := githubDiscussionSource(nodes[cp.Snapshot.NativeID], cp.Endpoint, cp.SourceRepositoryID, cp.RepositoryID)
 	if err != nil {
 		return "", err
 	}
@@ -1376,4 +1417,89 @@ func githubDiscussionNativePublication(proof githubDiscussionProof, body string)
 		return false, err
 	}
 	return githubDiscussionRender(node, proof.Endpoint) == body, nil
+}
+
+const githubDiscussionCheckpointDomain = "hn.github-discussion-checkpoint-signature/1\x00"
+
+func githubDiscussionCheckpointBytes(cp githubDiscussionCheckpoint) ([]byte, error) {
+	cp.Signature = ""
+	raw, err := json.Marshal(cp)
+	if err != nil || len(raw) > forgeCheckpointLimit {
+		return nil, errors.New("discussion checkpoint signature payload exceeds supported bounds")
+	}
+	return append([]byte(githubDiscussionCheckpointDomain), raw...), nil
+}
+func githubDiscussionSignCheckpoint(cp *githubDiscussionCheckpoint, identity *Identity) error {
+	if identity == nil {
+		return errors.New("real discussion export requires the selected native signing identity")
+	}
+	cp.Signer = identity.Actor
+	cp.SignerPublicKey = identity.PublicKey
+	payload, err := githubDiscussionCheckpointBytes(*cp)
+	if err != nil {
+		return err
+	}
+	key, err := identity.privateKey()
+	if err != nil {
+		return err
+	}
+	cp.Signature = base64.RawStdEncoding.EncodeToString(ed25519.Sign(key, payload))
+	return nil
+}
+func githubDiscussionVerifyCheckpoint(name string, cp githubDiscussionCheckpoint, identity *Identity) error {
+	// Only producer-canonical JSON is admitted, so aliases, unknown fields,
+	// duplicate keys and trailing data cannot alter the interpreted envelope.
+	path, err := forgeCheckpointPath(name)
+	if err != nil {
+		return err
+	}
+	raw, err := readPrivateFileBounded(path, forgeCheckpointLimit)
+	if err != nil {
+		return errors.New("discussion checkpoint cannot be authenticated")
+	}
+	canonical, err := json.Marshal(cp)
+	if err != nil || !bytes.Equal(raw, canonical) {
+		return errors.New("discussion checkpoint is not canonical signed JSON; explicit recovery required")
+	}
+	public, err := base64.RawStdEncoding.DecodeString(cp.SignerPublicKey)
+	if err != nil || len(public) != ed25519.PublicKeySize || base64.RawStdEncoding.EncodeToString(public) != cp.SignerPublicKey || actorForPublicKey(public) != cp.Signer {
+		return errors.New("discussion checkpoint signer is invalid; explicit recovery required")
+	}
+	if identity != nil && (cp.Signer != identity.Actor || cp.SignerPublicKey != identity.PublicKey) {
+		return errors.New("discussion checkpoint belongs to a different native identity; select the original exporter identity for explicit recovery")
+	}
+	signature, err := base64.RawStdEncoding.DecodeString(cp.Signature)
+	if err != nil || len(signature) != ed25519.SignatureSize || base64.RawStdEncoding.EncodeToString(signature) != cp.Signature {
+		return errors.New("discussion checkpoint signature is missing or invalid; explicit recovery required")
+	}
+	payload, err := githubDiscussionCheckpointBytes(cp)
+	if err != nil {
+		return err
+	}
+	if !ed25519.Verify(public, payload, signature) {
+		return errors.New("discussion checkpoint signature does not match its complete recovery state; explicit recovery required")
+	}
+	return nil
+}
+func githubDiscussionSourceRepository(ctx context.Context, g *githubForge, root forge.Node) (string, error) {
+	if root.Metadata[forgeResourceSourceKey] == "" {
+		return "", nil
+	}
+	source, _, _, err := forgeImportedResourceBaseline(root.Record.ID)
+	if err != nil {
+		return "", err
+	}
+	if source.Provider != "github" || source.Endpoint != g.Endpoint() || source.Kind != ResourceDiscussion {
+		return "", nil
+	}
+	// owner/name is a lookup hint. Resolve the signed immutable discussion ID
+	// before deciding whether this is a return export or a deliberate new copy.
+	original, err := g.client.GetDiscussionByID(ctx, source.Record.ID)
+	if err != nil {
+		return "", errors.New("cannot establish the stable source discussion/repository identity; explicitly reconcile before copying")
+	}
+	if original.ID != source.Record.ID || original.RepositoryID == "" {
+		return "", errors.New("source discussion identity changed; explicit recovery required")
+	}
+	return original.RepositoryID, nil
 }

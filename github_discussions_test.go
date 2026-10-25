@@ -3,11 +3,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"hubnot/internal/forge"
 	"hubnot/internal/githubapi"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -377,5 +379,239 @@ func TestGitHubDiscussionSourceReplyDeletionPreserved(t *testing.T) {
 	}
 	if f.writes != 0 || len(f.d.Comments) != 0 {
 		t.Fatal("deleted source reply resurrected")
+	}
+}
+
+func TestGitHubDiscussionRegressionRejectsManufacturedParentBinding(t *testing.T) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "fixture-token")
+	f := newDiscussionFixture(t)
+	root := discussionWrite(t, "discussion", "open", "--title", "Q", "--body", "Body", "--category", "help")
+	parent := discussionWrite(t, "discussion", "reply", "add", root.ResourceID, "--body", "Native parent")
+	discussionWrite(t, "discussion", "reply", "add", root.ResourceID, "--reply-to", parent.ResourceID, "--body", "Native child")
+	args := append(discussionTransferArgs(f, "export", root.ResourceID), "--map", "category=C1")
+	f.lose = "HNAddDiscussionComment"
+	if err := run(args); err == nil {
+		t.Fatal("expected uncertain initial parent write")
+	}
+	scope := githubDiscussionScope(f.server.URL, transferOptions{project: "o/r", id: root.ResourceID})
+	name := "discussion-export-" + strings.TrimPrefix(scope, "sha256:") + ".json"
+	var cp githubDiscussionCheckpoint
+	found, err := forgeLoadJSON(name, &cp)
+	if err != nil || !found {
+		t.Fatal(found, err)
+	}
+	if cp.Next != 1 || len(cp.Actions) != 3 {
+		t.Fatalf("unexpected initial plan next=%d actions=%d", cp.Next, len(cp.Actions))
+	}
+	f.d.Comments = append(f.d.Comments, githubapi.DiscussionComment{ID: "HUMAN", DiscussionID: "D1", Body: "Unrelated human comment"})
+	cp.Next = 2
+	cp.Pending = nil
+	cp.Bindings[parent.ResourceID] = githubDiscussionBinding{RemoteID: "HUMAN"}
+	delete(cp.Baselines, parent.ResourceID)
+	if err := forgeStoreJSON(name, &cp); err != nil {
+		t.Fatal(err)
+	}
+	before := f.writes
+	err = run(args)
+	if f.writes != before {
+		t.Fatalf("unproven checkpoint parent redirected native child: writes=%d err=%v parent=%s", f.writes-before, err, f.d.Comments[len(f.d.Comments)-1].ParentID)
+	}
+	if err == nil {
+		t.Fatal("unproven parent checkpoint accepted")
+	}
+}
+
+func TestGitHubDiscussionRegressionSourceRepoRenameRetainsIdentity(t *testing.T) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "fixture-token")
+	f := newDiscussionFixture(t)
+	f.d = githubapi.Discussion{ID: "D1", Title: "Foreign question", Body: "Source body"}
+	if err := run(append(discussionTransferArgs(f, "import", ""), "--key", "7")); err != nil {
+		t.Fatal(err)
+	}
+	root := bridgeFamily(bridgeCatalog(t), ResourceDiscussion)[0]
+	oldHandler := f.server.Config.Handler
+	f.server.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rec := httptest.NewRecorder()
+		oldHandler.ServeHTTP(rec, r)
+		for k, v := range rec.Header() {
+			w.Header()[k] = v
+		}
+		w.WriteHeader(rec.Code)
+		w.Write([]byte(strings.ReplaceAll(rec.Body.String(), `"nameWithOwner":"o/r"`, `"nameWithOwner":"o/renamed"`)))
+	})
+	args := append(discussionTransferArgs(f, "export", root.ID), "--map", "category=C1")
+	for i := range args {
+		if args[i] == "o/r" {
+			args[i] = "o/renamed"
+		}
+	}
+	before := f.writes
+	err := run(args)
+	if f.writes != before {
+		t.Fatalf("repository rename duplicated stable source D1/R1: roots=%d writes=%d err=%v", f.createRoots, f.writes-before, err)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGitHubDiscussionRealExportIdentityChangeAndKeyFreePreview(t *testing.T) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "fixture-token")
+	f := newDiscussionFixture(t)
+	root := discussionWrite(t, "discussion", "open", "--title", "Q", "--body", "Body", "--category", "help")
+	args := append(discussionTransferArgs(f, "export", root.ResourceID), "--map", "category=C1")
+	if err := run(args); err != nil {
+		t.Fatal(err)
+	}
+	original, err := loadIdentity()
+	if err != nil {
+		t.Fatal(err)
+	}
+	replacement := testIdentity(t, "Other exporter")
+	if _, err := storeIdentityRecord(replacement, identityLifecycleAvailable); err != nil {
+		t.Fatal(err)
+	}
+	if err := replaceActiveIdentity(replacement.Actor, original.Actor); err != nil {
+		t.Fatal(err)
+	}
+	before := f.writes
+	if err := run(args); err == nil || !strings.Contains(err.Error(), "different native identity") {
+		t.Fatal("identity change silently adopted journal", err)
+	}
+	if f.writes != before {
+		t.Fatal("identity change wrote")
+	}
+	paths, err := identityKeyringPaths()
+	if err != nil {
+		t.Fatal(err)
+	}
+	keydir := filepath.Dir(paths.identities)
+	hidden := keydir + "-unavailable"
+	if err := os.Rename(keydir, hidden); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Rename(hidden, keydir)
+	if err := run(append(args, "--dry-run")); err != nil {
+		t.Fatal("preview required native private keys", err)
+	}
+	if f.writes != before {
+		t.Fatal("preview wrote")
+	}
+	if err := run(args); err == nil {
+		t.Fatal("real export without native signing identity succeeded")
+	}
+}
+func TestGitHubDiscussionCanonicalCheckpointRejectsUnsignedAndAliases(t *testing.T) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "fixture-token")
+	f := newDiscussionFixture(t)
+	root := discussionWrite(t, "discussion", "open", "--title", "Q", "--body", "Body", "--category", "help")
+	args := append(discussionTransferArgs(f, "export", root.ResourceID), "--map", "category=C1")
+	if err := run(args); err != nil {
+		t.Fatal(err)
+	}
+	scope := githubDiscussionScope(f.server.URL, transferOptions{project: "o/r", id: root.ResourceID})
+	name := "discussion-export-" + strings.TrimPrefix(scope, "sha256:") + ".json"
+	path, _ := forgeCheckpointPath(name)
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := f.writes
+	for _, changed := range [][]byte{append([]byte(" "), raw...), []byte(strings.Replace(string(raw), `"Scope":`, `"SCOPE":`, 1)), []byte(strings.Replace(string(raw), `"Signature":"`, `"Signature":"invalid`, 1))} {
+		if err := os.WriteFile(path, changed, 0600); err != nil {
+			t.Fatal(err)
+		}
+		if err := run(args); err == nil {
+			t.Fatal("noncanonical/invalid signature accepted")
+		}
+		if f.writes != before {
+			t.Fatal("tampered envelope wrote")
+		}
+	}
+}
+
+func TestGitHubDiscussionDistinctStableRepositoryCreatesIntentionalCopy(t *testing.T) {
+	issueCommandTestRepo(t)
+	t.Setenv("HN_GITHUB_TOKEN", "fixture-token")
+	f := newDiscussionFixture(t)
+	f.d = githubapi.Discussion{ID: "D1", Title: "Original", Body: "Source body"}
+	if err := run(append(discussionTransferArgs(f, "import", ""), "--key", "7")); err != nil {
+		t.Fatal(err)
+	}
+	root := bridgeFamily(bridgeCatalog(t), ResourceDiscussion)[0]
+	original := discussionAPINode(f.d)
+	oldHandler := f.server.Config.Handler
+	f.server.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		request, _ := io.ReadAll(r.Body)
+		r.Body = io.NopCloser(bytes.NewReader(request))
+		var q struct {
+			Query     string
+			Variables map[string]any
+		}
+		json.Unmarshal(request, &q)
+		recorder := httptest.NewRecorder()
+		oldHandler.ServeHTTP(recorder, r)
+		var response map[string]any
+		if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+			t.Error(err)
+			return
+		}
+		data := response["data"].(map[string]any)
+		destinationNode := func() map[string]any {
+			n := discussionAPINode(f.d)
+			n["id"] = "D2"
+			n["repository"] = map[string]any{"id": "R2"}
+			return n
+		}
+		switch {
+		case strings.Contains(q.Query, "HNDiscussionRepository"):
+			data["repository"] = map[string]any{"id": "R2", "nameWithOwner": "other/repo", "hasDiscussionsEnabled": true}
+		case strings.Contains(q.Query, "HNDiscussionCategories"):
+			data["repository"].(map[string]any)["id"] = "R2"
+		case strings.Contains(q.Query, "HNDiscussions("):
+			nodes := []any{}
+			if f.createRoots > 0 {
+				nodes = append(nodes, destinationNode())
+			}
+			data["repository"] = map[string]any{"id": "R2", "discussions": discussionAPIConnection(nodes)}
+		case strings.Contains(q.Query, "HNDiscussionID"):
+			if q.Variables["id"] == "D1" {
+				data["node"] = original
+			} else {
+				data["node"] = destinationNode()
+			}
+		case strings.Contains(q.Query, "HNDiscussionComments"):
+			data["node"].(map[string]any)["id"] = q.Variables["id"]
+		case strings.Contains(q.Query, "HNCreateDiscussion"):
+			data["createDiscussion"] = map[string]any{"discussion": destinationNode()}
+		}
+		for k, v := range recorder.Header() {
+			w.Header()[k] = v
+		}
+		w.WriteHeader(recorder.Code)
+		json.NewEncoder(w).Encode(response)
+	})
+	args := append(discussionTransferArgs(f, "export", root.ID), "--map", "category=C1")
+	for i := range args {
+		if args[i] == "o/r" {
+			args[i] = "other/repo"
+		}
+	}
+	if err := run(args); err != nil {
+		t.Fatal(err)
+	}
+	if f.createRoots != 1 || f.writes != 1 {
+		t.Fatal("distinct repository did not create exactly one copy")
+	}
+	before := f.writes
+	if err := run(args); err != nil {
+		t.Fatal(err)
+	}
+	if f.writes != before {
+		t.Fatal("intentional copy duplicated")
 	}
 }
