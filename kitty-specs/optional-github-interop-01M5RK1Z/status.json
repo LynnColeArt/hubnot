@@ -179,7 +179,8 @@
       "last_transition_at": "2026-10-25T05:28:31.391978+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for review at bb926b2a: complete native project/item UX; exact schema and actor/operation guards, metadata preservation, decimal ordering and explicit conflict resolution. Focused tests, full go test -race -count=1 ./... (258.325s), go vet ./..., ordinary/nogithub builds, tagged native resource tests (2.703s), format/diff and provider dependency exclusion pass. Authorized tiny registry-test restoration prevents deleting specialization; no core production changes."
+        "Ready for review at bb926b2a: complete native project/item UX; exact schema and actor/operation guards, metadata preservation, decimal ordering and explicit conflict resolution. Focused tests, full go test -race -count=1 ./... (258.325s), go vet ./..., ordinary/nogithub builds, tagged native resource tests (2.703s), format/diff and provider dependency exclusion pass. Authorized tiny registry-test restoration prevents deleting specialization; no core production changes.",
+        "Independent native project review passed at bb926b2a; structured evidence committed 2607c8c0. Exact schema pinning, metadata, actor replay, conflicts, typed targets and cursor scope verified. Full and scoped Go gates pass. Authorized shared resource_engine_test.go edit restores prior project command registration only."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
