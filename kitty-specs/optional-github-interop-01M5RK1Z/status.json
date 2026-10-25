@@ -336,7 +336,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review at 3ca117ae: bounded GraphQL and typed discussions; all 15 documents official-schema validated; full Go race, package race, vet/build, nogithub build/exclusion, formatting and diff checks pass",
-        "Independent review rejects source3ca117ae: R1 GraphQL errors/typed fields can be overwritten by case aliases accepted by encoding/json. Two independent transport/typed reproductions are RED; structured source-bound feedback committed93cea42d. Rest of full SDK audit complete with no other actionable finding; fix via canonical reimplementation, no force."
+        "Independent review rejects source3ca117ae: R1 GraphQL errors/typed fields can be overwritten by case aliases accepted by encoding/json. Two independent transport/typed reproductions are RED; structured source-bound feedback committed93cea42d. Rest of full SDK audit complete with no other actionable finding; fix via canonical reimplementation, no force.",
+        "Cycle 1 R1 fixed at de5e67a6: Unicode SimpleFold-equivalent JSON keys and envelope aliases refused; independent recheck clean; exact full Go race hubnot247.802s/githubapi11.433s plus scoped/static/tagged checks pass"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
