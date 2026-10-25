@@ -352,7 +352,8 @@
       "last_transition_at": "2026-10-25T07:41:27.658288+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Exact source 4a15be65: bounded independent audit and all original/follow-up RED-fix-GREEN probes clean; full race371.110s and full nogithub178.260s pass; vet/both builds/format/diff pass. Root executed final gates and handoff for implementer."
+        "Exact source 4a15be65: bounded independent audit and all original/follow-up RED-fix-GREEN probes clean; full race371.110s and full nogithub178.260s pass; vet/both builds/format/diff pass. Root executed final gates and handoff for implementer.",
+        "Independent project migration review passed exact source 4a15be65; report committed via spec-commit 9612cd9d. Original concurrent-edit and literal-binding REDs plus archive/order follow-up are fixed and independently GREEN. Whole signed checkpoint, positive recovery, opaque content, stable project identity, typed mappings and all 27 schema documents reviewed. Exact full race 371.110s and nogithub 178.260s plus scoped/static/build/exclusion gates pass. No source edits, live calls or bypass."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
