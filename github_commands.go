@@ -20,10 +20,10 @@ const forgeTransferTimeout = 5 * time.Minute
 const forgeCheckpointLimit = 8 << 20
 const forgeCommandHelp = `Usage:
   hn transfer import --provider PROVIDER --project PROJECT [--key KEY] [--endpoint URL] [--dry-run]
-  hn transfer export ISSUE --provider PROVIDER --project PROJECT [--endpoint URL] [--dry-run]
+  hn transfer export RESOURCE_ID --provider PROVIDER --project PROJECT [--endpoint URL] [--dry-run]
   hn transfer capabilities --provider PROVIDER [--resource issue|project|workflow|discussion]
 
-Explicit optional issue transfer; GitHub is the first provider adapter. The
+Explicit optional resource transfer; GitHub is the first provider adapter. The
 local hn issue and hn gh issue interfaces require no provider or credentials.
 Only explicitly selected adapters read their credentials (GitHub: HN_GITHUB_TOKEN,
 optional for public reads, required for writes). Dry-run creates no native facts
@@ -37,10 +37,12 @@ A nogithub build excludes the GitHub adapter and remains fully usable offline.
 Use --resource to select an import/export resource (default issue). Explicit
 provider mappings use repeated --map KEY=VALUE (no empty/duplicate keys; 64 max).
 Issue transfer currently needs no mappings and refuses unsupported mapping keys.
-Unsupported
-project/workflow/discussion mappings refuse before any provider request or write.
+Typed project/workflow/discussion readers and exporters are optional adapter
+capabilities. Unsupported resources refuse before provider access; missing
+mappings or dependencies refuse before any mutation. Resource imports preflight
+complete bounded graphs and resume exact saved snapshots after interruption.
 The capabilities report is read-only and lists exact supported mappings/losses;
-issue transfer does not claim automatic CI, workflow or discussion conversion.
+workflow execution semantics always require an explicit mapping.
 `
 
 type transferOptions struct {
@@ -50,7 +52,9 @@ type transferOptions struct {
 	dryRun                                        bool
 }
 type forgeRegistration struct {
-	New          func(string, string) (forge.Provider, error)
+	New func(string, string) (forge.Provider, error)
+	// NewResource permits adapters that do not implement issue CRUD.
+	NewResource  func(string, string) (forge.Identity, error)
 	TokenEnv     string
 	Capabilities []forge.Capability
 }
@@ -105,14 +109,29 @@ func runForgeTransfer(o transferOptions) error {
 	if !issueIdentifier(o.project, 512) || o.key != "" && !issueIdentifier(o.key, 256) {
 		return errors.New("invalid opaque project or issue selector")
 	}
-	if o.command == "export" && forgeExport == nil {
+	if o.resource == forge.ResourceIssue && o.command == "export" && forgeExport == nil {
 		return errors.New("issue export is not installed yet")
 	}
-	provider, err := registration.New(o.endpoint, os.Getenv(registration.TokenEnv))
+	if o.resource != forge.ResourceIssue && !forgeResourceInstalled(o) {
+		return errors.New("requested resource transfer handler is unavailable")
+	}
+	var provider forge.Identity
+	var err error
+	token := ""
+	if registration.TokenEnv != "" {
+		token = os.Getenv(registration.TokenEnv)
+	}
+	if registration.NewResource != nil {
+		provider, err = registration.NewResource(o.endpoint, token)
+	} else if registration.New != nil {
+		provider, err = registration.New(o.endpoint, token)
+	} else {
+		return errors.New("provider has no installed factory")
+	}
 	if err != nil {
 		return err
 	}
-	if provider.Kind() != o.provider || !forgeValidURL(provider.Endpoint(), true) {
+	if provider == nil || provider.Kind() != o.provider || !forgeValidLocator(provider.Endpoint()) {
 		return errors.New("provider factory returned an inconsistent identity")
 	}
 	o.endpoint = provider.Endpoint()
@@ -125,13 +144,20 @@ func runForgeTransfer(o transferOptions) error {
 		}
 		defer release()
 	}
+	if o.resource != forge.ResourceIssue {
+		return forgeTransferResource(ctx, provider, o)
+	}
+	issueProvider, ok := provider.(forge.Provider)
+	if !ok {
+		return errors.New("provider does not implement issue transfer")
+	}
 	if o.command == "export" {
 		if forgeExport == nil {
 			return errors.New("issue export is not installed yet")
 		}
-		return forgeExport(ctx, provider, o)
+		return forgeExport(ctx, issueProvider, o)
 	}
-	return forgeImport(ctx, provider, o)
+	return forgeImport(ctx, issueProvider, o)
 }
 func parseTransferOptions(args []string) (transferOptions, error) {
 	o := transferOptions{command: args[0], resource: forge.ResourceIssue}
@@ -145,12 +171,12 @@ func parseTransferOptions(args []string) (transferOptions, error) {
 	}
 	if o.command == "export" {
 		if len(rest) == 0 || strings.HasPrefix(rest[0], "-") {
-			return o, errors.New("export requires a native issue ID before flags")
+			return o, errors.New("export requires a native resource ID before flags")
 		}
 		o.id = rest[0]
 		rest = rest[1:]
 		if !validEventID(o.id) {
-			return o, errors.New("export requires a full sha256:<64-hex> native issue ID")
+			return o, errors.New("export requires a full sha256:<64-hex> native resource ID")
 		}
 	}
 	flags := flag.NewFlagSet("transfer "+o.command, flag.ContinueOnError)
@@ -422,6 +448,11 @@ func forgeCapabilityReport(provider string, selected forge.Resource) forge.Mappi
 		}
 		if resource == forge.ResourceIssue && forgeExport == nil {
 			item.Export = false
+		}
+		if resource != forge.ResourceIssue {
+			if !forgeResourceInstalled(transferOptions{command: "export", provider: provider, resource: resource}) {
+				item.Export = false
+			}
 		}
 		result.Capabilities = append(result.Capabilities, item)
 	}
