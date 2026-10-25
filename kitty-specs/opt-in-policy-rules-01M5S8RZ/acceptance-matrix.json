@@ -6,103 +6,103 @@
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "Verify FR-001 is satisfied",
+      "description": "Both capabilities are absent/disabled by default and independent. Initialization, upgrade and imports never enable them.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "Enabled protection requires designated, distinct, non-author approvals for changes to configured literal files/directories, the policy itself and required pipeline definitions.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-003",
-      "description": "Verify FR-003 is satisfied",
+      "description": "Additions, deletions, renames, content and mode/type changes are evaluated from signed base/head trees; candidate rules cannot weaken their own gate.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-004",
-      "description": "Verify FR-004 is satisfied",
+      "description": "Protection affects status, acceptance validation, manual merge and fetched evidence admission. Exact candidate review evidence remains signed and independently verifiable. Current withdrawal blocks subsequent enabled merge. A target with protection enabled refuses manual merges governed by a different base-policy digest, including newly opened candidates against pre-opt-in ancestors; historical signed evidence remains valid.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-005",
-      "description": "Verify FR-005 is satisfied",
+      "description": "Policy inspection and amendment comparison expose activation, protected paths, thresholds, reviewers and automerge rule changes.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-006",
-      "description": "Verify FR-006 is satisfied",
+      "description": "Explicitly configured automerge rules select a target branch, allowed executing actors, proposal authors and literal allowed paths. Only matching rules may run.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-007",
-      "description": "Verify FR-007 is satisfied",
+      "description": "Automerge defaults to read-only preview; execution is explicit and requires existing current approvals, passes and maintainer acceptances. It never manufactures reviews or decisions.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-008",
-      "description": "Verify FR-008 is satisfied",
+      "description": "Execution rechecks exact candidate, current evidence, policy, actor, branch and expected target. Stale targets, current change requests/rejections, protected changes, policy amendments and unmatched changes refuse automatic merge.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-009",
-      "description": "Verify FR-009 is satisfied",
+      "description": "Successful automation records the existing native merge event and retains manual merge repair behavior; neither preview nor execution implicitly syncs, pushes, starts a daemon or executes pipelines.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     },
     {
       "criterion_id": "FR-010",
-      "description": "Verify FR-010 is satisfied",
+      "description": "Public CLI tests prove opt-out compatibility, both independent opt-ins, rejection paths and successful local native automerge without GitHub support.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Verification pending implementation and independent review."
     }
   ],
   "negative_invariants": []
