@@ -1,7 +1,7 @@
 {
-  "event_count": 14,
-  "last_event_id": "01M5SD29SRXZ138XE7BCQNAMPD",
-  "materialized_at": "2026-10-25T11:27:52.120633+00:00",
+  "event_count": 15,
+  "last_event_id": "01M5SD3EQDQV5F2J6FMYJMKNWK",
+  "materialized_at": "2026-10-25T11:28:29.933581+00:00",
   "mission_number": "",
   "mission_slug": "opt-in-policy-rules-01M5S8RZ",
   "mission_type": "software-dev",
@@ -11,21 +11,21 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 1,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 1
   },
   "work_packages": {
     "WP01": {
-      "actor": "user",
-      "agent": null,
-      "agent_profile": "implementer-ivan",
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
-      "lane": "for_review",
-      "last_event_id": "01M5SD29SRXZ138XE7BCQNAMPD",
-      "last_transition_at": "2026-10-25T11:27:52.120633+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M5SD3EQDQV5F2J6FMYJMKNWK",
+      "last_transition_at": "2026-10-25T11:28:29.933581+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: ae33a60a; final go test -race ./... passed hubnot394.083s; focused protected authority/real replica tests passed; vet/build/gofmt/diff checks pass; optional sections remain disabled.",
@@ -41,9 +41,9 @@
         "reviewer": "user",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
       "subtasks": {
         "T001": "done",
         "T002": "done",
