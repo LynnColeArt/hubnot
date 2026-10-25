@@ -201,10 +201,15 @@
     "WP09": {
       "actor": "codex",
       "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
       "force_count": 0,
       "lane": "in_progress",
       "last_event_id": "01M5RR7V1CNAX0BNNTY5AJ9W8G",
       "last_transition_at": "2026-10-25T05:23:53.516466+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
       "shell_pid": 5024,
       "shell_pid_created_at": "1792851034.54"
     },
