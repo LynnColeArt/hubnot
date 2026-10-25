@@ -289,7 +289,8 @@
       "last_transition_at": "2026-10-25T06:19:57.309265+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for review at f1b8cb75b66cc0f91ae55640c3e2a1fdad3d3005: typed neutral resource graphs, immutable source witnesses, exact schema/answer remapping, graph-bound native recovery, whole pending journal and actual signer preflight. Independent probes clean. Full Go race296.439s and nogithub148.991s pass; vet, both builds, format/diff/dependency exclusion pass. Narrow authorized registry/Identity/shared executor seams preserve issue behavior."
+        "Ready for review at f1b8cb75b66cc0f91ae55640c3e2a1fdad3d3005: typed neutral resource graphs, immutable source witnesses, exact schema/answer remapping, graph-bound native recovery, whole pending journal and actual signer preflight. Independent probes clean. Full Go race296.439s and nogithub148.991s pass; vet, both builds, format/diff/dependency exclusion pass. Narrow authorized registry/Identity/shared executor seams preserve issue behavior.",
+        "Independent bridge review passed at f1b8cb75; structured red/green evidence committed 635ea2bd. Actual signer envelopes, all pending/progress checkpoint budgets and signed complete-graph binding fixed and independently verified. Historical/schema snapshot and no-key/provider-neutral probes pass. Exact full race296.439s and nogithub148.991s plus other Go gates pass. Authorized narrow command/provider/remote-intent seams documented."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
