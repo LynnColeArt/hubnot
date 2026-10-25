@@ -23,7 +23,6 @@
   "purpose_context": "Andrew wants familiar gh issue workflows, and the maintainer wants explicit ticket import and export. Hubnot must remain a standalone Git-native app: no core GitHub dependency, credentials, service, or gh executable; integrations are separately installed optional CLI functionality. Scope confirmed in chat: GitHub integration and CLI compatibility first; protected checks and automerge excluded.",
   "purpose_tldr": "Use familiar issue tooling and move tickets between GitHub and Hubnot without making GitHub a core dependency.",
   "slug": "optional-github-interop-01M5RK1Z",
-  "status_phase": "1",
   "target_branch": "feat/optional-github-interop",
   "topology": "lanes",
   "vcs": "git",

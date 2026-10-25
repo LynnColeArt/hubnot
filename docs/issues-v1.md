@@ -308,3 +308,40 @@ revisions require an upgraded executable; old versions may reject the new
 kind. Reverting a binary cannot erase already signed events. This remains an
 experimental protocol and does not perform a Beads migration or a Go Kitty
 adapter installation.
+
+
+## Local gh-style commands and optional issue transfer
+
+`hn gh issue create|list|view|edit|comment|close|reopen` works on these same
+native signed issues. It does not invoke `gh`, contact a forge or read a token.
+Compatibility mutations print a full native issue ID; list/view can select the
+documented gh-style JSON fields, separate from the `hn.issue/1` envelope above.
+It refuses unsupported flags/families and conflicted mutations. Use the native
+commands for explicit expected revisions, operation keys and conflict resolution.
+
+```sh
+hn gh issue create -t "A local issue" -b "No GitHub account is needed"
+hn gh issue list --json id,title,state,conflict
+hn gh issue view <native-issue-id> --json id,body,comments
+hn transfer import --provider github --project OWNER/REPO --key 42 --dry-run
+```
+
+Actual import/export is an explicit optional adapter operation. Issue imports
+retain original source IDs, URLs, authors and times under descriptive
+`forge/source`/`forge/observation` metadata and attributed comment text; the
+native actor signs the imported observations. Changed source and native content
+are compared against verified signed baselines; competing edits, duplicate
+claims and unverified remappings refuse. Issue export to a new destination
+renders native-only criteria/relations/metadata in a descriptive appendix.
+Exact same-source returns keep ordinary source bodies and suppress verified
+source-comment echo; native-only additions without a configured lossless
+source-body mapping refuse rather than disappear.
+
+Real issue export requires a provider write token and the active native identity
+for its canonical signed private journal; resume uses that same identity.
+Dry-run and native reads need no private key. Signed recovery never replaces
+exact positive remote reconciliation, and a negative scan after an uncertain
+POST never permits another creation. A `nogithub` build retains the local
+compatibility interface and all previously imported native issue content.
+See [Optional forge interoperability](github-interoperability.md) for exact
+flags/JSON, authentication, bounds, markers, conflicts and manual recovery limits.
