@@ -28,10 +28,10 @@
       "criterion_id": "FR-003",
       "description": "Additions, deletions, renames, content and mode/type changes are evaluated from signed base/head trees; candidate rules cannot weaken their own gate.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:36.598288+00:00",
       "notes": "Verification pending implementation and independent review."
     },
     {
