@@ -7,9 +7,10 @@ ordinary Git remote transports both code and `refs/hn/*` collaboration facts.
 
 The active command and protocol namespace is `hn`. This is a deliberate
 pre-user hard reset: there is no `nh` executable, alias, fallback reader,
-migration, or actor-continuity bridge. Existing `.nh/**`, `.git/nh/**`, and
-`refs/nh/*` data may remain as frozen historical evidence, but `hn` ignores it
-and creates fresh identities and facts only in the active namespace.
+migration, or actor-continuity bridge. This repository's tracked configuration
+lives in `.hn/`. The obsolete `.nh/` directory is ignored; its earlier contents
+remain in Git history. Legacy `.git/nh/**` and `refs/nh/*` state is also ignored.
+Hubnot creates fresh identities and facts only in the active namespace.
 
 The current operational alpha supports signed issues, planning projects and items,
 threaded discussions, versioned native workflows, immutable proposal
