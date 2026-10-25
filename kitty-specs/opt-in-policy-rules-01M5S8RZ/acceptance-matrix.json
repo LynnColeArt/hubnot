@@ -88,10 +88,10 @@
       "criterion_id": "FR-009",
       "description": "Successful automation records the existing native merge event and retains manual merge repair behavior; neither preview nor execution implicitly syncs, pushes, starts a daemon or executes pipelines.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:55.019573+00:00",
       "notes": "Verification pending implementation and independent review."
     },
     {
