@@ -309,3 +309,62 @@ func TestDiscussionInvalidSelectorsNeverRequest(t *testing.T) {
 		t.Fatal(calls)
 	}
 }
+
+func TestDiscussionRefusesDecoderEquivalentTypedKeys(t *testing.T) {
+	for _, fields := range []string{
+		`"body":"body","BODY":"manufactured"`,
+		`"id":"other","ID":"D1"`,
+		`"answer":{"id":"other","ID":"A"}`,
+		`"answer":{"id":"other"},"ANSWER":{"id":"A"}`,
+		`"locked":false,"locKed":true`,
+	} {
+		t.Run(fields, func(t *testing.T) {
+			fixture := discussionFixture("D1")
+			first, _, _ := strings.Cut(fields, ":")
+			delete(fixture, strings.Trim(first, `"`))
+			node, _ := json.Marshal(fixture)
+			raw := string(node)
+			raw = raw[:len(raw)-1] + "," + fields + "}"
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				var q struct{ Query string }
+				json.NewDecoder(r.Body).Decode(&q)
+				if strings.Contains(q.Query, "HNDiscussionID") {
+					w.Write([]byte(`{"data":{"node":` + raw + `}}`))
+					return
+				}
+				var data any
+				if strings.Contains(q.Query, "HNDiscussionComments") {
+					nodes := []any{}
+					if strings.HasPrefix(fields, `"answer"`) {
+						comment := commentFixture("A", "")
+						comment["isAnswer"] = true
+						nodes = append(nodes, comment)
+					}
+					data = map[string]any{"node": map[string]any{"__typename": "Discussion", "id": "D1", "comments": connection(nodes, false, nil)}}
+				} else {
+					data = map[string]any{"node": map[string]any{"__typename": "DiscussionComment", "id": "A", "replies": connection([]any{}, false, nil)}}
+				}
+				json.NewEncoder(w).Encode(map[string]any{"data": data})
+			}))
+			defer s.Close()
+			c, _ := NewClient(s.URL, "token")
+			if d, err := c.GetDiscussionByID(context.Background(), "D1"); err == nil || d.ID != "" {
+				t.Fatal("ambiguous typed discussion accepted")
+			}
+		})
+	}
+}
+
+func TestDiscussionCommentRefusesDecoderEquivalentParentKeys(t *testing.T) {
+	comment, _ := json.Marshal(commentFixture("A", "P"))
+	raw := string(comment)
+	raw = raw[:len(raw)-1] + `,"REPLYTO":{"id":"other"}}`
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"data":{"updateDiscussionComment":{"comment":` + raw + `}}}`))
+	}))
+	defer s.Close()
+	c, _ := NewClient(s.URL, "token")
+	if v, err := c.UpdateDiscussionComment(context.Background(), "A", "comment A"); err == nil || v.ID != "" {
+		t.Fatal("ambiguous parent accepted")
+	}
+}

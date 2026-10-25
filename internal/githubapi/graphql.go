@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -74,8 +75,9 @@ func (c *Client) graphQL(ctx context.Context, document string, variables any, ou
 	return nil
 }
 
-// encoding/json otherwise accepts duplicate object keys and silently overwrites
-// earlier values. Bound nesting as well as bytes before decoding hostile input.
+// encoding/json matches struct keys using Unicode case folding. Reject decoder-
+// equivalent keys before they can overwrite earlier values, including errors.
+// Bound nesting as well as bytes before decoding hostile input.
 func strictGraphQLJSON(raw []byte) bool {
 	if !validJSONUnicode(raw) {
 		return false
@@ -104,10 +106,22 @@ func strictGraphQLJSON(raw []byte) bool {
 					return false
 				}
 				s, ok := key.(string)
-				if !ok || seen[s] {
+				if !ok {
 					return false
 				}
-				seen[s] = true
+				folded := graphQLFoldField(s)
+				if seen[folded] {
+					return false
+				}
+				if depth == 0 {
+					switch folded {
+					case "DATA", "ERRORS", "EXTENSIONS":
+						if s != strings.ToLower(folded) {
+							return false
+						}
+					}
+				}
+				seen[folded] = true
 				if !value(depth + 1) {
 					return false
 				}
@@ -131,6 +145,20 @@ func strictGraphQLJSON(raw []byte) bool {
 	}
 	_, err := d.Token()
 	return err == io.EOF
+}
+
+// Canonicalize each finite SimpleFold class to its smallest rune, matching the
+// equivalence used by encoding/json without pairwise comparisons between keys.
+func graphQLFoldField(s string) string {
+	return strings.Map(func(r rune) rune {
+		smallest := r
+		for next := unicode.SimpleFold(r); next != r; next = unicode.SimpleFold(next) {
+			if next < smallest {
+				smallest = next
+			}
+		}
+		return smallest
+	}, s)
 }
 
 type graphQLPageInfo struct {

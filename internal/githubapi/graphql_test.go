@@ -158,3 +158,28 @@ func TestGraphQLConnectionsFailClosed(t *testing.T) {
 		})
 	}
 }
+
+func TestGraphQLRefusesDecoderEquivalentEnvelopeKeys(t *testing.T) {
+	for _, raw := range []string{
+		`{"data":{"ok":true},"errors":[{"message":"private failure"}],"Errors":[]}`,
+		`{"data":{"ok":true},"errors":[{"message":"private failure"}],"ERRORS":null}`,
+		`{"data":{"ok":true},"Errors":[]}`,
+		`{"data":{"ok":true},"errorſ":[]}`,
+		`{"DATA":{"ok":true}}`,
+		`{"data":{"ok":true},"Extensions":{}}`,
+	} {
+		t.Run(raw, func(t *testing.T) {
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(raw)) }))
+			defer s.Close()
+			c, _ := NewClient(s.URL, "private-token")
+			var out struct{ OK bool }
+			err := c.graphQL(context.Background(), "query{viewer{login}}", nil, &out, &graphQLBudget{})
+			if err == nil || out.OK {
+				t.Fatal("ambiguous GraphQL envelope accepted")
+			}
+			if strings.Contains(err.Error(), "private failure") || strings.Contains(err.Error(), "private-token") {
+				t.Fatal("private response content leaked")
+			}
+		})
+	}
+}
