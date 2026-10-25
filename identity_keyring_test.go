@@ -28,6 +28,12 @@ func inIdentityTestRepository(t *testing.T) string {
 			t.Errorf("restore working directory: %v", err)
 		}
 	})
+	// Match Git's physical path when the temp directory has an alias, such as
+	// /var -> /private/var on macOS.
+	root, err = os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
 	mustGit(t, "init", "-q", "-b", "main")
 	mustGit(t, "config", "user.name", "Identity Test")
 	mustGit(t, "config", "user.email", "identity-test@hn.invalid")

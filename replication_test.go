@@ -392,6 +392,11 @@ func inReplicationTestRepository(t *testing.T) string {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = os.Chdir(original) })
+	// Compare containment against the same physical root Git resolves.
+	root, err = os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
 	mustGit(t, "init", "-q", "-b", "main")
 	mustGit(t, "config", "user.name", "Test")
 	mustGit(t, "config", "user.email", "test@hn.invalid")
