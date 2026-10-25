@@ -655,3 +655,61 @@ func TestResourceBridgePreflightsActualSignerEnvelope(t *testing.T) {
 		t.Fatal("signed a partial graph before validating later actual signer envelope")
 	}
 }
+
+func TestResourceBridgePreflightsPendingJournalBudget(t *testing.T) {
+	issueCommandTestRepo(t)
+	small := forge.Node{Kind: "workflow", Record: bridgeRecord("small"), Workflow: &forge.Workflow{Name: "small", Title: "Small"}}
+	p := &bridgeProvider{graph: forge.Graph{Nodes: []forge.Node{small}}}
+	bridgeRegister(t, p)
+	a, b := strings.Repeat("x", 900000), strings.Repeat("y", 900000)
+	for _, id := range []string{"large-a", "large-b", "large-c", "large-d"} {
+		p.graph.Nodes = append(p.graph.Nodes, forge.Node{Kind: "workflow", Record: bridgeRecord(id), Workflow: &forge.Workflow{Name: id, Title: id, Sources: []forge.SourceDocument{{Format: "source-a", Content: a, Digest: eventID([]byte(a))}, {Format: "source-b", Content: b, Digest: eventID([]byte(b))}}}})
+	}
+	if err := runForgeTransfer(bridgeOptions(forge.ResourceWorkflow)); err == nil {
+		t.Fatal("whole journal budget ignored")
+	}
+	if len(bridgeCatalog(t).IDs) > 0 {
+		t.Fatal("signed facts before predictable pending checkpoint overflow")
+	}
+	preview := bridgeOptions(forge.ResourceWorkflow)
+	preview.dryRun = true
+	if err := runForgeTransfer(preview); err == nil {
+		t.Fatal("dry-run missed pending checkpoint budget")
+	}
+}
+func TestResourceBridgeBindsWholeFutureGraphAfterInterruption(t *testing.T) {
+	issueCommandTestRepo(t)
+	p := &bridgeProvider{graph: bridgeDiscussionGraph()}
+	bridgeRegister(t, p)
+	o := bridgeOptions(forge.ResourceDiscussion)
+	old := forgeMutateResource
+	calls := 0
+	forgeMutateResource = func(m ResourceMutation) (*ResourceMutationResult, error) {
+		calls++
+		if calls == 2 {
+			return nil, errors.New("interrupted before answer")
+		}
+		return old(m)
+	}
+	t.Cleanup(func() { forgeMutateResource = old })
+	if err := runForgeTransfer(o); err == nil {
+		t.Fatal("expected interruption")
+	}
+	forgeMutateResource = old
+	name := forgeResourceJournalName(forgeResourceScope(p, o))
+	var journal forgeResourceJournal
+	if ok, err := forgeLoadJSON(name, &journal); err != nil || !ok {
+		t.Fatal(err)
+	}
+	journal.Graph.Nodes[2].Reply.Body = "manufactured future source body"
+	if err := forgeStoreJSON(name, journal); err != nil {
+		t.Fatal(err)
+	}
+	before := mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn")
+	if err := runForgeTransfer(o); err == nil {
+		t.Fatal("changed future snapshot accepted")
+	}
+	if before != mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn") {
+		t.Fatal("changed future graph signed")
+	}
+}

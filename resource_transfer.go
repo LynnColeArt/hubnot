@@ -85,6 +85,7 @@ type forgeResourceSource struct {
 type forgeResourceObservation struct {
 	Source       forgeResourceSource `json:"source"`
 	RemoteDigest string              `json:"remote_digest"`
+	GraphDigest  string              `json:"graph_digest"`
 }
 
 func forgeResourceIdentity(s forgeResourceSource) string {
@@ -272,7 +273,7 @@ func forgeResourceWitness(view *ResourceView, opening string) (*StoredEvent, err
 			}
 			var obs forgeResourceObservation
 			digest, _ := forgeResourceDigest(view.Family, m.State)
-			if metadata[forgeResourceSourceKey] != opening || forgeStrictJSON([]byte(metadata[forgeResourceObservationKey]), &obs) != nil || forgeValidateResourceSource(obs.Source) != nil || !validEventID(obs.RemoteDigest) || metadata[forgeResourceBaselineKey] != digest {
+			if metadata[forgeResourceSourceKey] != opening || forgeStrictJSON([]byte(metadata[forgeResourceObservationKey]), &obs) != nil || forgeValidateResourceSource(obs.Source) != nil || !validEventID(obs.RemoteDigest) || !validEventID(obs.GraphDigest) || metadata[forgeResourceBaselineKey] != digest {
 				return nil, errors.New("invalid signed import baseline witness")
 			}
 			source, _ := forgeParseResourceSource(opening)
@@ -666,7 +667,7 @@ func forgeBuildResourcePlan(p forge.Identity, o transferOptions, g forge.Graph, 
 		if prior := current[key]; prior != nil {
 			_, base, _ = forgeResourceStateParts(n.Kind, prior)
 		}
-		state, err := forgeResourceAttach(desired, n.Kind, sourceJSON, forgeResourceObservation{source, remoteDigest}, base)
+		state, err := forgeResourceAttach(desired, n.Kind, sourceJSON, forgeResourceObservation{Source: source, RemoteDigest: remoteDigest, GraphDigest: forgeResourceGraphDigest(g)}, base)
 		if err != nil {
 			return err
 		}
@@ -768,6 +769,13 @@ func forgeBuildResourcePlan(p forge.Identity, o transferOptions, g forge.Graph, 
 	if len(raw) > forgeCheckpointLimit {
 		return journal, errors.New("complete resource plan exceeds private checkpoint bound")
 	}
+	// The key-free preview also budgets every pending checkpoint. Native actor
+	// fingerprints have a fixed width; no private identity is read here.
+	preview := journal
+	preview.Actor = strings.Repeat("0", 64)
+	if err := forgeValidateResourceSigningBudget(preview, &Identity{Actor: preview.Actor, PublicKey: strings.Repeat("x", 44)}, events); err != nil {
+		return journal, err
+	}
 	return journal, nil
 }
 
@@ -838,7 +846,7 @@ func forgeResourceStepMutation(j forgeResourceJournal, index int, events []Store
 		copy.AcceptedReply = forge.Ref{}
 		remoteNode.Discussion = &copy
 	}
-	state, err = forgeResourceAttach(state, n.Kind, step.Opening, forgeResourceObservation{source, forgeResourceRemoteDigest(remoteNode)}, base)
+	state, err = forgeResourceAttach(state, n.Kind, step.Opening, forgeResourceObservation{Source: source, RemoteDigest: forgeResourceRemoteDigest(remoteNode), GraphDigest: forgeResourceGraphDigest(j.Graph)}, base)
 	if err != nil {
 		return ResourceMutation{}, err
 	}
@@ -1353,7 +1361,14 @@ func forgeValidateResourceSigningBudget(j forgeResourceJournal, identity *Identi
 		if err != nil {
 			return err
 		}
+		j.Next = i
+		j.Pending = &mutation
+		raw, err := json.Marshal(j)
+		if err != nil || len(raw) > forgeCheckpointLimit {
+			return errors.New("complete resource plan including pending mutation exceeds private checkpoint bound")
+		}
 		event := newEvent(identity, mutation.Family+"."+mutation.Intent, ^uint64(0), eventID([]byte("envelope-preview")))
+		event.Timestamp = "2000-01-01T00:00:00.123456789Z"
 		event.Intent = mutation.Intent
 		event.Subject = mutation.ID
 		event.Parents = mutation.Expected
@@ -1367,6 +1382,18 @@ func forgeValidateResourceSigningBudget(j forgeResourceJournal, identity *Identi
 			return fmt.Errorf("complete graph signer envelope preflight: %w", err)
 		}
 		simulated = append(simulated, StoredEvent{ID: step.Output, Event: event})
+		j.Replacements[step.Output] = step.Output
+		j.Pending = nil
+		j.Next = i + 1
+		raw, err = json.Marshal(j)
+		if err != nil || len(raw) > forgeCheckpointLimit {
+			return errors.New("complete resource progress exceeds private checkpoint bound")
+		}
 	}
 	return nil
+}
+
+func forgeResourceGraphDigest(graph forge.Graph) string {
+	raw, _ := json.Marshal(graph)
+	return eventID(raw)
 }
