@@ -180,7 +180,7 @@ func TestAnonymousWritesAndInvalidSelectorsNeverRequest(t *testing.T) {
 }
 
 func TestBaseURLAndTokenValidation(t *testing.T) {
-	for _, base := range []string{"ftp://example.com", "http://example.com", "http://localhost.evil", "http://localhost", "https://user:secret@example.com", "https://example.com?token=secret", "https://example.com#secret", "https://example.com/%2e%2e", "https://example.com/a/../b", "https://example.com:bad", "https://"} {
+	for _, base := range []string{"ftp://example.com", "http://example.com", "http://localhost.evil", "http://localhost", "https://user:secret@example.com", "https://example.com?token=secret", "https://example.com#secret", "https://example.com/%2e%2e", "https://example.com/a/../b", "https://example.com:bad", "https://example.com:", "https://"} {
 		if _, err := NewClient(base, "secret"); err == nil || strings.Contains(err.Error(), "secret") {
 			t.Errorf("base %q: %v", base, err)
 		}
@@ -305,6 +305,23 @@ func TestDuplicateIdentityAndAmbiguousPaginationRefuse(t *testing.T) {
 	}, "")
 	if rows, err := c.ListComments(context.Background(), "a/b", 1); err == nil || rows != nil {
 		t.Fatalf("rows=%v err=%v", rows, err)
+	}
+}
+
+func TestPaginationAcceptsRelationshipWhitespace(t *testing.T) {
+	var requests atomic.Int32
+	c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		if r.URL.Query().Get("page") == "1" {
+			w.Header().Set("Link", `</repos/a/b/issues?state=all&per_page=100&page=2>; rel = "next"`)
+			_ = json.NewEncoder(w).Encode([]Issue{fixtureIssue(1)})
+			return
+		}
+		_ = json.NewEncoder(w).Encode([]Issue{fixtureIssue(2)})
+	}, "")
+	rows, err := c.ListIssues(context.Background(), "a/b")
+	if err != nil || requests.Load() != 2 || len(rows) != 2 {
+		t.Fatalf("requests=%d rows=%v err=%v", requests.Load(), rows, err)
 	}
 }
 

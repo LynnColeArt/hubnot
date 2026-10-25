@@ -96,7 +96,7 @@ func NewClient(baseURL, token string) (*Client, error) {
 		baseURL = DefaultBaseURL
 	}
 	u, err := url.Parse(baseURL)
-	if err != nil || u == nil || u.Opaque != "" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.RawFragment != "" || u.Host == "" || u.RawPath != "" || strings.Contains(baseURL, "#") {
+	if err != nil || u == nil || u.Opaque != "" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.RawFragment != "" || u.Host == "" || strings.HasSuffix(u.Host, ":") || u.RawPath != "" || strings.Contains(baseURL, "#") {
 		return nil, errors.New("invalid GitHub API base URL")
 	}
 	if u.Scheme != "https" && u.Scheme != "http" {
@@ -402,8 +402,8 @@ func nextPage(headers []string, current *url.URL, pageNumber int) (*url.URL, err
 			isNext := false
 			for _, parameter := range strings.Split(part[close+1:], ";") {
 				name, value, ok := strings.Cut(strings.TrimSpace(parameter), "=")
-				if ok && name == "rel" {
-					for _, rel := range strings.Fields(strings.Trim(value, `"`)) {
+				if ok && strings.TrimSpace(name) == "rel" {
+					for _, rel := range strings.Fields(strings.Trim(strings.TrimSpace(value), `"`)) {
 						isNext = isNext || rel == "next"
 					}
 				}
@@ -412,7 +412,7 @@ func nextPage(headers []string, current *url.URL, pageNumber int) (*url.URL, err
 				continue
 			}
 			u, err := url.Parse(part[1:close])
-			if err != nil || next != nil || u.User != nil || u.Fragment != "" || u.Opaque != "" {
+			if err != nil || next != nil || u.User != nil || u.Fragment != "" || u.RawFragment != "" || u.Opaque != "" || strings.Contains(part[1:close], "#") {
 				return nil, errors.New("invalid GitHub next page")
 			}
 			u = current.ResolveReference(u)
