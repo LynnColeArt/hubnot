@@ -408,6 +408,9 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 	if err := validateExactEventReferenceClosure(projectionEvents); err != nil {
 		return result, replicationPhaseError(selection.Remote, "event-reference projection")
 	}
+	if _, err := validateResourceRelationships(projectionEvents); err != nil {
+		return result, replicationPhaseError(selection.Remote, "resource-revision projection")
+	}
 	if _, err := validateIssueRelationships(projectionEvents); err != nil {
 		return result, replicationPhaseError(selection.Remote, "issue-revision projection")
 	}
@@ -957,6 +960,14 @@ func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent
 		return nil, nil
 	}
 	e := event.Event
+	if isResourceKind(e.Kind) {
+		for _, reference := range resourceReferences(e) {
+			if _, exists := byID[reference]; !exists {
+				return &replicationDependency{EventID: event.ID, EventKind: e.Kind, Missing: reference, Recovery: "select the full actor history supplying " + reference, Key: eventOwners[reference], Reason: "resource dependency is absent"}, nil
+			}
+		}
+		return nil, validateResourceReferences(event, byID)
+	}
 	if isIssueKind(e.Kind) {
 		for _, reference := range issueReferences(e) {
 			if _, exists := byID[reference]; !exists {
@@ -1041,6 +1052,7 @@ func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent
 func replicationEventReferences(event Event) []string {
 	references := append([]string(nil), event.Evidence...)
 	references = append(references, issueReferences(event)...)
+	references = append(references, resourceReferences(event)...)
 	switch event.Kind {
 	case "issue.comment", "proposal.revise", "review.submit", "run.request", "run.result", "proposal.decision", "proposal.merged", "identity.accept":
 		references = append(references, event.Subject)
