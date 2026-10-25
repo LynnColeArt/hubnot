@@ -16,7 +16,7 @@ Runtime implementation: approved integrated `38a7200374b3da96dab5ea2763fca588b77
 | WP03 250224e8 | Public CLI matrix, `go test -race -count=1 -run ^TestPolicyRulesPublicAcceptance$ .` | PASS 71.770s; default and nogithub binaries |
 | WP03 fault injection | Scratch overlay removes client acceptance-readiness gates | Expected FAIL: public test detects acceptance before designated guardian approval; product files untouched |
 
-Full final WP03 race/native-only release suites and independent WP03 review remain pending at this report's creation. They are global readiness gates and will be recorded below before mission acceptance; the completed functional evidence is recorded separately from those pending release gates.
+At creation, final release suites and WP03 review were pending. They have now completed successfully as recorded below; functional evidence and global release readiness remain separately identified.
 
 ## Functional evidence
 
@@ -45,4 +45,21 @@ Canonical generic baseline/pre-review tooling assumes Python/JUnit and reports a
 
 ## Final release gates
 
-Pending final frozen-source release commands, independent WP03 review, and consolidation source-fingerprint comparison.
+All pre-consolidation release gates passed at frozen `250224e8812141e948f950ac23619662aebe0068`:
+
+- Full `go test -race ./...`: PASS; main package 516.200s.
+- Full `go test -tags nogithub ./...`: PASS; main package 248.517s; GitHub API package excluded.
+- `go vet ./...`, `go build ./...`, formatting and `git diff --check`: PASS.
+- Five documentation JSON examples parse successfully.
+- Independent WP03 public focused race spot checks: PASS 27.789s; canonical approval recorded with no product edits.
+- All three work packages have canonical independent approvals. All ten functional criterion verdicts were recorded through the canonical acceptance-verdict command.
+
+The root verification helper hashes length-prefixed relative path, Git mode and actual blob bytes in sorted order (SHA-256), excluding governance directories from the product set. The tested-source fingerprints are:
+
+```text
+Go source plus tests and module: 6e5b784dbae8b27609898df5fe2a32dc031f8c244eff09ef4294142e1adbc29d
+Runtime Go/module (no tests):  d6b968a640f2a62bea7606af04826239a87bc81f9f290705d2ff340e4855b189
+Product tree with user docs:   6f2f47907158e796d53b8aa2fe33ca848371a2362672e7e0d87d478112a202c8
+```
+
+Runtime Go/module is identical to the independently reviewed implementation at `38a7200374b3da96dab5ea2763fca588b77af4f8`. Consolidation must preserve these tested product fingerprints; its result and final mission audit will be recorded after the local feature merge.
