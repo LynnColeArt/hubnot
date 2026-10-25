@@ -94,6 +94,7 @@
         "docs/protocol-v0.md",
         "docs/resources-v1.md",
         "event.go",
+        "issue_commands.go",
         "issue_model.go",
         "quarantine.go",
         "resource_engine.go",
@@ -291,8 +292,8 @@
       "parallel_group": 6
     }
   ],
-  "computed_at": "2026-10-25T04:45:20.111454+00:00",
+  "computed_at": "2026-10-25T04:49:53.111021+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "3fa142989faae519b88bc1ae70f2bb14bfec3346"
+  "planning_commit_sha": "9a6a19309fdba2d560bd231a9bb0b372d06c14dd"
 }
