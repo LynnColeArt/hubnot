@@ -54,3 +54,7 @@ T038 Verify thread bounds, same-thread refs, pinned answer content, offline iden
 ## Review criteria
 
 All referenced requirements have source-bound behavior evidence; no incomplete/unsupported behavior is silently claimed. Full actual Go charter race/vet/build/format/diff gates and relevant tagged checks pass. Independent reviewer must probe hostile, conflict, replay, quarantine and no-provider boundaries.
+
+## Activity Log
+
+- 2026-10-25T05:32:02Z – codex – shell_pid=5024 – Validation at 2882cc1d complete: go test -race -count=1 ./... PASS (hubnot 278.695s); go test -tags nogithub -count=1 ./... PASS (hubnot156.326s); go vet ./..., go build ./..., go build -tags nogithub ./..., gofmt owned sources, git diff --check PASS; nogithub executable dependency assertion excludes githubapi and net/http. Canonical for_review transition completed synchronously; default Python architectural authority reported pre-existing no_coverage; no bypass used.
