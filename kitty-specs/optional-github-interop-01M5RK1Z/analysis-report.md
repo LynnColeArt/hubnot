@@ -4,21 +4,32 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-github-interop-01M5RK1Z
 mission_id: 01M5RK1ZVNB4KKX4FC4D030BH9
-generated_at: '2026-10-25T05:43:30.293619+00:00'
+generated_at: '2026-10-25T10:03:39.884084+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
     path: kitty-specs/optional-github-interop-01M5RK1Z/spec.md
-    sha256: 05f3f0fe0cc87ebf1f5235a7a3c24ebc5cc0568dd47a7e3dd40e09b70e06c6e1
+    sha256: 0a7f43986b6aabbc0e5ae0307cdecc13fb14650e20eff8280d6457a03538a5d4
   plan.md:
     path: kitty-specs/optional-github-interop-01M5RK1Z/plan.md
-    sha256: 604f0934f93554743f61031eeea42aad6a86738c4c7b9db26d79551a40148e99
+    sha256: ab147441a3324bc79c776fddf25ce8c516db0feb233edd6eb7c7e2f38f80edc7
   tasks.md:
     path: kitty-specs/optional-github-interop-01M5RK1Z/tasks.md
     sha256: 92a7cc1a2f89b3c33e100bc8f57005664a115d5ac7e1863897181a16c6211029
   charter:
     path: .kittify/charter/charter.yaml
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
+verdict: unknown
+issue_counts:
+  info:
+  high:
+  critical:
+  medium:
+  low:
+findings: []
+---
+
+---
 verdict: ready
 issue_counts:
   high: 0
@@ -30,7 +41,7 @@ findings:
 - id: A1
   severity: low
   category: precision
-  summary: Numeric per-request budgets are stated in plan/WPs rather than repeated in the spec requirement table.
+  summary: Numeric budgets remain explicit in plan and work packages.
 ---
 
 # Expanded specification analysis
@@ -59,3 +70,7 @@ A1 is nonblocking: tests/docs enforce 30 seconds/request,4MiB response,100 pages
 Existing WP01/WP02 approvals remain source-bound and unaffected by new WPs. WP03 independent code review found editable-baseline and marker-prefix bugs, now being corrected/tested before its approval; these are implementation gate findings, not unresolved spec ambiguities. New APIs/registration are assigned to preserve independent WP ownership. Final WP05 depends on ALL native/adapter WPs and must prove all four resource families before delivery. No high/critical planning issue or unmapped requirement remains.
 
 Execution refinement: WP14 independently implements the optional standard-library GraphQL transport/discussion HTTP methods over approved WP02. WPs11/12 depend on it; workflow REST adapter has no GraphQL dependency. This preserves ownership and allows parallel work without relaxing any gate. Complete query documents are checked against the official GitHub public schema using dev-only parser tooling outside the product repository. Earlier issue import/export review findings have been corrected and independently approved.
+
+## Pre-main spot check
+
+The PR head was rechecked against current main. No product-source change or new blocker was found. A fresh focused race suite covering public default/nogithub operation, journal integrity/bounds, historical project schemas, concurrent recovery and workflow source/argv guards passed (main 20.101s). Markdown trailing whitespace was removed from planning and review artifacts only; requirement semantics and accepted scope are unchanged. This record refresh binds those formatting-only inputs.
