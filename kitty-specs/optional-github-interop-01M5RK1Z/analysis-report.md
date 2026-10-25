@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-github-interop-01M5RK1Z
 mission_id: 01M5RK1ZVNB4KKX4FC4D030BH9
-generated_at: '2026-10-25T10:03:39.884084+00:00'
+generated_at: '2026-10-25T10:06:33.717138+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
@@ -19,23 +19,12 @@ input_artifacts:
   charter:
     path: .kittify/charter/charter.yaml
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
-verdict: unknown
-issue_counts:
-  info:
-  high:
-  critical:
-  medium:
-  low:
-findings: []
----
-
----
 verdict: ready
 issue_counts:
-  high: 0
-  low: 1
   critical: 0
+  high: 0
   medium: 0
+  low: 1
   info: 0
 findings:
 - id: A1
