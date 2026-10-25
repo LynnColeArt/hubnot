@@ -272,8 +272,15 @@ func TestResourceCommandsDispatchPaginationAndSpecialization(t *testing.T) {
 		t.Fatal("stale cursor")
 	}
 	called := false
+	previous, existed := NativeResourceCommands["project"]
 	NativeResourceCommands["project"] = func(args []string) error { called = true; return nil }
-	defer delete(NativeResourceCommands, "project")
+	defer func() {
+		if existed {
+			NativeResourceCommands["project"] = previous
+		} else {
+			delete(NativeResourceCommands, "project")
+		}
+	}()
 	if err = run([]string{"project", "special"}); err != nil || !called {
 		t.Fatal("specialization not selected", err)
 	}
