@@ -1,7 +1,7 @@
 {
-  "event_count": 1,
-  "last_event_id": "01M5S91W9PC6T1TGZP32ACPEFN",
-  "materialized_at": "2026-10-25T10:17:43.990429+00:00",
+  "event_count": 2,
+  "last_event_id": "01M5S91Y25M1AM8NJ13XF61D97",
+  "materialized_at": "2026-10-25T10:17:45.797426+00:00",
   "mission_number": "",
   "mission_slug": "opt-in-policy-rules-01M5S8RZ",
   "mission_type": "software-dev",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 1
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -23,6 +23,13 @@
       "lane": "planned",
       "last_event_id": "01M5S91W9PC6T1TGZP32ACPEFN",
       "last_transition_at": "2026-10-25T10:17:43.990429+00:00"
+    },
+    "WP02": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M5S91Y25M1AM8NJ13XF61D97",
+      "last_transition_at": "2026-10-25T10:17:45.797426+00:00"
     }
   }
 }
