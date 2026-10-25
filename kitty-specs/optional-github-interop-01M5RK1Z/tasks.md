@@ -141,13 +141,12 @@ T047 Verify non-GitHub opaque identities, cross-resource remapping, unsupported/
 
 ## Work Package WP11: Optional GitHub discussion migration
 
-**Dependencies**: WP08, WP10
+**Dependencies**: WP08, WP10, WP14
 
 **Requirement Refs**: FR-004, FR-008, FR-011, FR-012, FR-013, FR-017, FR-020
 
 **Prompt**: `tasks/WP11-optional-github-discussion-migration.md`
 
-T048 Add bounded sanitized GraphQL transport and complete nested pagination tests.
 T049 Implement discussion/category/reply/answer/state reads and typed mutations via optional adapter.
 T050 Map native threads/replies/answer revisions and require explicit destination category mapping.
 T051 Implement repeatable journaled discussion export/import, conflicts and uncertain mutation recovery.
@@ -155,7 +154,7 @@ T052 Verify no implicit moderation authority, no lossy hidden fields, and nogith
 
 ## Work Package WP12: Optional GitHub project migration
 
-**Dependencies**: WP07, WP10, WP11
+**Dependencies**: WP07, WP10, WP14
 
 **Requirement Refs**: FR-004, FR-008, FR-011, FR-012, FR-014, FR-018, FR-020
 
@@ -169,7 +168,7 @@ T057 Verify clone independence, reference integrity, repeat/recovery and no fals
 
 ## Work Package WP13: Optional GitHub workflow migration
 
-**Dependencies**: WP09, WP10, WP11
+**Dependencies**: WP09, WP10
 
 **Requirement Refs**: FR-004, FR-008, FR-011, FR-012, FR-015, FR-019, FR-020
 
@@ -180,3 +179,16 @@ T059 Implement bounded Actions workflow discovery and contents read/write at exp
 T060 Map native workflow sources and require explicit runnable/environment transformation choices.
 T061 Implement exact source restore and constrained native-to-Actions export with clear semantic report/manifest.
 T062 Verify no autoexecution, content-CAS conflicts, recovery, roundtrip bytes and transport exclusion.
+
+## Work Package WP14: Bounded GraphQL and discussion provider client
+
+**Dependencies**: WP02
+
+**Requirement Refs**: FR-008, FR-017, NFR-001, NFR-002, C-001
+
+**Prompt**: `tasks/WP14-bounded-graphql-and-discussion-provider-client.md`
+
+T048 Add bounded sanitized GraphQL transport and complete nested pagination tests.
+T063 Implement typed discussion/category/thread/reply reads with stable source identities and capability indicators.
+T064 Implement one-step typed discussion/reply/answer/state mutations without automatic retries.
+T065 Validate GraphQL documents against official schema and run scoped/full/tagged quality gates.
