@@ -10,5 +10,7 @@
   "purpose_tldr": "Protect selected checks and automate eligible native merges only when a repository opts in.",
   "slug": "opt-in-policy-rules-01M5S8RZ",
   "target_branch": "feat/opt-in-policy-rules",
-  "topology": "lanes"
+  "topology": "lanes",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-25T10:21:53.937407+00:00"
 }

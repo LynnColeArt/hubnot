@@ -10,10 +10,10 @@ requirement_refs:
 - FR-005
 planning_base_branch: feat/opt-in-policy-rules
 merge_target_branch: feat/opt-in-policy-rules
-branch_strategy: Planning artifacts for this mission were generated on feat/opt-in-policy-rules.
-  During /spec-kitty.implement this WP may branch from a dependency-specific base,
-  but completed changes must merge back into feat/opt-in-policy-rules unless the human
-  explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/opt-in-policy-rules. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/opt-in-policy-rules unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-opt-in-policy-rules-01M5S8RZ
+base_commit: 8634f122d04703367e11bc74283f38939080d90e
+created_at: '2026-10-25T10:21:54.003281+00:00'
 subtasks:
 - T001
 - T002
