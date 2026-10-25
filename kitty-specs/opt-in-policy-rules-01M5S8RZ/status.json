@@ -27,6 +27,9 @@
       "last_event_id": "01M5SAN5XJVVNR6W01THQ5FQYM",
       "last_transition_at": "2026-10-25T10:45:45.010578+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: ae33a60a; final go test -race ./... passed hubnot394.083s; focused protected authority/real replica tests passed; vet/build/gofmt/diff checks pass; optional sections remain disabled."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
