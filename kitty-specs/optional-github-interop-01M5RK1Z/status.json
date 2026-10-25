@@ -28,7 +28,8 @@
       "last_transition_at": "2026-10-25T04:14:04.526785+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: source a3c0d549; focused suite, Go race suite 250.528s, vet/build/gofmt/diff passed. Baseline pytest JUnit absence is detection artifact."
+        "Ready for independent review: source a3c0d549; focused suite, Go race suite 250.528s, vet/build/gofmt/diff passed. Baseline pytest JUnit absence is detection artifact.",
+        "Independent review approved fixed source a3c0d549: native lifecycle, strict raw JSON, actor pinning, guarded edits and offline behavior pass; source-bound evidence in independent-review-1.md; WP03 retains explicit main routing ownership."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
