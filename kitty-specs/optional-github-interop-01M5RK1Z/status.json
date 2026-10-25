@@ -178,6 +178,9 @@
       "last_event_id": "01M5RRAH2CTGY8SXSPJ01XGEQD",
       "last_transition_at": "2026-10-25T05:25:21.612423+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review at bb926b2a: complete native project/item UX; exact schema and actor/operation guards, metadata preservation, decimal ordering and explicit conflict resolution. Focused tests, full go test -race -count=1 ./... (258.325s), go vet ./..., ordinary/nogithub builds, tagged native resource tests (2.703s), format/diff and provider dependency exclusion pass. Authorized tiny registry-test restoration prevents deleting specialization; no core production changes."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 3671245,
