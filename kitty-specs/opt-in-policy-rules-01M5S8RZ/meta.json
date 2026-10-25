@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "local",
+      "accepted_at": "2026-10-25T12:39:28.950177+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "f9fae06b2dc011e4d9cd1a2f0d50c00714c50b1d"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-10-25T12:39:28.950177+00:00",
+  "accepted_by": "codex",
+  "accepted_from_commit": "f9fae06b2dc011e4d9cd1a2f0d50c00714c50b1d",
   "created_at": "2026-10-25T10:12:53.242420+00:00",
   "flattened": false,
   "friendly_name": "Opt-in protected checks and automerge",
