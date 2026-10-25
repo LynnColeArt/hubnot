@@ -21,6 +21,7 @@ history: []
 agent_profile: implementer-ivan
 authoritative_surface: policy.go
 create_intent:
+- quarantine.go
 - protected_checks.go
 - protected_checks_test.go
 execution_mode: code_change
@@ -78,13 +79,13 @@ Protect all required pipeline definitions and policy automatically only when pro
 
 Use existing review events; designated actors need not belong to ordinary reviewer list. Never count the candidate author. Include exact qualifying IDs in acceptance Evidence; immutable validateDecisionEvent must reject acceptance that omits protection reviews. Current evaluateProposal reports changed protected paths and counts, and Ready includes them. Withdrawals/revisions cannot reuse current approval. Incoming acceptances are validated using exact base policy and candidate trees, not worktree.
 
-Modify cmdMerge through a narrow reusable entry seam for WP02: cmdMerge delegates to mergeProposal(args, optionalGuard), where the guard receives current proposal/evaluation/branch/target OID and can refuse immediately before Git advancement. Recollect and reevaluate immediately before actual merge for enabled protection and guard; enabled protection requires current Ready. Keep legacy no-option manual semantics and repair tests intact. Preserve expected-head safety on advancement (Git's ref compare-and-swap plus explicit observed target guard); coordinate signature with WP02 via handoff. Avoid generic refactoring.
+Modify cmdMerge through a narrow reusable entry seam for WP02: cmdMerge delegates to mergeProposal(args, optionalGuard), where the guard receives current proposal/evaluation/branch/target OID and can refuse immediately before Git advancement. Recollect and reevaluate immediately before actual merge for enabled protection and guard; enabled protection requires current Ready. Keep legacy no-option manual semantics and repair tests intact. Preserve expected-head safety on advancement (Git's ref compare-and-swap plus explicit observed target guard); coordinate signature with WP02 via handoff. Avoid generic refactoring. Close the old-base bypass prospectively: if current target policy opts into protection and differs from candidate base digest, require a revision; do not invalidate historical signed decisions. quarantine.go independently validates replicated decisions: share new evidence validation there, not just local policy.go.
 
 Tests include opt-out unchanged, independent auto configuration parse, automatic required-pipeline/policy protection, deleted/renamed/mode/type protected files, candidate policy disabling itself, designated approval distinct/non-author, withdrawal, fetched forged acceptance rejection, strict configs and bounded diff. Run focused race, vet/build and formatting before for_review; full race may run at final WP if no concern but charter gate before review still applies.
 
 ## Context and ownership
 
-Authoritative requirements: FR-001, FR-002, FR-003, FR-004, FR-005. Consult existing exact Git verification and signed event validation; avoid widening role authority. Owned files: policy.go, policy_commands.go, governance.go, protected_checks.go, protected_checks_test.go. New files are declared in create_intent. Coordinate a small necessary out-of-map edit with orchestrator and record rationale; do not edit another agent workspace. No Go module dependencies.
+Authoritative requirements: FR-001, FR-002, FR-003, FR-004, FR-005. Consult existing exact Git verification and signed event validation; avoid widening role authority. Owned files: policy.go, policy_commands.go, governance.go, quarantine.go, protected_checks.go, protected_checks_test.go. New files are declared in create_intent. Coordinate a small necessary out-of-map edit with orchestrator and record rationale; do not edit another agent workspace. No Go module dependencies.
 
 ## Definition of Done
 
