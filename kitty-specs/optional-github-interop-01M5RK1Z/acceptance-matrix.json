@@ -68,10 +68,10 @@
       "criterion_id": "FR-007",
       "description": "Repeat/resume exports without blind creation retries; use durable checkpoints and complete bounded marker reconciliation, refusing ambiguous matches and outcomes.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:13.773888+00:00",
       "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
     },
     {
