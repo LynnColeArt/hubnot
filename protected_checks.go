@@ -313,8 +313,17 @@ func guardTargetProtectedPolicy(target string, evaluation *ProposalEvaluation) e
 	if err != nil {
 		return fmt.Errorf("target protection policy: %w", err)
 	}
-	if policy.ProtectedChecks != nil && digest != evaluation.PolicyDigest {
-		return fmt.Errorf("target protected checks use a different policy; revise the proposal against the current target before merging")
+	if policy.ProtectedChecks != nil {
+		if digest != evaluation.PolicyDigest {
+			return fmt.Errorf("target protected checks use a different policy; revise the proposal against the current target before merging")
+		}
+		changed, err := changedPathsAt("", evaluation.Proposal.Event.Base, target)
+		if err != nil {
+			return fmt.Errorf("target protected check baseline: %w", err)
+		}
+		if len(changedProtectedPaths(policy, changed)) > 0 {
+			return fmt.Errorf("target protected check baseline changed; revise the proposal against the current target before merging")
+		}
 	}
 	return nil
 }

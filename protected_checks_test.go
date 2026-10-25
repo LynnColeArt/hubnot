@@ -513,3 +513,106 @@ func TestProtectedAcceptedProposalReplicatesAndMerges(t *testing.T) {
 		t.Fatalf("native merge parent binding: %q", parents)
 	}
 }
+
+func TestProtectedTargetBaselineRequiresRevision(t *testing.T) {
+	for _, test := range []struct {
+		name                string
+		targetChange, block bool
+	}{
+		{name: "protected target tightening hidden by old-base reversion", targetChange: true, block: true},
+		{name: "unprotected target advancement remains eligible", targetChange: true},
+		{name: "target exactly signed base remains eligible"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			_, maintainer, author, _, old := protectionFixture(t, true)
+			base := old.Event.Base
+			original, err := os.ReadFile("lint.conf")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if test.targetChange {
+				targetPath, targetBody := "notes.txt", []byte("Target documentation\n")
+				if test.block {
+					targetPath, targetBody = "lint.conf", []byte("strict=true\nadditional=true\n")
+				}
+				if err := os.WriteFile(targetPath, targetBody, 0600); err != nil {
+					t.Fatal(err)
+				}
+				mustGit(t, "add", targetPath)
+				mustGit(t, "commit", "-q", "-m", "advance target without policy change")
+			}
+			target := mustGitText(t, "rev-parse", "HEAD")
+			basePolicy := mustGitText(t, "show", base+":.hn/policy.json")
+			if got := mustGitText(t, "show", target+":.hn/policy.json"); got != basePolicy {
+				t.Fatal("fixture changed policy instead of protected baseline")
+			}
+			mustGit(t, "switch", "-q", "-c", "stale-base-candidate")
+			if err := os.WriteFile("lint.conf", original, 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile("docs.txt", []byte("Candidate documentation\n"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			mustGit(t, "add", "lint.conf", "docs.txt")
+			mustGit(t, "commit", "-q", "-m", "candidate based on old policy baseline")
+			head := mustGitText(t, "rev-parse", "HEAD")
+			mustGit(t, "switch", "-q", "main")
+			event, err := nextEvent(author, "proposal.open")
+			if err != nil {
+				t.Fatal(err)
+			}
+			event.Title = "Old base candidate"
+			event.Base = base
+			event.Head = head
+			proposal, err := appendEvent(event, author)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := createProposalRef(proposal.ID, head); err != nil {
+				t.Fatal(err)
+			}
+			events, err := collectEvents()
+			if err != nil {
+				t.Fatal(err)
+			}
+			evaluation, err := evaluateProposal(proposal, events)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !evaluation.Ready || len(evaluation.ProtectedChecks.ChangedPaths) != 0 || len(evaluation.ProtectedChecks.Approvals) != 0 {
+				t.Fatalf("fixture requires an unprotected signed diff with zero designated reviews: %+v", evaluation)
+			}
+			if err := cmdDecide([]string{proposal.ID, "--accept"}); err != nil {
+				t.Fatal(err)
+			}
+			actorBefore := mustGitText(t, "rev-parse", operationalActorRef(maintainer.Actor))
+			mergeErr := cmdMerge([]string{proposal.ID})
+			if test.block {
+				if mergeErr == nil || !strings.Contains(mergeErr.Error(), "revise") {
+					t.Fatalf("hidden protected baseline reversion was not refused: %v", mergeErr)
+				}
+				if got := mustGitText(t, "rev-parse", "HEAD"); got != target {
+					t.Fatal("target advanced on protected baseline refusal")
+				}
+				if got := mustGitText(t, "rev-parse", operationalActorRef(maintainer.Actor)); got != actorBefore {
+					t.Fatal("refusal appended a merge event")
+				}
+				actual, err := os.ReadFile("lint.conf")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if string(actual) != "strict=true\nadditional=true\n" {
+					t.Fatalf("target lint tightening was reverted: %q", actual)
+				}
+			} else {
+				if mergeErr != nil {
+					t.Fatalf("eligible baseline movement was overblocked: %v", mergeErr)
+				}
+				parents := strings.Fields(mustGitText(t, "show", "-s", "--format=%P", "HEAD"))
+				if !reflect.DeepEqual(parents, []string{target, head}) {
+					t.Fatalf("wrong eligible merge parents: %q", parents)
+				}
+			}
+		})
+	}
+}
