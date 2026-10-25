@@ -68,10 +68,10 @@
       "criterion_id": "FR-007",
       "description": "Automerge defaults to read-only preview; execution is explicit and requires existing current approvals, passes and maintainer acceptances. It never manufactures reviews or decisions.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:48.324933+00:00",
       "notes": "Verification pending implementation and independent review."
     },
     {
