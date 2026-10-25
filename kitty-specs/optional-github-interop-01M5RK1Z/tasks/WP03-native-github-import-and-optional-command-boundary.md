@@ -37,8 +37,8 @@ create_intent:
 - github_disabled.go
 - github_import.go
 - github_import_test.go
-- internal/forge/model.go
-- internal/forge/model_test.go
+- internal/forge/provider.go
+- internal/forge/provider_test.go
 - forge_github.go
 execution_mode: code_change
 lane: planned
@@ -48,8 +48,8 @@ owned_files:
 - github_import.go
 - github_import_test.go
 - main.go
-- internal/forge/model.go
-- internal/forge/model_test.go
+- internal/forge/provider.go
+- internal/forge/provider_test.go
 - forge_github.go
 tags: []
 tracker_refs: []
@@ -104,3 +104,5 @@ Read the Provider portability amendment in primary plan.md. Generic coordination
 T023 (WP03) Implement and behavior-test provider-neutral models, adapter boundary, canonical provider-selecting commands and pre-write migration resource/capability reports.
 
 Exporter uses forge.Provider and neutral options/models. GitHub adapter validates provider-specific selectors. Native export re-import without verified mapping must refuse duplicate/remapping; source import/export keeps original body and validates structured comment provenance to avoid feedback. Document exact first delivery limits and provider extension path.
+
+Authorized integration edit: align gh_compat.go source URL key to forge/source; existing WP01 ownership remains, this one-line change is required by the new provider-neutral metadata design and is independently reviewed.

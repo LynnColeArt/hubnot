@@ -4,6 +4,12 @@ title: Offline acceptance and operator documentation
 dependencies:
 - WP01
 - WP04
+- WP07
+- WP08
+- WP09
+- WP11
+- WP12
+- WP13
 requirement_refs:
 - FR-001
 - FR-002
@@ -23,6 +29,14 @@ requirement_refs:
 - C-003
 - FR-011
 - FR-012
+- FR-013
+- FR-014
+- FR-015
+- FR-016
+- FR-017
+- FR-018
+- FR-019
+- FR-020
 planning_base_branch: feat/optional-github-interop
 merge_target_branch: feat/optional-github-interop
 branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop.
@@ -40,6 +54,9 @@ authoritative_surface: docs/
 create_intent:
 - github_acceptance_test.go
 - docs/github-interoperability.md
+- docs/projects-v1.md
+- docs/discussions-v1.md
+- docs/workflows-v1.md
 execution_mode: code_change
 lane: planned
 owned_files:
@@ -48,6 +65,9 @@ owned_files:
 - docs/github-interoperability.md
 - docs/issues-v1.md
 - docs/threat-model.md
+- docs/projects-v1.md
+- docs/discussions-v1.md
+- docs/workflows-v1.md
 tags: []
 tracker_refs: []
 ---
@@ -91,3 +111,7 @@ Read the Provider portability amendment in primary plan.md. Generic coordination
 Reference T023 (owned by WP03): implement and behavior-test provider-neutral models, adapter boundary, canonical provider-selecting commands and pre-write migration resource/capability reports.
 
 Exporter uses forge.Provider and neutral options/models. GitHub adapter validates provider-specific selectors. Native export re-import without verified mapping must refuse duplicate/remapping; source import/export keeps original body and validates structured comment provenance to avoid feedback. Document exact first delivery limits and provider extension path.
+
+## Binding full-delivery acceptance expansion
+
+User explicitly requires native discussions/projects/workflows PLUS import/export. Final public acceptance must cover all four resource families, native signed Git/bare-remote reconstruction, nogithub full native lifecycle, exact workflow materialization/governed request, project typed schema/item references and discussion threaded/answer revisions. Fake-provider tests must prove supported GitHub roundtrips, explicit mappings, no blind uncertain-write retries and zero writes on unsupported plans. Include accurate operator docs per resource and capability matrices; distinguish preserved foreign definition from runnable native workflow and GitHub Projects automation rule limits. This WP now depends on all native/provider WPs and remains final delivery acceptance. No live provider mutation needed.
