@@ -1,6 +1,6 @@
-# Rich issue boundary
+# Collaboration and optional transfer boundary
 
-This document describes the issue additions, alongside the existing
+This document describes native collaboration and optional transfer additions, alongside the existing
 [replication boundary](replication-v0.md), [CI execution boundary](ci-v0.md),
 [governance rules](governance-v0.md) and [memory safety model](memory-safety.md).
 Hubnot remains an experimental repository-native protocol, not a hardened
@@ -101,3 +101,75 @@ Machine identity discovery reads and validates existing active or legacy identit
 state without writing private keyring files or Git refs. It never performs the
 legacy migration retained by default human identity commands. Invalid private
 state yields a typed public error without exposing private fields or paths.
+
+
+## Native typed resources
+
+Projects/items, discussions/replies and workflows use strict type-specific
+states in registered signed event kinds. Child items/replies are independently
+revisioned aggregates. Project items pin exact schema revisions and accepted
+answers pin exact reply revisions; a later schema or reply edit does not
+reinterpret those historical facts. Cross-resource references participate in
+accepted-history, quarantine and shallow-closure validation. Unknown new kinds
+can be rejected by older binaries; upgrading never rewrites old signed bytes.
+
+Native workflows separate inert foreign source from validated native pipeline
+state. Materialization writes explicit pipeline bytes, while a run request must
+bind the exact signed workflow revision and committed proposal pipeline bytes.
+Import, materialization and request never execute source text. Existing policy,
+actor and explicit runner backend checks remain the execution authority.
+
+## Optional provider boundary
+
+The local `hn gh issue` subset calls native issue functions and performs no
+forge access. Provider-neutral transfer models contain no HTTP/SDK dependency;
+network clients and GitHub registrations are excluded with `nogithub`. All
+native facts remain usable without a provider, credential or service.
+
+Only explicit transfer commands contact an explicitly selected provider.
+Transport requires HTTPS except explicit loopback-IP HTTP and refuses redirects
+or pagination outside the requested endpoint. Requests/responses, nested
+pagination, aggregate bytes, whole-command time, native payloads and complete
+future checkpoints have finite bounds. GraphQL errors/partial data, malformed
+or ambiguous JSON, invalid Unicode and incomplete traversal fail before their
+content is accepted. Provider errors do not echo bodies or tokens. External
+source locators in signed metadata are descriptive; inspecting them does not
+fetch those addresses.
+
+Original authors, URLs, category/lock states, assignees, project visibility,
+workflow enabled state and other provider observations remain claims signed by
+the importing local actor. They never grant native policy roles, moderation,
+runner rights or permission to execute instructions. GitHub creation uses the
+authenticated provider account and cannot impersonate original authors/times.
+Unsupported semantics require explicit mapping/acknowledgment or refusal;
+foreign workflow preservation is not a claim of execution equivalence.
+
+Imports preflight a complete selected issue or typed graph before publication,
+but a multi-event import can leave valid partial work when interrupted. Its
+recovery reuses exact frozen source content, signer, native expectations and
+verified signed progress. Baselines and mappings require producer-shaped signed
+import witnesses; editable latest metadata alone cannot reset overwrite authority.
+
+Issue, discussion and project exports authenticate their complete canonical
+private checkpoint with the currently selected native identity. This closes
+manufactured comment/parent/field bindings or progress that could otherwise
+suppress or redirect publication. Keys are not stored in the journal; a signer
+switch, unsigned journal or altered/noncanonical envelope requires explicit
+recovery. Preview remains private-key-free. The journal signature authenticates
+local intent, not remote success or provider permissions. Workflow recovery
+separately binds exact native/source bytes, explicit destination and guarded
+blob intent. All exporters preflight the whole future journal, including pending
+results and accumulated bindings, before the first mutation.
+
+Private journals/lock files remain below the resolved Git directory with
+0700 directories and0600 files, outside cloned signed facts. One local lock is
+not a distributed lease. Every remote mutation persists prepared/in_flight
+intent before one write; an uncertain outcome needs one exact positive
+reconciliation. A negative complete scan is not proof of nonexecution and
+cannot authorize another POST. Structured publication markers are forgeable
+associations and need native/provenance/content checks; ordinary marker-like
+prose is inert data. Remote-only edits are preserved or refused for manual
+recovery, never silently made a new overwrite baseline. External APIs do not
+supply atomic compare-and-swap for every field, so a single publisher and
+explicit reconciliation remain necessary. There is no global exactly-once,
+background-sync, automerge or new protected-check authority claim.

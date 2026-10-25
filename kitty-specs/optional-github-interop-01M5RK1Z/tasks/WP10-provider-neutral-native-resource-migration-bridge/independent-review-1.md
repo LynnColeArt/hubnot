@@ -1,0 +1,48 @@
+# Independent WP10 review
+
+Verdict: APPROVED after pre-handoff corrections
+Reviewer: codex-independent-interop-review, resolved reviewer-renata; no implementation edits
+Initial reviewed production source: c30d13f5531daf11575efd9ea83dadd60c77704b
+Final reviewed source: f1b8cb75b66cc0f91ae55640c3e2a1fdad3d3005
+Canonical review invocation: a1893b3623384a34bdc19b75654f607c
+Scope: resource_transfer.go/test, internal/forge resource DTOs/tests and authorized narrow command/provider/remote-intent integration seams.
+
+## Findings and dispositions
+R1 (P2), independently reproduced and also found by implementer self-audit: placeholder event-envelope preflight omitted actual signer metadata. An unusually long actor name could allow an initial root to be signed before a later otherwise valid state exceeded the authenticated payload ceiling. The added actual-signer regression failed during independent scoped race. Fix30cc23ad validates every prepared typed mutation's complete envelope in memory before publication and during recovery. Final571e uses worst-width sequence/previous/public-key reserves and a maximum fractional timestamp; previews remain private-key-free. Final actual-signer regression passes.
+
+R2 (P2), independent RED reproduction at30cc23ad: a valid graph containing one small workflow followed by four workflows each preserving two distinct900,000-byte source documents fit the initial graph/journal limit and individual event ceilings. The first workflow was signed, then serializing a later Pending mutation exceeded the8MiB checkpoint limit. Independent test observed one published workflow before predictable overflow. Fix571e preflights every complete pending/progress checkpoint, including actor and accumulated replacements, before any fact; dry-run also detects this bound without loading a private identity. Original probe is GREEN.
+
+R3 (P2), independent RED reproduction at30cc23ad: after interruption before mutation2 of a discussion import, changing only a future third node's reply body in journal.Graph left rebuilt step indices/bindings/expectations, existing signed progress and current Pending unchanged. Recovery signed the changed future body as original source. Fix571e binds the complete graph digest into signed import observations and exact pending state; recovery checks those against actual signed operations. Changing future content after partial progress now refuses before additional facts. Original probe is GREEN.
+
+Reviewed finalf1b8 factory follow-up: existing issue transfer prefers registration.New when both issue/resource factories exist; typed resources choose NewResource. This preserves approved issue routing while permitting resource-only adapters. No remaining actionable finding.
+
+## Acceptance assessment
+Pure internal/forge contracts separate provider identity, opaque IDs/selectors, typed project/item/discussion/reply/workflow nodes, references and explicit capability/plan classifications. No HTTP/GraphQL/native core dependency enters these DTOs. Import graphs are bounded, family/union checked and converted through strict native states. Missing/unsupported mappings refuse before mutation. Explicit issue/proposal/discussion targets bind accepted native facts; schema references and accepted answers remap to exact native revisions, independent replies/items retain separate roots, and full simulated catalog validation checks graph closure before publication.
+
+Mappings derive from immutable signed openings. Managed baselines require a unique nearest import-operation-shaped signed witness and unchanged provenance/baseline metadata; editable latest metadata alone cannot reset authority. Provider/source IDs are qualified by provider, inert endpoint and kind; mutable selectors/project observations do not replace immutable identity. Unchanged remote state preserves native changes, unchanged native state permits guarded remote changes and competing content refuses. Source metadata remains descriptive claims signed by the local actor. Existing native metadata survives managed updates.
+
+Private journals retain the frozen source graph, exact expectations, actor, original accepted-actor anchors and signed operation progress. Recovery rebuilds the original historical plan, verifies replacements against real signed operations, compares current Pending rather than refreshing source or heads, and replays through core actor-global operations. Imports remain resumable multi-event work, not transactions. Every graph/state/signing/pending/progress bound is checked before the first native mutation. Provider-specific credentials are read only for the selected registration; non-HTTP locators are inert metadata and never opened by the neutral framework.
+
+Exports receive selected typed snapshots reconstructed from accepted signed facts, including all accepted child roots, all conflict refusals, attributed current versions and exact schema/answer pins. Historical snapshots authenticate against their captured actor-anchor cut, rather than incorrectly refreshing to current heads. Recomputing only the public digest cannot authorize trimmed/relabelled content at that cut. Resource exporters and imported-baseline helpers are deliberate seams for dependent adapters, which retain per-write prepared/in-flight/confirmed and positive-only recovery through the existing executor. This WP does not claim completed GitHub resource adapters or arbitrary workflow equivalence.
+
+## Verification
+- Independent initial bridge race run reproduced R1's partial publication; implementer also recorded its RED regression.
+- Independent R2 wholePending overflow probe FAIL3.953s at30cc23ad with one signed workflow before checkpoint overflow.
+- Independent R3 future-graph alteration probe FAIL0.330s at30cc23ad with recovery succeeding and signing changed source content.
+- Final independent full bridge overlay under race PASS14.735s: both original R2/R3 probes, malformed UTF-8 refusal and historical/snapshot/schema tests.
+- Independent full TestResourceBridge race suite PASS34.880s at final source, including actual signer, complete budgets, exact recovery, non-GitHub opaque IDs/locators, no-key previews, source baseline tampering, typed mappings, native Git replication and issue factory preference.
+- Additional independent snapshot probe PASS under race1.477s: a legitimate complete old snapshot remains authentic after a later schema edit; current export retains historical item schema and current schema versions; graph trim and version actor relabel with recomputed Digest refuse against actual accepted facts.
+- Exact source rechecked unchanged during canonical review; diff check PASS. No reviewer production edits or live remote mutations.
+- Orchestrator supplied final exact full Go race PASS296.439s, full nogithub suite PASS148.991s, vet, default/tagged builds, formatting, diff/dependency exclusion and clean source tree. Default generic for_review gate completed no_coverage without bypass; unavailable generic Python/JUnit authority is not a Go regression.
+
+## Required anti-pattern checklist
+1. Dead code: PASS for live transfer registry, graph readers/plans/conversion/journal/snapshot helpers and pure DTO/Plan methods. Typed export callbacks and imported-baseline access are explicitly approved seams for subsequent resource adapters; those adapters must supply actual remote behavior before mission acceptance.
+2. Synthetic-fixture tests: PASS. Neutral fake providers feed production runForgeTransfer/core signatures and real Git storage; interruption hooks wrap actual mutations. Bare-remote replication verifies original payload/signature bytes, and independent probes inspect real refs/checkpoints and observations.
+3. Silent empty return: PASS. Absent optional references and empty complete imports have explicit meanings. Missing dependencies, conflicts, malformed state/provenance and unsupported/unused mappings fail with classified plans; no timestamp winner or silent data coercion. Identical managed content intentionally creates no revision.
+4. FR coverage: PASS forFR-011 pure optional provider contracts, FR-012 explicit classifications/capability dispatch, FR-016 signed guarded replay/reference/conflict/native transport and FR-020 typed bounded whole-resource planning/mapping behavior. Concrete provider export semantics remain dependent WPs; the existing issue route is preserved.
+5. Frozen surface: PASS. No Event/protocol/signature or frozen evidence edits; existing native core remains unchanged. Generic remote intent endpoint validation is narrowly generalized to inert locators, while concrete network clients retain URL validation.
+6. Locked decision: PASS. No mandatory provider/service/gh/Docker, implicit sync, foreign execution, imported authority, blind negative-scan retry or global exactly-once promise. Graphs are independently typed native resources.
+7. Shared-file ownership: PASS. Root authorized github_commands.go optional factory/resource dispatch and help/capability hooks; internal/forge/provider.go embeds neutral Identity without changing issue methods; github_export.go only changes generic remote-intent endpoint validation to inert locator policy. Concrete HTTP endpoint policy remains WP02's validated client.
+8. Production fragility: PASS after R1/R2/R3. Predictable full event/checkpoint overflow fails before signing; partial-progress graph changes refuse before more facts; recoveries retain exact old inputs/actor/expectations and verify actual signed progress. No secret persistence or execution fallback.
+
+Approval covers the neutral bridge. Later resource adapters and final whole-mission acceptance remain required.

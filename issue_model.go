@@ -139,6 +139,12 @@ func IssueRequestDigest(e Event) (string, error) {
 
 func validateIssueEvent(e Event) error {
 	if !isIssueKind(e.Kind) {
+		if isResourceKind(e.Kind) {
+			if e.Issue != nil {
+				return fmt.Errorf("issue state is not allowed on resource events")
+			}
+			return nil
+		}
 		if hasIssueFields(e) {
 			return fmt.Errorf("issue fields are not allowed on %s", e.Kind)
 		}

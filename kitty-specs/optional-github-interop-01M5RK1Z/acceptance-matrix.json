@@ -1,0 +1,209 @@
+{
+  "mission_slug": "optional-github-interop-01M5RK1Z",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Provide native gh-style issue create/list/view/edit/comment/close/reopen commands operating on the same signed issues as hn issue, without invoking gh or GitHub.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:29:56.103699+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Support documented familiar flags, filtering, explicit JSON field selection and nonzero failures; reject unsupported semantics explicitly.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:29:58.964394+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Explicitly import one selected GitHub issue or all bounded repository issue pages, excluding pull requests.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:01.770617+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Preserve original issue/comment IDs, URLs, author and timestamps as source claims. Imports use the native actor and preserve native-only information.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:04.815699+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Discover stable source mappings, reject duplicates, preserve local edits and refuse competing remote/local changes; use guarded native mutations and retry-safe operations.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:07.774607+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Export one explicitly selected native issue with supported fields, lifecycle and comments to the chosen GitHub repository; document unmappable fields.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:10.596870+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Repeat/resume exports without blind creation retries; use durable checkpoints and complete bounded marker reconciliation, refusing ambiguous matches and outcomes.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:13.773888+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Contact GitHub only from explicit transport commands; credentials are optional for public reads, required for writes, and never stored in signed issue data or diagnostics.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:16.624151+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Build/test/use native and compatibility issue commands with GitHub transport completely excluded. Removing transport must not affect imported issues.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:19.563803+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Publish exact command examples, supported compatibility subset, conflict/recovery behavior, bounds, attribution and offline-build instructions.",
+      "proof_type": "manual_qa",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:22.543551+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Keep transfer orchestration, source identities, checkpoints and issue/comment data independent of provider-specific DTOs. Expose explicit provider/project selection; GitHub is the first optional adapter.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:25.605986+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Represent issues, projects and workflows as distinct migration resources and report implemented, mapping-required or unsupported resources before any write. Document extension contracts and the first delivery boundary; never claim arbitrary workflow equivalence.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:28.458275+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Provide signed Git-backed discussion threads and independently revisioned replies, categories, open/closed state and accepted-answer revision references, with native CLI and explicit conflict handling.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:31.304973+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Provide signed Git-backed planning projects with bounded typed fields/views and independently revisioned work items, typed targets and field values pinned to an exact project-schema revision.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:34.146463+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Provide signed versioned native workflow definitions using existing pipeline/runner semantics, native CLI, explicit materialization and exact proposal-definition binding before governed run requests. Foreign definitions remain inert until mapped.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:37.085087+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "New resources use verified signed actor histories and existing Git transport, strict bounded type-specific states, actor-pinned replay-safe writes, exact revision guards, visible concurrent heads and explicit resolution. No provider is needed for native operation.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:40.069476+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Import/export supported GitHub discussion threads/replies, source attribution, categories, state and answer references through optional adapters, with explicit category/unsupported-semantics mapping and safe repeat/recovery.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:43.066261+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Import/export supported GitHub Projects V2 definitions and items, remapping field/option/content identities and reporting unsupported field/layout/automation semantics before mutation. Board ownership/selectors are separate from repository selectors.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:46.198331+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Import/export workflow definitions with exact source bytes/digests, explicit branch and execution/environment mappings, conservative write recovery and honest runnable/native-versus-foreign status. Never execute an imported definition implicitly.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:49.030814+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "Provider-neutral migration plans cover issues, projects, discussions and workflows, including dependency/reference mappings, supported/manual/unsupported semantics and explicit dry-run validation. Missing mappings or inaccessible dependencies prevent silent data loss.",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:52.121381+00:00",
+      "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
+    }
+  ],
+  "negative_invariants": []
+}

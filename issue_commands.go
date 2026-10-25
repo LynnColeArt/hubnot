@@ -823,6 +823,9 @@ func observeIssueOperation(events []StoredEvent, actor, operation string) (*issu
 		return nil, issueFailure("not_found", errors.New("actor operation was not found in verified history"))
 	}
 	e := match.Event
+	if !isIssueKind(e.Kind) {
+		return nil, issueFailure("operation_conflict", errors.New("operation belongs to another resource kind"))
+	}
 	result := &issueOperationResult{IssueID: issueRootID(*match), EventID: match.ID, Actor: e.Actor,
 		Operation: e.Operation, Intent: e.Intent, Kind: e.Kind, Timestamp: e.Timestamp,
 		Parents: append([]string{}, e.Parents...), State: e.Issue, Request: e.Request}

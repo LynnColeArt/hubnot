@@ -11,7 +11,8 @@ migration, or actor-continuity bridge. Existing `.nh/**`, `.git/nh/**`, and
 `refs/nh/*` data may remain as frozen historical evidence, but `hn` ignores it
 and creates fresh identities and facts only in the active namespace.
 
-The current operational alpha supports signed issues, immutable proposal
+The current operational alpha supports signed issues, planning projects and items,
+threaded discussions, versioned native workflows, immutable proposal
 candidates and revisions, reviews, CI requests/results/logs, governance
 decisions and merge facts, distinct device actors, policy amendments, selected
 quarantined replication, exact shallow-history recovery, and deliberate signed
@@ -40,6 +41,9 @@ required.
 ```sh
 go build -trimpath -o hn .
 go test -count=1 ./...
+
+# Optional: omit the GitHub transport while retaining all native commands.
+go build -trimpath -tags nogithub -o hn-local .
 ```
 
 The end-to-end acceptance scenarios compile the CLI and exercise the
@@ -102,6 +106,52 @@ expected-head guards, actor-scoped operation retries, bounded pages and
 conflict recovery. The [runnable consumer](examples/issue-consumer/README.md)
 creates, reads, revises and retries demonstration work using only the public
 CLI. No Beads migration or consumer-specific runtime integration is performed.
+
+## Projects, discussions and workflows
+
+Native resources are signed Git facts and remain usable with no provider:
+
+```sh
+hn project help
+hn discussion help
+hn workflow help
+```
+
+[Projects](docs/projects-v1.md) contain typed planning fields and independently
+revisioned items pinned to an exact schema. [Discussions](docs/discussions-v1.md)
+keep independent replies and accepted answers pinned to exact reply content.
+[Workflows](docs/workflows-v1.md) store native `hn.pipeline/0` definitions and
+inert foreign source documents. Materializing or requesting a workflow does not
+execute it; the existing explicit policy/proposal/runner path governs execution.
+These new native kinds require a current reader; older alpha executables may
+reject them without changing their signed bytes.
+
+## Familiar local commands and optional transfers
+
+`hn gh issue` implements a documented local subset using the same native issues:
+
+```sh
+hn gh issue create -t "Improve setup" -b "Document the first successful run"
+hn gh issue list --state all --json id,title,state,conflict
+hn gh issue view <native-issue-id> --comments
+```
+
+It never invokes `gh`, contacts GitHub or reads forge credentials. Native IDs
+remain authoritative. Optional explicit transfer is separate:
+
+```sh
+hn transfer capabilities --provider github
+hn transfer import --provider github --project OWNER/REPO --key 42 --dry-run
+hn transfer import --provider github --resource discussion --project OWNER/REPO \
+  --key 7 --map history=snapshot --dry-run
+```
+
+The [interoperability guide](docs/github-interoperability.md) covers the exact
+compatibility flags/JSON, all four resource mappings, credentials, bounded
+preflight and uncertain-write recovery. GitHub is an optional first adapter;
+there is no mandatory account, service, SDK, or unmodified-`gh` API bridge.
+Imported facts remain usable after transport removal. Foreign workflows and
+Projects automation rules are not assumed equivalent to native execution.
 
 ## Distinct device actors
 
@@ -298,7 +348,15 @@ fact from that runner rather than a mutation of earlier bytes.
 ```text
 hn init [--name NAME]
 hn identity show|list|public|authorize|accept|rotate
-hn issue open|comment|list|show
+hn issue open|revise|resolve|close|reopen|comment|list|show|heads|history|graph|operation
+hn gh issue create|list|view|edit|comment|close|reopen
+hn project help
+hn project-item help
+hn discussion help
+hn discussion-reply help
+hn workflow help
+hn transfer import|export|capabilities --provider PROVIDER
+hn github import|export --repo OWNER/REPO
 hn proposal open|revise|list|show|status
 hn policy show [REV]
 hn policy check --base REV <--head REV|--file PATH>
@@ -336,6 +394,11 @@ promise global erasure from every replica.
 
 ## Documentation
 
+- [Rich issues](docs/issues-v1.md)
+- [Projects and typed items](docs/projects-v1.md)
+- [Discussions and pinned answers](docs/discussions-v1.md)
+- [Native workflows and explicit execution](docs/workflows-v1.md)
+- [Optional forge interoperability and local gh subset](docs/github-interoperability.md)
 - [Protocol and storage](docs/protocol-v0.md)
 - [Agent Memory Protocol and operator guide](docs/memory-v0.md)
 - [Agent memory safety model](docs/memory-safety.md)
