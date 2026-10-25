@@ -308,20 +308,24 @@ func TestDuplicateIdentityAndAmbiguousPaginationRefuse(t *testing.T) {
 	}
 }
 
-func TestPaginationAcceptsRelationshipWhitespace(t *testing.T) {
-	var requests atomic.Int32
-	c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-		requests.Add(1)
-		if r.URL.Query().Get("page") == "1" {
-			w.Header().Set("Link", `</repos/a/b/issues?state=all&per_page=100&page=2>; rel = "next"`)
-			_ = json.NewEncoder(w).Encode([]Issue{fixtureIssue(1)})
-			return
-		}
-		_ = json.NewEncoder(w).Encode([]Issue{fixtureIssue(2)})
-	}, "")
-	rows, err := c.ListIssues(context.Background(), "a/b")
-	if err != nil || requests.Load() != 2 || len(rows) != 2 {
-		t.Fatalf("requests=%d rows=%v err=%v", requests.Load(), rows, err)
+func TestPaginationAcceptsRelationshipWhitespaceAndCase(t *testing.T) {
+	for _, relation := range []string{`rel = "next"`, `rel="NEXT"`, `REL="next"`} {
+		t.Run(relation, func(t *testing.T) {
+			var requests atomic.Int32
+			c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				if r.URL.Query().Get("page") == "1" {
+					w.Header().Set("Link", `</repos/a/b/issues?state=all&per_page=100&page=2>; `+relation)
+					_ = json.NewEncoder(w).Encode([]Issue{fixtureIssue(1)})
+					return
+				}
+				_ = json.NewEncoder(w).Encode([]Issue{fixtureIssue(2)})
+			}, "")
+			rows, err := c.ListIssues(context.Background(), "a/b")
+			if err != nil || requests.Load() != 2 || len(rows) != 2 {
+				t.Fatalf("requests=%d rows=%v err=%v", requests.Load(), rows, err)
+			}
+		})
 	}
 }
 

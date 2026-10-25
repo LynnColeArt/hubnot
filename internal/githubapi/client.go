@@ -402,9 +402,9 @@ func nextPage(headers []string, current *url.URL, pageNumber int) (*url.URL, err
 			isNext := false
 			for _, parameter := range strings.Split(part[close+1:], ";") {
 				name, value, ok := strings.Cut(strings.TrimSpace(parameter), "=")
-				if ok && strings.TrimSpace(name) == "rel" {
+				if ok && strings.EqualFold(strings.TrimSpace(name), "rel") {
 					for _, rel := range strings.Fields(strings.Trim(strings.TrimSpace(value), `"`)) {
-						isNext = isNext || rel == "next"
+						isNext = isNext || strings.EqualFold(rel, "next")
 					}
 				}
 			}
