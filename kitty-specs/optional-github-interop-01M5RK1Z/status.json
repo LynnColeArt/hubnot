@@ -1,7 +1,7 @@
 {
-  "event_count": 82,
-  "last_event_id": "01M5RZTNJ679WYYSXFZ3YTH6ER",
-  "materialized_at": "2026-10-25T07:36:30.534326+00:00",
+  "event_count": 83,
+  "last_event_id": "01M5RZVPPSWEC8PQC0VEQHQ37Z",
+  "materialized_at": "2026-10-25T07:37:04.473864+00:00",
   "mission_number": "",
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 1
   },
   "work_packages": {
@@ -344,18 +344,18 @@
     "WP12": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M5RZTNJ679WYYSXFZ3YTH6ER",
-      "last_transition_at": "2026-10-25T07:36:30.534326+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M5RZVPPSWEC8PQC0VEQHQ37Z",
+      "last_transition_at": "2026-10-25T07:37:04.473864+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Exact source 4a15be65: bounded independent audit and all original/follow-up RED-fix-GREEN probes clean; full race371.110s and full nogithub178.260s pass; vet/both builds/format/diff pass. Root executed final gates and handoff for implementer."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 5024,
       "shell_pid_created_at": "1792851034.54",
       "subtasks": {
