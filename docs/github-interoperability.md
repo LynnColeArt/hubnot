@@ -282,7 +282,7 @@ refreshed.
 Remote APIs do not provide an atomic compare-and-swap for all collaboration
 fields. Baseline checks narrow the race but cannot eliminate an external edit
 between read and write. Inspect manual failures, preserve the journal and
-remote data, and recover deliberately. No command provides background sync,
+remote data, and recover deliberately. No transfer command provides background sync,
 a merge policy engine, automatic protected checks, automerge, or GitHub-wide
 API emulation.
 

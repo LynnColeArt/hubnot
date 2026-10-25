@@ -366,6 +366,7 @@ hn run execute REQUEST [--backend sandbox|host] [--allow-unsafe-host-execution] 
 hn runner once|watch --accept-pipeline NAME --accept-actor ACTOR
 hn decide PROPOSAL <--accept|--reject> [--body TEXT]
 hn merge PROPOSAL
+hn automerge PROPOSAL --rule NAME [--execute]
 hn memory record|handoff|supersede|retract|challenge|show|recall|index
 hn replication select|show [REMOTE] [--memory STREAM]...
 hn sync [REMOTE] [--recover-shallow]
@@ -375,6 +376,36 @@ hn log
 Trust-bearing commands require full actor fingerprints and full
 `sha256:<64-hex>` event IDs. Short IDs are display conveniences only.
 
+## Opt-in check protection and automerge
+
+Both capabilities are disabled unless a repository explicitly configures them in
+`.hn/policy.json`. Initialization, upgrades and imports do not turn either on.
+
+| Capability | Default | Explicit opt-in |
+| --- | --- | --- |
+| Protected checks | Disabled | Require designated review for changes to selected check files |
+| Automerge | Disabled | Permit a named rule to merge an already-accepted candidate |
+| Background operation | None | Run the command yourself or through your own scheduler |
+
+Protection and automerge are independent: either may be enabled alone. They use
+native actor identities, signed evidence and ordinary Git; neither requires
+GitHub, `gh`, a service, or a provider account.
+
+```sh
+hn automerge <full-candidate-event-id> --rule docs-only
+hn automerge <full-candidate-event-id> --rule docs-only --execute
+```
+
+The first command previews without a signing key or mutation. The second requires
+an explicitly permitted maintainer identity and current reviews, CI passes and
+acceptances. It merges locally; `hn sync` and `git push` remain separate actions.
+Automerge requires a full repository without active partial/promisor configuration,
+a clean target equal to the candidate's signed base, and no unfinished Git operation.
+Policy amendments and protected-check changes use the manual merge path.
+
+See [optional policy rules](docs/governance-v0.md#optional-check-protection-and-automerge)
+for configuration, protected baselines, execution boundaries and recovery.
+
 ## Completed alpha boundary
 
 The operational-alpha column is implemented. The deferred column describes
@@ -382,7 +413,7 @@ the post-alpha roadmap; those capabilities are not implied by alpha completion.
 
 | Area | Operational alpha | Explicitly deferred |
 | --- | --- | --- |
-| Policy | Show, validate, diff, and govern amendments from exact base bytes | Merge queues and implicit role migration |
+| Policy | Show, validate, diff, and govern amendments from exact base bytes; opt-in protected checks and explicit native automerge | Background merge queues and implicit role migration |
 | Identity | Distinct actors, mutual device/successor facts, local keyring, retryable planned rotation | Lost-key, compromise, social/organizational recovery, or concurrent writers sharing one actor key |
 | Replication | Exact selections, quarantine, positive budgets, validation, atomic accepted refs, compatibility-all | Portable hard pre-download quotas, moderation, selective deletion, and global redaction |
 | CI | Repository-defined actions, default Bubblewrap runner, explicit unsafe host fallback | Secrets, configurable network access, strong CPU/memory/disk/process quotas, and portable/container backends |

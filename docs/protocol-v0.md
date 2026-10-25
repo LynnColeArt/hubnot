@@ -264,6 +264,50 @@ commit, base-policy digest, and acceptance-decision IDs. It is emitted after
 Git creates the merge commit; branch publication remains a separate ordinary
 Git action.
 
+## Optional policy rules
+
+`hn.policy/0` may include independent optional `protectedChecks` and `automerge`
+sections. Absence or `null` disables each in supporting clients; either may be
+enabled alone. No existing signed payload is re-encoded. Clients that do not
+recognize a present field reject that policy rather than infer permissive rules.
+See [governance](governance-v0.md#optional-check-protection-and-automerge) for the
+full schema, selector bounds and commands.
+
+Protection qualifies existing `review.submit` events. A protected change needs
+distinct designated actors other than the candidate author, signing approval
+for that exact candidate. Selectors come from the signed base policy and include
+its policy file and every required pipeline definition. Tree comparisons include
+removal, rename, mode/type and ancestor changes. A `proposal.decision` acceptance
+includes the exact qualifying designated-review IDs in its existing `evidence`
+array; local and quarantine admission enforce the same base-bound rule. Current
+withdrawals affect later merge eligibility, not the validity of older signed
+acceptance evidence.
+
+A prospective manual merge separately inspects the current target. Enabled
+protection there requires revision when its exact policy digest differs from
+the candidate's base, or protected paths changed from base to target even under
+identical policy bytes. This prevents hidden reversion of a newer check to old
+base bytes. It does not reinterpret historical decisions or contained-merge
+repair under a later policy.
+
+Automerge introduces no event kind, implicit role or automatic decision. A named
+base-policy rule restricts executing maintainers, authors, target branch and
+allowed paths in addition to existing current review/run/acceptance requirements.
+Default preview is keyless and read-only; execution is explicit. Version-one
+automation requires a full non-promisor repository, a clean checked-out rule
+target equal to the signed base, and no unfinished Git operation. It refuses
+policy amendments and protected changes for manual handling.
+
+Automatic commit creation uses the verified head tree with signed base and head
+as the two parents. An expected-old ref transaction guards the actual advance
+and a final evidence/target check. This path uses `git commit-tree`, so ordinary
+`pre-merge-commit` and `pre-commit` hooks are not invoked; required check authority
+comes from native policy and pipeline evidence. Operator `reference-transaction`
+hooks remain Git behavior. The resulting `proposal.merged` is the existing
+signed fact binding candidate, head, result commit, base policy and exact
+acceptance IDs. Missing-event repair uses ordinary `hn merge`; collaboration
+and branch publication remain explicit separate actions.
+
 ## Synchronization
 
 `hn replication select` records full per-remote actor/candidate selectors and
