@@ -10,7 +10,10 @@ requirement_refs:
 - FR-005
 planning_base_branch: feat/opt-in-policy-rules
 merge_target_branch: feat/opt-in-policy-rules
-branch_strategy: Planning artifacts for this mission were generated on feat/opt-in-policy-rules. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/opt-in-policy-rules unless the human explicitly redirects the landing branch.
+branch_strategy: Planning artifacts for this mission were generated on feat/opt-in-policy-rules.
+  During /spec-kitty.implement this WP may branch from a dependency-specific base,
+  but completed changes must merge back into feat/opt-in-policy-rules unless the human
+  explicitly redirects the landing branch.
 subtasks:
 - T001
 - T002
@@ -21,7 +24,6 @@ history: []
 agent_profile: implementer-ivan
 authoritative_surface: policy.go
 create_intent:
-- quarantine.go
 - protected_checks.go
 - protected_checks_test.go
 execution_mode: code_change
@@ -30,6 +32,7 @@ owned_files:
 - policy.go
 - policy_commands.go
 - governance.go
+- quarantine.go
 - protected_checks.go
 - protected_checks_test.go
 priority: P1
