@@ -368,3 +368,19 @@ func TestResourceCrossActorConflictAndOperationKeys(t *testing.T) {
 		t.Fatal("resolve", err)
 	}
 }
+
+func TestResourceRejectsInapplicableEmptyUnionMembers(t *testing.T) {
+	for _, raw := range []string{
+		`{"schema":"hn.project-item/1","project_id":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","project_revision":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","target":{"kind":"draft","title":"draft","id":""}}`,
+		`{"schema":"hn.project-item/1","project_id":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","project_revision":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","target":{"kind":"draft","title":"draft"},"values":{"score":{"type":"number","number":"1","text":""}}}`,
+		`{"schema":"hn.project/1","title":"x","fields":[{"id":"text","name":"Text","type":"text","options":[]}]}`,
+	} {
+		family := "project-item"
+		if strings.Contains(raw, `"schema":"hn.project/1"`) {
+			family = "project"
+		}
+		if _, err := CanonicalResourceState(family, []byte(raw)); err == nil {
+			t.Fatal("accepted inapplicable empty member", raw)
+		}
+	}
+}

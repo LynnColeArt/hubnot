@@ -483,6 +483,42 @@ func resourceJSONKeys(value any, t reflect.Type) error {
 		if !ok {
 			return fmt.Errorf("typed state must be an object")
 		}
+		switch t {
+		case reflect.TypeOf(ProjectValue{}):
+			allowed := []string{"type"}
+			switch object["type"] {
+			case "text":
+				allowed = append(allowed, "text")
+			case "number":
+				allowed = append(allowed, "number")
+			case "date":
+				allowed = append(allowed, "date")
+			case "single_select":
+				allowed = append(allowed, "option_id")
+			}
+			if err := issueInputKeys(object, allowed); err != nil {
+				return err
+			}
+		case reflect.TypeOf(ProjectTarget{}):
+			allowed := []string{"kind"}
+			switch object["kind"] {
+			case "issue", "proposal", "discussion":
+				allowed = append(allowed, "id")
+			case "draft":
+				allowed = append(allowed, "title", "body")
+			case "external":
+				allowed = append(allowed, "url")
+			}
+			if err := issueInputKeys(object, allowed); err != nil {
+				return err
+			}
+		case reflect.TypeOf(ProjectField{}):
+			if object["type"] != "single_select" {
+				if _, exists := object["options"]; exists {
+					return fmt.Errorf("only single_select fields have options")
+				}
+			}
+		}
 		fields := map[string]reflect.Type{}
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
