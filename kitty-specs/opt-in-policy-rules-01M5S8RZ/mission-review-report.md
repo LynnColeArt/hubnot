@@ -16,6 +16,7 @@ automated_helper_verdict: unavailable
 automated_helper_exit_code: 1
 automated_helper_reason: MISSION_REVIEW_TEST_EXTRA_MISSING
 automated_helper_report: mission-review-tool-report.md
+automated_helper_raw_archive: mission-review-tool-report.raw.gz
 ---
 
 # Independent post-consolidation mission review
@@ -28,7 +29,7 @@ automated_helper_report: mission-review-tool-report.md
 **Pre-feature main:** `faf975be30ef29d898eea1d113bed3c3f6f7fe58`, still unchanged at review.
 **WPs:** WP01, WP02 and WP03 are canonically `done` after independent approval and local feature consolidation.
 
-**Independent Go verdict: PASS** for the implemented mission contract, tested product identity and applicable Hubnot gates. No unresolved product, security or fidelity blocker was found. The generic review command is **unavailable**, exit 1, because its active Python interpreter lacks pytest; it did not generate a scanner verdict or run its gates. Its exact combined output is preserved in [mission-review-tool-report.md](mission-review-tool-report.md). This independent report does not relabel that failure as a framework scanner pass, and implies no public-main merge or publication approval.
+**Independent Go verdict: PASS** for the implemented mission contract, tested product identity and applicable Hubnot gates. No unresolved product, security or fidelity blocker was found. The generic review command is **unavailable**, exit 1, because its active Python interpreter lacks pytest; it did not generate a scanner verdict or run its gates. Its exact combined output is preserved losslessly in [mission-review-tool-report.raw.gz](mission-review-tool-report.raw.gz), with a readable diagnostic and SHA-256 integrity manifest in [mission-review-tool-report.md](mission-review-tool-report.md). This independent report does not relabel that failure as a framework scanner pass, and implies no public-main merge or publication approval.
 
 ## Method and source identity
 
@@ -82,7 +83,7 @@ Independent WP03 fresh public protection/both-opt-in spot checks also passed und
 
 ### Generic helper — unavailable, raw output retained
 
-Ran `spec-kitty review --mission opt-in-policy-rules-01M5S8RZ --mode post-merge`: **exit 1**, diagnostic `MISSION_REVIEW_TEST_EXTRA_MISSING` because pytest is not importable from the active tool interpreter. It stopped before generating a review report or running scanner gates. The exact combined stdout/stderr bytes were copied without editing to [mission-review-tool-report.md](mission-review-tool-report.md). No framework scanner PASS is asserted, no dependency was installed, and no lifecycle approval was changed. The independent verdict answers the Go product-fidelity question using the actual applicable contract, source and exact-source release evidence.
+Ran `spec-kitty review --mission opt-in-policy-rules-01M5S8RZ --mode post-merge`: **exit 1**, diagnostic `MISSION_REVIEW_TEST_EXTRA_MISSING` because pytest is not importable from the active tool interpreter. It stopped before generating a review report or running scanner gates. The exact combined stdout/stderr bytes from the original `86fee553` Git blob are preserved losslessly in [mission-review-tool-report.raw.gz](mission-review-tool-report.raw.gz). Decompression was verified byte-for-byte against that original blob. [mission-review-tool-report.md](mission-review-tool-report.md) provides the decoded/archive SHA-256 hashes, reproduction commands and a readable diagnostic with Rich trailing padding omitted; that Markdown display is not claimed byte-exact. No framework scanner PASS is asserted, no dependency was installed, and no lifecycle approval was changed. The independent verdict answers the Go product-fidelity question using the actual applicable contract, source and exact-source release evidence.
 
 ## FR Coverage Matrix
 
