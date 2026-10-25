@@ -18,10 +18,10 @@
       "criterion_id": "FR-002",
       "description": "Enabled protection requires designated, distinct, non-author approvals for changes to configured literal files/directories, the policy itself and required pipeline definitions.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:33.656408+00:00",
       "notes": "Verification pending implementation and independent review."
     },
     {
