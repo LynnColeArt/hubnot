@@ -102,6 +102,11 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return Event{}, "", fmt.Errorf("invalid event JSON: %w", err)
 	}
+	if isResourceKind(event.Kind) {
+		if err := strictResourceJSON(payload, &event, resourcePayloadLimit(resourceFamily(event.Kind))); err != nil {
+			return Event{}, "", fmt.Errorf("invalid resource event JSON: %w", err)
+		}
+	}
 	// Bound the authenticated bytes, not a re-encoding which can omit unknown
 	// fields and whitespace. Legacy signed issues retain their original bounds.
 	if len(payload) > maxIssuePayload && isIssueKind(event.Kind) && (event.Kind == "issue.revise" || hasIssueFields(event)) {
@@ -134,6 +139,12 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 }
 
 func validateEventContent(event Event) error {
+	if isResourceKind(event.Kind) {
+		if event.Previous != "" && !validEventID(event.Previous) {
+			return fmt.Errorf("invalid previous event ID")
+		}
+		return validateResourceEvent(event)
+	}
 	if err := validateIssueEvent(event); err != nil {
 		return err
 	}

@@ -951,6 +951,11 @@ func guardShallowEventClosure(operation string) error {
 				OwnerKind: ownerKind, OwnerID: ownerID,
 			}, fmt.Errorf("signed event %s (%s) requires unavailable fact %s", fact.Stored.ID, event.Kind, id))
 		}
+		for _, reference := range resourceReferences(event) {
+			if err := missing(reference, shallowSelectedFact, "", ""); err != nil {
+				return err
+			}
+		}
 		switch event.Kind {
 		case "proposal.revise", "review.submit":
 			if err := missing(event.Subject, shallowCandidateEvent, replicationProposal, event.Subject); err != nil {

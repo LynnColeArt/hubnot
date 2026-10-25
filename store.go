@@ -304,6 +304,9 @@ func collectEvents() ([]StoredEvent, error) {
 }
 
 func validateEventRelationships(events []StoredEvent) error {
+	if _, err := validateResourceRelationships(events); err != nil {
+		return err
+	}
 	if _, err := validateIssueRelationships(events); err != nil {
 		return err
 	}
