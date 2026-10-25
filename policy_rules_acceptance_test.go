@@ -357,6 +357,27 @@ func policyPublicAutomatic(t *testing.T, binary string, protected bool) {
 	}
 	policyPublicNoWrite(t, owner, true, "automerge", proposal.ID, "--rule", "docs-only", "--execute")
 	f.publish(t)
+	if protected {
+		// Proposed policy cannot remove its own base-policy protected approval gate.
+		raw, err := os.ReadFile(filepath.Join(owner.repo, ".hn/policy.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var proposed map[string]any
+		if err := json.Unmarshal(raw, &proposed); err != nil {
+			t.Fatal(err)
+		}
+		delete(proposed, "protectedChecks")
+		withoutProtection, err := json.Marshal(proposed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		removal := f.open(t, map[string][]byte{".hn/policy.json": withoutProtection})
+		f.review(t, "reviewer", removal)
+		owner.call(t, false, "sync", "origin")
+		assertOperationalContains(t, owner.call(t, false, "proposal", "status", removal.ID), ".hn/policy.json", "0/1 designated approvals")
+		policyPublicNoWrite(t, owner, true, "decide", removal.ID, "--accept")
+	}
 	// A rule explicitly permits these files, so refusal cannot be explained by
 	// a docs-only allowlist mismatch. Policy/protected changes are always manual.
 	var changes map[string][]byte
