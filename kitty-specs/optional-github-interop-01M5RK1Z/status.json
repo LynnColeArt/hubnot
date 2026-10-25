@@ -1,7 +1,7 @@
 {
-  "event_count": 3,
-  "last_event_id": "01M5RKED9NCTDDZKX1N9J84HEE",
-  "materialized_at": "2026-10-25T04:00:05.941970+00:00",
+  "event_count": 4,
+  "last_event_id": "01M5RKEEWW8HPX7G42JMHVY8C9",
+  "materialized_at": "2026-10-25T04:00:07.580115+00:00",
   "mission_number": "",
   "mission_slug": "optional-github-interop-01M5RK1Z",
   "mission_type": "software-dev",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 3
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
@@ -37,6 +37,13 @@
       "lane": "planned",
       "last_event_id": "01M5RKED9NCTDDZKX1N9J84HEE",
       "last_transition_at": "2026-10-25T04:00:05.941970+00:00"
+    },
+    "WP04": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M5RKEEWW8HPX7G42JMHVY8C9",
+      "last_transition_at": "2026-10-25T04:00:07.580115+00:00"
     }
   }
 }
