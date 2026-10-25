@@ -44,3 +44,8 @@ The user specifically requested parallel implementation within Hubnot; therefore
 
 ## Verification
 Each WP writes behavior tests first and passes scoped tests/build/vet/format/diff. Final run: `go test -race -count=1 ./...`, `go vet ./...`, `go build ./...`, `go test -tags nogithub -count=1 ./...`, `go build -tags nogithub ./...`, and verify nogithub dependency graph excludes internal/githubapi. Independent review approves every WP before mission acceptance and consolidation onto feat/optional-github-interop. Deliver a reviewable PR against main; no automatic merge to public main.
+
+
+## Recovery contract refinement (pre-implementation review)
+
+Export checkpoint phases are prepared/in-flight/confirmed. A complete negative marker scan after an uncertain POST is not proof that the POST never executed: refuse another POST and require manual reconciliation. Positive marker recovery must validate immutable destination identity and exact intended transmitted projection, not marker alone. Export baseline digests cover the normalized transmitted representation including generated provenance/markers; they are distinct from import managed-state digests. The first export back to an imported issue's source may use the signed imported source projection as baseline only if it matches current remote content; missing or mismatched baseline refuses overwrite. Imports validate a complete issue/comment set before the first mutation, but multiple signed events are not atomic: interrupted imports can leave valid partial work and resume through the journal/provenance checks. Do not claim transactionality.
