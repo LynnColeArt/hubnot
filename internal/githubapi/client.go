@@ -79,6 +79,10 @@ type Client struct {
 	http  *http.Client
 }
 
+// BaseURL returns the validated base with a lowercase host and no trailing
+// slash. Coordinators can use this value in stable external-source keys.
+func (c *Client) BaseURL() string { return c.base.String() }
+
 // HTTPError deliberately excludes remote response bodies and headers, which
 // can contain arbitrary private content or reflected credentials.
 type HTTPError struct {

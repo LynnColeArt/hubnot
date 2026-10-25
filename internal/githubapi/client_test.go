@@ -195,6 +195,25 @@ func TestBaseURLAndTokenValidation(t *testing.T) {
 	}
 }
 
+func TestCanonicalBaseURLForStableSourceKeys(t *testing.T) {
+	for _, base := range []string{"", "https://api.github.com", "https://API.GITHUB.COM/", "https://api.github.com///"} {
+		c, err := NewClient(base, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if c.BaseURL() != DefaultBaseURL {
+			t.Fatalf("base %q canonicalized to %q", base, c.BaseURL())
+		}
+	}
+	c, err := NewClient("https://ENTERPRISE.example/api/v3/", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.BaseURL() != "https://enterprise.example/api/v3" {
+		t.Fatalf("enterprise base %q", c.BaseURL())
+	}
+}
+
 func TestRedirectsErrorsAndFailuresDoNotLeakOrRetry(t *testing.T) {
 	for _, status := range []int{302, 401, 403, 429, 500} {
 		t.Run(strconv.Itoa(status), func(t *testing.T) {
