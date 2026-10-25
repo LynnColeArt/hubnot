@@ -123,7 +123,8 @@
       "last_transition_at": "2026-10-25T05:34:44.886694+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Exact d71dacb5 full Go race and scoped/vet/build/tagged/diff gates passed; independent source recheck clean; orchestrator recorded completed implementation handoff."
+        "Exact d71dacb5 full Go race and scoped/vet/build/tagged/diff gates passed; independent source recheck clean; orchestrator recorded completed implementation handoff.",
+        "Independent issue export review passed at d71dacb5 after reproduced R1/R2 fixes; evidence committed 47af5cce. Original overlay red/green and focused race pass; exact full race274.509s and other Go gates pass. Lost body association preserves remote content read-only without baseline adoption and refuses new comments pending manual provenance recovery. Authorized github_import.go reverse-comment hook only."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
