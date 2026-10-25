@@ -6,22 +6,27 @@ dependencies:
 requirement_refs:
 - FR-013
 - FR-016
+planning_base_branch: feat/optional-github-interop
+merge_target_branch: feat/optional-github-interop
+branch_strategy: Planning artifacts for this mission were generated on feat/optional-github-interop. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/optional-github-interop unless the human explicitly redirects the landing branch.
 subtasks:
 - T035
 - T036
 - T037
 - T038
-lane: planned
+history: []
 agent_profile: implementer-ivan
-execution_mode: code_change
-owned_files:
-- discussion_commands.go
-- discussion_commands_test.go
 authoritative_surface: discussion_commands.go
 create_intent:
 - discussion_commands.go
 - discussion_commands_test.go
-history: []
+execution_mode: code_change
+lane: planned
+owned_files:
+- discussion_commands.go
+- discussion_commands_test.go
+tags: []
+tracker_refs: []
 ---
 
 ## ⚡ Do This First: Load Agent Profile
