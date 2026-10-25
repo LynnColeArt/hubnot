@@ -38,10 +38,10 @@
       "criterion_id": "FR-004",
       "description": "Protection affects status, acceptance validation, manual merge and fetched evidence admission. Exact candidate review evidence remains signed and independently verifiable. Current withdrawal blocks subsequent enabled merge. A target with protection enabled refuses manual merges governed by a different base-policy digest, including newly opened candidates against pre-opt-in ancestors; historical signed evidence remains valid.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/opt-in-policy-rules-01M5S8RZ/validation-report.md#functional-evidence",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T12:21:39.447127+00:00",
       "notes": "Verification pending implementation and independent review."
     },
     {
