@@ -500,24 +500,46 @@ func forgeExportFindInitial(ctx context.Context, p forge.Provider, o transferOpt
 	}
 	return nil
 }
-func forgeExportFetchCurrent(ctx context.Context, p forge.Provider, o transferOptions, c *forgeIssueExportCheckpoint) (forge.Issue, error) {
+func forgeExportFindCurrent(ctx context.Context, p forge.Provider, o transferOptions, c *forgeIssueExportCheckpoint) (forge.Issue, error) {
 	rows, err := forgeExportList(ctx, p, o.project, o.id)
 	if err != nil {
 		return forge.Issue{}, err
 	}
 	for _, v := range rows {
 		if v.ID == c.RemoteID {
-			if c.Snapshot == nil {
-				return forge.Issue{}, errors.New("external association has no native snapshot")
-			}
-			if err := forgeExportVerifyAssociation(v, *c.Snapshot); err != nil {
-				return forge.Issue{}, err
-			}
 			c.RemoteKey = v.Key
 			return v, nil
 		}
 	}
 	return forge.Issue{}, errors.New("mapped external issue is absent from the selected project; reconcile its identity instead of recreating it")
+}
+
+func forgeExportFetchCurrent(ctx context.Context, p forge.Provider, o transferOptions, c *forgeIssueExportCheckpoint) (forge.Issue, error) {
+	v, err := forgeExportFindCurrent(ctx, p, o, c)
+	if err != nil {
+		return v, err
+	}
+	if c.Snapshot == nil {
+		return v, errors.New("external association has no native snapshot")
+	}
+	return v, forgeExportVerifyAssociation(v, *c.Snapshot)
+}
+
+func forgeExportAuthenticateSnapshot(s forgeIssueExportSnapshot, c forgeIssueExportCheckpoint, p forge.Provider) error {
+	if !s.SameSource {
+		if s.SourceKey != "" {
+			return errors.New("non-source export snapshot has an inconsistent source key")
+		}
+		return nil
+	}
+	source, err := forgeExportSource(s)
+	if err != nil {
+		return err
+	}
+	if source == nil || source.Provider != p.Kind() || source.Endpoint != p.Endpoint() || s.SourceKey != forgeSourceKey(*source) || c.RemoteID == "" || c.RemoteID != source.ID {
+		return errors.New("source-body export mode requires verified signed source provenance and the exact provider destination")
+	}
+	return nil
 }
 
 func forgeExportVerifyAssociation(v forge.Issue, snapshot forgeIssueExportSnapshot) error {
@@ -657,6 +679,9 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 		cp.PreserveRemote = false
 	}
 	s := cp.Snapshot
+	if err := forgeExportAuthenticateSnapshot(*s, cp, p); err != nil {
+		return err
+	}
 	desired, err := forgeExportRender(*s)
 	if err != nil {
 		return err
@@ -685,13 +710,32 @@ func forgeExportIssue(ctx context.Context, p forge.Provider, o transferOptions) 
 		}
 	}
 	if !resuming && cp.RemoteID != "" {
-		remote, err := forgeExportFetchCurrent(ctx, p, o, &cp)
+		remote, err := forgeExportFindCurrent(ctx, p, o, &cp)
 		if err != nil {
 			return err
 		}
 		projection, err := forgeExportRemoteProjection(remote)
 		if err != nil {
 			return err
+		}
+		if associationErr := forgeExportVerifyAssociation(remote, *s); associationErr != nil {
+			// An unchanged local issue must not overwrite an external-only body
+			// edit. Without the body association, preserve it read-only; don't
+			// publish new comments or adopt it as the next overwrite baseline.
+			if cp.RemoteBaseline != nil && s.NativeDigest == cp.NativeBaseline && !forgeExportSame(projection, *cp.RemoteBaseline) {
+				for _, id := range s.CommentIDs {
+					skip, err := forgeSkipSourceComment(*s, selected[id])
+					if err != nil {
+						return err
+					}
+					if !skip && cp.Comments[id] == "" {
+						return errors.New("external-only body edit preserved; reconcile native provenance before publishing new comments")
+					}
+				}
+				fmt.Println("Preserved external-only issue edits; no provider writes or baseline changes performed.")
+				return nil
+			}
+			return associationErr
 		}
 		switch {
 		case forgeExportSame(projection, desired):

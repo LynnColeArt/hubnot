@@ -489,3 +489,68 @@ func TestForgeExportPreflightsWorstCaseOpaqueIdentityEncoding(t *testing.T) {
 		t.Fatal("published issue before validating worst-case attributed comment size")
 	}
 }
+
+func TestForgeExportRejectsManufacturedSameSourceRecoveryBeforeWrite(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "native", Body: "body"})
+	snapshot, _, err := forgeExportCurrentSnapshot(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	snapshot.SameSource = true
+	snapshot.SourceKey = "fabricated source association"
+	o := transferOptions{id: id, provider: f.Kind(), endpoint: f.Endpoint(), project: "team/project"}
+	scope := forgeExportScope(f, o)
+	projection, err := forgeExportRender(snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := json.Marshal(projection)
+	cp := forgeIssueExportCheckpoint{Schema: "hn.forge-issue-export/1", Provider: f.Kind(), Endpoint: f.Endpoint(), Project: o.project, NativeID: id, Snapshot: &snapshot, Comments: map[string]string{}, Pending: &forgeRemoteIntent{Schema: "hn.forge-remote-intent/1", Scope: scope, Provider: f.Kind(), Endpoint: f.Endpoint(), Kind: "issue", Action: "create-issue", NativeID: id, NativeRevision: snapshot.Head, Payload: raw, PayloadDigest: eventID(raw), Phase: "prepared"}}
+	if err := forgeStoreJSON(forgeExportCheckpointName(scope), cp); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := forgeExportTestRun(t, id); err == nil || f.creates != 0 {
+		t.Fatalf("manufactured source mode wrote: creates=%d err=%v", f.creates, err)
+	}
+}
+
+func TestForgeExportPreservesRemoteOnlyBodyEditWithoutAdoptingIt(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "native", Body: "initial body"})
+	if _, err := forgeExportTestRun(t, id); err != nil {
+		t.Fatal(err)
+	}
+	v := f.issues["1"]
+	v.Body = "Human-written replacement body"
+	f.issues["1"] = v
+	if _, err := forgeExportTestRun(t, id); err != nil {
+		t.Fatalf("remote-only body edit not preserved: %v", err)
+	}
+	if f.updates != 0 || f.issues["1"].Body != v.Body {
+		t.Fatal("remote-only body overwritten")
+	}
+	forgeExportNativeEdit(t, id, func(s *IssueState) { s.Body = "new local body" })
+	if _, err := forgeExportTestRun(t, id); err == nil || f.updates != 0 {
+		t.Fatal("unverified remote body adopted as overwrite baseline")
+	}
+}
+
+func TestForgeExportLostAssociationRefusesUnpublishedNativeComments(t *testing.T) {
+	issueCommandTestRepo(t)
+	f := newForgeExportFake(t)
+	id := forgeExportNativeOpen(t, IssueState{Title: "native", Body: "initial"})
+	if _, err := forgeExportTestRun(t, id); err != nil {
+		t.Fatal(err)
+	}
+	v := f.issues["1"]
+	v.Body = "external-only replacement body"
+	f.issues["1"] = v
+	forgeExportNativeComment(t, id, "not yet exported")
+	output, err := forgeExportTestRun(t, id)
+	if err == nil || f.commentCreates != 0 || f.updates != 0 || strings.Contains(output, "Exported issue") {
+		t.Fatalf("unpublished work was silently skipped or written: writes=%d/%d out=%q err=%v", f.updates, f.commentCreates, output, err)
+	}
+}
