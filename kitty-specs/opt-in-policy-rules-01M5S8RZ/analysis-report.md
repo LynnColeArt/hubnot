@@ -4,15 +4,15 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: opt-in-policy-rules-01M5S8RZ
 mission_id: 01M5S8RZS9K85MQ915K59HED71
-generated_at: '2026-10-25T10:21:22.570128+00:00'
+generated_at: '2026-10-25T10:51:45.049571+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
     path: kitty-specs/opt-in-policy-rules-01M5S8RZ/spec.md
-    sha256: 7b9e95a9aefa843ed61d93731185c15a148a82fd3ed3ab07578c90eb80480098
+    sha256: 114f9482d274b663951a8f5f12968176999136b1217f56826864e8c72505018b
   plan.md:
     path: kitty-specs/opt-in-policy-rules-01M5S8RZ/plan.md
-    sha256: 7baa079d0842ea77e67a315bab0427901d2d9da4da58768d03a865f2a7c3b757
+    sha256: 4e7656a5396811206a7a2740994533955d87e3e8a7f6d0c6fe4fb814fe9155ab
   tasks.md:
     path: kitty-specs/opt-in-policy-rules-01M5S8RZ/tasks.md
     sha256: e536f1052e06264c8b9183213b4cf29eadf1a9f7017c937f92c5b07fecce0623
@@ -22,9 +22,9 @@ input_artifacts:
 verdict: ready
 issue_counts:
   high: 0
-  medium: 0
-  critical: 0
   low: 0
+  critical: 0
+  medium: 0
   info: 0
 findings: []
 ---
@@ -42,3 +42,5 @@ Spec, plan, tasks and project charter reviewed. Independent planning review iden
 15 stable requirements, 12 subtasks, 3 acyclic dependency-ordered WPs; 100% requirement mapping. File ownership is disjoint; specific planned-new files declared. Both optional sections absent retain existing behavior. No policy enablement, external modules, service, daemon, fake identity, new event kind, hosted authority or semantic lint weakening promise. Existing policy governs immutable history; the prospective current target gate closes opt-in bypass without invalidating historical evidence. Automerge requires existing acceptances, excludes policy/protected changes, and requires exact signed base target so no untested integration tree is implied.
 
 Charter alignment: HN-001 native Git; HN-002 exact base/candidate/review/run evidence; HN-003 bounded changes and explicit authority; HN-004 revisions refresh evidence; HN-005 protocol/threat/user docs in WP03. Test-first and independent source-bound review are mandatory. No unmapped tasks or unresolved discovery decisions. Implementation must demonstrate actual lease and read-only preview semantics; tests alone do not substitute for code-path review.
+
+Automatic read-only preflight boundary refined during implementation: auto only refuses shallow or configured partial/promisor repositories before object reads, avoiding existing lazy Git fetch and shallow recovery-record side effects. Full local repositories are the supported automatic topology; existing manual recovery unchanged. This is recorded in spec/plan assumptions, not a hidden change to optional defaults or trust authority. WP02/public CLI tests and docs must cover the refusal. No additional authority or unresolved requirement gap.
