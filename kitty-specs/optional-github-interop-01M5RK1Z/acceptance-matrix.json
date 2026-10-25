@@ -138,10 +138,10 @@
       "criterion_id": "FR-014",
       "description": "Provide signed Git-backed planning projects with bounded typed fields/views and independently revisioned work items, typed targets and field values pinned to an exact project-schema revision.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/optional-github-interop-01M5RK1Z/tasks/WP05-offline-acceptance-and-operator-documentation/independent-review-1.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-25T08:30:34.146463+00:00",
       "notes": "Source-bound independent integration review and concrete requirement trace; see evidence."
     },
     {
