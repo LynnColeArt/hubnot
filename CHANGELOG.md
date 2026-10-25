@@ -5,6 +5,12 @@ experimental; alpha releases do not promise stable compatibility.
 
 ## Unreleased
 
+### Removed
+
+- Obsolete tracked `.nh/policy.json` and `.nh/pipelines/test.json` from the retired
+  `nh` namespace. The root `.nh/` directory is now ignored. Active `.hn/`
+  configuration is unchanged; earlier files remain available in Git history.
+
 ### Fixed
 
 - Test repository fixtures now resolve physical paths consistently with Git when
