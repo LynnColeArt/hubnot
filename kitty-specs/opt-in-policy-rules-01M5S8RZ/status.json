@@ -1,7 +1,7 @@
 {
-  "event_count": 8,
-  "last_event_id": "01M5SASPFQEX0MGCHXBK76E4HJ",
-  "materialized_at": "2026-10-25T10:48:13.047081+00:00",
+  "event_count": 10,
+  "last_event_id": "01M5SATJ3QQGYN877DSNSGP64C",
+  "materialized_at": "2026-10-25T10:48:41.335239+00:00",
   "mission_number": "",
   "mission_slug": "opt-in-policy-rules-01M5S8RZ",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 2
+    "planned": 1
   },
   "work_packages": {
     "WP01": {
@@ -50,11 +50,14 @@
       }
     },
     "WP02": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M5S91Y25M1AM8NJ13XF61D97",
-      "last_transition_at": "2026-10-25T10:17:45.797426+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M5SATJ3QQGYN877DSNSGP64C",
+      "last_transition_at": "2026-10-25T10:48:41.335239+00:00",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54"
     },
     "WP03": {
       "actor": "finalize-tasks",
