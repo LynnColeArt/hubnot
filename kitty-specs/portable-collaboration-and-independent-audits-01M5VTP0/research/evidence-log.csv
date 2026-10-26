@@ -1,0 +1,9 @@
+finding_id,source_id,finding,consequence
+E01,S01,Provider-neutral transfers already exist,Extend the boundary rather than provider conditionals in native storage
+E02,S02,No whole-project snapshot or PR/attachment model exists,Add project preservation and explicit coverage semantics
+E03,S03,Existing run facts are proposal merge evidence,Use a separate audit fact family
+E04,S04,Global IDs and project-local IIDs differ,Keep identity separate from selectors
+E05,S05,API compatibility is major-version scoped,Probe and test explicit capabilities
+E06,S06,Gitea has its own versioned API contract,Separate conformance from Forgejo
+E07,S07,Bitbucket Cloud issue tracker API removed 2026-08-20,Report unavailable issues without substituting Jira
+E08,S08,Work items are typed and revisioned,Require explicit Azure selectors and type/state mappings
