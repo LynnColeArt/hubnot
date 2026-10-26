@@ -1,0 +1,6 @@
+Validated source: 3e6b301bb2e3142eff40727edf57a462b3e63e02 review tree: 2d88e80ba7db1fd22b3765fe1103bc160717a588
+Fresh reviewer packager SHA256: 4b40f36557b0757ac45c129cde410b228cbfb2236fc0ed6d655d89e194a35a24
+PASS local-clean : refusal before execution; source/config/index unchanged; no marker/output/staging; hn-release: source configures a Git clean/process filter; inspect a clean checkout without executable filters before packaging
+PASS conditional-include-process : refusal before execution; source/config/index unchanged; no marker/output/staging; hn-release: source configures a Git clean/process filter; inspect a clean checkout without executable filters before packaging
+PASS worktree-clean : refusal before execution; source/config/index unchanged; no marker/output/staging; hn-release: source configures a Git clean/process filter; inspect a clean checkout without executable filters before packaging
+PASS original clean-filter defect and conditional/include/worktree variants independently rechecked
