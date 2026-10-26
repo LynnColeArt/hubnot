@@ -146,8 +146,8 @@
     "WP05": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "assignee": "Kat",
       "force_count": 3,
       "lane": "in_review",
@@ -169,8 +169,8 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 5024,
-      "shell_pid_created_at": "1792851034.54",
+      "shell_pid": 3925779,
+      "shell_pid_created_at": "1793038129.16",
       "subtasks": {
         "T013": "done",
         "T014": "done",
