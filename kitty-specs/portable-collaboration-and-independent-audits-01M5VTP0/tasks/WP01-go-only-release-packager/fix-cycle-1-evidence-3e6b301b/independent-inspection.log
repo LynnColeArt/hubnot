@@ -1,9 +1,0 @@
-PASS hubnot_0.0.2-dev_linux_amd64: metadata, docs, architecture, provenance, actual native CLI smoke
-PASS hubnot_0.0.2-dev_linux_amd64_native-only: metadata, docs, architecture, provenance, actual native CLI smoke
-PASS hubnot_0.0.2-dev_linux_arm64: metadata, docs, architecture, provenance
-PASS hubnot_0.0.2-dev_linux_arm64_native-only: metadata, docs, architecture, provenance
-PASS hubnot_0.0.2-dev_darwin_amd64: metadata, docs, architecture, provenance
-PASS hubnot_0.0.2-dev_darwin_amd64_native-only: metadata, docs, architecture, provenance
-PASS hubnot_0.0.2-dev_darwin_arm64: metadata, docs, architecture, provenance
-PASS hubnot_0.0.2-dev_darwin_arm64_native-only: metadata, docs, architecture, provenance
-PASS two runs: all 11 assets byte-identical; exact 591-file Git source tree; all 10 checksums; 9 archive digests; tags unchanged
