@@ -1,0 +1,32 @@
+=== RUN   TestAuditPublicExplicitExecutionFollowUpAndReplication
+=== RUN   TestAuditPublicExplicitExecutionFollowUpAndReplication/ordinary
+=== RUN   TestAuditPublicExplicitExecutionFollowUpAndReplication/nogithub
+--- PASS: TestAuditPublicExplicitExecutionFollowUpAndReplication (13.32s)
+    --- PASS: TestAuditPublicExplicitExecutionFollowUpAndReplication/ordinary (5.69s)
+    --- PASS: TestAuditPublicExplicitExecutionFollowUpAndReplication/nogithub (5.72s)
+=== RUN   TestAuditPublicOperatorReferenceHookAndInertSources
+--- PASS: TestAuditPublicOperatorReferenceHookAndInertSources (2.92s)
+=== RUN   TestAuditPublicInvalidUnicodeRefusesBeforeMutation
+--- PASS: TestAuditPublicInvalidUnicodeRefusesBeforeMutation (0.52s)
+=== RUN   TestAuditExecutionRefusesTransportAndMidRunAuthorityWithdrawal
+--- PASS: TestAuditExecutionRefusesTransportAndMidRunAuthorityWithdrawal (0.64s)
+=== RUN   TestAuditRequestGuardClientTerminationReleasesPreparedLock
+--- PASS: TestAuditRequestGuardClientTerminationReleasesPreparedLock (0.04s)
+=== RUN   TestAuditPublicFollowUpInterruptedCreateRecoveryAndEditedIssue
+--- PASS: TestAuditPublicFollowUpInterruptedCreateRecoveryAndEditedIssue (2.61s)
+=== RUN   TestAuditPublicFollowUpNormalizedCollisionPreservesState
+=== RUN   TestAuditPublicFollowUpNormalizedCollisionPreservesState/case
+=== RUN   TestAuditPublicFollowUpNormalizedCollisionPreservesState/case/local
+=== RUN   TestAuditPublicFollowUpNormalizedCollisionPreservesState/case/imported
+=== RUN   TestAuditPublicFollowUpNormalizedCollisionPreservesState/whitespace
+=== RUN   TestAuditPublicFollowUpNormalizedCollisionPreservesState/whitespace/local
+=== RUN   TestAuditPublicFollowUpNormalizedCollisionPreservesState/whitespace/imported
+--- PASS: TestAuditPublicFollowUpNormalizedCollisionPreservesState (8.86s)
+    --- PASS: TestAuditPublicFollowUpNormalizedCollisionPreservesState/case (4.22s)
+        --- PASS: TestAuditPublicFollowUpNormalizedCollisionPreservesState/case/local (1.31s)
+        --- PASS: TestAuditPublicFollowUpNormalizedCollisionPreservesState/case/imported (1.25s)
+    --- PASS: TestAuditPublicFollowUpNormalizedCollisionPreservesState/whitespace (4.23s)
+        --- PASS: TestAuditPublicFollowUpNormalizedCollisionPreservesState/whitespace/local (1.27s)
+        --- PASS: TestAuditPublicFollowUpNormalizedCollisionPreservesState/whitespace/imported (1.27s)
+PASS
+ok  	hubnot	29.931s
