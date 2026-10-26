@@ -107,6 +107,15 @@ func migrationCheckRefGuards(ctx context.Context, dir string, refs []migration.R
 	return nil
 }
 func migrationPromote(ctx context.Context, dir string, q *ProjectQuarantine, w migration.ProjectWrite, l migration.Limits) error {
+	// The destination mutation must run inside the destination itself: a relative
+	// core.hooksPath resolves against the process cwd, which is the caller's, not
+	// the destination's. Anchor cwd to the selected repository (-C) and pin the
+	// already-resolved git dir (--git-dir) so destination hooks execute in the
+	// destination directory and caller-side hooks can never observe this write.
+	repo, e := migrationDestinationRepoDir(ctx, dir)
+	if e != nil {
+		return e
+	}
 	if e := migrationCheckRefGuards(ctx, dir, w.Refs); e != nil {
 		return e
 	}
@@ -123,8 +132,108 @@ func migrationPromote(ctx context.Context, dir string, q *ProjectQuarantine, w m
 		fmt.Fprintf(&tx, "update %s %s %s\n", r.Ref, r.OID, old)
 	}
 	tx.WriteString("prepare\ncommit\n")
-	_, e := projectGit(ctx, dir, []byte(tx.String()), 1<<20, "update-ref", "--no-deref", "--stdin")
+	_, e = projectGit(ctx, dir, []byte(tx.String()), 1<<20, "-C", repo, "update-ref", "--no-deref", "--stdin")
 	return e
+}
+
+// migrationDestinationRepoDir maps the resolved destination git directory to
+// the directory Git anchors relative core.hooksPath resolution to for the
+// selected repository. Only cwd-independent facts classify the shape:
+// is-bare-repository for bare layouts, structural back-links for worktrees.
+// Ordinary and linked-worktree repositories anchor at their working-tree root,
+// matching the resolution an operator command run inside that repository gets
+// (`git -C <toplevel>`). Every unrecognized shape refuses; the mutation is
+// never allowed to run unanchored.
+func migrationDestinationRepoDir(ctx context.Context, dir string) (string, error) {
+	out, e := projectGit(ctx, dir, nil, 256, "rev-parse", "--is-bare-repository")
+	if e != nil {
+		return "", fmt.Errorf("destination repository anchor unavailable")
+	}
+	if strings.TrimSpace(string(out)) == "true" {
+		return dir, nil
+	}
+	physical := func(p string) (string, error) {
+		q, e := filepath.EvalSymlinks(p)
+		if e != nil {
+			return "", e
+		}
+		return q, nil
+	}
+	// Linked worktree: the resolved git directory carries a gitdir back-pointer
+	// file naming its registered working tree side (.git file or directory).
+	if raw, e := os.ReadFile(filepath.Join(dir, "gitdir")); e == nil {
+		p := strings.TrimSpace(string(raw))
+		if p == "" {
+			return "", fmt.Errorf("destination worktree anchor invalid")
+		}
+		if !filepath.IsAbs(p) {
+			p = filepath.Join(dir, p)
+		}
+		root := p
+		if filepath.Base(p) == ".git" {
+			root = filepath.Dir(p)
+		}
+		st, e := os.Lstat(root)
+		if e != nil || !st.IsDir() {
+			return "", fmt.Errorf("destination worktree anchor invalid")
+		}
+		if raw, e := os.ReadFile(p); e == nil {
+			// The working-tree side must point back at exactly this git
+			// directory; unverified pointers never anchor a mutation.
+			text := strings.TrimSpace(string(raw))
+			target, ok := strings.CutPrefix(text, "gitdir:")
+			if !ok {
+				return "", fmt.Errorf("destination worktree anchor invalid")
+			}
+			target = strings.TrimSpace(target)
+			if !filepath.IsAbs(target) {
+				target = filepath.Join(filepath.Dir(p), target)
+			}
+			q, e := physical(target)
+			if e != nil || q != dir {
+				return "", fmt.Errorf("destination worktree anchor invalid")
+			}
+		} else if !os.IsNotExist(e) {
+			return "", e
+		}
+		if root, e = physical(root); e != nil {
+			return "", fmt.Errorf("destination worktree anchor invalid")
+		}
+		return root, nil
+	} else if !os.IsNotExist(e) {
+		return "", e
+	}
+	// Ordinary repository: the git directory's parent is the working tree whose
+	// .git directory (or separate-git-dir side) is exactly this git directory.
+	parent := filepath.Dir(dir)
+	st, e := os.Lstat(filepath.Join(parent, ".git"))
+	if e == nil && st.IsDir() {
+		q, e := physical(filepath.Join(parent, ".git"))
+		if e == nil && q == dir {
+			if q, e := physical(parent); e == nil {
+				return q, nil
+			}
+		}
+	} else if e == nil && st.Mode()&os.ModeSymlink == 0 && st.Mode().IsRegular() {
+		raw, e := os.ReadFile(filepath.Join(parent, ".git"))
+		if e == nil {
+			text := strings.TrimSpace(string(raw))
+			target, ok := strings.CutPrefix(text, "gitdir:")
+			if ok {
+				target = strings.TrimSpace(target)
+				if !filepath.IsAbs(target) {
+					target = filepath.Join(parent, target)
+				}
+				q, e := physical(target)
+				if e == nil && q == dir {
+					if q, e := physical(parent); e == nil {
+						return q, nil
+					}
+				}
+			}
+		}
+	}
+	return "", fmt.Errorf("destination repository anchor unavailable")
 }
 
 // GitMigrationDestination is the shared code transport companion for optional

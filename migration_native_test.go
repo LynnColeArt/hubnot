@@ -580,3 +580,131 @@ func TestMigrationHTTPSCredentialIsolationChild(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+// TestMigrationDestinationRelativeHookAnchoring is the production-boundary
+// regression for the WP05 hook-execution P1: the destination ref transaction
+// must execute inside the selected destination repository. With a relative
+// destination core.hooksPath that resolves against the process cwd, the source
+// (caller) hook must never observe migration writes, and a refusing
+// destination hook must make the promotion fail as an uncertain write with the
+// observation ref invisible and the destination hook having executed in the
+// destination. Covers bare, ordinary and linked-worktree destinations at the
+// real ExportProjectSnapshot/PrepareMigration/ApplyMigration boundary.
+func TestMigrationDestinationRelativeHookAnchoring(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		bare bool
+		link bool
+	}{
+		{"bare", true, false},
+		{"worktree", false, false},
+		{"linked-worktree", false, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			source := inReplicationTestRepository(t)
+			ctx := context.Background()
+			l := migration.DefaultLimits()
+			snapshot, err := ExportProjectSnapshot(ctx, filepath.Join(source, ".git"), []string{"refs/heads/main"}, l)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer snapshot.Close()
+			dest := filepath.Join(t.TempDir(), "destination")
+			gitdir := dest
+			if tc.bare {
+				if _, err = projectGit(ctx, "", nil, 4096, "init", "--bare", "--quiet", dest); err != nil {
+					t.Fatal(err)
+				}
+			} else if !tc.link {
+				if _, err = projectGit(ctx, "", nil, 4096, "init", "--quiet", dest); err != nil {
+					t.Fatal(err)
+				}
+				gitdir = filepath.Join(dest, ".git")
+			} else {
+				// Linked-worktree destination: dest is a detached secondary
+				// worktree of a separate main repository; the selected git
+				// directory is the worktree's private git dir, never the main one.
+				main := filepath.Join(t.TempDir(), "main")
+				if _, err = projectGit(ctx, "", nil, 4096, "init", "--quiet", main); err != nil {
+					t.Fatal(err)
+				}
+				maindir := filepath.Join(main, ".git")
+				if _, err = projectGit(ctx, maindir, nil, 4096, "-c", "user.name=Setup", "-c", "user.email=setup@hn.invalid", "commit", "--allow-empty", "-q", "-m", "setup"); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = projectGit(ctx, maindir, nil, 4096, "worktree", "add", "--detach", "--quiet", dest); err != nil {
+					t.Fatal(err)
+				}
+				out, e := projectGit(ctx, "", nil, 4096, "-C", dest, "rev-parse", "--absolute-git-dir")
+				if e != nil {
+					t.Fatal(e)
+				}
+				gitdir = strings.TrimSpace(string(out))
+				if gitdir == maindir || !strings.HasSuffix(gitdir, "/worktrees/destination") {
+					t.Fatalf("linked destination is not the worktree's private git dir: %s", gitdir)
+				}
+				if _, e = projectGit(ctx, maindir, nil, 4096, "config", "core.hooksPath", "relative-hooks"); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if !tc.link {
+				if _, err = projectGit(ctx, gitdir, nil, 4096, "config", "core.hooksPath", "relative-hooks"); err != nil {
+					t.Fatal(err)
+				}
+			}
+			marker := filepath.Join(t.TempDir(), "hook-output")
+			hook := func(base, label string, reject bool) {
+				t.Helper()
+				d := filepath.Join(base, "relative-hooks")
+				if err := os.Mkdir(d, 0700); err != nil {
+					t.Fatal(err)
+				}
+				content := "#!/bin/sh\nprintf '" + label + " %s\\n' \"$PWD\" >> '" + marker + "'\n"
+				if reject {
+					content += "exit 1\n"
+				}
+				if err := os.WriteFile(filepath.Join(d, "reference-transaction"), []byte(content), 0700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			hook(source, "SOURCE", false)
+			hook(dest, "DESTINATION", true)
+			d := LocalMigrationDestination{Repository: dest}
+			session, err := PrepareMigration(ctx, filepath.Join(t.TempDir(), "saved-plan"), snapshot.Snapshot, snapshot, migration.Selection{Destination: d.Locator()}, d, l, []migration.Decision{{FindingID: "local/governance", Action: "preserve", Mapping: json.RawMessage(`{}`)}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			applyErr := ApplyMigration(ctx, session, d, "")
+			before, readErr := os.ReadFile(marker)
+			if readErr != nil {
+				t.Fatal(readErr)
+			}
+			ref, _ := migrationObservationRef(snapshot.Snapshot.SourceID, snapshot.Snapshot.NativeRefs[0])
+			installed, err := migrationReadRef(ctx, gitdir, ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Positive control: identical anchored invocation in the destination
+			// refuses through the same hook, proving the refusal is the
+			// operator's destination policy and not missing hook setup.
+			_, controlErr := projectGit(ctx, "", nil, 4096, "-C", dest, "--git-dir="+gitdir, "update-ref", "refs/hn/remotes/control/code/main", snapshot.Snapshot.NativeRefs[0].OID)
+			afterControl, _ := os.ReadFile(marker)
+			_ = afterControl
+			if applyErr == nil {
+				t.Fatalf("migration accepted a destination hook refusal; markers=%q", string(before))
+			}
+			if installed != "" {
+				t.Fatalf("observation ref visible despite destination hook refusal: %s", installed)
+			}
+			if strings.Contains(string(before), "SOURCE ") {
+				t.Fatalf("source hook executed during migration: %q", string(before))
+			}
+			if !strings.Contains(string(before), "DESTINATION ") {
+				t.Fatalf("destination hook never executed in the destination; markers=%q", string(before))
+			}
+			if controlErr == nil {
+				t.Fatal("invalid control: destination rejection hook did not reject")
+			}
+		})
+	}
+}
