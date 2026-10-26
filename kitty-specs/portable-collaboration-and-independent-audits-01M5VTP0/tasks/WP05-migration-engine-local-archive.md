@@ -29,7 +29,7 @@ history:
 agent_profile: implementer-ivan
 authoritative_surface: migration_engine.go
 create_intent:
-- docs/project-migration.md
+- docs/migration-engine.md
 - internal/migration/plan.go
 - internal/migration/plan_test.go
 - internal/migration/progress.go
@@ -56,7 +56,7 @@ owned_files:
 - migration_local_test.go
 - migration_journal.go
 - migration_journal_test.go
-- docs/project-migration.md
+- docs/migration-engine.md
 role: implementer
 tags: []
 task_type: implement
@@ -101,21 +101,21 @@ Modify only this WP's owned surfaces and its required runtime status/evidence. O
 
 - **Purpose**: Establish the observable contract before product implementation.
 - **Steps**: Use frozen source observations and destination expectations. Cover mapped/preserved/requires-mapping/unsupported/missing/conflict findings, no secrets in plans, explicit loss acknowledgments, and no assumption that unread data was preserved. Include selected native audit histories from WP02, without importing any private audit-authority anchor. Cover symbolic dependent receipt references and closed canonical issue/comment schemas.
-- **Files**: `internal/migration/plan.go`, `internal/migration/plan_test.go`, `internal/migration/progress.go`, `internal/migration/progress_test.go`, `migration_engine.go`, `migration_engine_test.go`, `migration_native.go`, `migration_native_test.go`, `migration_local.go`, `migration_local_test.go`, `migration_journal.go`, `migration_journal_test.go`, `docs/project-migration.md`.
+- **Files**: `internal/migration/plan.go`, `internal/migration/plan_test.go`, `internal/migration/progress.go`, `internal/migration/progress_test.go`, `migration_engine.go`, `migration_engine_test.go`, `migration_native.go`, `migration_native_test.go`, `migration_local.go`, `migration_local_test.go`, `migration_journal.go`, `migration_journal_test.go`, `docs/migration-engine.md`.
 - **Parallel?**: Sequence within this WP. Cross-WP work only follows finalized lane/dependency allocation.
 
 ### T014 — Implement local/archive plan and guarded application
 
 - **Purpose**: Implement the narrow capability behind its canonical ownership boundary.
 - **Steps**: Stage all archive/object validation before accepted visibility through existing native admission. Preserve historical policies for verification while keeping source-policy activation explicit and existing destination policy intact. Enforce expected-old refs, clean path boundaries and no imported local signer identities. Resolve dependent intents (issue creation then comment creation) only from confirmed dependency receipts; give Apply/Reconcile a bounded ApplyContext containing verified blob access and those receipts. Persist resolved payload plus digest before its external write.
-- **Files**: `internal/migration/plan.go`, `internal/migration/plan_test.go`, `internal/migration/progress.go`, `internal/migration/progress_test.go`, `migration_engine.go`, `migration_engine_test.go`, `migration_native.go`, `migration_native_test.go`, `migration_local.go`, `migration_local_test.go`, `migration_journal.go`, `migration_journal_test.go`, `docs/project-migration.md`.
+- **Files**: `internal/migration/plan.go`, `internal/migration/plan_test.go`, `internal/migration/progress.go`, `internal/migration/progress_test.go`, `migration_engine.go`, `migration_engine_test.go`, `migration_native.go`, `migration_native_test.go`, `migration_local.go`, `migration_local_test.go`, `migration_journal.go`, `migration_journal_test.go`, `docs/migration-engine.md`.
 - **Parallel?**: Sequence within this WP. Cross-WP work only follows finalized lane/dependency allocation.
 
 ### T015 — Implement resume and prove offline continuation
 
 - **Purpose**: Prove the capability and its refusal/recovery behavior independently.
 - **Steps**: Persist authenticated intent/progress and recover completed steps without repeating uncertain creates or changing the selected snapshot. Require a crash/uncertain comment resume to reuse exactly the persisted resolved payload and destination issue ID; no adapter-private mutable state or guessed IDs. Add crash/state-preservation tests and offline local read/edit scenarios, including source-only conversations/blobs, with no provider code required.
-- **Files**: `internal/migration/plan.go`, `internal/migration/plan_test.go`, `internal/migration/progress.go`, `internal/migration/progress_test.go`, `migration_engine.go`, `migration_engine_test.go`, `migration_native.go`, `migration_native_test.go`, `migration_local.go`, `migration_local_test.go`, `migration_journal.go`, `migration_journal_test.go`, `docs/project-migration.md`.
+- **Files**: `internal/migration/plan.go`, `internal/migration/plan_test.go`, `internal/migration/progress.go`, `internal/migration/progress_test.go`, `migration_engine.go`, `migration_engine_test.go`, `migration_native.go`, `migration_native_test.go`, `migration_local.go`, `migration_local_test.go`, `migration_journal.go`, `migration_journal_test.go`, `docs/migration-engine.md`.
 - **Parallel?**: Sequence within this WP. Cross-WP work only follows finalized lane/dependency allocation.
 
 ## Test Strategy

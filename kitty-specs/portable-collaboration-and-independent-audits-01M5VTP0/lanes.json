@@ -63,26 +63,13 @@
     {
       "lane_id": "lane-c",
       "wp_ids": [
-        "WP04",
-        "WP05"
+        "WP04"
       ],
       "write_scope": [
         "docs/project-migration.md",
         "internal/migration/archive.go",
         "internal/migration/archive_test.go",
-        "internal/migration/plan.go",
-        "internal/migration/plan_test.go",
-        "internal/migration/progress.go",
-        "internal/migration/progress_test.go",
         "internal/migration/snapshot.go",
-        "migration_engine.go",
-        "migration_engine_test.go",
-        "migration_journal.go",
-        "migration_journal_test.go",
-        "migration_local.go",
-        "migration_local_test.go",
-        "migration_native.go",
-        "migration_native_test.go",
         "project_snapshot.go",
         "project_snapshot_test.go"
       ],
@@ -91,13 +78,42 @@
         "artifact-rendering",
         "workspace"
       ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "docs/migration-engine.md",
+        "internal/migration/plan.go",
+        "internal/migration/plan_test.go",
+        "internal/migration/progress.go",
+        "internal/migration/progress_test.go",
+        "migration_engine.go",
+        "migration_engine_test.go",
+        "migration_journal.go",
+        "migration_journal_test.go",
+        "migration_local.go",
+        "migration_local_test.go",
+        "migration_native.go",
+        "migration_native_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
       "depends_on_lanes": [
-        "lane-b"
+        "lane-b",
+        "lane-c"
       ],
       "parallel_group": 1
     },
     {
-      "lane_id": "lane-d",
+      "lane_id": "lane-e",
       "wp_ids": [
         "WP06"
       ],
@@ -127,12 +143,12 @@
         "workspace"
       ],
       "depends_on_lanes": [
-        "lane-c"
+        "lane-d"
       ],
       "parallel_group": 2
     },
     {
-      "lane_id": "lane-e",
+      "lane_id": "lane-f",
       "wp_ids": [
         "WP07"
       ],
@@ -153,12 +169,12 @@
         "workspace"
       ],
       "depends_on_lanes": [
-        "lane-d"
+        "lane-e"
       ],
       "parallel_group": 3
     },
     {
-      "lane_id": "lane-f",
+      "lane_id": "lane-g",
       "wp_ids": [
         "WP08"
       ],
@@ -182,12 +198,12 @@
         "workspace"
       ],
       "depends_on_lanes": [
-        "lane-d"
+        "lane-e"
       ],
       "parallel_group": 3
     },
     {
-      "lane_id": "lane-g",
+      "lane_id": "lane-h",
       "wp_ids": [
         "WP09"
       ],
@@ -207,12 +223,12 @@
         "workspace"
       ],
       "depends_on_lanes": [
-        "lane-d"
+        "lane-e"
       ],
       "parallel_group": 3
     },
     {
-      "lane_id": "lane-h",
+      "lane_id": "lane-i",
       "wp_ids": [
         "WP10"
       ],
@@ -233,12 +249,12 @@
         "workspace"
       ],
       "depends_on_lanes": [
-        "lane-d"
+        "lane-e"
       ],
       "parallel_group": 3
     },
     {
-      "lane_id": "lane-i",
+      "lane_id": "lane-j",
       "wp_ids": [
         "WP11"
       ],
@@ -258,16 +274,16 @@
         "workspace"
       ],
       "depends_on_lanes": [
-        "lane-c",
-        "lane-e",
+        "lane-d",
         "lane-f",
         "lane-g",
-        "lane-h"
+        "lane-h",
+        "lane-i"
       ],
       "parallel_group": 4
     },
     {
-      "lane_id": "lane-j",
+      "lane_id": "lane-k",
       "wp_ids": [
         "WP12"
       ],
@@ -294,15 +310,16 @@
         "lane-f",
         "lane-g",
         "lane-h",
-        "lane-i"
+        "lane-i",
+        "lane-j"
       ],
       "parallel_group": 5
     }
   ],
-  "computed_at": "2026-10-26T10:44:31.633749+00:00",
+  "computed_at": "2026-10-26T10:46:19.284147+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "d3ebe8481efa5565c59819b22fdfbf33ce1ff8ab",
+  "planning_commit_sha": "07d4fda538bd38575b91147f050d0411ceebfa8a",
   "collapse_report": {
     "events": [
       {
@@ -310,18 +327,12 @@
         "wp_b": "WP03",
         "rule": "write_scope_overlap",
         "evidence": "overlapping globs: 'docs/audits-v1.md' vs 'docs/audits-v1.md'; WP03 depends on WP02"
-      },
-      {
-        "wp_a": "WP04",
-        "wp_b": "WP05",
-        "rule": "write_scope_overlap",
-        "evidence": "overlapping globs: 'docs/project-migration.md' vs 'docs/project-migration.md'; WP05 depends on WP04"
       }
     ],
-    "total_merges": 2,
+    "total_merges": 1,
     "independent_wps_collapsed": 0,
     "by_rule": {
-      "write_scope_overlap": 2
+      "write_scope_overlap": 1
     }
   }
 }
