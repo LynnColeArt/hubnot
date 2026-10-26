@@ -146,8 +146,8 @@
     "WP05": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "assignee": "Kat",
       "force_count": 6,
       "lane": "planned",
@@ -160,7 +160,8 @@
         "Explicit user-authorized ownership reassignment to Kat on external Hermes after root released its coordinator lease in event 01M5WJHXB0H3B3EHJ797E4GRZ0. Override only the retained prior codex assignment; no implementation/review/testing gate is being waived. Root does not own or execute the WP05 correction. Kat may land her rehearsed two-file fix in existing lane-d, then run all required fixed-source checks and return evidence for independent review.",
         "Kat external Hermes correction landed at 9ab00d85; completed fixed-source validation and source hashes preserved in PRIMARY correction-9ab00d85 before handoff. Re-review the existing P1 destination-hook finding. Administrative ownership release was not a new implementation review.",
         "Administrative release of review claim: claimed under codex by coordinator probe before reviewer dispatch; no review performed; re-claiming under the actual independent reviewer (claude).",
-        "Administrative release of review claim: claimed under claude by coordinator probe before reviewer dispatch; per explicit user direction the independent reviewer is codex (OpenAI-hosted); re-claiming under the actual reviewer. No review performed by claude."
+        "Administrative release of review claim: claimed under claude by coordinator probe before reviewer dispatch; per explicit user direction the independent reviewer is codex (OpenAI-hosted); re-claiming under the actual reviewer. No review performed by claude.",
+        "Direct independent root review of Kat-authored 9ab00d85 requested by user. Reproduced stale linked-worktree backpointer accepting missing reciprocal .git: wrong-directory hooks run and observation ref is promoted. Evidence bc9c3e27. Administrative claim rewinds are not implementation review cycles."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -170,13 +171,13 @@
         "reviewer": "codex-root",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 3932162,
-      "shell_pid_created_at": "1793038278.01",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
+        "T013": "planned",
+        "T014": "planned",
+        "T015": "planned"
       }
     },
     "WP06": {
