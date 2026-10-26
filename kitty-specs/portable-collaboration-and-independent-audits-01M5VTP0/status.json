@@ -162,7 +162,8 @@
         "Administrative release of review claim: claimed under codex by coordinator probe before reviewer dispatch; no review performed; re-claiming under the actual independent reviewer (claude).",
         "Administrative release of review claim: claimed under claude by coordinator probe before reviewer dispatch; per explicit user direction the independent reviewer is codex (OpenAI-hosted); re-claiming under the actual reviewer. No review performed by claude.",
         "Direct independent root review of Kat-authored 9ab00d85 requested by user. Reproduced stale linked-worktree backpointer accepting missing reciprocal .git: wrong-directory hooks run and observation ref is promoted. Evidence bc9c3e27. Administrative claim rewinds are not implementation review cycles.",
-        "Administrative implementation claim release at explicit user direction: user reported classifier tripped and is handing correction back to Kat/Hermes. Root made no product edits after claim. Existing P2 remains unchanged; this handoff is not an additional implementation review or rejection. Release runtime claim so Kat can take over."
+        "Administrative implementation claim release at explicit user direction: user reported classifier tripped and is handing correction back to Kat/Hermes. Root made no product edits after claim. Existing P2 remains unchanged; this handoff is not an additional implementation review or rejection. Release runtime claim so Kat can take over.",
+        "Independent review bc6c8db5: production P2 verified fixed; test-only changes requested. Marker is truncated after ApplyMigration and control errors on absent object without running hook. Fault injection proves erased evidence still passes. Evidence 813316f0. Prior unrecorded review retained as context, not backfilled; administrative releases do not count as actual review rejections."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -172,13 +173,13 @@
         "reviewer": "codex-root",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 5024,
-      "shell_pid_created_at": "1792851034.54",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
+        "T013": "planned",
+        "T014": "planned",
+        "T015": "planned"
       }
     },
     "WP06": {
