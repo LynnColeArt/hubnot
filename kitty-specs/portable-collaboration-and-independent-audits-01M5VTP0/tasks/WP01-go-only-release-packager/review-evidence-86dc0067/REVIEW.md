@@ -79,5 +79,14 @@ or tag-writing path. Remote published asset bytes were not independently fetched
 Final directory promotion's documented crash partial-output limit is not a new
 finding. No duplicate full suite or forced/skipped framework gate was run.
 
-The canonical verdict will move only WP01 to planned with its feedback reference.
-WP12 depends on WP01 and must refresh/rebase after remediation.
+Canonical verdict completed successfully: only WP01 moved `in_review` → `planned`,
+event `01M5VZVZ6B4H54S3SVHNM83YDK`, with runtime-generated
+`review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP01-go-only-release-packager/review-cycle-1.md`
+referencing the committed feedback. The exact move-task command supplied
+`--review-feedback-file` and no force/skip/bypass flags. The CLI reset subtasks and
+released the review claim. Its backward-edge event internally records `force:true`;
+this is runtime transition metadata, not a review-gate bypass invocation.
+Hosted publish was refused because project sync consent is absent; the local
+canonical transition succeeded. No consent/auth settings were changed.
+WP12 depends on WP01 and must refresh/rebase after remediation; canonical status
+was checked after rejection and the root coordinator was notified.
