@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 func init() { localCommands["audit"] = cmdAudit }
@@ -42,6 +43,11 @@ type auditOptions struct {
 
 func parseAuditOptions(args []string) (auditOptions, error) {
 	o := auditOptions{command: args[0], limit: 50}
+	for _, argument := range args {
+		if !utf8.ValidString(argument) {
+			return o, fmt.Errorf("audit arguments must be valid UTF-8")
+		}
+	}
 	rest := args[1:]
 	if o.command == "authority" || o.command == "rule" {
 		if len(rest) == 0 {

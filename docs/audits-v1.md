@@ -187,7 +187,8 @@ The compiled CLI self-registers `hn audit`; registration and `hn init` perform
 no audit setup or execution. All audit commands support `--json` (`hn.audit/1`,
 `ok`, `data` or `error`). Mutation responses expose the full signed fact `id` and
 `event`; failures return a nonzero exit and an `audit_refused` error. The active
-signer can be checked with optional `--actor FULL_FINGERPRINT`. Reads require no
+signer can be checked with optional `--actor FULL_FINGERPRINT`. Arguments must
+be valid UTF-8; invalid bytes refuse before private intent or fact writes. Reads require no
 private signer, including when audit opt-in has since been withdrawn.
 
 ```text

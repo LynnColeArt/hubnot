@@ -343,3 +343,20 @@ exit 0
 		}
 	}
 }
+
+func TestAuditPublicInvalidUnicodeRefusesBeforeMutation(t *testing.T) {
+	binary := buildOperationalBinary(t)
+	root, _, at := auditFixture(t)
+	auditPublic(t, binary, root, true, "authority", "set", "--ref", "refs/heads/main", "--expect", "absent", "--json")
+	auditPublic(t, binary, root, true, "rule", "authorize", "check", "--source", "pipeline", "--at", at, "--json")
+	before := mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn")
+	invalid := string([]byte{'b', 0xff})
+	auditPublic(t, binary, root, false, "request", "--at", at, "--rule", "check", "--operation", invalid, "--json")
+	auditPublic(t, binary, root, false, "rule", "authorize", "other", "--source", "git", "--at", at, "--path", invalid, "--json")
+	if before != mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn") {
+		t.Fatal("invalid Unicode mutated signed facts")
+	}
+	if _, err := os.Stat(filepath.Join(root, ".git/hn/audit/requests")); !os.IsNotExist(err) {
+		t.Fatal("invalid Unicode wrote private intent", err)
+	}
+}
