@@ -141,6 +141,9 @@ func Package(ctx context.Context, options Options) error {
 		return err
 	}
 	p := packager{git: git, goTool: goTool, env: controlledEnvironment(), repository: repository}
+	if err := p.checkSourceInspection(ctx); err != nil {
+		return err
+	}
 	status, err := p.gitCommand(ctx, "status", "--porcelain=v1", "--untracked-files=no", "--ignore-submodules=none")
 	if err != nil {
 		return err
@@ -339,6 +342,39 @@ func (p packager) command(ctx context.Context, tool, dir string, extra []string,
 
 func (p packager) gitCommand(ctx context.Context, args ...string) ([]byte, error) {
 	return p.command(ctx, p.git, p.repository, nil, append([]string{"--no-optional-locks", "-c", "core.fsmonitor=false"}, args...)...)
+}
+
+func (p packager) checkSourceInspection(ctx context.Context) error {
+	// Config listing reads effective local/worktree/includes without executing
+	// filter commands. Refuse before status can refresh a tracked file through
+	// a clean/process filter, even when that file's committed bytes are clean.
+	keys, err := p.gitCommand(ctx, "config", "--null", "--name-only", "--includes", "--list")
+	if err != nil {
+		return err
+	}
+	for _, raw := range bytes.Split(keys, []byte{0}) {
+		key := strings.ToLower(string(raw))
+		if strings.HasPrefix(key, "filter.") && (strings.HasSuffix(key, ".clean") || strings.HasSuffix(key, ".process")) {
+			return errors.New("source configures a Git clean/process filter; inspect a clean checkout without executable filters before packaging")
+		}
+		// Missing promisor objects can otherwise start fetch/transport helpers
+		// during status or blob reads. Packaging requires already-local objects.
+		if key == "extensions.partialclone" || (strings.HasPrefix(key, "remote.") && strings.HasSuffix(key, ".promisor")) {
+			return errors.New("partial-clone/promisor source configuration is unsupported; use a complete local checkout before packaging")
+		}
+	}
+	// Status recursively inspects submodules using their own local config.
+	// Reject gitlinks before that recursion, not only later in readTree.
+	index, err := p.gitCommand(ctx, "ls-files", "--stage", "-z")
+	if err != nil {
+		return err
+	}
+	for _, row := range bytes.Split(index, []byte{0}) {
+		if bytes.HasPrefix(row, []byte("160000 ")) {
+			return errors.New("source index contains a submodule; submodule inspection is unsupported for packaging")
+		}
+	}
+	return nil
 }
 
 func (p packager) readTree(ctx context.Context, commit string) ([]entry, error) {

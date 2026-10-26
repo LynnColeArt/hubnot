@@ -42,6 +42,14 @@ adapters once `noforge` is integrated. They retain native Git collaboration.
 ## Source and build inputs
 
 Commit the source before packaging. Tracked worktree/index changes are refused.
+Before checking cleanliness, the command inspects effective local Git
+configuration (including worktree configuration and includes) without running
+helpers. Configured `filter.*.clean` or `filter.*.process` commands are refused,
+even for an otherwise clean checkout. Use a clean checkout without executable
+filters. Filesystem monitors are disabled. Partial-clone/promisor configuration
+and indexed submodules are refused before inspection can start fetch/transport
+helpers or recurse into another repository's executable configuration. Source
+objects must already be present locally.
 Untracked and ignored files are excluded, including local binaries and private
 working files. The named revision is resolved once to its commit and tree;
 changing HEAD or adding `refs/replace` cannot silently substitute its contents.

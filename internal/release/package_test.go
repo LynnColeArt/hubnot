@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
@@ -311,6 +312,158 @@ func TestPackageRefusalsPreserveOutput(t *testing.T) {
 	}
 	if _, err := os.Lstat(base.Output); !os.IsNotExist(err) {
 		t.Fatal("dirty refusal left output")
+	}
+}
+
+func repositoryBytes(t *testing.T, root string) map[string]string {
+	t.Helper()
+	files := map[string]string{}
+	err := filepath.WalkDir(root, func(p string, e os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !e.IsDir() {
+			b, err := os.ReadFile(p)
+			if err != nil {
+				return err
+			}
+			files[p] = string(b)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return files
+}
+
+func TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution(t *testing.T) {
+	binary := filepath.Join(t.TempDir(), "hn-release")
+	if runtime.GOOS == "windows" {
+		binary += ".exe"
+	}
+	if out, err := exec.Command("go", "build", "-buildvcs=false", "-o", binary, "../../cmd/hn-release").CombinedOutput(); err != nil {
+		t.Fatalf("build command: %v: %s", err, out)
+	}
+	for _, boundary := range []string{"Package", "CLI"} {
+		for _, tc := range []struct{ driver, scope string }{{"review.clean", "local"}, {"other.driver.process", "include"}, {"worktree.process", "worktree"}} {
+			t.Run(boundary+"/"+tc.scope+"/"+tc.driver, func(t *testing.T) {
+				driver := tc.driver
+				d, _ := fixture(t)
+				name := driver[:strings.LastIndex(driver, ".")]
+				if err := os.WriteFile(filepath.Join(d, ".gitattributes"), []byte("README.md filter="+name+"\n"), 0644); err != nil {
+					t.Fatal(err)
+				}
+				git(t, d, "add", ".gitattributes")
+				git(t, d, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "filter attribute")
+				root := t.TempDir()
+				marker := filepath.Join(root, "unexpected-execution")
+				// Install only after commit; no test setup operation invokes the filter.
+				command := fmt.Sprintf("printf executed > %q; cat", filepath.ToSlash(marker))
+				switch tc.scope {
+				case "include":
+					included := filepath.Join(d, ".git", "included-config")
+					git(t, d, "config", "--file", included, "filter."+driver, command)
+					git(t, d, "config", "include.path", included)
+				case "worktree":
+					git(t, d, "config", "extensions.worktreeConfig", "true")
+					git(t, d, "config", "--worktree", "filter."+driver, command)
+				default:
+					git(t, d, "config", "filter."+driver, command)
+				}
+				changed := time.Now().Add(2 * time.Hour)
+				if err := os.Chtimes(filepath.Join(d, "README.md"), changed, changed); err != nil {
+					t.Fatal(err)
+				}
+				before := repositoryBytes(t, d)
+				var err error
+				var message string
+				if boundary == "Package" {
+					err = release.Package(context.Background(), release.Options{Repository: d, Revision: "HEAD", Version: "1.2.3", Output: filepath.Join(root, "out"), Targets: []string{"linux/amd64"}, Variants: []string{"standard"}})
+					if err != nil {
+						message = err.Error()
+					}
+				} else {
+					var out []byte
+					out, err = exec.Command(binary, "--source", d, "--rev", "HEAD", "--version", "1.2.3", "--out", filepath.Join(root, "out"), "--targets", "linux/amd64", "--variants", "standard").CombinedOutput()
+					message = string(out)
+				}
+				if err == nil || !strings.Contains(message, "filter") {
+					t.Errorf("expected filter refusal, got %v: %s", err, message)
+				}
+				entries, readErr := os.ReadDir(root)
+				if readErr != nil || len(entries) != 0 {
+					t.Errorf("filter ran or refusal left output/staging: %v %v", entries, readErr)
+				}
+				after := repositoryBytes(t, d)
+				if !reflect.DeepEqual(before, after) {
+					t.Error("refusal changed repository bytes, including index/config")
+				}
+			})
+		}
+	}
+}
+
+func TestPackageRefusesSourcesThatCouldStartNestedHelpers(t *testing.T) {
+	for _, kind := range []string{"partial-clone", "promisor", "submodule"} {
+		t.Run(kind, func(t *testing.T) {
+			d, rev := fixture(t)
+			switch kind {
+			case "partial-clone":
+				git(t, d, "config", "extensions.partialClone", "origin")
+			case "promisor":
+				git(t, d, "config", "remote.other.promisor", "true")
+			case "submodule":
+				git(t, d, "update-index", "--add", "--cacheinfo", "160000,"+rev+",nested")
+				git(t, d, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "gitlink")
+			}
+			before := repositoryBytes(t, d)
+			root := t.TempDir()
+			err := release.Package(context.Background(), release.Options{Repository: d, Revision: "HEAD", Version: "1.2.3", Output: filepath.Join(root, "out"), Targets: []string{"linux/amd64"}, Variants: []string{"standard"}})
+			if err == nil || (!strings.Contains(err.Error(), "promisor") && !strings.Contains(err.Error(), "submodule")) {
+				t.Errorf("expected helper-boundary refusal: %v", err)
+			}
+			entries, err := os.ReadDir(root)
+			if err != nil || len(entries) != 0 {
+				t.Fatal("refusal left output/staging")
+			}
+			if !reflect.DeepEqual(before, repositoryBytes(t, d)) {
+				t.Fatal("refusal mutated source")
+			}
+		})
+	}
+}
+
+func TestPackageDisablesFilesystemMonitor(t *testing.T) {
+	d, rev := fixture(t)
+	root := t.TempDir()
+	marker := filepath.Join(root, "unexpected-execution")
+	git(t, d, "config", "core.fsmonitor", fmt.Sprintf("printf executed > %q", filepath.ToSlash(marker)))
+	changed := time.Now().Add(2 * time.Hour)
+	if err := os.Chtimes(filepath.Join(d, "README.md"), changed, changed); err != nil {
+		t.Fatal(err)
+	}
+	if err := release.Package(context.Background(), release.Options{Repository: d, Revision: rev, Version: "1.2.3", Output: filepath.Join(root, "out"), Targets: []string{"linux/amd64"}, Variants: []string{"standard"}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Lstat(marker); !os.IsNotExist(err) {
+		t.Fatal("filesystem monitor executed")
+	}
+}
+
+func TestPackageRefusesStagedChanges(t *testing.T) {
+	d, rev := fixture(t)
+	if err := os.WriteFile(filepath.Join(d, "README.md"), []byte("staged change"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	git(t, d, "add", "README.md")
+	root := t.TempDir()
+	if err := release.Package(context.Background(), release.Options{Repository: d, Revision: rev, Version: "1.2.3", Output: filepath.Join(root, "out")}); err == nil {
+		t.Fatal("accepted staged change")
+	}
+	entries, err := os.ReadDir(root)
+	if err != nil || len(entries) != 0 {
+		t.Fatal("staged-change refusal left output/staging")
 	}
 }
 
