@@ -146,8 +146,8 @@
     "WP05": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "assignee": "Kat",
       "force_count": 7,
       "lane": "planned",
@@ -161,7 +161,8 @@
         "Kat external Hermes correction landed at 9ab00d85; completed fixed-source validation and source hashes preserved in PRIMARY correction-9ab00d85 before handoff. Re-review the existing P1 destination-hook finding. Administrative ownership release was not a new implementation review.",
         "Administrative release of review claim: claimed under codex by coordinator probe before reviewer dispatch; no review performed; re-claiming under the actual independent reviewer (claude).",
         "Administrative release of review claim: claimed under claude by coordinator probe before reviewer dispatch; per explicit user direction the independent reviewer is codex (OpenAI-hosted); re-claiming under the actual reviewer. No review performed by claude.",
-        "Direct independent root review of Kat-authored 9ab00d85 requested by user. Reproduced stale linked-worktree backpointer accepting missing reciprocal .git: wrong-directory hooks run and observation ref is promoted. Evidence bc9c3e27. Administrative claim rewinds are not implementation review cycles."
+        "Direct independent root review of Kat-authored 9ab00d85 requested by user. Reproduced stale linked-worktree backpointer accepting missing reciprocal .git: wrong-directory hooks run and observation ref is promoted. Evidence bc9c3e27. Administrative claim rewinds are not implementation review cycles.",
+        "Administrative implementation claim release at explicit user direction: user reported classifier tripped and is handing correction back to Kat/Hermes. Root made no product edits after claim. Existing P2 remains unchanged; this handoff is not an additional implementation review or rejection. Release runtime claim so Kat can take over."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
