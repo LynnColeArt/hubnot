@@ -80,7 +80,12 @@ target/rule dependencies through replication and offline migration.
 Reuse low-level pipeline execution, supplying separately authorized definition
 bytes and extracting target code. Preserve sandbox default, explicit unsafe-host
 flag, fixed environment, step deadlines and capped logs. Request/import never
-executes hooks or code. Execute does not approve, merge, push, sync or open issues.
+executes target/rule-source hooks, pipelines or foreign workflow definitions.
+Operator-controlled `reference-transaction` hooks on actual destination Git ref
+writes retain their existing Git behavior, as documented by the native governance
+contract; they are not audit execution or required-check evidence. A private
+uncommitted operation guard suppresses hooks because it publishes no collaboration
+fact. Execute does not approve, merge, push, sync or open issues.
 There is no scheduler, batching worker or required background process.
 
 ## Proposed explicit CLI
