@@ -38,7 +38,9 @@ Given an explicitly selected project, when the operator exports a portable copy
 and imports it into a new local repository, then selected Git history and native
 signed facts are retained exactly, available foreign communications and attachments
 remain inspectable, and local work continues with providers and credentials absent.
-Existing destination identities and policies are not silently replaced.
+Existing destination identities and policies are not silently replaced. Historical
+policy objects needed to verify signed facts remain in the preserved history;
+activating a source policy in a new local checkout is a separate explicit choice.
 
 ### S2 — Move between providers (P1)
 
@@ -95,8 +97,8 @@ a release, changes a tag, or changes project policy implicitly.
 | ID | Requirement | Status |
 | --- | --- | --- |
 | FR-001 | Preserve existing native commands, trust, defaults, signed facts, explicit execution, and required-check semantics. All new automation/transport is opt-in. | confirmed |
-| FR-002 | Provide an inspectable portable project snapshot covering explicit selected code refs/history, native signed collaboration histories, attributed foreign resource records and retrieved attachments. Exclude private identities, credentials, transfer journals, unrelated refs and working-tree junk. | confirmed |
-| FR-003 | Native facts retain exact signed bytes and identities; archive import validates before visibility and never installs imported actors as local signing identities, silently adopts policy, or manufactures authority. | confirmed |
+| FR-002 | Provide an inspectable portable project snapshot covering explicit selected code refs/history, native signed collaboration histories, attributed foreign resource records and retrieved attachments. Exclude Hubnot-managed private identities, ambient credentials, transfer journals, unrelated refs and working-tree junk. Intentionally selected committed history remains exact; this is not a secret-scrubbing promise. | confirmed |
+| FR-003 | Native facts retain exact signed bytes and identities; archive import validates before visibility and never installs imported actors as local signing identities, silently adopts policy, or manufactures authority. Preserve historical policy objects for evidence verification; require an explicit decision before source governance is activated in a new destination checkout, and preserve existing destination governance. | confirmed |
 | FR-004 | Preserve retrieved foreign issues/comments, PR/MR conversations/reviews, discussions, planning data and workflow source as attributed local records when native or destination equivalence is unavailable. Preserve retrieved attachment bytes with verified content digests. | confirmed |
 | FR-005 | Support local repository, portable archive and hosted provider sources/destinations through the same migration engine; source observations and mapping/loss decisions are saved independently from secrets. | confirmed |
 | FR-006 | Guided migration asks source, destination, scope and mapping decisions, then previews before explicit apply. Explicit arguments/saved plans expose equivalent noninteractive functionality. | confirmed |
@@ -114,7 +116,7 @@ a release, changes a tag, or changes project policy implicitly.
 | FR-018 | Record audit requester/executor, code/rules provenance, outcome, bounded evidence/logs and stable findings. Reads and replication validate the same relationships and permissions as local writes. | confirmed |
 | FR-019 | Keep protected rule-change authority independent of audit scheduling. Rules evolve through authorized revisions; arbitrary imported or collaboratively edited workflow content does not bypass rule ownership. | confirmed |
 | FR-020 | Optionally create linked native follow-up issues from audit findings, with inspectable finding identity, bounded processing, actor-scoped retry/recovery and explicit concurrent-publisher limitations. | confirmed |
-| FR-021 | Replace Python archive packaging with Go/Git tooling, deterministic archive metadata, source/target/toolchain provenance, binary/source archives and SHA-256 checksums; run the packager on Linux/macOS/Windows. | confirmed |
+| FR-021 | Replace Python archive packaging with Go/Git tooling portable to Linux/macOS/Windows, deterministic archive metadata, source/target/toolchain provenance, binary/source archives and SHA-256 checksums. Report actual host execution separately from cross-compilation; no unavailable host is claimed runtime-qualified. | confirmed |
 | FR-022 | Document command contracts, provider capability/mapping limits, offline use, audit independence, rule ownership, recovery, packaging requirements and platform verification in the same delivery. | confirmed |
 
 ## Non-functional requirements
@@ -124,7 +126,7 @@ a release, changes a tag, or changes project policy implicitly.
 | NFR-001 | Snapshot operations use explicit positive budgets. Initial defaults: at most 10,000 records, 1,024 attachment blobs, 16 MiB per attachment/manifest, and 256 MiB total attachment data; archive expansion and Git object traversal use separately bounded documented budgets. Exceeding a bound refuses incomplete success. | confirmed |
 | NFR-002 | Reject traversal/absolute paths, duplicate archive entries, symlinks, unexpected members, mismatched digests, oversized/decompression bombs and partial native histories before accepted visibility. Cross-origin credential forwarding and unbounded pagination are forbidden. | confirmed |
 | NFR-003 | Changes pass formatting, full Go race tests, vet, build, diff checks and meaningful public CLI acceptance in ordinary, `nogithub` and adapter-free builds. Recovery/hostile input tests assert visible state preservation. | confirmed |
-| NFR-004 | Rebuilding release archives twice with the same declared inputs produces identical digests; cross-compile the packager for Windows and macOS and test archive formats/contents independently of the host. Runtime qualification is reported only for platforms actually exercised. | confirmed |
+| NFR-004 | Rebuilding release archives twice with the same declared inputs produces identical digests; cross-compile the packager for Windows and macOS and test archive formats/contents independently of the host. Runtime qualification is reported only for platforms actually exercised. Where a host is unavailable, record the remaining qualification gap explicitly; cross-compilation cannot satisfy a host-runtime claim. | confirmed |
 
 ## Constraints and non-goals
 
