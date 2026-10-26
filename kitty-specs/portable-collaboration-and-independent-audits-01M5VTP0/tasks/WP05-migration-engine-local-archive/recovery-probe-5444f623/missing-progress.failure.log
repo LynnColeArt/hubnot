@@ -1,0 +1,6 @@
+Captured original run at 5444f6236ded9c1732d0cb9e1744d75f28d86a1f; exit code 1. No rerun during evidence packaging.
+--- FAIL: TestProbeMissingProgressDoesNotRetryUncertainCreate (0.02s)
+    migration_engine_test.go:208: missing authenticated checkpoint repeated uncertain creates: issues=2 comments=2 err=uncertain comment; resume reconciles only: unexpected EOF
+FAIL
+FAIL	hubnot	0.026s
+FAIL
