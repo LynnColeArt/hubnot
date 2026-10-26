@@ -145,16 +145,17 @@
     },
     "WP05": {
       "actor": "codex",
-      "agent": null,
-      "agent_profile": "implementer-ivan",
-      "agent_profile_version": "1.0",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 2,
       "lane": "planned",
       "last_event_id": "01M5WJHXB0H3B3EHJ797E4GRZ0",
       "last_transition_at": "2026-10-26T17:01:29.824472+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review at ecaffbfc; complete fixed-source validation preserved in PRIMARY validation-ecaffbfc by 4e626abf."
+        "Ready for independent review at ecaffbfc; complete fixed-source validation preserved in PRIMARY validation-ecaffbfc by 4e626abf.",
+        "Administrative release of root coordinator claim for user-authorized Kat on external Hermes. Reuses the existing P1 review feedback; no new code review or product change. Kat has sole corrective implementation ownership; root retains status and independent-review coordination."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
