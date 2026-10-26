@@ -52,6 +52,9 @@ func ExportProjectSnapshot(ctx context.Context, gitDir string, refs []string, l 
 	if e := l.Validate(); e != nil {
 		return nil, e
 	}
+	if e := projectReadOnlySource(ctx, gitDir); e != nil {
+		return nil, e
+	}
 	if len(refs) == 0 || len(refs) > l.Refs {
 		return nil, fmt.Errorf("explicit positive bounded ref selection required")
 	}
@@ -75,11 +78,34 @@ func ExportProjectSnapshot(ctx context.Context, gitDir string, refs []string, l 
 		s.NativeRefs = append(s.NativeRefs, migration.NativeRef{SourceRef: ref, OID: id, Kind: kind})
 		roots = append(roots, id)
 	}
-	// Measure before decoding native trees or following signed dependencies.
-	if _, e := projectObjectIDs(ctx, gitDir, roots, l); e != nil {
+	// Native readers can unpack audit attachments. Inspect the selected ordinary
+	// closure in a disposable object DB so even source objects remain unchanged.
+	selected, e := projectObjectIDs(ctx, gitDir, roots, l)
+	if e != nil {
 		return nil, e
 	}
-	dependencies, e := projectDependencyRoots(gitDir, s.NativeRefs)
+	inspection, e := os.MkdirTemp("", "hn-project-inspection-")
+	if e != nil {
+		return nil, e
+	}
+	defer os.RemoveAll(inspection)
+	format := "sha1"
+	if len(roots[0]) == 64 {
+		format = "sha256"
+	}
+	if _, e = projectGit(ctx, "", nil, 4096, "init", "--bare", "--quiet", "--object-format="+format, inspection); e != nil {
+		return nil, e
+	}
+	if e = projectCopyObjectIDs(ctx, gitDir, inspection, selected, l); e != nil {
+		return nil, e
+	}
+	if _, e = projectGit(ctx, inspection, nil, 1<<20, "fsck", "--strict", "--full", "--no-reflogs", "--no-dangling"); e != nil {
+		return nil, e
+	}
+	if _, e = projectAuditObjectUnion(ctx, inspection, s.NativeRefs, selected, l); e != nil {
+		return nil, e
+	}
+	dependencies, e := projectDependencyRoots(inspection, s.NativeRefs)
 	if e != nil {
 		return nil, e
 	}
@@ -231,6 +257,15 @@ func StageProjectSnapshot(ctx context.Context, s migration.Snapshot, source migr
 	if len(s.NativeRefs) == 0 {
 		return q, nil
 	}
+	// Check ordinary full history before importing deliberately partial audit
+	// snapshots. Full fsck afterwards would require omitted audit ancestry.
+	if _, e = projectGit(ctx, dir, nil, 1<<20, "fsck", "--strict", "--full", "--no-reflogs", "--no-dangling"); e != nil {
+		return nil, e
+	}
+	admitted, e := projectAuditObjectUnion(ctx, dir, s.NativeRefs, q.objectIDs, l)
+	if e != nil {
+		return nil, e
+	}
 	dependencies, e := projectDependencyRoots(dir, s.NativeRefs)
 	if e != nil {
 		return nil, e
@@ -248,12 +283,10 @@ func StageProjectSnapshot(ctx context.Context, s migration.Snapshot, source migr
 			return nil, fmt.Errorf("Git material does not match selected closure")
 		}
 	}
-	if _, e = projectGit(ctx, dir, nil, 1<<20, append([]string{"fsck", "--strict", "--no-reflogs", "--no-dangling"}, q.roots...)...); e != nil {
-		return nil, e
-	}
 	if e = validateProjectNative(dir, s.NativeRefs); e != nil {
 		return nil, e
 	}
+	q.objectIDs = admitted
 	return q, nil
 }
 
@@ -372,7 +405,7 @@ func projectGit(ctx context.Context, dir string, input []byte, limit int64, args
 			env = append(env, v)
 		}
 	}
-	cmd.Env = append(env, "GIT_NO_REPLACE_OBJECTS=1", "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+os.DevNull, "GIT_TERMINAL_PROMPT=0")
+	cmd.Env = append(env, "GIT_NO_REPLACE_OBJECTS=1", "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+os.DevNull, "GIT_TERMINAL_PROMPT=0", "GIT_NO_LAZY_FETCH=1")
 	cmd.Stdin = bytes.NewReader(input)
 	var out bytes.Buffer
 	cmd.Stdout = &projectBoundWriter{w: &out, left: limit}
@@ -568,4 +601,97 @@ func projectMemorySource(ref, head string) (memoryStreamSource, error) {
 		return memoryStreamSource{Ref: ref, Remote: remote, Actor: actor, Stream: stream, Head: head, Accepted: true}, nil
 	}
 	return memoryStreamSource{}, fmt.Errorf("invalid selected memory observation")
+}
+
+// projectAuditObjectUnion preflights the union before any importing native read.
+// Ambient destination availability never discounts a saved migration budget.
+func projectAuditObjectUnion(ctx context.Context, dir string, refs []migration.NativeRef, ordinary []string, l migration.Limits) ([]string, error) {
+	sizes := map[string]int64{}
+	var total int64
+	add := func(id string, n int64) error {
+		if old, ok := sizes[id]; ok {
+			if old != n {
+				return fmt.Errorf("inconsistent object size")
+			}
+			return nil
+		}
+		if n < 0 || n > l.GitObjectBytes || n > l.GitTotalBytes-total || len(sizes) >= l.GitObjects {
+			return fmt.Errorf("aggregate Git/audit expansion budget exceeded")
+		}
+		sizes[id] = n
+		total += n
+		return nil
+	}
+	for _, id := range ordinary {
+		out, e := projectGit(ctx, dir, []byte(id+"\n"), 256, "cat-file", "--batch-check=%(objectsize)")
+		if e != nil {
+			return nil, e
+		}
+		n, e := strconv.ParseInt(strings.TrimSpace(string(out)), 10, 64)
+		if e != nil {
+			return nil, e
+		}
+		if e = add(id, n); e != nil {
+			return nil, e
+		}
+	}
+	for _, r := range refs {
+		if r.Kind != "actor" {
+			continue
+		}
+		measured := map[string]int64{}
+		if e := auditHistoryPackSizesAt(dir, r.OID, measured, add); e != nil {
+			return nil, e
+		}
+	}
+	ids := make([]string, 0, len(sizes))
+	for id := range sizes {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids, nil
+}
+
+// Explicit IDs avoid rev traversal across intentionally absent audit parents.
+func projectCopyObjectIDs(ctx context.Context, source, dest string, ids []string, l migration.Limits) error {
+	for _, id := range ids {
+		meta, e := projectGit(ctx, source, []byte(id+"\n"), 256, "cat-file", "--batch-check=%(objecttype) %(objectsize)")
+		if e != nil {
+			return e
+		}
+		f := strings.Fields(string(meta))
+		if len(f) != 2 {
+			return fmt.Errorf("missing admitted object")
+		}
+		n, e := strconv.ParseInt(f[1], 10, 64)
+		if e != nil || n < 0 || n > l.GitObjectBytes {
+			return fmt.Errorf("invalid admitted object size")
+		}
+		raw, e := projectGit(ctx, source, nil, n, "cat-file", f[0], id)
+		if e != nil {
+			return e
+		}
+		out, e := projectGit(ctx, dest, raw, 256, "hash-object", "-w", "-t", f[0], "--stdin")
+		if e != nil || strings.TrimSpace(string(out)) != id {
+			return fmt.Errorf("admitted object copy mismatch")
+		}
+	}
+	return nil
+}
+
+// Partial/promisor repositories can lazily fetch during nominally read-only
+// object queries. This source format is deliberately unsupported for export.
+func projectReadOnlySource(ctx context.Context, dir string) error {
+	raw, e := projectGit(ctx, dir, nil, 1<<20, "config", "--includes", "--list", "--null")
+	if e != nil {
+		return e
+	}
+	for _, entry := range strings.Split(string(raw), "\x00") {
+		key, _, _ := strings.Cut(entry, "\n")
+		key = strings.ToLower(key)
+		if key == "extensions.partialclone" || (strings.HasPrefix(key, "remote.") && strings.HasSuffix(key, ".promisor")) {
+			return fmt.Errorf("read-only export refuses partial/promisor sources; materialize an ordinary complete repository explicitly")
+		}
+	}
+	return nil
 }
