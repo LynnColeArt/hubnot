@@ -104,10 +104,10 @@ a release, changes a tag, or changes project policy implicitly.
 | FR-006 | Guided migration asks source, destination, scope and mapping decisions, then previews before explicit apply. Explicit arguments/saved plans expose equivalent noninteractive functionality. | confirmed |
 | FR-007 | Report per-provider capabilities and per-plan mapped, preserved, requires-mapping, unsupported, missing-dependency and conflict findings before writes. Any loss or non-equivalent mapping requires an explicit decision; unread data is not preserved data. | confirmed |
 | FR-008 | Keep current explicit transfer commands compatible and make adapter extension documented and testable through common interfaces/conformance cases rather than provider conditionals throughout native code. | confirmed |
-| FR-009 | Cover GitHub and GitLab project snapshots and applicable imports/exports, including GitLab self-hosted endpoints. Verify a genuine GitLab-to-GitHub flow with isolated provider fixtures. | confirmed |
-| FR-010 | Cover Forgejo/Codeberg and Gitea through separate tested capability profiles; shared transport does not imply untested API equivalence. | confirmed |
+| FR-009 | Cover GitHub and GitLab project snapshots and applicable imports/exports, including issue/comment read/write and GitLab self-hosted endpoints. Verify a genuine GitLab-to-GitHub flow with isolated provider fixtures. | confirmed |
+| FR-010 | Cover Forgejo/Codeberg and Gitea through separate tested capability profiles, each including issue/comment read/write; shared transport does not imply untested API equivalence. | confirmed |
 | FR-011 | Cover Bitbucket Cloud's available repository, PR-conversation and workflow-source interfaces. Explicitly report the removed issue tracker unavailable; do not silently substitute Jira or invent historical data. | confirmed |
-| FR-012 | Cover Azure DevOps with explicit organization/project/repository selectors and work-item type/state mappings. Do not equate repositories, work items and planning projects. | confirmed |
+| FR-012 | Cover Azure DevOps with explicit organization/project/repository selectors and work-item type/state mappings, including mapped work-item/comment read/write. Do not equate repositories, work items and planning projects. Document supported Services/Server API versions and supplied Entra-token/PAT authentication; do not depend on deprecated OAuth app registration. | confirmed |
 | FR-013 | Persist guarded progress and support explicit resume. An uncertain write is reconciled by exact positive evidence or requires operator intervention; timeout/negative lookup never authorizes a blind duplicate create. Source deletion and background sync are outside migration. | confirmed |
 | FR-014 | Foreign workflows remain inert source documents unless explicitly converted and separately authorized for native execution. Imported reviews, users, permissions and CI records never grant native approval, runner or maintainer authority. | confirmed |
 | FR-015 | Provide an adapter-free build in addition to preserving the existing meaning of `nogithub`; native collaboration, local archives, audits and imported records work without network adapters. | confirmed |
@@ -143,7 +143,7 @@ a release, changes a tag, or changes project policy implicitly.
 - **Migration plan**: immutable observations, intended destination changes, capability findings and explicit operator decisions; contains no secrets.
 - **Foreign record**: locally inspectable source content and relationships attributed to a provider observation, never native trust-bearing evidence.
 - **Audit request/result/finding**: independent observational work tied to inspected code and authorized rules; findings may become deliberate follow-up issues.
-- **Provider capability**: a tested resource/direction mapping with declared limits, not a promise that similarly named provider objects mean the same thing.
+- **Provider capability**: a tested resource/direction mapping with declared limits, not a promise that similarly named provider objects mean the same thing. Reporting every resource unsupported cannot satisfy a named adapter's minimum coverage.
 
 ## Success criteria
 
