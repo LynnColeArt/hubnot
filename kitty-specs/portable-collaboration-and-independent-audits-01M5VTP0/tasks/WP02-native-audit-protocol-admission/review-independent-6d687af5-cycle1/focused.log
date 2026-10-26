@@ -1,0 +1,106 @@
+=== RUN   TestAuditAuthorityExplicitAnchorAndWithdrawal
+--- PASS: TestAuditAuthorityExplicitAnchorAndWithdrawal (0.56s)
+=== RUN   TestAuditAuthorityUnsafePrivatePaths
+--- PASS: TestAuditAuthorityUnsafePrivatePaths (0.03s)
+=== RUN   TestAuditPolicyStrictAndDisabledDefault
+--- PASS: TestAuditPolicyStrictAndDisabledDefault (0.02s)
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/missing-identities
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/missing-committer
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/malformed-author
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/duplicate-author
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/bad-date
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/nul-header
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/unsorted-tree
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/noncanonical-mode
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/tree-as-blob
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/parent-as-tree
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/missing-identities
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/missing-committer
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/malformed-author
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/duplicate-author
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/bad-date
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/nul-header
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/unsorted-tree
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/noncanonical-mode
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/tree-as-blob
+=== RUN   TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/parent-as-tree
+--- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote (9.88s)
+    --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1 (4.96s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/missing-identities (0.47s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/missing-committer (0.47s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/malformed-author (0.45s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/duplicate-author (0.45s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/bad-date (0.47s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/nul-header (0.50s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/unsorted-tree (0.54s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/noncanonical-mode (0.54s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/tree-as-blob (0.55s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha1/parent-as-tree (0.52s)
+    --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256 (4.92s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/missing-identities (0.47s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/missing-committer (0.49s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/malformed-author (0.47s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/duplicate-author (0.48s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/bad-date (0.49s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/nul-header (0.49s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/unsorted-tree (0.49s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/noncanonical-mode (0.52s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/tree-as-blob (0.53s)
+        --- PASS: TestAuditMalformedSnapshotsRefuseLocalAndRemote/sha256/parent-as-tree (0.49s)
+=== RUN   TestAuditNativeReplicationOldCodeKeylessAndNoAnchor
+    audit_protocol_test.go:235: snapshot request pack 896 bytes; 3 signed audit facts replicated and old target restored
+--- PASS: TestAuditNativeReplicationOldCodeKeylessAndNoAnchor (1.55s)
+=== RUN   TestAuditStrictSignedShapeAndBoundedFindings
+--- PASS: TestAuditStrictSignedShapeAndBoundedFindings (0.89s)
+=== RUN   TestAuditRevocationConflictAndReauthorization
+--- PASS: TestAuditRevocationConflictAndReauthorization (1.56s)
+=== RUN   TestAuditForeignAuthorityHistoryCannotPoisonCurrentHeads
+--- PASS: TestAuditForeignAuthorityHistoryCannotPoisonCurrentHeads (0.84s)
+=== RUN   TestAuditPackRejectsUnexpectedObjectsCorruptionAndMissingMembers
+--- PASS: TestAuditPackRejectsUnexpectedObjectsCorruptionAndMissingMembers (0.24s)
+=== RUN   TestAuditFactsNeverSatisfyProposalEvidence
+--- PASS: TestAuditFactsNeverSatisfyProposalEvidence (1.64s)
+=== RUN   TestAuditLocalAndFetchedForgedRelationshipParity
+--- PASS: TestAuditLocalAndFetchedForgedRelationshipParity (0.24s)
+=== RUN   TestAuditOldEventEncodingPreserved
+--- PASS: TestAuditOldEventEncodingPreserved (0.00s)
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/wrong-rule
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/missing-rule
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/missing-pack
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/corrupt-pack
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/extra-tree-member
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/expanded-budget
+--- PASS: TestAuditFetchedHostileFactsStayQuarantined (1.89s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/wrong-rule (0.41s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/missing-rule (0.41s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/missing-pack (0.29s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/corrupt-pack (0.25s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/extra-tree-member (0.29s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/expanded-budget (0.24s)
+=== RUN   TestAuditWorkflowAuthorizationIsExplicitAndRevisionBound
+--- PASS: TestAuditWorkflowAuthorizationIsExplicitAndRevisionBound (1.20s)
+=== RUN   TestAuditSnapshotPackExcludesUnrelatedHistoryAndSourceContent
+--- PASS: TestAuditSnapshotPackExcludesUnrelatedHistoryAndSourceContent (0.43s)
+=== RUN   TestAuditSourceSymlinkAndUnauthorizedRolesRefuse
+--- PASS: TestAuditSourceSymlinkAndUnauthorizedRolesRefuse (0.59s)
+=== RUN   TestAuditSignedSchemasRejectPresentUnrelatedEmptyFields
+--- PASS: TestAuditSignedSchemasRejectPresentUnrelatedEmptyFields (0.11s)
+=== RUN   TestIndependentAuditMalformedTargetCommit
+    zz_independent_adversarial_test.go:20: git --git-dir=/tmp/hn-audit-objects-2516719427 index-pack --stdin --fsck-objects --max-input-size=67108864: error: object cb2ffcf32e528a25b3f16a9414625ee039fb6121: missingAuthor: invalid format - expected 'author' line
+        fatal: fsck error in packed object
+--- PASS: TestIndependentAuditMalformedTargetCommit (0.22s)
+=== RUN   TestIndependentAuditMalformedSnapshotReplication
+=== RUN   TestIndependentAuditMalformedSnapshotReplication/missing-identities
+    zz_independent_adversarial_test.go:42: local correctly refused missing-identities: git --git-dir=/tmp/hn-audit-objects-334008489 index-pack --stdin --fsck-objects --max-input-size=67108864: error: object 2375c3e9aa1cdd4763aaa33aea385cf65b0100df: missingAuthor: invalid format - expected 'author' line
+        fatal: fsck error in packed object
+=== RUN   TestIndependentAuditMalformedSnapshotReplication/tree-as-blob
+    zz_independent_adversarial_test.go:42: local correctly refused tree-as-blob: audit tree edge "wrong-type" requires blob, found tree
+--- PASS: TestIndependentAuditMalformedSnapshotReplication (0.46s)
+    --- PASS: TestIndependentAuditMalformedSnapshotReplication/missing-identities (0.22s)
+    --- PASS: TestIndependentAuditMalformedSnapshotReplication/tree-as-blob (0.24s)
+PASS
+ok  	hubnot	22.367s

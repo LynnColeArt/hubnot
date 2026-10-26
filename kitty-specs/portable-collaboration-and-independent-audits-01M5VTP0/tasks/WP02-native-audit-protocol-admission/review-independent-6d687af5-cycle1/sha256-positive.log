@@ -1,0 +1,5 @@
+=== RUN   TestAuditNativeReplicationOldCodeKeylessAndNoAnchor
+    audit_protocol_test.go:235: snapshot request pack 1030 bytes; 3 signed audit facts replicated and old target restored
+--- PASS: TestAuditNativeReplicationOldCodeKeylessAndNoAnchor (1.61s)
+PASS
+ok  	hubnot	1.610s
