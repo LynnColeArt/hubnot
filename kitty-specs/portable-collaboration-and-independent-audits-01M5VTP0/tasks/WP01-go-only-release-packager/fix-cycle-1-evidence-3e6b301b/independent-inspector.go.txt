@@ -1,0 +1,77 @@
+package main
+
+import (
+ "archive/tar"
+ "bytes"
+ "compress/gzip"
+ "crypto/sha256"
+ "debug/elf"
+ "debug/macho"
+ "encoding/json"
+ "fmt"
+ "io"
+ "os"
+ "os/exec"
+ "path/filepath"
+ "strings"
+ "time"
+)
+
+func must(err error) { if err!=nil { panic(err) } }
+func check(ok bool, message string) { if !ok {panic(message)} }
+func read(path string) []byte {b,e:=os.ReadFile(path);must(e);return b}
+func digest(b []byte) string {return fmt.Sprintf("%x",sha256.Sum256(b))}
+func command(dir, name string,args ...string) []byte {c:=exec.Command(name,args...);c.Dir=dir;b,e:=c.CombinedOutput();if e!=nil {panic(fmt.Sprintf("%s %v: %v %s",name,args,e,b))};return b}
+type member struct {mode int64; data []byte}
+func archive(path string, stamp int64) map[string]member {
+ f,e:=os.Open(path);must(e);defer f.Close()
+ gz,e:=gzip.NewReader(f);must(e);defer gz.Close()
+ check(gz.OS==255 && gz.ModTime.IsZero() && gz.Name=="" && gz.Comment=="", "gzip metadata")
+ tr:=tar.NewReader(gz);files:=map[string]member{};previous:=""
+ for {h,e:=tr.Next();if e==io.EOF {break};must(e)
+  check(h.Name>previous && !strings.Contains(h.Name,"\\") && !strings.HasPrefix(h.Name,"/"), "entry paths/order")
+  check(h.Typeflag==tar.TypeReg && h.Uid==0 && h.Gid==0 && h.Uname=="" && h.Gname=="" && h.AccessTime.IsZero() && h.ChangeTime.IsZero(), "tar metadata")
+  check(h.ModTime.Equal(time.Unix(stamp,0)) && (h.Mode==0644 || h.Mode==0755), "tar timestamp/mode")
+  b,e:=io.ReadAll(tr);must(e);files[h.Name]=member{h.Mode,b};previous=h.Name
+ }
+ return files
+}
+func main() {
+ root,repo:=os.Args[1],os.Args[2]
+ var provenance struct {SourceCommit string `json:"source_commit"`;SourceTree string `json:"source_tree"`;SourceTimestamp int64 `json:"source_timestamp"`;Compiler string `json:"compiler"`;Version string `json:"version"`;Assets []struct {Name string `json:"name"`;SHA256 string `json:"sha256"`} `json:"assets"`}
+ must(json.Unmarshal(read(filepath.Join(root,"first","PROVENANCE.json")),&provenance))
+ check(provenance.SourceCommit==strings.TrimSpace(string(read(filepath.Join(root,"source.txt")))), "exact source")
+ check(provenance.Compiler=="go1.26.4" && provenance.Version=="0.0.2-dev", "compiler/version")
+ entries,e:=os.ReadDir(filepath.Join(root,"first"));must(e);check(len(entries)==11,"full asset matrix")
+ for _,entry:=range entries {check(bytes.Equal(read(filepath.Join(root,"first",entry.Name())),read(filepath.Join(root,"second-different-path",entry.Name()))),"two-run mismatch: "+entry.Name())}
+ sums:=strings.Split(strings.TrimSpace(string(read(filepath.Join(root,"first","SHA256SUMS")))),"\n");check(len(sums)==10,"checksums inventory")
+ previous:=""
+ for _,line:=range sums {parts:=strings.Split(line,"  ");check(len(parts)==2 && parts[1]>previous,"checksum order");check(digest(read(filepath.Join(root,"first",parts[1])))==parts[0],"checksum mismatch");previous=parts[1]}
+ check(len(provenance.Assets)==9,"provenance inventory")
+ for _,asset:=range provenance.Assets {check(digest(read(filepath.Join(root,"first",asset.Name)))==asset.SHA256,"archive digest")}
+ source:=archive(filepath.Join(root,"first","hubnot_0.0.2-dev_source.tar.gz"),provenance.SourceTimestamp)
+ listing:=command(repo,"git","ls-tree","-r","-z","--full-tree",provenance.SourceCommit)
+ count:=0
+ for _,row:=range bytes.Split(listing,[]byte{0}) {if len(row)==0 {continue};header,name,_:=strings.Cut(string(row),"\t");parts:=strings.Fields(header);item,ok:=source["hubnot_0.0.2-dev_source/"+name];check(ok,"source member missing "+name);check(bytes.Equal(item.data,command(repo,"git","cat-file","blob",parts[2])),"source content "+name);mode:=int64(0644);if parts[0]=="100755" {mode=0755};check(item.mode==mode,"source mode");count++}
+ check(len(source)==count,"unexpected source members")
+ for _,target:=range []string{"linux_amd64","linux_arm64","darwin_amd64","darwin_arm64"} {for _,variant:=range []string{"standard","native-only"} {
+  name:="hubnot_0.0.2-dev_"+target;if variant=="native-only" {name+="_native-only"}
+  members:=archive(filepath.Join(root,"first",name+".tar.gz"),provenance.SourceTimestamp)
+  binary,ok:=members[name+"/hn"];check(ok && binary.mode==0755,"binary missing/mode")
+  for path,item:=range source {path=strings.TrimPrefix(path,"hubnot_0.0.2-dev_source/");if path=="LICENSE" || path=="README.md" || path=="CHANGELOG.md" || strings.HasPrefix(path,"docs/") {got,ok:=members[name+"/"+path];check(ok && bytes.Equal(got.data,item.data) && got.mode==item.mode,"doc mismatch "+path)}}
+  var build struct {SourceCommit string `json:"source_commit"`;Version string `json:"version"`;Target string `json:"target"`;Variant string `json:"variant"`;ExecutableSHA256 string `json:"executable_sha256"`;Flags []string `json:"flags"`}
+  must(json.Unmarshal(members[name+"/BUILD.json"].data,&build));check(build.SourceCommit==provenance.SourceCommit && build.Version==provenance.Version && build.Target==strings.ReplaceAll(target,"_","/") && build.Variant==variant && build.ExecutableSHA256==digest(binary.data),"build provenance")
+  if variant=="native-only" {check(strings.Contains(strings.Join(build.Flags," "),"nogithub,noforge"),"native tags")}
+  if strings.HasPrefix(target,"linux") {f,e:=elf.NewFile(bytes.NewReader(binary.data));must(e);machine:=elf.EM_X86_64;if strings.HasSuffix(target,"arm64") {machine=elf.EM_AARCH64};check(f.Machine==machine,"ELF architecture");must(f.Close())} else {f,e:=macho.NewFile(bytes.NewReader(binary.data));must(e);cpu:=macho.CpuAmd64;if strings.HasSuffix(target,"arm64") {cpu=macho.CpuArm64};check(f.Cpu==cpu,"Mach-O architecture");must(f.Close())}
+  if target=="linux_amd64" {
+   dir,e:=os.MkdirTemp("","hn-packaged-smoke-");must(e);defer os.RemoveAll(dir);exe:=filepath.Join(dir,"hn");must(os.WriteFile(exe,binary.data,0755))
+   check(strings.TrimSpace(string(command(dir,exe,"version")))=="0.0.2-dev","runtime version")
+   help:=string(command(dir,exe,"github","help"));check(strings.Contains(help,"excluded")== (variant=="native-only"),"native adapter exclusion")
+   command(dir,"git","init","-q");command(dir,"git","config","user.name","Packaged QA");command(dir,"git","config","user.email","qa@example.invalid")
+   command(dir,exe,"init","--name","Packaged QA");command(dir,exe,"issue","open","Packaged native smoke");check(strings.Contains(string(command(dir,exe,"issue","list")),"Packaged native smoke"),"native issue lifecycle")
+  }
+  fmt.Printf("PASS %s: metadata, docs, architecture, provenance%s\n",name,map[bool]string{true:", actual native CLI smoke",false:""}[target=="linux_amd64"])
+ }}
+ check(bytes.Equal(read(filepath.Join(root,"tags-before.txt")),read(filepath.Join(root,"tags-after.txt"))),"tags changed")
+ fmt.Printf("PASS two runs: all 11 assets byte-identical; exact %d-file Git source tree; all 10 checksums; 9 archive digests; tags unchanged\n",count)
+}
