@@ -1,7 +1,7 @@
 {
-  "event_count": 69,
-  "last_event_id": "01M5X1GC7F9HPQYA8D20YJ6ZKN",
-  "materialized_at": "2026-10-26T21:22:48.175305+00:00",
+  "event_count": 70,
+  "last_event_id": "01M5X5AQN5QY09TY6G69FZ5ZNC",
+  "materialized_at": "2026-10-26T22:29:37.573174+00:00",
   "mission_number": "",
   "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 7
   },
   "work_packages": {
@@ -146,13 +146,13 @@
     "WP05": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "assignee": "Kat",
       "force_count": 7,
-      "lane": "for_review",
-      "last_event_id": "01M5X1GC7F9HPQYA8D20YJ6ZKN",
-      "last_transition_at": "2026-10-26T21:22:48.175305+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M5X5AQN5QY09TY6G69FZ5ZNC",
+      "last_transition_at": "2026-10-26T22:29:37.573174+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review at ecaffbfc; complete fixed-source validation preserved in PRIMARY validation-ecaffbfc by 4e626abf.",
@@ -172,9 +172,9 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": 89524,
-      "shell_pid_created_at": "1793048797.49",
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
       "subtasks": {
         "T013": "done",
         "T014": "done",
