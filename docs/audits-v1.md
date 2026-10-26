@@ -3,7 +3,12 @@
 Audits inspect any already-present Git commit, including old or merged code,
 without a proposal. They are signed observations. They never satisfy proposal
 reviews, required pipeline results, acceptance decisions, or merge evidence.
-Requests, imports, and reads do not execute repository code or fetch dependencies.
+Requests, imports, and reads do not execute target/rule-source hooks, pipeline
+steps or foreign workflow definitions, or fetch dependencies. Actual signed
+fact/ref writes retain existing destination/operator `reference-transaction`
+hooks. An operator hook can reject a publication without changing accepted ref
+visibility; inspection and replay perform no new write. The private uncommitted
+request operation guard suppresses hooks because it publishes no fact.
 
 ## Explicit authority
 
@@ -175,3 +180,147 @@ it never runs code. The command layer wires `hn audit authority set/show`, rule,
 request, execute, list/show/logs and explicit follow-up operations to these APIs.
 It retains sandbox defaults and per-invocation unsafe-host opt-in. There is no
 scheduler, batching worker or required background process.
+
+## Explicit native commands
+
+The compiled CLI self-registers `hn audit`; registration and `hn init` perform
+no audit setup or execution. All audit commands support `--json` (`hn.audit/1`,
+`ok`, `data` or `error`). Mutation responses expose the full signed fact `id` and
+`event`; failures return a nonzero exit and an `audit_refused` error. The active
+signer can be checked with optional `--actor FULL_FINGERPRINT`. Arguments must
+be valid UTF-8; invalid bytes refuse before private intent or fact writes. Reads require no
+private signer, including when audit opt-in has since been withdrawn.
+
+```text
+hn audit authority set --ref refs/heads/main --expect absent
+hn audit authority show
+hn audit rule authorize check --source pipeline --at RULE_REV
+hn audit rule authorize check --source git --at ALREADY_PRESENT_REV --path rules/check.json
+hn audit rule authorize check --source workflow --workflow FULL_NATIVE_REVISION
+hn audit rule list
+hn audit rule show check
+hn audit rule revoke check --expect FULL_AUTHORIZATION --reason "Retired"
+hn audit request --at CODE_REV --rule check --intent "Inspect released code" --operation release-audit
+hn audit execute FULL_REQUEST --backend sandbox
+hn audit show FULL_RESULT
+hn audit logs FULL_RESULT
+hn audit follow-up FULL_RESULT --finding missing-test --operation triage-release
+```
+
+A pipeline source defaults to `.hn/pipelines/RULE.json`; `--path` may select a
+safe committed regular blob explicitly. Git sources require `--path`. Workflow
+sources require one exact enabled, unconflicted native runnable revision and
+accept neither `--at` nor `--path`. None of these commands fetches a missing
+revision. Rule successors require every exact current `--expect` head. Rule
+list/show includes historical authorizations and revocations; show additionally
+reports `current_heads` when the local authority is available. History is never
+used to infer an authority anchor. `audit list`, `rule list`, and `rule show`
+page sorted full IDs with `--limit 1..200` (default 50) and `--offset N`; the
+response includes `total` and `next_offset` (0 at the end). Offsets are over the
+current verified history, so restart pagination if new facts arrive.
+
+`request`, rule authorization/revocation, and `execute` accept optional
+`--policy-ref REV` solely as an assertion of the adopted branch's exact current
+commit. Targets and Git rule sources resolve to immutable commits at invocation.
+They may differ from each other and from the current authority branch. Request
+never runs code. Execute uses only the exact authorized definition, extracts the
+request's target snapshot with the existing runner, and rechecks authority both
+before execution and before signing the result. It preserves the runner's fixed
+environment, step timeouts and sandbox default. Selecting `--backend host` also
+requires `--allow-unsafe-host-execution` on that invocation. It never schedules,
+merges, pushes, syncs, installs dependencies or opens issues.
+
+A passing or failing pipeline records an observational result and exits the CLI
+successfully; inspect `event.audit.outcome` and `exitCode`. A runner launch or
+transport failure, invalid structured output, or authority withdrawal produces
+an error with no result publication. Normal command exits and step deadlines
+remain pipeline failures. Existing sandbox startup diagnostics retain the shared
+runner's behavior; a nonzero backend process exit is observable as a failed run.
+Logs authenticate at most 1 MiB, including any truncation notice. A failed audit
+neither blocks native proposal readiness nor supplies any required CI/review or
+merge evidence. Existing native policy and required checks continue independently.
+
+### Request operation recovery
+
+An optional request `--operation` is actor-scoped (up to 256 bytes). Repeating it
+with the same resolved code, rule and intent returns the original signed request;
+changed intent refuses. Successful recovery reads verified signed facts, even if
+the acknowledgement was lost. Without a policy assertion this is historical
+replay, so it can return an old request after withdrawal without authoring new
+work. A supplied policy assertion is still checked against current authority.
+
+CLI invocations using the same repository/actor/operation serialize verified
+lookup through append with a prepared, uncommitted Git verify transaction under
+`refs/hn/local/audit-request/ACTOR/OPERATION_HASH`. No guard ref is committed or
+replicated; guard acquisition disables repository reference-transaction hooks.
+Contention returns a clear retry error. Closing the client pipe aborts the Git
+transaction, including ordinary client termination. Hard termination of the
+entire process group or power loss can leave an ordinary Git `.lock` file:
+confirm no previous writer remains before applying normal Git stale-lock
+recovery, then retry the original intent. This CLI guarantee does not add
+idempotency to direct low-level API calls or provide distributed exactly-once
+publication from independent replicas of the same signing actor.
+
+## Structured findings
+
+A pipeline can emit one finding per stdout/stderr line, prefixed exactly with
+`HN_AUDIT_FINDING `, followed by a strict JSON object:
+
+```text
+HN_AUDIT_FINDING {"key":"missing-test","title":"Add coverage","body":"Observed gap","path":"src/check.go","line":12}
+```
+
+Only the capped authenticated log is parsed. Unknown or duplicate JSON fields,
+invalid JSON, normalized duplicate keys, invalid paths/locations, excessive
+lengths or more than 128 findings refuse result publication. Keys normalize by
+trimming surrounding Unicode whitespace and Unicode lowercasing; identity uses
+the normalized key. Titles, bodies and paths otherwise retain their content.
+The signed schema limits above apply. A truncated structured record is invalid;
+keep structured records near the beginning of bounded output. Findings are inert
+text and never grant authority or execute anything. A failed pipeline without
+structured findings produces one stable `rule-failure` finding, linked to its
+bounded raw result log. Passing pipelines without findings produce none.
+
+## Deliberate follow-ups and interruption recovery
+
+`hn audit follow-up FULL_RESULT` explicitly processes that result's findings;
+`--finding KEY` selects one normalized key. It uses ordinary native signed issue
+writes and never changes an existing issue. Finding identity is the SHA-256 of
+the standard compact JSON array `[scope, stableRuleID, normalizedFindingKey]`,
+independent of timestamps, result ID, target revision or changing title/body.
+Issue opening metadata records `audit/finding` (that digest), `audit/request` and
+`audit/result` (the exact full signed IDs). Inspection authenticates the opening
+links against verified audit facts and their findings. A later issue edit or
+removal of current metadata does not erase its original association.
+
+Before creating anything, follow-up validates the requested result/selection,
+checks prior authenticated opening links, and binds an actor-scoped operation to
+its exact original result and selected finding identities. `--operation` accepts
+1–128 printable non-whitespace ASCII bytes; its default derives from that result
+and selection. Protected private intent files below the resolved Git directory
+(`hn/audit/followups/ACTOR/OPERATION_HASH.json`, and request intents under
+`hn/audit/requests/ACTOR/OPERATION_HASH.json`) use atomic expected-absent installation
+and mode 0600. They are recovery bindings, never policy authority or an issue
+index, and are excluded from replication. Unsafe symlinks/permissions refuse.
+Retain intent files for operations that have not completed.
+
+Each create also uses a deterministic actor-scoped native issue operation key.
+After interruption or an uncertain acknowledgement, retry the same result,
+finding selection and operation. Verified signed issue history recovers each
+completed create; remaining findings use their original snapshot. A changed
+result or selection with the same operation refuses before creating more work,
+including when the original operation only returned existing associations.
+Private lookup caches are unnecessary; authenticated opening records remain the
+portable dedup source. A retry returns existing associations and preserves all
+operator edits, comments, status changes and issue conflicts.
+
+The response lists `associations` with finding key, stable `identity`, `issue_id`,
+original `result`, and `existing`. Multiple observed associations for one identity
+set `multiple_associations`; inspect and reconcile explicitly. Independent
+publishers or concurrent distinct operations can create multiple signed issues
+before observing each other's links. There is no distributed exactly-once claim,
+no cross-actor lock and no automatic deletion or reconciliation. Execute/follow-up
+perform no network access; sync selected actor histories explicitly to exchange
+results and issue links. A keyless recipient can inspect all historical audit
+facts/logs, while new execution requires deliberate local authority adoption and
+a currently authorized signer.
