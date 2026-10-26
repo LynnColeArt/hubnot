@@ -7,11 +7,29 @@ bounded nonempty full-actor lists `ruleOwners`, `requesters`, `executors`.
 Absence preserves old behavior and disables new authoring/execution, while
 historical records remain readable. Policy inspection/diff exposes all changes.
 
-The local operator chooses `--policy-ref` (default checked-out HEAD), independently
-from audited target and rule source. Record scope, resolved policy commit and
-digest. Execution independently resolves its authority selection and verifies
-current policy, requester/executor membership and exact request bindings. A
-candidate, imported rule or collaborative workflow cannot choose its own owners.
+The operator explicitly adopts a private local authority anchor with
+`hn audit authority set --ref refs/heads/main --expect absent` (or an exact prior
+anchor digest for an update). `show` reports its canonical named local branch and
+current resolved policy commit/digest. Store it as a protected regular private
+file below the resolved Git directory (`hn/audit/authority.json`), with
+expected-old guarded atomic updates. Refuse stale updates, unsafe links and
+non-branch authority selectors. This local control is not a signed collaboration
+fact and is excluded from snapshots/replication.
+
+There is no implicit HEAD default. Initialization, imports, candidates, branch
+checkouts and observed signed records never adopt/change the anchor. With no
+anchor, audit authoring/execution refuse and explain explicit adoption; historical
+reads continue. Authoring/execution independently resolve the anchored current
+branch even when the checked-out branch, target or rule source differs.
+`--policy-ref` is only an optional assertion matching the anchored current
+selection; it cannot override that branch or resurrect an old withdrawn policy.
+
+Record scope, historical resolved policy commit and digest in signed facts.
+Execution requires current policy digest, owner/requester/executor membership and
+current unconflicted authorized rule heads. A code-only advance of the anchored
+branch with byte-identical policy does not invalidate a request by commit alone.
+Historical validation uses recorded policy objects, not today's private anchor.
+A candidate, imported rule or collaborative workflow cannot choose its own owners.
 
 The sole designated owner may authorize their own rule. Do not apply the
 protected-check nonauthor exclusion to this owner signature. Git author fields,
@@ -61,6 +79,8 @@ There is no scheduler, batching worker or required background process.
 ## Proposed explicit CLI
 
 ```text
+hn audit authority set --ref refs/heads/main --expect absent|ANCHOR_DIGEST
+hn audit authority show
 hn audit rule authorize RULE --source KIND --at REV [--path PATH|--workflow ID] [--expect AUTH]... [--policy-ref REV]
 hn audit rule revoke RULE --expect AUTH... --reason TEXT [--policy-ref REV]
 hn audit rule list|show RULE
@@ -90,5 +110,7 @@ report them and reconcile explicitly. Private indexes are disposable projections
 
 Acceptance must cover disabled defaults, sole-owner authorization, refused
 candidate self-authorization, collaborative/imported workflow authority refusal,
-current revocation/conflict/stale policy, historical readability, nonblocking
+stale `--policy-ref`, imports without a local anchor, deliberate authority adoption,
+unchanged-policy code advances, current revocation/conflict/stale policy,
+historical readability, nonblocking
 failures, rejected audit-as-merge evidence, follow-up retry and offline replication.

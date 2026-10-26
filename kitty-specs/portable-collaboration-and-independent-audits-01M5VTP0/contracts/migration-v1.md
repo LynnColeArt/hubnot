@@ -47,6 +47,22 @@ type Intent struct {
     ExpectedID, ExpectedRevision string
     DependsOn []string
 }
+type ReceiptRef struct { IntentID, Field string }
+type RemoteRef struct { ID string; Receipt *ReceiptRef }
+type BoundWrite struct {
+    PlanDigest, IntentID, PayloadDigest string
+    Payload json.RawMessage
+}
+type Receipt struct {
+    PlanDigest, IntentID, Kind, Action string
+    Destination Locator
+    RemoteID, RemoteKey, Revision, PayloadDigest string
+}
+type Reconciliation struct {
+    Status string // exact, ambiguous, no_proof
+    Receipt *Receipt
+    Reason string
+}
 type Plan struct {
     Schema string // hn.migration-plan/1
     SnapshotDigest string
@@ -57,6 +73,11 @@ type Plan struct {
     Findings []Finding
 }
 type BlobSource interface { Open(context.Context, string) (io.ReadCloser, error) }
+type ApplyContext interface {
+    OpenBlob(context.Context, string) (io.ReadCloser, Blob, error)
+    Dependency(string) (Receipt, bool)
+    BoundWrite() BoundWrite
+}
 type Source interface {
     Capabilities(context.Context) ([]Capability, error)
     Snapshot(context.Context, Selection, Limits) (Snapshot, BlobSource, error)
@@ -64,16 +85,75 @@ type Source interface {
 type Destination interface {
     Capabilities(context.Context) ([]Capability, error)
     Plan(context.Context, Snapshot, Selection, Limits) ([]Intent, []Finding, error)
-    Apply(context.Context, Intent) (Receipt, error)
-    Reconcile(context.Context, Intent) (Reconciliation, error)
+    Apply(context.Context, Intent, ApplyContext) (Receipt, error)
+    Reconcile(context.Context, Intent, ApplyContext) (Reconciliation, error)
 }
 ```
 
-`Selection` contains validated locator/scope/mappings. `Receipt` contains observed
-immutable identity/revision and intended payload digest. `Reconciliation` must
-distinguish exact positive match, ambiguous/conflicting observation and no proof.
-The engine owns progress and interprets reconciliation; adapters do not silently
-retry creates or loop over multiple mutations inside one intended write.
+`Selection` contains validated locator/scope/mappings. A receipt binds the plan,
+intent, destination, actual immutable remote identity, mutable lookup selector,
+observed revision and bound intended-payload digest. Exact reconciliation must
+return a validated matching receipt; ambiguous/no-proof outcomes cannot confirm
+or authorize retry. The engine owns progress; adapters do not silently retry
+creates or loop over multiple mutations inside one intended write.
+
+`ApplyContext` is engine-owned read-only input. `OpenBlob` exposes only blobs in
+the snapshot that the engine has already verified and spooled within the plan's
+per-blob/aggregate budgets; it cannot open arbitrary paths/URLs. `Dependency`
+returns immutable value copies of confirmed predecessor receipts only. The
+context supplies fresh copies of canonical bound payload bytes. Both apply and
+reconcile receive the same persisted bound write and digest, not adapter-local
+hidden state. Missing/unconfirmed dependencies fail before an effect.
+
+Plan intents remain immutable templates. `RemoteRef` is a closed exclusive union
+of a literal known remote ID or a typed receipt reference. Allowed receipt fields
+are `remote_id`, `remote_key`, `revision`; dependencies must be declared and
+acyclic. The engine resolves these from confirmed receipts, validates the closed
+actual payload and persists its canonical bytes/digest before in-flight state
+and the single mutation. Resume restores those same bytes rather than recomputing
+from refreshed sources or silently rewriting the saved plan. No arbitrary string
+interpolation, adapter-managed parent maps or fabricated zero parent IDs.
+
+## Closed issue/comment schemas frozen before adapter parallelism
+
+WP04 supplies strict snapshot record schemas and WP05 supplies strict intent,
+binding, receipt and reconciliation validation. Freeze their exported types and
+JSON contracts before WP06/07–10 adapters; no provider may invent its own shape.
+
+```go
+type IssueContent struct {
+    Schema string // hn.migration.issue/1
+    Title, Body, State, Type string
+    Labels, Assignees []string
+}
+type CommentContent struct {
+    Schema string // hn.migration.comment/1
+    Body string
+}
+type IssueWrite struct {
+    Schema string // hn.migration.issue-write/1
+    Target *RemoteRef // absent for create, required for update
+    Title, Body, State, Type string
+    Labels, Assignees []string
+}
+type CommentWrite struct {
+    Schema string // hn.migration.comment-write/1
+    Parent RemoteRef // issue/work-item identity, often a predecessor receipt
+    Target *RemoteRef // absent for create
+    Body string
+}
+```
+
+Source authors/times/identity remain the surrounding `Record` fields. Comment
+records have exactly one required `issue`/`work_item` parent link; additional
+thread/reply relationships stay explicit preserved links rather than flattened
+native claims. Source state/type are descriptive strings; destination state/type
+choices are explicit validated mappings. Empty type is meaningful only where
+that provider has no work-item type. Reject unknown/duplicate/null fields, invalid
+Unicode, unbounded text/collections and schema/action mismatches. Source limits
+are recorded; larger unsupported native text is preserved as bytes with a finding,
+not silently truncated. API DTO translation happens after this canonical bound
+input and cannot acquire a different parent or alter operator decisions.
 
 JSON names are explicitly versioned, not inferred from provider DTOs. Validate
 closed record schemas for issues/comments, discussions/replies, planning data,
@@ -97,7 +177,8 @@ expanded-budget exhaustion before accepted visibility.
 
 Only explicitly selected refs and required dependency closure are exported.
 Never capture filesystem `.git`, private identity stores, ambient credentials,
-transfer journals or unselected working files. Exact selected committed history
+local audit-authority anchors, transfer journals or unselected working files.
+Exact selected committed history
 is not implicitly secret-scrubbed. Historical governance objects are retained for
 verification; active governance adoption requires an explicit plan decision.
 

@@ -78,6 +78,14 @@ actor, and is lock protected. Git refs, filesystem writes and independent APIs
 are not one global transaction: use bounded preflight, scoped atomic promotion
 and inspectable partial progress, including actual-ref checks after lost acks.
 
+Plan intents use typed symbolic references to prerequisite receipts. The engine
+resolves them only from confirmed progress, freezes and persists the canonical
+actual write payload/digest before any effect, and supplies that bound write,
+immutable dependency receipts and bounded verified blobs through `ApplyContext`
+to both apply and reconciliation. Adapters cannot keep hidden parent-ID state,
+invent missing blobs or silently rewrite plans. WP04/05 freeze closed issue/comment
+record/intent schemas and receipt/reconciliation shapes before provider work.
+
 ### A3: nonvacuous provider profiles and an adapter-free build
 
 Freeze [migration-v1.md](contracts/migration-v1.md) before parallel adapters.
@@ -110,8 +118,16 @@ Add strict `audit.rule-authorize`, `audit.rule-revoke`, `audit.request` and
 consistently, including explicit bounded log/tree/reference rules.
 
 An optional committed `audits` policy declares scope, rule owners, requesters and
-executors. Operator-selected authority is separate from target/rule source, so a
-candidate or collaborative workflow cannot select its own owners. A sole owner
+executors. An independent private local anchor, explicitly adopted through
+`hn audit authority set/show`, selects a named local branch such as main.
+Expected-old guarded anchor updates are deliberate operator actions; initialization,
+imports, candidates and checkouts never install or replace it. Every authoring/
+execution command resolves the anchored current ref. `--policy-ref` is only a
+matching-current-selection assertion, never an override accepting an older or
+candidate policy. Record historical policy commits/digests for read validation;
+new execution requires the current policy digest, roles and rule heads. A code-only
+branch advance with identical policy bytes does not alone invalidate a request.
+Without an anchor audit authoring/execution refuse. A sole owner
 may authorize their own rule; protected-check nonauthor review exclusion is not
 misapplied. Explicit successor/revocation graphs retain history, expose concurrent
 heads and refuse new execution on conflicts/revocation/stale authority. See
@@ -150,7 +166,7 @@ Concerns are architectural; tasks authoring owns WP metadata and execution lanes
 | IC-02 | Audit types/owner policy/admission; FR-016/018/019 | WP02 | none |
 | IC-03 | Audit execution/follow-up; FR-017/020 | WP03 | WP02 |
 | IC-04 | Snapshot schema/archive/native closure; FR-002/003/004 | WP04 | none; audit-kind integration after WP02 |
-| IC-05 | Plan/apply/resume and local/archive bridge; FR-005/007/013/014 | WP05 | WP04 |
+| IC-05 | Plan/apply/resume and local/archive bridge; FR-005/007/013/014 | WP05 | WP04, WP02 |
 | IC-06 | Adapter contract/conformance/GitHub; FR-008/009/015 | WP06 | WP05 |
 | IC-07 | GitLab mappings | WP07 | WP06 |
 | IC-08 | Separate Forgejo/Gitea profiles | WP08 | WP06 |
@@ -176,7 +192,11 @@ Use local provider fixtures and temporary Git remotes, including public CLI
 GitLab→GitHub, guided EOF refusal, meaningful provider baselines, attachment bytes,
 uncertain creates and offline `noforge` continuity. No real provider mutations.
 Audit tests prove sole-owner approval, refused candidate self-authorization,
-current revocation, historic readability, failed nonblocking audits and dedup.
+stale-policy-ref refusal, import-without-anchor refusal, explicit local authority
+adoption, unchanged-policy code advances, current revocation, historic readability,
+failed nonblocking audits and dedup. Migration tests prove parent IDs resolve from
+confirmed receipts and blob bytes are verified/bounded in apply and reconciliation,
+including a resumed comment create after its issue create was confirmed.
 
 Every Go-changing WP satisfies charter gates before review: formatting, full race
 suite, vet, build and diff checks. Reuse evidence at fixed source revisions and

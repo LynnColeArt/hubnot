@@ -11,9 +11,15 @@ final flags in sync with operator docs.
    and downloaded attachment bytes with adapters and credentials absent.
 4. Exercise guided and saved-plan GitLab-fixture→GitHub-fixture migration. Check
    EOF refusal, capability losses, stale baselines and uncertain-write recovery.
-5. Opt a temporary project into owner/requester/executor roles. Authorize a rule
-   as its sole owner, audit already-merged code without a proposal, and explicitly
-   create linked follow-up work. Reprocessing must not flood duplicate issues.
+   Resume comment creation using the already-confirmed issue receipt and the
+   exact persisted bound payload; attachment uploads use verified bounded blobs.
+5. Opt a temporary project into owner/requester/executor roles and explicitly
+   adopt a private named local authority branch with `hn audit authority set`.
+   An imported project without that anchor must refuse audit execution. Test
+   that checking out a candidate or asserting an old `--policy-ref` cannot revive
+   withdrawn authority, while code-only authority advances with unchanged policy
+   remain valid. Authorize as sole owner, audit already-merged code without a
+   proposal, and explicitly create linked follow-up work without duplicate floods.
 6. Check that audit failure neither blocks nor qualifies merge evidence; sync to
    an ordinary temporary Git remote and inspect from a keyless clone.
 7. Build release archives twice from the committed integration revision and check
