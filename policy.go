@@ -21,6 +21,7 @@ type PolicyDocument struct {
 	Memory          *MemoryPolicy             `json:"memory,omitempty"`
 	ProtectedChecks *ProtectedChecksPolicy    `json:"protectedChecks,omitempty"`
 	Automerge       *AutomergePolicy          `json:"automerge,omitempty"`
+	Audits          *AuditPolicy              `json:"audits,omitempty"`
 }
 
 // MemoryPolicy is deliberately optional so repositories with an hn.policy/0
@@ -110,6 +111,9 @@ func parsePolicyBytes(encoded []byte) (PolicyDocument, string, error) {
 }
 
 func validatePolicy(policy PolicyDocument) error {
+	if err := validateAuditPolicy(policy.Audits); err != nil {
+		return err
+	}
 	if policy.Version != policyVersion {
 		return fmt.Errorf("unsupported policy version %q", policy.Version)
 	}
