@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: feat/portable-collaboration
 merge_target_branch: feat/portable-collaboration
 branch_strategy: Planning artifacts for this mission were generated on feat/portable-collaboration. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/portable-collaboration unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-portable-collaboration-and-independent-audits-01M5VTP0
+base_commit: 946a72d8c76836814a349d71323f2baf41403ebd
+created_at: '2026-10-26T10:49:36.984375+00:00'
 subtasks:
 - T001
 - T002
