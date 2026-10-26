@@ -82,3 +82,26 @@ Full race result: PASS, exit 0; 1,186 passing events, zero failing events.
 The root package completed in 464.783 seconds. Source before and after both
 match `3e6b301bb2e3142eff40727edf57a462b3e63e02`. No duplicate full-race run
 was started at this source. All product files remained unchanged during validation.
+
+## Completed canonical transition
+
+T001/T002/T003 were marked done with the canonical CLI. WP01 moved from
+`in_progress` to `for_review`; event `01M5W12ZN7A36XC0VBSGGQ7C0W`.
+The normal `move-task` command exited 0 and its mandatory pre-review gate
+completed, without force/skip flags or disable environment. It returned
+`no_coverage` because `tests.architectural._gate_coverage` is not importable
+under the primary repository (`No module named tests.architectural`).
+`blocked=false`, `force_bypassed=false`, `block_enabled=false`. This framework
+coverage authority remains unavailable; this is not a Go test failure or a
+claim of framework coverage. Raw result: `pre-review-gate.log`.
+
+Earlier transition attempts safely refused unrelated WP02 untracked evidence,
+then evidence committed on a lane, then a concurrently modified shared runtime
+journal. No force or bypass was used. Review evidence was preserved on the
+planning branch as `3e1f6a44`; the evidence-only lane commit was reverted as
+`a382f928884fdedc0e89ee39f2eed61973d94115`. The lane's entire Git tree equals
+the validated product source's tree, `2d88e80ba7db1fd22b3765fe1103bc160717a588`.
+No product or test files changed after the completed validation, and no duplicate
+full suite was run. Subsequent evidence/status records stay on the planning
+branch, in accordance with the runtime guard. Attempt logs preserve these
+workflow limitations separately from actual implementation checks.
