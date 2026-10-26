@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -113,5 +115,121 @@ func TestAuditFollowUpUnsafePrivateIntentRefuses(t *testing.T) {
 	}
 	if before != mustGitText(t, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn") {
 		t.Fatal("unsafe path mutated signed state")
+	}
+}
+
+func auditPrivateState(t *testing.T, repository string) string {
+	t.Helper()
+	directory := filepath.Join(repository, ".git", "hn", "audit")
+	if _, err := os.Lstat(directory); os.IsNotExist(err) {
+		return "absent"
+	}
+	var snapshot bytes.Buffer
+	err := filepath.WalkDir(directory, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		relative, err := filepath.Rel(directory, path)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(&snapshot, "%s %s\n", relative, info.Mode())
+		if !entry.IsDir() {
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(&snapshot, "%x\n", raw)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return snapshot.String()
+}
+
+func TestAuditPublicFollowUpNormalizedCollisionPreservesState(t *testing.T) {
+	binary := buildOperationalBinary(t)
+	for _, collision := range []struct{ name, first, second string }{{"case", "X", "x"}, {"whitespace", " x ", "x"}} {
+		t.Run(collision.name, func(t *testing.T) {
+			root, id, at := auditFixture(t)
+			auditAuthorizeFixture(t, id, at)
+			request, err := AuditRequest(at, "check", "", id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// These raw-unique keys are valid signed historical facts. The earlier
+			// ordinary finding proves preflight covers the complete immutable selection.
+			findings := []AuditFinding{{Key: "a-safe", Title: "Unambiguous finding"}, {Key: collision.first, Title: "First spelling", Body: "First body"}, {Key: collision.second, Title: "Second spelling", Body: "Different body"}}
+			result, err := RecordAuditResult(request.ID, "", id, executionResult{Outcome: "failed", ExitCode: 1, Log: []byte("accepted signed observation")}, findings, "host", "linux/amd64", "regression-fixture")
+			if err != nil {
+				t.Fatal("valid raw-unique signed result refused", err)
+			}
+			remote := filepath.Join(t.TempDir(), "collision.git")
+			mustGit(t, "init", "--bare", "-q", remote)
+			mustGit(t, "remote", "add", "origin", remote)
+			runOperationalCommand(t, binary, root, "sync")
+			receiver := filepath.Join(t.TempDir(), "reader")
+			mustGit(t, "clone", "-q", remote, receiver)
+			runOperationalCommand(t, binary, receiver, "replication", "select", "origin", "--actor", id.Actor)
+			runOperationalCommand(t, binary, receiver, "sync")
+			runOperationalCommand(t, binary, receiver, "init", "--name", "Follow-up reader")
+			for _, repository := range []struct{ name, path string }{{"local", root}, {"imported", receiver}} {
+				t.Run(repository.name, func(t *testing.T) {
+					shown := auditPublic(t, binary, repository.path, true, "show", result.ID, "--json")
+					var original auditRecord
+					if err := json.Unmarshal(shown, &original); err != nil {
+						t.Fatal(err)
+					}
+					if !reflect.DeepEqual(original.Event.Audit.Findings, findings) {
+						t.Fatal("signed raw finding keys changed during admission")
+					}
+					refsBefore := runOperationalGit(t, repository.path, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/remotes")
+					issuesBefore := issuePublicData[publicIssuePage](t, issuePublicCall(t, binary, repository.path, nil, "", "list", "--json")).Total
+					privateBefore := auditPrivateState(t, repository.path)
+					attempts := [][]string{
+						{"--operation", "collision-all"},
+						{"--finding", "x", "--operation", "collision-selected"},
+						{"--finding", collision.first, "--operation", "collision-raw-selected"},
+						{"--operation", "collision-all"},
+					}
+					for _, options := range attempts {
+						args := append([]string{"audit", "follow-up", result.ID, "--json"}, options...)
+						command := exec.Command(binary, args...)
+						command.Dir = repository.path
+						command.Env = operationalTestEnvironment(t.TempDir())
+						out, commandErr := command.Output()
+						var response struct {
+							Schema string
+							OK     bool
+							Error  *struct{ Code, Message string }
+						}
+						if err := json.Unmarshal(out, &response); err != nil {
+							t.Fatal(string(out), err)
+						}
+						if commandErr == nil || response.OK || response.Error == nil || response.Error.Code != "audit_refused" || !strings.Contains(response.Error.Message, "ambiguous") || !strings.Contains(response.Error.Message, "normalized") {
+							t.Errorf("expected actionable normalized ambiguity refusal for %v: exit=%v response=%s", options, commandErr, out)
+						}
+						if refsAfter := runOperationalGit(t, repository.path, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/remotes"); refsAfter != refsBefore {
+							t.Errorf("ambiguous selection changed accepted actor refs for %v", options)
+						}
+						if issuesAfter := issuePublicData[publicIssuePage](t, issuePublicCall(t, binary, repository.path, nil, "", "list", "--json")).Total; issuesAfter != issuesBefore {
+							t.Errorf("ambiguous selection changed issue count: before=%d after=%d", issuesBefore, issuesAfter)
+						}
+						if privateAfter := auditPrivateState(t, repository.path); privateAfter != privateBefore {
+							t.Errorf("ambiguous selection changed private intent state for %v", options)
+						}
+						if after := auditPublic(t, binary, repository.path, true, "show", result.ID, "--json"); !bytes.Equal(shown, after) {
+							t.Error("refusal changed the immutable signed result")
+						}
+					}
+				})
+			}
+		})
 	}
 }
