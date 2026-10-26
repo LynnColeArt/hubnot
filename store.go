@@ -74,7 +74,7 @@ func appendEventWithAttachments(event Event, identity *Identity, attachments map
 		if err := validateAuditAttachments(event, attachments); err != nil {
 			return nil, err
 		}
-		if err := validateAuditPackBinding("", event, attachments["audit.pack"]); err != nil {
+		if err := importAuditPack("", attachments["audit.pack"], event); err != nil {
 			return nil, err
 		}
 		events, err := collectEvents()

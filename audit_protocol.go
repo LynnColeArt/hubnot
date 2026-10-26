@@ -365,7 +365,10 @@ func importAuditPack(gitdir string, pack []byte, e Event) error {
 	if _, err := gitOutput("init", "--bare", "--quiet", "--object-format="+format, temporary); err != nil {
 		return err
 	}
-	if _, err := gitInputAt(temporary, pack, "index-pack", "--stdin", "--max-input-size=67108864"); err != nil {
+	// Validate Git's object syntax without demanding complete parent history or
+	// unrelated members of policy/source path-proof trees. Required snapshot
+	// members and actual edge types are checked below before installation.
+	if _, err := gitInputAt(temporary, pack, "index-pack", "--stdin", "--fsck-objects", "--max-input-size=67108864"); err != nil {
 		return err
 	}
 	if err := validateAuditPackBinding(temporary, e, pack); err != nil {
@@ -811,11 +814,16 @@ func RecordAuditResult(requestID, policyRef string, id *Identity, result executi
 }
 
 func validateAuditObjectShapesAt(gitdir string, objects []string) error {
+	types := make(map[string]string, len(objects))
 	for _, object := range objects {
 		typ, err := gitTextAt(gitdir, "cat-file", "-t", object)
 		if err != nil {
 			return err
 		}
+		types[object] = typ
+	}
+	for _, object := range objects {
+		typ := types[object]
 		switch typ {
 		case "blob":
 		case "commit":
@@ -824,36 +832,56 @@ func validateAuditObjectShapesAt(gitdir string, objects []string) error {
 				return err
 			}
 			lines := strings.Split(raw, "\n")
-			if len(lines) < 4 || !strings.HasPrefix(lines[0], "tree ") || !validGitOID(strings.TrimPrefix(lines[0], "tree ")) {
+			if len(lines) < 4 || !strings.HasPrefix(lines[0], "tree ") || types[strings.TrimPrefix(lines[0], "tree ")] != "tree" {
 				return fmt.Errorf("malformed audit commit")
 			}
 			for _, line := range lines[1:] {
-				if strings.HasPrefix(line, "parent ") && !validGitOID(strings.TrimPrefix(line, "parent ")) {
-					return fmt.Errorf("malformed audit parent")
+				if parent, ok := strings.CutPrefix(line, "parent "); ok {
+					// Parent history may be absent. When present in this exact pack,
+					// it must have the type required by a commit-parent edge.
+					if !validGitOID(parent) || len(parent) != len(object) || (types[parent] != "" && types[parent] != "commit") {
+						return fmt.Errorf("malformed audit parent")
+					}
 				}
 				if line == "" {
 					break
 				}
 			}
 		case "tree":
-			raw, err := gitOutputAt(gitdir, "ls-tree", "-z", object)
+			raw, err := gitOutputAt(gitdir, "cat-file", "tree", object)
 			if err != nil {
 				return err
 			}
 			names := map[string]bool{}
-			for _, entry := range strings.Split(string(raw), "\x00") {
-				if entry == "" {
-					continue
-				}
-				meta, name, ok := strings.Cut(entry, "\t")
-				fields := strings.Fields(meta)
-				if !ok || len(fields) != 3 || name == "" || name == "." || name == ".." || strings.Contains(name, "/") || strings.EqualFold(name, ".git") || names[name] || !validGitOID(fields[2]) {
+			for len(raw) > 0 {
+				space := bytes.IndexByte(raw, ' ')
+				nul := bytes.IndexByte(raw, 0)
+				oidBytes := len(object) / 2
+				if space <= 0 || nul <= space || len(raw)-nul-1 < oidBytes {
 					return fmt.Errorf("malformed audit tree")
 				}
-				switch fields[0] {
-				case "040000", "100644", "100755", "120000", "160000":
+				mode, name := string(raw[:space]), string(raw[space+1:nul])
+				oid := hex.EncodeToString(raw[nul+1 : nul+1+oidBytes])
+				raw = raw[nul+1+oidBytes:]
+				if name == "" || name == "." || name == ".." || strings.Contains(name, "/") || strings.EqualFold(name, ".git") || names[name] || oid == strings.Repeat("0", len(object)) {
+					return fmt.Errorf("malformed audit tree")
+				}
+				want := "blob"
+				switch mode {
+				case "40000":
+					want = "tree"
+				case "160000":
+					want = "commit"
+				case "100644", "100755", "120000":
 				default:
 					return fmt.Errorf("unsupported audit tree mode")
+				}
+				// Compare the raw entry mode against cat-file's independent type
+				// from the isolated pack; ls-tree normalizes modes and types.
+				// Missing non-proof edges and gitlinks are intentional; exact
+				// dependency closure separately requires the full target snapshot.
+				if actual := types[oid]; actual != "" && actual != want {
+					return fmt.Errorf("audit tree edge %q requires %s, found %s", name, want, actual)
 				}
 				names[name] = true
 			}

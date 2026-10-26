@@ -141,8 +141,15 @@ be represented as a full-history bundle.
 Packs use Git pack version 2 with nondelta commit/tree/blob objects. Limits are
 64 MiB compressed, 100,000 objects, 16 MiB per expanded object, and 128 MiB total
 expanded bytes. The parser checks expansion, checksum, count, object types and
-hashes. Isolated temporary object storage verifies exact snapshot/path closure,
-regular source paths, tree members, and absence of injected extra objects before
+hashes. Both local writes and imported reads first use isolated temporary object
+storage with Git's `index-pack --fsck-objects` syntax checks (including required
+author/committer headers, identities, dates and tree encoding/order). Independent
+object-type lookup verifies commit-tree links, included parent links and tree
+entry modes against their actual objects; the type printed by `ls-tree` alone
+is not sufficient. Exact snapshot/path closure requires target trees and source
+proof members while allowing omitted parent history, unrelated proof-tree
+members and gitlink content. It also verifies regular source paths, safe tree
+members, and absence of injected extra objects before
 installation into the selected object database. Fetched data uses quarantine;
 no signing-owned ref, branch, policy, worktree or private anchor is changed.
 Malformed/unknown event tree members, missing packs, corrupt packs, extra pack

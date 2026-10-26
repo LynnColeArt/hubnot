@@ -3,12 +3,148 @@ package main
 import (
 	"bytes"
 	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestAuditMalformedSnapshotsRefuseLocalAndRemote(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			t.Setenv("GIT_DEFAULT_HASH", format)
+			for _, kind := range []string{"missing-identities", "missing-committer", "malformed-author", "duplicate-author", "bad-date", "nul-header", "unsorted-tree", "noncanonical-mode", "tree-as-blob", "parent-as-tree"} {
+				t.Run(kind, func(t *testing.T) {
+					publisher, id, at := auditFixture(t)
+					auth := auditAuthorizeFixture(t, id, at)
+					tree := mustGitText(t, "rev-parse", at+"^{tree}")
+					identity := "Test <test@hn.invalid> 1000000000 +0000\n"
+					raw := fmt.Sprintf("tree %s\nauthor %scommitter %s\nmessage\n", tree, identity, identity)
+					switch kind {
+					case "missing-identities":
+						raw = fmt.Sprintf("tree %s\ngarbage header\n\nmessage\n", tree)
+					case "missing-committer":
+						raw = strings.Replace(raw, "committer "+identity, "", 1)
+					case "malformed-author":
+						raw = strings.Replace(raw, "author "+identity, "author Test 1000000000 +0000\n", 1)
+					case "duplicate-author":
+						raw = strings.Replace(raw, "author "+identity, "author "+identity+"author "+identity, 1)
+					case "bad-date":
+						raw = strings.Replace(raw, "1000000000", "not-a-date", 1)
+					case "nul-header":
+						raw = strings.Replace(raw, "author Test", "author Te\x00st", 1)
+					case "parent-as-tree":
+						raw = strings.Replace(raw, "\nauthor ", "\nparent "+tree+"\nauthor ", 1)
+					case "unsorted-tree", "noncanonical-mode", "tree-as-blob":
+						treeID, err := hex.DecodeString(tree)
+						if err != nil {
+							t.Fatal(err)
+						}
+						treeRaw := append([]byte("100644 wrong-type\x00"), treeID...)
+						if kind == "unsorted-tree" || kind == "noncanonical-mode" {
+							blobID, err := hex.DecodeString(mustGitText(t, "rev-parse", at+":.hn/policy.json"))
+							if err != nil {
+								t.Fatal(err)
+							}
+							treeRaw = append([]byte("100600 a\x00"), blobID...)
+							if kind == "unsorted-tree" {
+								treeRaw = append([]byte("100644 z\x00"), blobID...)
+								treeRaw = append(treeRaw, []byte("100644 a\x00")...)
+								treeRaw = append(treeRaw, blobID...)
+							}
+						}
+						wrongTree, err := gitInput(treeRaw, nil, "hash-object", "--literally", "-w", "-t", "tree", "--stdin")
+						if err != nil {
+							t.Fatal(err)
+						}
+						raw = fmt.Sprintf("tree %s\nauthor %scommitter %s\nmessage\n", strings.TrimSpace(string(wrongTree)), identity, identity)
+					}
+					object, err := gitInput([]byte(raw), nil, "hash-object", "--literally", "-w", "-t", "commit", "--stdin")
+					if err != nil {
+						t.Fatal(err)
+					}
+					target := strings.TrimSpace(string(object))
+					before := mustGitText(t, "rev-parse", actorRef(id.Actor))
+					anchor, err := AuditAuthorityShow()
+					if err != nil {
+						t.Fatal(err)
+					}
+					if _, err := AuditRequest(target, "check", "", id); err == nil {
+						t.Error("malformed snapshot accepted locally")
+					}
+					if got := mustGitText(t, "rev-parse", actorRef(id.Actor)); got != before {
+						t.Fatal("local refusal changed actor ref")
+					}
+					if after, err := AuditAuthorityShow(); err != nil || after.Digest != anchor.Digest || after.Commit != anchor.Commit {
+						t.Fatal("local refusal changed authority", err)
+					}
+					events, err := collectEvents()
+					if err != nil || len(events) != 1 || events[0].ID != auth.ID {
+						t.Fatalf("local refusal changed visible events: %d %v", len(events), err)
+					}
+					// Sign the hostile request directly so remote admission is exercised
+					// independently of the local writer's refusal.
+					e, err := nextEvent(id, "audit.request")
+					if err != nil {
+						t.Fatal(err)
+					}
+					e.Audit = &AuditFact{Scope: "project", Rule: "check", PolicyCommit: at, PolicyDigest: auth.Event.Audit.PolicyDigest, Authorization: auth.ID, CodeCommit: target, DefinitionDigest: auth.Event.Audit.DefinitionDigest, Intent: "inspect"}
+					attachments, err := auditAttachments(e, nil)
+					if kind == "parent-as-tree" {
+						// Normal snapshot enumeration already refuses this edge. Pack
+						// the fixture's known complete tree and target directly so the
+						// remote boundary still receives a signed hostile request.
+						objects, packErr := auditPackObjectIDs(auth.Attachments["audit.pack"], len(at))
+						if packErr != nil {
+							t.Fatal(packErr)
+						}
+						pack, packErr := gitInput([]byte(strings.Join(append(objects, target), "\n")+"\n"), nil, "pack-objects", "--stdout", "--window=0", "--depth=0")
+						attachments, err = map[string][]byte{"audit.pack": pack}, packErr
+					}
+					if err != nil {
+						t.Fatal(err)
+					}
+					appendRawSignedEventCommit(t, id, e, auth.Commit, attachments)
+					remote := filepath.Join(t.TempDir(), "project.git")
+					receiver := filepath.Join(t.TempDir(), "reader")
+					mustGit(t, "clone", "-q", "--bare", publisher, remote)
+					mustGit(t, "remote", "add", "origin", remote)
+					mustGit(t, "push", "-q", "origin", actorRef(id.Actor)+":"+actorRef(id.Actor))
+					mustGit(t, "clone", "-q", "--no-local", remote, receiver)
+					if err := os.Chdir(receiver); err != nil {
+						t.Fatal(err)
+					}
+					if _, err := gitOutput("cat-file", "-e", target); err == nil {
+						t.Fatal("hostile target exists before admission")
+					}
+					selection := ReplicationSelection{Version: replicationSelectionVersion, Remote: "origin", Actors: []string{id.Actor}, Budgets: defaultReplicationBudgets()}
+					result, err := runReplicationTransaction(selection)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if replicationOutcomeHasStatus(result.Outcomes, replicationActor, id.Actor, replicationPromoted) {
+						t.Fatal("malformed snapshot promoted")
+					}
+					assertRefAbsent(t, acceptedActorRef("origin", id.Actor))
+					assertRefAbsent(t, actorRef(id.Actor))
+					events, err = collectEvents()
+					if err != nil || len(events) != 0 {
+						t.Fatalf("remote refusal changed visible events: %d %v", len(events), err)
+					}
+					if _, err := gitOutput("cat-file", "-e", target); err == nil {
+						t.Fatal("malformed target installed in accepted object database")
+					}
+					if _, err := AuditAuthorityShow(); err == nil {
+						t.Fatal("remote refusal imported private authority")
+					}
+				})
+			}
+		})
+	}
+}
 
 func auditAuthorizeFixture(t *testing.T, id *Identity, at string) *StoredEvent {
 	t.Helper()
@@ -26,6 +162,8 @@ func TestAuditNativeReplicationOldCodeKeylessAndNoAnchor(t *testing.T) {
 	publisher, id, at := auditFixture(t)
 	// An unreferenced target is deliberately outside the published main history.
 	mustGit(t, "switch", "-qc", "old-target")
+	mustGit(t, "commit", "--allow-empty", "-qm", "omitted target parent")
+	parent := mustGitText(t, "rev-parse", "HEAD")
 	if err := os.WriteFile("old-code", []byte("inspect me"), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -81,6 +219,9 @@ func TestAuditNativeReplicationOldCodeKeylessAndNoAnchor(t *testing.T) {
 	}
 	if content := mustGitText(t, "show", target+":old-code"); content != "inspect me" {
 		t.Fatal(content)
+	}
+	if _, err := gitOutput("cat-file", "-e", parent); err == nil {
+		t.Fatal("snapshot transport unexpectedly imported parent history")
 	}
 	if _, err := ValidateAuditExecution(req.ID, id.Actor, ""); err == nil {
 		t.Fatal("import silently adopted authority")
@@ -264,6 +405,22 @@ func TestAuditPackRejectsUnexpectedObjectsCorruptionAndMissingMembers(t *testing
 	}
 	if err := importAuditPack("", junk, auth.Event); err == nil {
 		t.Fatal("unreachable injected object accepted")
+	}
+	// Ambient objects cannot fill holes in the signed pack's required proofs.
+	for _, missing := range []string{at, mustGitText(t, "rev-parse", at+"^{tree}"), mustGitText(t, "rev-parse", at+":.hn/policy.json"), mustGitText(t, "rev-parse", at+":.hn/pipelines/check.json")} {
+		retained := []string{}
+		for _, object := range objects[:len(objects)-1] {
+			if object != missing {
+				retained = append(retained, object)
+			}
+		}
+		partial, err := gitInput([]byte(strings.Join(retained, "\n")+"\n"), nil, "pack-objects", "--stdout", "--window=0", "--depth=0")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := importAuditPack("", partial, auth.Event); err == nil {
+			t.Fatal("required proof member supplied by ambient database", missing)
+		}
 	}
 	if err := validateAuditAttachments(auth.Event, map[string][]byte{}); err == nil {
 		t.Fatal("missing pack")
