@@ -80,6 +80,9 @@
       "last_event_id": "01M5VZC04SN12KERNB84VPD5XT",
       "last_transition_at": "2026-10-26T11:26:13.145433+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 41dc551c4d84624334b4d48bed994410129601bf: bounded canonical archive and full selected native object closure, keyless observation ref portability, strict shared issue/comment schemas. Full go test -race -count=1 -json ./... passed (hubnot 473.867s); vet/build/gofmt/diff and focused nogithub/no-provider-library checks passed. Evidence /tmp/hn-wp04-evidence/race.jsonl; raw Git object format documented. Audit-specific auxiliary snapshot admission remains dependent WP05 integration."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 254156,
