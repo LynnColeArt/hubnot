@@ -177,3 +177,41 @@ access/authentication guidance. Existing
 operator-controlled destination Git reference-transaction hooks retain normal Git
 behavior. A hook refusal is an uncertain guarded write requiring reconciliation;
 source hooks and imported pipelines are never executed by capture/import.
+
+## Explicit continuation from imported observations
+
+`LocalMigrationSource` captures selected current Git refs only. To retain imported
+foreign communications during a later local-to-archive or local-to-provider
+migration, discover bounded saved IDs with `ListLocalMigrations(gitDir, limits)`,
+then explicitly select `ImportedMigrationSource{GitDir, SnapshotDigests}` and join
+it with the current Git source through `ComposeMigrationSources`. The imported
+source reuses `ReadLocalMigration` validation and contributes attributed foreign
+records and non-Git blobs only. It never reselects stale archived code or private
+journals. Current code/native histories still require explicit current ref
+selection. Identical record/blob observations deduplicate; conflicting revisions
+or metadata require an explicit snapshot choice. Aggregate record/blob budgets
+apply across selected imports. Missing selected imports refuse the observation;
+unselected imports are explicitly outside observed coverage.
+
+Every destination implements required `Locator() migration.Locator` from its
+resolved configuration. Planning checks equality with the selected destination;
+apply/resume checks equality with the saved destination before preflight and
+before each intended write. Composed destinations expose a valid locator only
+when every child agrees. A changed provider configuration cannot create an
+object first and discover the mismatch only in its receipt. Adapters must also
+check immutable remote project/parent identity and their expected revision guards;
+matching locator text alone does not prove a remote repository was not replaced.
+
+Preparation durably seals an authenticated empty progress checkpoint alongside
+the plan and observation. Its first apply binds the actor before effects. Missing
+progress is damaged recovery evidence, even if the plan/snapshot still verify;
+open/apply refuse it instead of creating a new journal and repeating writes.
+
+Git HTTP children receive a disposable private empty home/config directory and
+consistent platform aliases through their own process environment. Parent
+home/configuration and files are never changed. Ambient NETRC/CURL_HOME overrides
+are removed from that child so libcurl cannot consult an unrelated `.netrc` or
+`_netrc`; helpers/rewrites remain disabled. A real synthetic outer credential
+store regression proves unauthenticated private access does not consult/send
+that marker, explicit supplied authorization still works, and outer files and
+parent environment remain unchanged. Certificate verification remains enabled.

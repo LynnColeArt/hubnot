@@ -109,6 +109,14 @@ func PrepareMigration(ctx context.Context, dir string, s migration.Snapshot, sou
 	if e = migrationSeal(dir, "plan.json", pb); e != nil {
 		return nil, e
 	}
+	initial := migration.Progress{Schema: "hn.migration-progress/1", PlanDigest: migration.Digest(pb), Actor: "", Entries: []migration.ProgressEntry{}}
+	checkpoint, e := migration.CanonicalProgress(initial, p)
+	if e != nil {
+		return nil, e
+	}
+	if e = migrationSeal(dir, "progress.json", checkpoint); e != nil {
+		return nil, e
+	}
 	return &MigrationSession{dir, p, s}, nil
 }
 func OpenMigrationSession(ctx context.Context, dir string) (*MigrationSession, error) {
@@ -138,6 +146,17 @@ func OpenMigrationSession(ctx context.Context, dir string) (*MigrationSession, e
 	b, e = migration.CanonicalSnapshot(s, p.Limits)
 	if e != nil || !bytes.Equal(raw, b) || migration.Digest(raw) != p.SnapshotDigest {
 		return nil, fmt.Errorf("saved observation mismatch")
+	}
+	checkpoint, e := migrationUnseal(dir, "progress.json", p.Limits.ManifestBytes*4)
+	if e != nil {
+		return nil, fmt.Errorf("saved progress missing or unreadable; recovery required: %w", e)
+	}
+	var progress migration.Progress
+	if e = migration.StrictJSON(checkpoint, &progress); e != nil {
+		return nil, e
+	}
+	if _, e = migration.CanonicalProgress(progress, p); e != nil {
+		return nil, e
 	}
 	return &MigrationSession{dir, p, s}, nil
 }
@@ -225,6 +244,9 @@ func ApplyMigration(ctx context.Context, session *MigrationSession, d migration.
 		return e
 	}
 	p := s.Plan
+	if d.Locator() != p.Destination {
+		return fmt.Errorf("configured destination differs from saved plan destination")
+	}
 	raw, _ := migration.CanonicalPlan(p)
 	digest := migration.Digest(raw)
 	// Reverify all saved bytes and native relationships before any destination write.
@@ -233,21 +255,25 @@ func ApplyMigration(ctx context.Context, session *MigrationSession, d migration.
 		return e
 	}
 	defer q.Close()
-	progress := migration.Progress{Schema: "hn.migration-progress/1", PlanDigest: digest, Actor: actor, Entries: []migration.ProgressEntry{}}
+	var progress migration.Progress
 	existing, e := migrationUnseal(s.Directory, "progress.json", p.Limits.ManifestBytes*4)
-	if e == nil {
-		if e = migration.StrictJSON(existing, &progress); e != nil {
-			return e
-		}
-		if progress.Actor != actor {
-			return fmt.Errorf("migration actor changed")
-		}
-		if _, e = migration.CanonicalProgress(progress, p); e != nil {
-			return e
-		}
-	} else if !errors.Is(e, os.ErrNotExist) {
+	if e != nil {
+		return fmt.Errorf("saved progress missing or unreadable; recovery required: %w", e)
+	}
+	if e = migration.StrictJSON(existing, &progress); e != nil {
 		return e
 	}
+	if _, e = migration.CanonicalProgress(progress, p); e != nil {
+		return e
+	}
+	bindActor := progress.Actor == "" && len(progress.Entries) == 0
+	if !bindActor && progress.Actor != actor {
+		return fmt.Errorf("migration actor changed")
+	}
+	if bindActor {
+		progress.Actor = actor
+	}
+
 	if e = migrationPreflightGit(ctx, p, progress, q, d, migrationApplyContext{blobs: migrationDiskBlobs{s.Directory, s.Snapshot}, snapshot: s.Snapshot, limits: p.Limits}); e != nil {
 		return e
 	}
@@ -261,8 +287,16 @@ func ApplyMigration(ctx context.Context, session *MigrationSession, d migration.
 		}
 		return migrationSeal(s.Directory, "progress.json", b)
 	}
+	if bindActor {
+		if e = save(); e != nil {
+			return e
+		}
+	}
 	confirmed := map[string]migration.Receipt{}
 	for i, in := range p.Intents {
+		if d.Locator() != p.Destination {
+			return fmt.Errorf("configured destination changed during migration")
+		}
 		if e = ctx.Err(); e != nil {
 			return e
 		}
@@ -535,4 +569,12 @@ func (d migrationCompositeDestination) Preflight(ctx context.Context, in migrati
 		return fmt.Errorf("Git destination lacks shared transport preflight")
 	}
 	return nil
+}
+
+func (d migrationCompositeDestination) Locator() migration.Locator {
+	a := d.communications.Locator()
+	if a != d.code.Locator() {
+		return migration.Locator{}
+	}
+	return a
 }

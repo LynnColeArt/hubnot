@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"hubnot/internal/migration"
 )
@@ -15,7 +18,7 @@ import (
 type LocalMigrationSource struct{ GitDir string }
 
 func (s LocalMigrationSource) Capabilities(context.Context) ([]migration.Capability, error) {
-	return []migration.Capability{{Kind: "project", Read: true, Preserve: true, Limits: []string{}, Reason: "explicit selected native Git history"}}, nil
+	return []migration.Capability{{Kind: "project", Read: true, Preserve: true, Limits: []string{}, Reason: "explicit selected native Git history; select imported foreign records separately with ImportedMigrationSource"}}, nil
 }
 func (s LocalMigrationSource) Snapshot(ctx context.Context, sel migration.Selection, l migration.Limits) (migration.Snapshot, migration.BlobSource, error) {
 	p, e := ExportProjectSnapshot(ctx, s.GitDir, sel.Refs, l)
@@ -349,4 +352,185 @@ func (d ArchiveMigrationDestination) Reconcile(ctx context.Context, in migration
 	}
 	r := migrationReceipt(in, ac, migration.Locator{Kind: "archive", Repository: d.Path}, w.SnapshotDigest, w.SnapshotDigest)
 	return migration.Reconciliation{Status: "exact", Receipt: &r, Reason: "verified exact archive"}, nil
+}
+
+func (d LocalMigrationDestination) Locator() migration.Locator {
+	return migration.Locator{Kind: "local", Repository: d.Repository}
+}
+func (d ArchiveMigrationDestination) Locator() migration.Locator {
+	return migration.Locator{Kind: "archive", Repository: d.Path}
+}
+
+// ImportedMigrationSource explicitly selects previously preserved foreign
+// observations. It never substitutes archived code for the current Git refs.
+type ImportedMigrationSource struct {
+	GitDir          string
+	SnapshotDigests []string
+}
+
+func (s ImportedMigrationSource) Capabilities(context.Context) ([]migration.Capability, error) {
+	return []migration.Capability{{Kind: "foreign_records", Read: true, Preserve: true, Limits: []string{"only explicitly selected imported snapshot digests", "current code/native refs are selected independently", "unselected imports are not claimed as read"}, Reason: "offline attributed records and verified attachments"}}, nil
+}
+
+type migrationImportedBlobs struct {
+	root     string
+	snapshot migration.Snapshot
+}
+
+func (b *migrationImportedBlobs) Close() error { return os.RemoveAll(b.root) }
+func (b *migrationImportedBlobs) Open(ctx context.Context, d string) (io.ReadCloser, error) {
+	return (migrationDiskBlobs{b.root, b.snapshot}).Open(ctx, d)
+}
+func (s ImportedMigrationSource) Snapshot(ctx context.Context, _ migration.Selection, l migration.Limits) (result migration.Snapshot, source migration.BlobSource, err error) {
+	if e := l.Validate(); e != nil {
+		return result, nil, e
+	}
+	if !filepath.IsAbs(s.GitDir) || len(s.SnapshotDigests) == 0 || len(s.SnapshotDigests) > l.Refs {
+		return result, nil, fmt.Errorf("explicit bounded imported snapshot selection required")
+	}
+	selected := append([]string{}, s.SnapshotDigests...)
+	sort.Strings(selected)
+	for i, d := range selected {
+		if !migration.ValidDigest(d) || (i > 0 && selected[i-1] == d) {
+			return result, nil, fmt.Errorf("invalid/duplicate imported snapshot selection")
+		}
+	}
+	root, e := os.MkdirTemp("", "hn-imported-records-")
+	if e != nil {
+		return result, nil, e
+	}
+	b := &migrationImportedBlobs{root: root}
+	defer func() {
+		if err != nil {
+			b.Close()
+		}
+	}()
+	if e = os.Mkdir(filepath.Join(root, "blobs"), 0700); e != nil {
+		return result, nil, e
+	}
+	identity, _ := json.Marshal(selected)
+	result = migration.Snapshot{Schema: "hn.project-snapshot/1", Source: migration.Locator{Kind: "local", Repository: s.GitDir}, SourceID: migration.Digest(identity), Records: []migration.Record{}, Blobs: []migration.Blob{}, NativeRefs: []migration.NativeRef{}, Findings: []migration.Finding{{ID: "imports/selection", Status: "mapped", Path: "imported_snapshots", Message: "Only explicitly selected imported snapshots were read; no coverage is claimed for unselected imports. Missing selected imports refuse the observation."}}}
+	records := map[string][]byte{}
+	blobs := map[string]migration.Blob{}
+	var total int64
+	for _, digest := range selected {
+		a, e := ReadLocalMigration(ctx, s.GitDir, digest, l)
+		if e != nil {
+			return result, nil, fmt.Errorf("selected imported snapshot unavailable or invalid: %w", e)
+		}
+		e = func() error {
+			defer a.Close()
+			for _, r := range a.Snapshot.Records {
+				raw, _ := json.Marshal(r)
+				if old, ok := records[r.Key.String()]; ok {
+					if !bytes.Equal(old, raw) {
+						return fmt.Errorf("conflicting imported record revisions require an explicit snapshot choice")
+					}
+					continue
+				}
+				if len(result.Records) >= l.Records {
+					return fmt.Errorf("aggregate imported record budget exceeded")
+				}
+				records[r.Key.String()] = raw
+				result.Records = append(result.Records, r)
+			}
+			for _, blob := range a.Snapshot.Blobs {
+				if blob.Digest == a.Snapshot.GitBundle {
+					continue
+				}
+				if old, ok := blobs[blob.Digest]; ok {
+					if old != blob {
+						return fmt.Errorf("conflicting imported blob metadata")
+					}
+					continue
+				}
+				if len(blobs) >= l.Blobs || blob.Size > l.BlobBytes || blob.Size > l.AttachmentBytes-total {
+					return fmt.Errorf("aggregate imported blob budget exceeded")
+				}
+				r, e := a.Open(ctx, blob.Digest)
+				if e != nil {
+					return e
+				}
+				f, e := os.OpenFile(filepath.Join(root, "blobs", blob.Digest[7:]), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+				if e != nil {
+					r.Close()
+					return e
+				}
+				n, e := io.Copy(f, io.LimitReader(r, blob.Size+1))
+				ce := f.Close()
+				r.Close()
+				if e != nil {
+					return e
+				}
+				if ce != nil {
+					return ce
+				}
+				if n != blob.Size {
+					return fmt.Errorf("imported blob length changed")
+				}
+				total += n
+				blobs[blob.Digest] = blob
+				result.Blobs = append(result.Blobs, blob)
+			}
+			for _, f := range a.Snapshot.Findings {
+				if len(result.Findings) >= l.Records*8+l.Refs*8+32 {
+					return fmt.Errorf("aggregate imported finding budget exceeded")
+				}
+				f.ID = "import/" + migration.Digest([]byte(digest + "\x00" + f.ID))[7:]
+				result.Findings = append(result.Findings, f)
+			}
+			return nil
+		}()
+		if e != nil {
+			return result, nil, e
+		}
+	}
+	raw, e := migration.CanonicalSnapshot(result, l)
+	if e != nil {
+		return result, nil, e
+	}
+	_ = json.Unmarshal(raw, &result)
+	b.snapshot = result
+	return result, b, nil
+}
+
+// ListLocalMigrations discovers bounded immutable archive IDs without opening
+// record contents or selecting any archive for a subsequent migration.
+func ListLocalMigrations(gitDir string, l migration.Limits) ([]string, error) {
+	if e := l.Validate(); e != nil {
+		return nil, e
+	}
+	placeholder := migration.Digest(nil)
+	path, e := migrationLocalArchivePath(gitDir, placeholder, false)
+	if os.IsNotExist(e) {
+		return []string{}, nil
+	}
+	if e != nil {
+		return nil, e
+	}
+	f, e := os.Open(filepath.Dir(path))
+	if e != nil {
+		return nil, e
+	}
+	defer f.Close()
+	entries, e := f.ReadDir(l.Refs + 1)
+	if e != nil && e != io.EOF {
+		return nil, e
+	}
+	if len(entries) > l.Refs {
+		return nil, fmt.Errorf("import listing exceeds ref budget")
+	}
+	out := []string{}
+	for _, entry := range entries {
+		if entry.IsDir() || entry.Type()&os.ModeSymlink != 0 || !strings.HasSuffix(entry.Name(), ".tar") {
+			return nil, fmt.Errorf("unexpected import store entry")
+		}
+		digest := "sha256:" + strings.TrimSuffix(entry.Name(), ".tar")
+		if !migration.ValidDigest(digest) {
+			return nil, fmt.Errorf("unexpected import store filename")
+		}
+		out = append(out, digest)
+	}
+	sort.Strings(out)
+	return out, nil
 }

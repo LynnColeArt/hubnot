@@ -384,34 +384,7 @@ func TestMigrationAuthenticatedHTTPSGitRedactionAndFreshResumeCredentials(t *tes
 			fmt.Fprint(w, authorization)
 			return
 		}
-		cmd := exec.Command("git", "http-backend")
-		cmd.Env = append(os.Environ(), "GIT_PROJECT_ROOT="+parent, "GIT_HTTP_EXPORT_ALL=1", "PATH_INFO="+r.URL.Path, "QUERY_STRING="+r.URL.RawQuery, "REQUEST_METHOD="+r.Method, "CONTENT_TYPE="+r.Header.Get("Content-Type"), "CONTENT_LENGTH="+strconv.FormatInt(r.ContentLength, 10), "REMOTE_USER=operator")
-		cmd.Stdin = r.Body
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = io.Discard
-		if e := cmd.Run(); e != nil {
-			w.WriteHeader(500)
-			return
-		}
-		reader := bufio.NewReader(&out)
-		headers, e := textproto.NewReader(reader).ReadMIMEHeader()
-		if e != nil {
-			w.WriteHeader(500)
-			return
-		}
-		status := 200
-		for k, values := range headers {
-			if strings.EqualFold(k, "Status") {
-				fmt.Sscanf(values[0], "%d", &status)
-				continue
-			}
-			for _, v := range values {
-				w.Header().Add(k, v)
-			}
-		}
-		w.WriteHeader(status)
-		io.Copy(w, reader)
+		migrationServeGitBackend(w, r, parent)
 	}))
 	defer server.Close()
 	ca := filepath.Join(t.TempDir(), "fixture-ca.pem")
@@ -492,4 +465,118 @@ func (d migrationLostAckDestination) Preflight(ctx context.Context, in migration
 		return p.Preflight(ctx, in, ac)
 	}
 	return nil
+}
+
+func migrationServeGitBackend(w http.ResponseWriter, r *http.Request, parent string) {
+	cmd := exec.Command("git", "http-backend")
+	cmd.Env = append(os.Environ(), "GIT_PROJECT_ROOT="+parent, "GIT_HTTP_EXPORT_ALL=1", "PATH_INFO="+r.URL.Path, "QUERY_STRING="+r.URL.RawQuery, "REQUEST_METHOD="+r.Method, "CONTENT_TYPE="+r.Header.Get("Content-Type"), "CONTENT_LENGTH="+strconv.FormatInt(r.ContentLength, 10), "REMOTE_USER=operator")
+	cmd.Stdin = r.Body
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = io.Discard
+	if e := cmd.Run(); e != nil {
+		w.WriteHeader(500)
+		return
+	}
+	reader := bufio.NewReader(&out)
+	headers, e := textproto.NewReader(reader).ReadMIMEHeader()
+	if e != nil {
+		w.WriteHeader(500)
+		return
+	}
+	status := 200
+	for k, values := range headers {
+		if strings.EqualFold(k, "Status") {
+			fmt.Sscanf(values[0], "%d", &status)
+			continue
+		}
+		for _, v := range values {
+			w.Header().Add(k, v)
+		}
+	}
+	w.WriteHeader(status)
+	io.Copy(w, reader)
+}
+func TestMigrationHTTPSIgnoresAmbientCredentialStores(t *testing.T) {
+	ctx := context.Background()
+	parent := t.TempDir()
+	if _, e := projectGit(ctx, "", nil, 4096, "init", "--bare", "--quiet", filepath.Join(parent, "repo.git")); e != nil {
+		t.Fatal(e)
+	}
+	explicit := "Basic " + base64.StdEncoding.EncodeToString([]byte("explicit:chosen-token"))
+	var ambientHeaders atomic.Int64
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+		if auth != "" && auth != explicit {
+			ambientHeaders.Add(1)
+		}
+		if auth != explicit {
+			w.Header().Set("WWW-Authenticate", `Basic realm="explicit only"`)
+			w.WriteHeader(401)
+			return
+		}
+		migrationServeGitBackend(w, r, parent)
+	}))
+	defer server.Close()
+	ca := filepath.Join(t.TempDir(), "ca.pem")
+	if e := os.WriteFile(ca, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: server.Certificate().Raw}), 0600); e != nil {
+		t.Fatal(e)
+	}
+	outer := t.TempDir()
+	marker := []byte("machine 127.0.0.1 login ambient-user password ambient-secret-marker\n")
+	for _, name := range []string{".netrc", "_netrc"} {
+		if e := os.WriteFile(filepath.Join(outer, name), marker, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	beforeHome := os.Getenv("HOME")
+	beforeUserProfile := os.Getenv("USERPROFILE")
+	child := exec.Command(os.Args[0], "-test.run=^TestMigrationHTTPSCredentialIsolationChild$", "-test.v")
+	child.Env = []string{}
+	for _, v := range os.Environ() {
+		k, _, _ := strings.Cut(v, "=")
+		switch k {
+		case "HOME", "USERPROFILE", "NETRC", "CURL_HOME":
+			continue
+		}
+		child.Env = append(child.Env, v)
+	}
+	child.Env = append(child.Env, "HOME="+outer, "USERPROFILE="+outer, "NETRC="+filepath.Join(outer, ".netrc"), "CURL_HOME="+outer, "HN_GIT_AUTH_CHILD=1", "HN_GIT_AUTH_REMOTE="+server.URL+"/repo.git", "HN_GIT_AUTH_CA="+ca)
+	out, e := child.CombinedOutput()
+	if e != nil {
+		t.Fatalf("isolated Git credential child failed: %s", out)
+	}
+	for _, secret := range []string{"ambient-secret-marker", "chosen-token", explicit} {
+		if bytes.Contains(out, []byte(secret)) {
+			t.Fatal("credential output leak")
+		}
+	}
+	if ambientHeaders.Load() != 0 {
+		t.Fatal("ambient netrc credential sent")
+	}
+	if os.Getenv("HOME") != beforeHome || os.Getenv("USERPROFILE") != beforeUserProfile {
+		t.Fatal("parent environment changed")
+	}
+	for _, name := range []string{".netrc", "_netrc"} {
+		raw, e := os.ReadFile(filepath.Join(outer, name))
+		if e != nil || !bytes.Equal(raw, marker) {
+			t.Fatal("outer credential file changed")
+		}
+	}
+}
+func TestMigrationHTTPSCredentialIsolationChild(t *testing.T) {
+	if os.Getenv("HN_GIT_AUTH_CHILD") != "1" {
+		return
+	}
+	remote := os.Getenv("HN_GIT_AUTH_REMOTE")
+	origin := strings.TrimSuffix(remote, "/repo.git")
+	options := &GitHTTPSCredentials{Origin: origin, CAFile: os.Getenv("HN_GIT_AUTH_CA")}
+	refs := []migration.RefUpdate{{Ref: "refs/heads/main"}}
+	if _, e := migrationRemoteRefs(context.Background(), remote, refs, options); e == nil {
+		t.Fatal("anonymous private remote access unexpectedly succeeded")
+	}
+	options.Authorization = "Basic " + base64.StdEncoding.EncodeToString([]byte("explicit:chosen-token"))
+	if _, e := migrationRemoteRefs(context.Background(), remote, refs, options); e != nil {
+		t.Fatal(e)
+	}
 }

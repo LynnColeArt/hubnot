@@ -363,37 +363,42 @@ func migrationGitAuth(remote string, credentials *GitHTTPSCredentials) ([]string
 		return nil, fmt.Errorf("Git credential origin does not match selected remote")
 	}
 	auth := credentials.Authorization
-	if len(auth) > 8192 || (!strings.HasPrefix(auth, "Basic ") && !strings.HasPrefix(auth, "Bearer ")) {
-		return nil, fmt.Errorf("Git authorization requires bounded Basic or Bearer input")
-	}
-	_, token, _ := strings.Cut(auth, " ")
-	if token == "" {
-		return nil, fmt.Errorf("empty Git authorization")
-	}
-	for _, c := range token {
-		if c < 33 || c > 126 {
-			return nil, fmt.Errorf("invalid Git authorization header")
+	if auth != "" {
+		if len(auth) > 8192 || (!strings.HasPrefix(auth, "Basic ") && !strings.HasPrefix(auth, "Bearer ")) {
+			return nil, fmt.Errorf("Git authorization requires bounded Basic or Bearer input")
 		}
-	}
-
-	if strings.HasPrefix(auth, "Basic ") {
-		decoded, e := base64.StdEncoding.DecodeString(token)
-		if e != nil || !bytes.Contains(decoded, []byte(":")) || bytes.ContainsAny(decoded, "\x00\r\n") {
-			return nil, fmt.Errorf("invalid Basic Git authorization")
+		_, token, _ := strings.Cut(auth, " ")
+		if token == "" {
+			return nil, fmt.Errorf("empty Git authorization")
 		}
-	} else {
-		padding := false
 		for _, c := range token {
-			if c == '=' {
-				padding = true
-				continue
+			if c < 33 || c > 126 {
+				return nil, fmt.Errorf("invalid Git authorization header")
 			}
-			if padding || !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || strings.ContainsRune("-._~+/", c)) {
+		}
+
+		if strings.HasPrefix(auth, "Basic ") {
+			decoded, e := base64.StdEncoding.DecodeString(token)
+			if e != nil || !bytes.Contains(decoded, []byte(":")) || bytes.ContainsAny(decoded, "\x00\r\n") {
+				return nil, fmt.Errorf("invalid Basic Git authorization")
+			}
+		} else {
+			if strings.TrimRight(token, "=") == "" {
 				return nil, fmt.Errorf("invalid Bearer Git authorization")
 			}
+			padding := false
+			for _, c := range token {
+				if c == '=' {
+					padding = true
+					continue
+				}
+				if padding || !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || strings.ContainsRune("-._~+/", c)) {
+					return nil, fmt.Errorf("invalid Bearer Git authorization")
+				}
+			}
 		}
+		pairs = append(pairs, "http."+origin+"/.extraHeader", "Authorization: "+auth)
 	}
-	pairs = append(pairs, "http."+origin+"/.extraHeader", "Authorization: "+auth)
 	if credentials.CAFile != "" {
 		if !filepath.IsAbs(credentials.CAFile) {
 			return nil, fmt.Errorf("Git certificate trust requires an explicit absolute file")
@@ -424,7 +429,23 @@ func migrationTransportGit(ctx context.Context, dir, remote string, credentials 
 	for i := 0; i < len(pairs); i += 2 {
 		env = append(env, fmt.Sprintf("GIT_CONFIG_KEY_%d=%s", i/2, pairs[i]), fmt.Sprintf("GIT_CONFIG_VALUE_%d=%s", i/2, pairs[i+1]))
 	}
-	cmd.Env = env
+	privateHome, e := os.MkdirTemp("", "hn-git-client-home-")
+	if e != nil {
+		return nil, e
+	}
+	defer os.RemoveAll(privateHome)
+	clean := []string{}
+	for _, v := range env {
+		k, _, _ := strings.Cut(v, "=")
+		switch strings.ToUpper(k) {
+		case "HOME", "USERPROFILE", "HOMEDRIVE", "HOMEPATH", "APPDATA", "LOCALAPPDATA", "XDG_CONFIG_HOME", "XDG_CONFIG_DIRS", "NETRC", "CURL_HOME":
+			continue
+		}
+		clean = append(clean, v)
+	}
+	volume := filepath.VolumeName(privateHome)
+	clean = append(clean, "HOME="+privateHome, "USERPROFILE="+privateHome, "HOMEDRIVE="+volume, "HOMEPATH="+strings.TrimPrefix(privateHome, volume), "APPDATA="+filepath.Join(privateHome, "AppData", "Roaming"), "LOCALAPPDATA="+filepath.Join(privateHome, "AppData", "Local"), "XDG_CONFIG_HOME="+filepath.Join(privateHome, "config"), "XDG_CONFIG_DIRS="+filepath.Join(privateHome, "config"))
+	cmd.Env = clean
 	cmd.Stdin = bytes.NewReader(input)
 	var out bytes.Buffer
 	cmd.Stdout = &projectBoundWriter{w: &out, left: limit}
@@ -450,3 +471,5 @@ func (d GitMigrationDestination) Preflight(ctx context.Context, in migration.Int
 	}
 	return nil
 }
+
+func (d GitMigrationDestination) Locator() migration.Locator { return d.Destination }

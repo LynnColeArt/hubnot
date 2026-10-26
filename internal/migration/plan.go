@@ -86,6 +86,7 @@ type ApplyContext interface {
 	BoundWrite() BoundWrite
 }
 type Destination interface {
+	Locator() Locator
 	Capabilities(context.Context) ([]Capability, error)
 	Plan(context.Context, Snapshot, Selection, Limits) ([]Intent, []Finding, error)
 	Apply(context.Context, Intent, ApplyContext) (Receipt, error)
@@ -369,6 +370,9 @@ func CanonicalPlan(p Plan) ([]byte, error) {
 	return b, e
 }
 func NewPlan(ctx context.Context, s Snapshot, sel Selection, d Destination, l Limits, decisions []Decision) (Plan, error) {
+	if d.Locator() != sel.Destination {
+		return Plan{}, fmt.Errorf("configured destination differs from selected destination")
+	}
 	raw, e := CanonicalSnapshot(s, l)
 	if e != nil {
 		return Plan{}, e
@@ -377,6 +381,9 @@ func NewPlan(ctx context.Context, s Snapshot, sel Selection, d Destination, l Li
 	ins, fs, e := d.Plan(ctx, s, sel, l)
 	if e != nil {
 		return Plan{}, e
+	}
+	if d.Locator() != sel.Destination {
+		return Plan{}, fmt.Errorf("configured destination changed during planning")
 	}
 	p := Plan{"hn.migration-plan/1", Digest(raw), sel.Destination, l, decisions, ins, append(append([]Finding{}, s.Findings...), fs...)}
 	b, e := CanonicalPlan(p)
