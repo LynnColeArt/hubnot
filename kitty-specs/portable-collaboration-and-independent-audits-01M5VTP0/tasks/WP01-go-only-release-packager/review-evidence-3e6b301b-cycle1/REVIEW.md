@@ -101,5 +101,11 @@ were not fetched during review. The documented crash partial-output limit remain
 All-adapter noforge verification is an existing WP06/WP12 integration requirement,
 not an unfulfilled WP01 acceptance criterion.
 
-Canonical verdict is recorded after coordination with the root to serialize
-shared runtime mutations; only WP01 is transitioned.
+Canonical approval completed exit 0 after root granted the serialized mutation
+slot: WP01 `in_review` → `approved`, event
+`01M5W1GJ3A6P0G9924H0EKSGWQ`, `force=false`, review reference
+`review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP01-go-only-release-packager/review-cycle-2.md`.
+Only WP01 was transitioned. The CLI warned that hosted sync lacks consent and
+that its text artifact reader cannot decode the compressed race logs; neither
+warning prevented local canonical approval. Reviewer explicitly decompressed
+and verified the source-bound race bytes above. No sync consent/settings changed.
