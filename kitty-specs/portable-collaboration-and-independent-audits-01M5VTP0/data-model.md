@@ -31,6 +31,14 @@ do not assume provider-specific permissions, types or CI languages.
 
 ## Independent audits
 
+An optional committed audit policy declares scope and separate rule-owner,
+requester and executor actors. Operator-selected authority is independent of
+target/rule content. Owner-signed rule authorizations/revocations form explicit
+successor graphs; sole owners may authorize their own rules. Concurrent heads,
+current revocation or stale authority block new execution without erasing
+historically valid authorizations/results. Sources initially remain inert/local
+or explicitly already-present external Git data; no implicit fetch is introduced.
+
 An audit request identifies resolved target code, authorized rule source/revision,
 requester and explicit execution intent. A result identifies its request,
 executor, outcome, bounded evidence/logs and stable findings. These facts form
