@@ -54,3 +54,13 @@ or platform runtime qualification is claimed.
 The canonical pre-review gate is invoked separately after this evidence commit.
 The repository's missing Python tests.architectural hook has historically yielded
 no_coverage; that is framework infrastructure evidence and is not a Go failure.
+
+Canonical closeout: `mark-status T004 T005 T006 --status done` updated all three
+subtasks through the CLI. `move-task WP02 --to for_review` returned exit 0 and
+applied transition event `01M5W0XG8DMZ859WVCNJ1VEK1X`. Its pre-review gate was
+polled to completion and returned `no_coverage`: tests.architectural._gate_coverage
+is unavailable (`No module named 'tests.architectural'`). It reported zero new
+failures, zero pre-existing failures, `run_state: completed`, `blocked: false` and
+`force_bypassed: false`. No skip, force or disable flag was used. This records an
+unverified framework gate alongside the independently passing full Go race suite;
+it is not represented as a covered gate. See mark-status.json and for-review.log.
