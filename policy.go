@@ -41,6 +41,18 @@ type ProposalPolicy struct {
 type PipelinePolicy struct {
 	RequiredResults int      `json:"requiredResults"`
 	TrustedRunners  []string `json:"trustedRunners"`
+	// Requesters may sign run.request events that count, in addition to
+	// maintainers. Absent keeps runs maintainer-requested only.
+	Requesters []string `json:"requesters,omitempty"`
+}
+
+// mayRequestRun reports whether actor's run.request counts for pipeline.
+func mayRequestRun(policy PolicyDocument, pipeline, actor string) bool {
+	if actorListed(actor, policy.Maintainers) {
+		return true
+	}
+	pipelinePolicy, exists := policy.Pipelines[pipeline]
+	return exists && actorListed(actor, pipelinePolicy.Requesters)
 }
 
 type PipelineEvaluation struct {
@@ -147,6 +159,14 @@ func validatePolicy(policy PolicyDocument) error {
 		}
 		if pipeline.RequiredResults > len(pipeline.TrustedRunners) {
 			return fmt.Errorf("pipeline %q requiredResults exceeds its trusted runner count", name)
+		}
+		if pipeline.Requesters != nil {
+			if len(pipeline.Requesters) < 1 || len(pipeline.Requesters) > 64 {
+				return fmt.Errorf("pipeline %q requesters must list 1 to 64 actors when present", name)
+			}
+			if err := validateActorList("pipeline "+name+" requesters", pipeline.Requesters); err != nil {
+				return err
+			}
 		}
 	}
 	if policy.Memory != nil {
@@ -311,7 +331,7 @@ func evaluateProposal(proposal *StoredEvent, events []StoredEvent) (*ProposalEva
 		latestByRunner := make(map[string]StoredEvent)
 		for _, request := range events {
 			if request.Event.Kind != "run.request" || request.Event.Subject != proposal.ID || request.Event.Pipeline != name ||
-				request.Event.Definition != expectedDefinition || !actorListed(request.Event.Actor, policy.Maintainers) {
+				request.Event.Definition != expectedDefinition || !mayRequestRun(policy, name, request.Event.Actor) {
 				continue
 			}
 			for _, result := range currentRunResults(events, request.ID) {
@@ -437,7 +457,7 @@ func validateDecisionEvent(decision, proposal StoredEvent, byID map[string]Store
 			}
 		case "run.result":
 			request, exists := byID[evidence.Event.Subject]
-			if !exists || request.Event.Kind != "run.request" || request.Event.Subject != proposal.ID || !actorListed(request.Event.Actor, policy.Maintainers) || evidence.Event.Outcome != "passed" {
+			if !exists || request.Event.Kind != "run.request" || request.Event.Subject != proposal.ID || !mayRequestRun(policy, request.Event.Pipeline, request.Event.Actor) || evidence.Event.Outcome != "passed" {
 				continue
 			}
 			pipelinePolicy, exists := policy.Pipelines[request.Event.Pipeline]
