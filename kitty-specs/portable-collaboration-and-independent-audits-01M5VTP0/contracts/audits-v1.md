@@ -31,6 +31,13 @@ branch with byte-identical policy does not invalidate a request by commit alone.
 Historical validation uses recorded policy objects, not today's private anchor.
 A candidate, imported rule or collaborative workflow cannot choose its own owners.
 
+Current rule-head projection also isolates the selected authority history:
+recorded authority-policy commits must belong to the anchored branch's accepted
+Git lineage, alongside the current policy/role checks. A foreign or forked policy
+claiming the same public scope/rule identifiers cannot introduce current conflict
+or revocation heads. Such otherwise valid historical observations remain
+inspectable outside the active authority projection. Test this poisoning attempt.
+
 The sole designated owner may authorize their own rule. Do not apply the
 protected-check nonauthor exclusion to this owner signature. Git author fields,
 display names, workflow publication and foreign reviews are not authorization.
