@@ -49,16 +49,17 @@
     },
     "WP02": {
       "actor": "codex",
-      "agent": null,
-      "agent_profile": "implementer-ivan",
-      "agent_profile_version": "1.0",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "for_review",
       "last_event_id": "01M5W0XG8DMZ859WVCNJ1VEK1X",
       "last_transition_at": "2026-10-26T11:53:15.277690+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review at d274d5c8298f1e3beff3999ed6e2ee7d741a9c05: strict signed observational audit family, explicit anchored authority, historical/fetched parity and bounded snapshot packs. Full go test -race ./... passed via detached supervision (1166 cases, exit 0); vet/build/nogithub build/gofmt/diff checks passed. Earlier tool-bound race invocations are incomplete evidence only."
+        "Ready for independent review at d274d5c8298f1e3beff3999ed6e2ee7d741a9c05: strict signed observational audit family, explicit anchored authority, historical/fetched parity and bounded snapshot packs. Full go test -race ./... passed via detached supervision (1166 cases, exit 0); vet/build/nogithub build/gofmt/diff checks passed. Earlier tool-bound race invocations are incomplete evidence only.",
+        "Cycle 1 corrected at 6d687af50562e8d837915d39a97d82727e91fd71: isolated Git syntax validation and actual edge types reject malformed snapshots locally and through real remotes. Full race exit 0 at unchanged head; focused SHA1/SHA256 negatives, omitted-parent snapshot exchange, reviewer reproducer, vet/build/format/diff pass. Durable source-bound evidence primary commit 53666e9069c6f21c087059469a3895475c3db626 under tasks/WP02-native-audit-protocol-admission/corrective-cycle1-6d687af5/verification.md. All T004-T006 canonically done; independent review required."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
