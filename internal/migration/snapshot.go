@@ -201,6 +201,18 @@ func validURL(s string) bool {
 	u, e := url.Parse(s)
 	return e == nil && (u.Scheme == "https" || u.Scheme == "http") && u.Host != "" && u.User == nil && u.Fragment == "" && u.RawQuery == ""
 }
+func validSourceURL(s string) bool {
+	if s == "" {
+		return true
+	}
+	u, err := url.Parse(s)
+	if err != nil {
+		return false
+	}
+	// Comment/review anchors are source provenance, not provider identity.
+	u.Fragment, u.RawFragment = "", ""
+	return validURL(u.String())
+}
 func ValidRef(r string) bool {
 	for _, c := range r {
 		if c <= 32 || c == 127 {
@@ -507,7 +519,7 @@ func CanonicalSnapshot(s Snapshot, l Limits) ([]byte, error) {
 		keys[r.Key.String()] = true
 	}
 	for i, r := range s.Records {
-		if !text(r.Selector, 4096, false) || !text(r.Revision, 4096, true) || !text(r.Author, 4096, false) || !text(r.SourceURL, 4096, false) || !validURL(r.SourceURL) {
+		if !text(r.Selector, 4096, false) || !text(r.Revision, 4096, true) || !text(r.Author, 4096, false) || !text(r.SourceURL, 4096, false) || !validSourceURL(r.SourceURL) {
 			return nil, fmt.Errorf("invalid record attribution")
 		}
 		for _, ts := range []string{r.CreatedAt, r.UpdatedAt} {

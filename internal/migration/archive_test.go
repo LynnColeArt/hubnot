@@ -219,3 +219,22 @@ func TestArchiveVerifiesBeforeWriting(t *testing.T) {
 		t.Fatal("corrupt blob produced visible archive bytes")
 	}
 }
+
+func TestSnapshotPreservesSourceCommentAnchor(t *testing.T) {
+	s, b := fixture(t)
+	want := "https://forge.test/group/project/-/issues/42#note_99"
+	s.Records[1].SourceURL = want
+	a, e := ReadArchive(context.Background(), bytes.NewReader(archiveBytes(t, s, b, DefaultLimits())), DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer a.Close()
+	for _, r := range a.Snapshot.Records {
+		if r.Key.Kind == "comment" && r.SourceURL != want {
+			t.Fatal("source comment anchor changed")
+		}
+	}
+	if _, e = NormalizeInstance(want); e == nil {
+		t.Fatal("comment anchor accepted as immutable provider instance")
+	}
+}
