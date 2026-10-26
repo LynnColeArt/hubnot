@@ -1,0 +1,94 @@
+{
+  "checks": {
+    "build": {
+      "check": "build",
+      "end": "2026-10-26T12:54:48Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "complete-diff": {
+      "check": "complete-diff",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "diff-check": {
+      "check": "diff-check",
+      "end": "2026-10-26T12:55:11Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "format": {
+      "check": "format",
+      "end": "2026-10-26T12:55:11Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "independent-recovery-probes": {
+      "check": "independent-recovery-probes",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "migration-package-deps": {
+      "check": "migration-package-deps",
+      "end": "2026-10-26T12:55:11Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "noforge-current-deps": {
+      "check": "noforge-current-deps",
+      "end": "2026-10-26T12:55:11Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "noforge-tag-compatibility": {
+      "check": "noforge-tag-compatibility",
+      "end": "2026-10-26T12:55:11Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "nogithub-build": {
+      "check": "nogithub-build",
+      "end": "2026-10-26T12:54:59Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "nogithub-tests": {
+      "check": "nogithub-tests",
+      "end": "2026-10-26T12:54:59Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "race": {
+      "check": "race",
+      "end": "2026-10-26T12:54:47Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    },
+    "vet": {
+      "check": "vet",
+      "end": "2026-10-26T12:54:47Z",
+      "exit": 0,
+      "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+    }
+  },
+  "final": {
+    "build": 0,
+    "end": "2026-10-26T12:55:11Z",
+    "format": 0,
+    "noforge_tag_compatibility": 0,
+    "nogithub_build": 0,
+    "nogithub_tests": 0,
+    "race": 0,
+    "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff",
+    "vet": 0
+  },
+  "migration_provider_free": true,
+  "noforge_current_adapters": [
+    "hubnot/internal/forge",
+    "hubnot/internal/githubapi"
+  ],
+  "race_test_events": {
+    "pass": 1254
+  },
+  "source": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff"
+}
