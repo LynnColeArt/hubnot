@@ -164,8 +164,8 @@ func probeExactGitObjectAt(gitDir, objectish string) (gitObjectProbe, error) {
 	return gitObjectProbe{Exists: true, Type: fields[1]}, nil
 }
 
-// gitObjectsPresentAt answers probeExactGitObjectAt for many full object IDs
-// with one cat-file process. Spawning one process per object made a sync of a
+// gitObjectsPresentAt reports, for many full object IDs and with one cat-file
+// process, whether each original object is stored (replacements ignored). Spawning one process per object made a sync of a
 // repository with vendored dependencies spend most of its time in fork/exec.
 func gitObjectsPresentAt(gitDir string, objectIDs []string) (map[string]bool, error) {
 	present := make(map[string]bool, len(objectIDs))
@@ -177,7 +177,9 @@ func gitObjectsPresentAt(gitDir string, objectIDs []string) (map[string]bool, er
 			return nil, fmt.Errorf("Git object probe needs a full object ID, got %s", safeDiagnostic(id))
 		}
 	}
-	output, err := gitInputWithDirectory(gitDir, []byte(strings.Join(objectIDs, "\n")+"\n"), nil, "cat-file", "--batch-check=%(objectname) %(objecttype)")
+	// Replacement refs would report a replacement's type under the requested
+	// name, so an absent original could look present.
+	output, err := gitInputWithDirectory(gitDir, []byte(strings.Join(objectIDs, "\n")+"\n"), []string{"GIT_NO_REPLACE_OBJECTS=1"}, "cat-file", "--batch-check=%(objectname) %(objecttype)")
 	if err != nil {
 		return nil, err
 	}

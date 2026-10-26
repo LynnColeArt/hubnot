@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -1787,15 +1788,13 @@ func recordReplicationTransaction(mainGitDir string, result replicationTransacti
 // every object reachable from a fetched root except those reachable from the
 // selection's previous accepted root, validation still reads every reachable
 // object, and new objects still reach the main database only through
-// copyGitObjects after validation. A shallow main repository keeps the old
-// isolated quarantine, because borrowed commits there can have missing
-// parents that fetch negotiation would treat as present.
+// copyGitObjects after validation. Shallow and partial (promisor) main
+// repositories keep the old isolated quarantine: borrowed commits there can
+// lack parents or promised blobs that fetch negotiation would then treat as
+// present. When that cannot be determined, the quarantine also stays
+// isolated, which is always correct and only slower.
 func borrowMainObjects(quarantineDir, mainGitDir string) error {
-	shallow, err := gitTextAt(mainGitDir, "rev-parse", "--is-shallow-repository")
-	if err != nil {
-		return err
-	}
-	if shallow != "false" {
+	if !mainObjectsCompleteForBorrowing(mainGitDir) {
 		return nil
 	}
 	objects, err := gitTextAt(mainGitDir, "rev-parse", "--path-format=absolute", "--git-path", "objects")
@@ -1806,4 +1805,39 @@ func borrowMainObjects(quarantineDir, mainGitDir string) error {
 		return fmt.Errorf("unexpected main object directory %q", objects)
 	}
 	return os.WriteFile(filepath.Join(quarantineDir, "objects", "info", "alternates"), []byte(objects+"\n"), 0o600)
+}
+
+// mainObjectsCompleteForBorrowing reports whether the main repository is
+// neither shallow nor configured as a partial clone and holds no promisor
+// packs. Any inspection failure answers false.
+func mainObjectsCompleteForBorrowing(mainGitDir string) bool {
+	shallow, err := gitTextAt(mainGitDir, "rev-parse", "--is-shallow-repository")
+	if err != nil || shallow != "false" {
+		return false
+	}
+	cmd := exec.Command("git", "--git-dir="+mainGitDir, "--no-replace-objects", "config", "--null", "--get-regexp", `^(extensions\.partialclone|remote\..*\.(promisor|partialclonefilter))$`)
+	output, err := cmd.Output()
+	if err != nil {
+		exit, ok := err.(*exec.ExitError)
+		if !ok || exit.ExitCode() != 1 {
+			return false
+		}
+	}
+	for _, entry := range bytes.Split(output, []byte{0}) {
+		if len(entry) == 0 {
+			continue
+		}
+		key, value, _ := strings.Cut(string(entry), "\n")
+		value = strings.ToLower(strings.TrimSpace(value))
+		if strings.HasSuffix(strings.ToLower(key), ".promisor") && (value == "false" || value == "no" || value == "off" || value == "0") {
+			continue
+		}
+		return false
+	}
+	objects, err := gitTextAt(mainGitDir, "rev-parse", "--path-format=absolute", "--git-path", "objects")
+	if err != nil {
+		return false
+	}
+	promisorPacks, err := filepath.Glob(filepath.Join(objects, "pack", "*.promisor"))
+	return err == nil && len(promisorPacks) == 0
 }

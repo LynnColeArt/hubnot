@@ -12,7 +12,15 @@ import (
 // borrowFixture publishes a proposal whose base already holds many code
 // objects, then clones a receiver that has that code but none of the Hubnot
 // refs. It returns the receiver path and the selected actor and proposal.
-func borrowFixture(t *testing.T, shallow bool) (receiver string, actor *Identity, proposal *StoredEvent, head string) {
+type borrowClone int
+
+const (
+	fullClone borrowClone = iota
+	shallowClone
+	partialClone
+)
+
+func borrowFixture(t *testing.T, clone borrowClone) (receiver string, actor *Identity, proposal *StoredEvent, head string) {
 	t.Helper()
 	original, err := os.Getwd()
 	if err != nil {
@@ -44,12 +52,14 @@ func borrowFixture(t *testing.T, shallow bool) (receiver string, actor *Identity
 		t.Fatal(err)
 	}
 	base := mustGitText(t, "rev-parse", "HEAD")
+	mustGit(t, "checkout", "-q", "-b", "candidate")
 	if err := os.WriteFile(filepath.Join(publisher, "change.rs"), []byte("pub fn change() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	mustGit(t, "add", "change.rs")
 	mustGit(t, "commit", "-q", "-m", "candidate")
 	head = mustGitText(t, "rev-parse", "HEAD")
+	mustGit(t, "checkout", "-q", "main")
 	actor = testIdentity(t, "Borrow Actor")
 	opened := newEvent(actor, "proposal.open", 1, "")
 	opened.Title = "borrow fixture"
@@ -63,19 +73,29 @@ func borrowFixture(t *testing.T, shallow bool) (receiver string, actor *Identity
 		t.Fatal(err)
 	}
 	mustGit(t, "clone", "-q", "--bare", publisher, remote)
+	mustGit(t, "-C", remote, "config", "uploadpack.allowFilter", "true")
 	mustGit(t, "remote", "add", "origin", remote)
 	for _, ref := range []string{actorRef(actor.Actor), proposalRef(proposal.ID)} {
 		mustGit(t, "push", "-q", "origin", ref+":"+ref)
 	}
 	cloneArgs := []string{"clone", "--no-local", "-q", "--branch", "main", "--single-branch"}
-	if shallow {
+	switch clone {
+	case shallowClone:
 		cloneArgs = append(cloneArgs, "--depth", "1")
+	case partialClone:
+		cloneArgs = append(cloneArgs, "--filter=blob:none")
 	}
 	mustGit(t, append(cloneArgs, "file://"+remote, receiver)...)
 	if err := os.Chdir(receiver); err != nil {
 		t.Fatal(err)
 	}
-	mustGit(t, "remote", "set-url", "origin", remote)
+	if clone != partialClone {
+		mustGit(t, "remote", "set-url", "origin", remote)
+	}
+	// No lazy fetch: in a partial clone the probe itself would fetch it.
+	if _, err := gitInputWithDirectory("", nil, []string{"GIT_NO_LAZY_FETCH=1"}, "cat-file", "-e", head+"^{commit}"); err == nil {
+		t.Fatal("test precondition failed: receiver already has the candidate commit")
+	}
 	if err := cmdReplication([]string{"select", "origin", "--actor", actor.Actor, "--proposal", proposal.ID}); err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +130,7 @@ func quarantineState(t *testing.T) (alternates string, localObjects int) {
 }
 
 func TestReplicationQuarantineBorrowsMainObjectsAndFetchesOnlyNewOnes(t *testing.T) {
-	receiver, actor, proposal, head := borrowFixture(t, false)
+	receiver, actor, proposal, head := borrowFixture(t, fullClone)
 	var alternates string
 	var local int
 	replicationAfterFetchHook = func() error {
@@ -145,7 +165,7 @@ func TestReplicationQuarantineBorrowsMainObjectsAndFetchesOnlyNewOnes(t *testing
 }
 
 func TestReplicationBorrowedObjectsStillCountAgainstBudgets(t *testing.T) {
-	_, _, proposal, _ := borrowFixture(t, false)
+	_, _, proposal, _ := borrowFixture(t, fullClone)
 	// The candidate reaches more than 300 objects, all but a few borrowed from
 	// the receiver. Borrowing must not discount them.
 	if err := cmdReplication([]string{"select", "origin", "--proposal", proposal.ID, "--max-objects", "100"}); err != nil {
@@ -161,13 +181,14 @@ func TestReplicationBorrowedObjectsStillCountAgainstBudgets(t *testing.T) {
 	assertRefAbsent(t, acceptedProposalRef("origin", proposal.ID))
 }
 
-func TestReplicationShallowReceiverKeepsIsolatedQuarantine(t *testing.T) {
-	_, actor, proposal, _ := borrowFixture(t, true)
+func assertIsolatedQuarantineImports(t *testing.T, clone borrowClone) {
+	t.Helper()
+	_, actor, proposal, head := borrowFixture(t, clone)
 	sawQuarantine := false
 	replicationAfterFetchHook = func() error {
 		sawQuarantine = true
 		if alternates, _ := quarantineState(t); alternates != "" {
-			t.Fatalf("shallow receiver quarantine borrowed %q", alternates)
+			t.Fatalf("quarantine borrowed %q from an incomplete receiver", alternates)
 		}
 		return nil
 	}
@@ -176,7 +197,38 @@ func TestReplicationShallowReceiverKeepsIsolatedQuarantine(t *testing.T) {
 	if !sawQuarantine {
 		t.Fatalf("sync never reached the quarantine: %v\n%s", err, output)
 	}
-	if err == nil {
-		assertRefValue(t, acceptedActorRef("origin", actor.Actor), proposal.Commit)
+	if err != nil {
+		t.Fatalf("sync failed with an isolated quarantine: %v\n%s", err, output)
+	}
+	assertRefValue(t, acceptedActorRef("origin", actor.Actor), proposal.Commit)
+	assertRefValue(t, acceptedProposalRef("origin", proposal.ID), head)
+}
+
+func TestReplicationShallowReceiverKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, shallowClone)
+}
+
+func TestReplicationPartialCloneReceiverKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, partialClone)
+}
+
+func TestGitObjectsPresentIgnoresReplacementRefs(t *testing.T) {
+	inReplicationTestRepository(t)
+	present := mustGitText(t, "rev-parse", "HEAD")
+	absent := strings.Repeat("ab", 20)
+	mustGit(t, "update-ref", "refs/replace/"+absent, present)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	got, err := gitObjectsPresentAt(gitDir, []string{absent, present})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got[absent] || !got[present] {
+		t.Fatalf("presence = %v; a replacement must not make an absent object present", got)
+	}
+	if _, err := gitObjectsPresentAt(gitDir, []string{strings.ToUpper(present)}); err == nil {
+		t.Fatal("non-canonical object ID was accepted")
+	}
+	if got, err := gitObjectsPresentAt(gitDir, nil); err != nil || len(got) != 0 {
+		t.Fatalf("empty input = %v, %v", got, err)
 	}
 }
