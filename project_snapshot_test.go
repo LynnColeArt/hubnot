@@ -273,3 +273,61 @@ func TestProjectSnapshotRefusesAmbientObjectOverride(t *testing.T) {
 		t.Fatal("ambient object override accepted")
 	}
 }
+
+func TestProjectSnapshotKeylessObservedHistoriesRoundTrip(t *testing.T) {
+	root := inReplicationTestRepository(t)
+	id := testIdentity(t, "Original signer")
+	stored := appendIdentityTestEvent(t, id, "issue.open", func(e *Event) { e.Title = "Keyless portability" })
+	observed := acceptedActorRef("upstream", id.Actor)
+	mustGit(t, "update-ref", observed, stored.Commit)
+	mustGit(t, "update-ref", "-d", actorRef(id.Actor))
+	id.PrivateKey = ""
+	t.Setenv("HN_GITHUB_TOKEN", "")
+	gitDir := filepath.Join(t.TempDir(), "keyless.git")
+	mustGit(t, "clone", "--bare", "--quiet", root, gitDir)
+	if _, e := gitOutputAt(gitDir, "fetch", "--quiet", "--no-tags", "--no-write-fetch-head", root, observed+":"+observed); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := os.Stat(filepath.Join(gitDir, "hn", "identity.json")); !os.IsNotExist(e) {
+		t.Fatal("fixture unexpectedly has local identity")
+	}
+	p, e := ExportProjectSnapshot(context.Background(), gitDir, []string{"refs/heads/main", observed}, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer p.Close()
+	var archive bytes.Buffer
+	if e = migration.WriteArchive(context.Background(), &archive, p.Snapshot, p, migration.DefaultLimits()); e != nil {
+		t.Fatal(e)
+	}
+	a, e := migration.ReadArchive(context.Background(), bytes.NewReader(archive.Bytes()), migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer a.Close()
+	q, e := StageProjectSnapshot(context.Background(), a.Snapshot, a, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer q.Close()
+	got, e := loadStoredEventAt(q.GitDir, stored.Commit)
+	if e != nil || !bytes.Equal(got.Payload, stored.Payload) || !bytes.Equal(got.Signature, stored.Signature) {
+		t.Fatal("observed signed bytes changed")
+	}
+	if q.Snapshot.NativeRefs[1].SourceRef != observed {
+		t.Fatal("source observation provenance changed")
+	}
+	refs, e := gitTextAt(q.GitDir, "for-each-ref")
+	if e != nil || refs != "" {
+		t.Fatal("quarantine manufactured local signing streams")
+	}
+	assertRefAbsent(t, actorRef(id.Actor))
+	if _, e := gitOutputAt(gitDir, "update-ref", actorRef(id.Actor), stored.Commit); e != nil {
+		t.Fatal(e)
+	}
+	alias, e := ExportProjectSnapshot(context.Background(), gitDir, []string{actorRef(id.Actor), observed}, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal("identical selected observations were treated as conflicting:", e)
+	}
+	alias.Close()
+}

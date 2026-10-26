@@ -225,6 +225,21 @@ func ValidOID(s string) bool {
 	return e == nil && strings.ToLower(s) == s
 }
 func NativeKind(ref string) string {
+	if strings.HasPrefix(ref, "refs/hn/remotes/") {
+		parts := strings.Split(strings.TrimPrefix(ref, "refs/hn/remotes/"), "/")
+		if len(parts) == 3 {
+			switch parts[1] {
+			case "actors":
+				return "actor"
+			case "proposals":
+				return "proposal"
+			}
+		}
+		if len(parts) == 4 && parts[1] == "memory" {
+			return "memory"
+		}
+		return ""
+	}
 	switch {
 	case strings.HasPrefix(ref, "refs/heads/"), strings.HasPrefix(ref, "refs/tags/"):
 		return "code"

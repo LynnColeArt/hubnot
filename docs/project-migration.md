@@ -130,3 +130,11 @@ its historical content: export does not promise secret scrubbing.
 
 This foundation imports no provider client, service, new Go module or provider
 CLI; foreign content inspection and local archive validation need only Go and Git.
+
+Explicitly selected previously accepted `refs/hn/remotes/<remote>/actors/*`,
+`proposals/*` and `memory/*/*` observation refs are portable as well. This permits
+keyless imported-history repositories to archive native observations without a
+signing identity or provider client. Their original source refs remain in the
+manifest. Identical facts reached through multiple selected observations are
+validated once; conflicting observations still refuse. Source quarantine,
+pending, private and unrelated refs remain outside the selection allowlist.

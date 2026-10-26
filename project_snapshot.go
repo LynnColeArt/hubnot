@@ -400,29 +400,47 @@ func validateProjectNative(dir string, refs []migration.NativeRef) error {
 	events := []StoredEvent{}
 	memories := []StoredMemory{}
 	code := map[string]string{}
+	eventIDs, memoryIDs := map[string]bool{}, map[string]bool{}
 	for _, r := range refs {
 		if _, err := gitOutputAt(dir, "rev-parse", "--verify", r.OID+"^{commit}"); err != nil {
 			return fmt.Errorf("selected native/code ref must resolve to a commit")
 		}
 		switch r.Kind {
 		case "actor":
-			rows, e := validateQuarantinedActor(dir, strings.TrimPrefix(r.SourceRef, "refs/hn/actors/"), r.OID)
+			rows, e := validateQuarantinedActor(dir, projectActorOwner(r.SourceRef), r.OID)
 			if e != nil {
 				return e
 			}
-			events = append(events, rows...)
+			for _, row := range rows {
+				if !eventIDs[row.ID] {
+					events = append(events, row)
+					eventIDs[row.ID] = true
+				}
+			}
 		case "proposal":
-			code["sha256:"+strings.TrimPrefix(r.SourceRef, "refs/hn/proposals/")] = r.OID
-		case "memory":
-			actor, stream, ok := parseMemoryRef(r.SourceRef)
-			if !ok {
-				return fmt.Errorf("invalid memory source ref")
+			id := "sha256:" + strings.TrimPrefix(r.SourceRef, "refs/hn/proposals/")
+			if _, observed, ok := parseAcceptedProposalRef(r.SourceRef); ok {
+				id = observed
 			}
-			rows, e := loadMemoryStreamAt(dir, memoryStreamSource{Ref: r.SourceRef, Actor: actor, Stream: stream, Head: r.OID})
+			if old, ok := code[id]; ok && old != r.OID {
+				return fmt.Errorf("conflicting selected proposal observations")
+			}
+			code[id] = r.OID
+		case "memory":
+			source, e := projectMemorySource(r.SourceRef, r.OID)
 			if e != nil {
 				return e
 			}
-			memories = append(memories, rows...)
+			rows, e := loadMemoryStreamAt(dir, source)
+			if e != nil {
+				return e
+			}
+			for _, row := range rows {
+				if !memoryIDs[row.ID] {
+					memories = append(memories, row)
+					memoryIDs[row.ID] = true
+				}
+			}
 		}
 	}
 	if e := validateActorChains(events); e != nil {
@@ -500,7 +518,7 @@ func projectDependencyRoots(dir string, refs []migration.NativeRef) ([]string, e
 	for _, r := range refs {
 		switch r.Kind {
 		case "actor":
-			rows, e := validateQuarantinedActor(dir, strings.TrimPrefix(r.SourceRef, "refs/hn/actors/"), r.OID)
+			rows, e := validateQuarantinedActor(dir, projectActorOwner(r.SourceRef), r.OID)
 			if e != nil {
 				return nil, e
 			}
@@ -515,11 +533,11 @@ func projectDependencyRoots(dir string, refs []migration.NativeRef) ([]string, e
 				}
 			}
 		case "memory":
-			actor, stream, ok := parseMemoryRef(r.SourceRef)
-			if !ok {
-				return nil, fmt.Errorf("invalid memory source")
+			source, e := projectMemorySource(r.SourceRef, r.OID)
+			if e != nil {
+				return nil, e
 			}
-			rows, e := loadMemoryStreamAt(dir, memoryStreamSource{Ref: r.SourceRef, Actor: actor, Stream: stream, Head: r.OID})
+			rows, e := loadMemoryStreamAt(dir, source)
 			if e != nil {
 				return nil, e
 			}
@@ -531,4 +549,23 @@ func projectDependencyRoots(dir string, refs []migration.NativeRef) ([]string, e
 		}
 	}
 	return sortedUniqueStrings(roots...), nil
+}
+
+func projectActorOwner(ref string) string {
+	if _, actor, ok := parseAcceptedActorRef(ref); ok {
+		return actor
+	}
+	if strings.HasPrefix(ref, "refs/hn/actors/") {
+		return strings.TrimPrefix(ref, "refs/hn/actors/")
+	}
+	return ""
+}
+func projectMemorySource(ref, head string) (memoryStreamSource, error) {
+	if actor, stream, ok := parseMemoryRef(ref); ok {
+		return memoryStreamSource{Ref: ref, Actor: actor, Stream: stream, Head: head}, nil
+	}
+	if remote, actor, stream, ok := parseAcceptedMemoryRef(ref); ok {
+		return memoryStreamSource{Ref: ref, Remote: remote, Actor: actor, Stream: stream, Head: head, Accepted: true}, nil
+	}
+	return memoryStreamSource{}, fmt.Errorf("invalid selected memory observation")
 }
