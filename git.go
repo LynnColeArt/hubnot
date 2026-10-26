@@ -70,7 +70,10 @@ func copyGitObjects(sourceGitDir, destinationGitDir string, roots []string) erro
 		return nil
 	}
 	input := strings.NewReader(strings.Join(roots, "\n") + "\n")
-	producer := exec.Command("git", "--git-dir="+sourceGitDir, "pack-objects", "--stdout", "--revs")
+	// --local leaves out objects the source borrows through alternates; those
+	// are already in the destination when the source is a quarantine that
+	// borrows the destination's object database.
+	producer := exec.Command("git", "--git-dir="+sourceGitDir, "pack-objects", "--stdout", "--revs", "--local")
 	consumer := exec.Command("git", "--git-dir="+destinationGitDir, "index-pack", "--stdin")
 	pipe, err := producer.StdoutPipe()
 	if err != nil {

@@ -218,6 +218,9 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 	if _, err := gitOutput("init", "--bare", "--quiet", quarantineDir); err != nil {
 		return result, replicationPhaseError(selection.Remote, "quarantine setup")
 	}
+	if err := borrowMainObjects(quarantineDir, mainGitDir); err != nil {
+		return result, replicationPhaseError(selection.Remote, "quarantine setup")
+	}
 	if replicationBeforeFetchHook != nil {
 		if err := replicationBeforeFetchHook(); err != nil {
 			return result, replicationPhaseError(selection.Remote, "quarantine fetch")
@@ -1770,4 +1773,32 @@ func recordReplicationTransaction(mainGitDir string, result replicationTransacti
 		return fmt.Errorf("record replication transaction: %w", err)
 	}
 	return nil
+}
+
+// borrowMainObjects lets the quarantine read, but never write, the main object
+// database through objects/info/alternates, as Git's own receive quarantine
+// does. Fetch can then negotiate with objects the clone already holds and
+// transfer only new ones. Nothing about trust changes: budgets still count
+// every object reachable from a fetched root except those reachable from the
+// selection's previous accepted root, validation still reads every reachable
+// object, and new objects still reach the main database only through
+// copyGitObjects after validation. A shallow main repository keeps the old
+// isolated quarantine, because borrowed commits there can have missing
+// parents that fetch negotiation would treat as present.
+func borrowMainObjects(quarantineDir, mainGitDir string) error {
+	shallow, err := gitTextAt(mainGitDir, "rev-parse", "--is-shallow-repository")
+	if err != nil {
+		return err
+	}
+	if shallow != "false" {
+		return nil
+	}
+	objects, err := gitTextAt(mainGitDir, "rev-parse", "--path-format=absolute", "--git-path", "objects")
+	if err != nil {
+		return err
+	}
+	if !filepath.IsAbs(objects) || strings.ContainsAny(objects, "\n\r") {
+		return fmt.Errorf("unexpected main object directory %q", objects)
+	}
+	return os.WriteFile(filepath.Join(quarantineDir, "objects", "info", "alternates"), []byte(objects+"\n"), 0o600)
 }
