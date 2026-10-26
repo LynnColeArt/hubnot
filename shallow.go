@@ -164,6 +164,37 @@ func probeExactGitObjectAt(gitDir, objectish string) (gitObjectProbe, error) {
 	return gitObjectProbe{Exists: true, Type: fields[1]}, nil
 }
 
+// gitObjectsPresentAt answers probeExactGitObjectAt for many full object IDs
+// with one cat-file process. Spawning one process per object made a sync of a
+// repository with vendored dependencies spend most of its time in fork/exec.
+func gitObjectsPresentAt(gitDir string, objectIDs []string) (map[string]bool, error) {
+	present := make(map[string]bool, len(objectIDs))
+	if len(objectIDs) == 0 {
+		return present, nil
+	}
+	for _, id := range objectIDs {
+		if !validGitOID(id) {
+			return nil, fmt.Errorf("Git object probe needs a full object ID, got %s", safeDiagnostic(id))
+		}
+	}
+	output, err := gitInputWithDirectory(gitDir, []byte(strings.Join(objectIDs, "\n")+"\n"), nil, "cat-file", "--batch-check=%(objectname) %(objecttype)")
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(strings.TrimRight(string(output), "\n"), "\n")
+	if len(lines) != len(objectIDs) {
+		return nil, fmt.Errorf("Git returned %d object probes for %d objects", len(lines), len(objectIDs))
+	}
+	for i, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) != 2 || fields[0] != objectIDs[i] {
+			return nil, fmt.Errorf("Git returned invalid object probe for %s", safeDiagnostic(objectIDs[i]))
+		}
+		present[objectIDs[i]] = fields[1] != "missing"
+	}
+	return present, nil
+}
+
 const replicationUnacceptedObjectsVersion = 1
 
 type replicationUnacceptedObjects struct {

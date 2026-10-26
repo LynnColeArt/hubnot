@@ -494,8 +494,12 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 	if err := replicationCopyObjects(quarantineDir, mainGitDir, sortedUniqueStrings(roots...)); err != nil {
 		return result, replicationPhaseError(selection.Remote, "object copy")
 	}
-	for _, objectID := range requiredObjects {
-		if _, err := gitOutputAt(mainGitDir, "cat-file", "-e", objectID+"^{object}"); err != nil {
+	copied, err := gitObjectsPresentAt(mainGitDir, sortedUniqueStrings(requiredObjects...))
+	if err != nil {
+		return result, replicationResidueError(selection.Remote, "object verification failed")
+	}
+	for _, objectID := range sortedUniqueStrings(requiredObjects...) {
+		if !copied[objectID] {
 			return result, replicationResidueError(selection.Remote, fmt.Sprintf("object verification failed at %s", objectID))
 		}
 	}
@@ -541,13 +545,14 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 }
 
 func replicationObjectsAbsentFromMain(gitDir string, objectIDs []string) ([]string, error) {
-	absent := make([]string, 0, len(objectIDs))
-	for _, id := range sortedUniqueStrings(objectIDs...) {
-		probe, err := probeExactGitObjectAt(gitDir, id)
-		if err != nil {
-			return nil, err
-		}
-		if !probe.Exists {
+	ids := sortedUniqueStrings(objectIDs...)
+	present, err := gitObjectsPresentAt(gitDir, ids)
+	if err != nil {
+		return nil, err
+	}
+	absent := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if !present[id] {
 			absent = append(absent, id)
 		}
 	}
