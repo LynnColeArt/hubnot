@@ -1808,8 +1808,9 @@ func borrowMainObjects(quarantineDir, mainGitDir string) error {
 }
 
 // mainObjectsCompleteForBorrowing reports whether the main repository is
-// neither shallow nor configured as a partial clone and holds no promisor
-// packs. Any inspection failure answers false.
+// not shallow, not configured as a partial clone, holds no promisor packs and
+// uses no alternate object stores of its own. Any inspection failure answers
+// false.
 func mainObjectsCompleteForBorrowing(mainGitDir string) bool {
 	shallow, err := gitTextAt(mainGitDir, "rev-parse", "--is-shallow-repository")
 	if err != nil || shallow != "false" {
@@ -1834,10 +1835,32 @@ func mainObjectsCompleteForBorrowing(mainGitDir string) bool {
 		}
 		return false
 	}
-	objects, err := gitTextAt(mainGitDir, "rev-parse", "--path-format=absolute", "--git-path", "objects")
-	if err != nil {
+	if os.Getenv("GIT_ALTERNATE_OBJECT_DIRECTORIES") != "" {
 		return false
 	}
-	promisorPacks, err := filepath.Glob(filepath.Join(objects, "pack", "*.promisor"))
-	return err == nil && len(promisorPacks) == 0
+	objects, err := gitTextAt(mainGitDir, "rev-parse", "--path-format=absolute", "--git-path", "objects")
+	if err != nil || !filepath.IsAbs(objects) {
+		return false
+	}
+	// Borrowing exposes the main repository's own alternates transitively,
+	// and those stores can be incomplete (for example a shared clone of a
+	// partial cache). Their completeness is not checked, so any alternates
+	// keep the quarantine isolated.
+	if alternates, err := os.ReadFile(filepath.Join(objects, "info", "alternates")); err == nil {
+		if strings.TrimSpace(string(alternates)) != "" {
+			return false
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	entries, err := os.ReadDir(filepath.Join(objects, "pack"))
+	if err != nil {
+		return errors.Is(err, os.ErrNotExist)
+	}
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".promisor") {
+			return false
+		}
+	}
+	return true
 }

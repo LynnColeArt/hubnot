@@ -178,8 +178,9 @@ func gitObjectsPresentAt(gitDir string, objectIDs []string) (map[string]bool, er
 		}
 	}
 	// Replacement refs would report a replacement's type under the requested
-	// name, so an absent original could look present.
-	output, err := gitInputWithDirectory(gitDir, []byte(strings.Join(objectIDs, "\n")+"\n"), []string{"GIT_NO_REPLACE_OBJECTS=1"}, "cat-file", "--batch-check=%(objectname) %(objecttype)")
+	// name, so an absent original could look present. In a partial clone a
+	// lazy fetch would make the probe change the object database.
+	output, err := gitInputWithDirectory(gitDir, []byte(strings.Join(objectIDs, "\n")+"\n"), []string{"GIT_NO_REPLACE_OBJECTS=1", "GIT_NO_LAZY_FETCH=1"}, "cat-file", "--batch-check=%(objectname) %(objecttype)")
 	if err != nil {
 		return nil, err
 	}

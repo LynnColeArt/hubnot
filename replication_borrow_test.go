@@ -18,6 +18,8 @@ const (
 	fullClone borrowClone = iota
 	shallowClone
 	partialClone
+	sharedPartialCache
+	bracketPromisorPack
 )
 
 func borrowFixture(t *testing.T, clone borrowClone) (receiver string, actor *Identity, proposal *StoredEvent, head string) {
@@ -31,6 +33,9 @@ func borrowFixture(t *testing.T, clone borrowClone) (receiver string, actor *Ide
 	publisher := filepath.Join(root, "publisher")
 	remote := filepath.Join(root, "project.git")
 	receiver = filepath.Join(root, "receiver")
+	if clone == bracketPromisorPack {
+		receiver = filepath.Join(root, "receiver[1]")
+	}
 	if err := os.Mkdir(publisher, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -82,10 +87,39 @@ func borrowFixture(t *testing.T, clone borrowClone) (receiver string, actor *Ide
 	switch clone {
 	case shallowClone:
 		cloneArgs = append(cloneArgs, "--depth", "1")
-	case partialClone:
-		cloneArgs = append(cloneArgs, "--filter=blob:none")
+	case partialClone, bracketPromisorPack:
+		cloneArgs = append(cloneArgs, "--filter=blob:none", "--no-checkout")
 	}
-	mustGit(t, append(cloneArgs, "file://"+remote, receiver)...)
+	if clone == sharedPartialCache {
+		// The receiver has no promisor settings or packs of its own; its
+		// alternate store is a blob-filtered cache that lacks blobs.
+		cache := filepath.Join(root, "cache")
+		mustGit(t, append(cloneArgs, "--filter=blob:none", "--no-checkout", "file://"+remote, cache)...)
+		mustGit(t, "clone", "-q", "--shared", "--no-checkout", cache, receiver)
+	} else {
+		mustGit(t, append(cloneArgs, "file://"+remote, receiver)...)
+	}
+	if clone == bracketPromisorPack {
+		// Retained promisor packs with the promisor settings removed.
+		mustGit(t, "-C", receiver, "config", "--unset", "remote.origin.promisor")
+		mustGit(t, "-C", receiver, "config", "--unset", "remote.origin.partialclonefilter")
+		// Present only in some Git versions; absence is fine.
+		_, _ = gitOutput("-C", receiver, "config", "--unset-all", "extensions.partialclone")
+		packs, err := os.ReadDir(filepath.Join(receiver, ".git", "objects", "pack"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		retained := false
+		for _, pack := range packs {
+			retained = retained || strings.HasSuffix(pack.Name(), ".promisor")
+		}
+		if !retained {
+			t.Fatal("test precondition failed: no retained promisor pack")
+		}
+		if out, _ := gitOutput("-C", receiver, "config", "--get-regexp", `^(extensions\.partialclone|remote\..*\.(promisor|partialclonefilter))$`); len(out) != 0 {
+			t.Fatalf("test precondition failed: promisor settings remain: %s", out)
+		}
+	}
 	if err := os.Chdir(receiver); err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +141,15 @@ func borrowFixture(t *testing.T, clone borrowClone) (receiver string, actor *Ide
 func quarantineState(t *testing.T) (alternates string, localObjects int) {
 	t.Helper()
 	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
-	found, err := filepath.Glob(filepath.Join(gitDir, "hn", "replication", "quarantine", "txn-*"))
+	// Literal listing: test paths can contain glob metacharacters.
+	root := filepath.Join(gitDir, "hn", "replication", "quarantine")
+	entries, err := os.ReadDir(root)
+	var found []string
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), "txn-") {
+			found = append(found, filepath.Join(root, entry.Name()))
+		}
+	}
 	if err != nil || len(found) != 1 {
 		t.Fatalf("quarantine directories = %v, err=%v", found, err)
 	}
@@ -210,6 +252,29 @@ func TestReplicationShallowReceiverKeepsIsolatedQuarantine(t *testing.T) {
 
 func TestReplicationPartialCloneReceiverKeepsIsolatedQuarantine(t *testing.T) {
 	assertIsolatedQuarantineImports(t, partialClone)
+}
+
+func TestReplicationSharedReceiverOfPartialCacheKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, sharedPartialCache)
+}
+
+func TestReplicationRetainedPromisorPackInBracketPathKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, bracketPromisorPack)
+}
+
+func TestGitObjectsPresentDoesNotLazyFetch(t *testing.T) {
+	_, _, _, head := borrowFixture(t, partialClone)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	got, err := gitObjectsPresentAt(gitDir, []string{head})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got[head] {
+		t.Fatal("absent candidate reported present")
+	}
+	if _, err := gitInputWithDirectory("", nil, []string{"GIT_NO_LAZY_FETCH=1"}, "cat-file", "-e", head+"^{commit}"); err == nil {
+		t.Fatal("presence probe lazily fetched the candidate into the main object database")
+	}
 }
 
 func TestGitObjectsPresentIgnoresReplacementRefs(t *testing.T) {
