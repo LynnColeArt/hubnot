@@ -158,7 +158,8 @@
         "Ready for independent review at ecaffbfc; complete fixed-source validation preserved in PRIMARY validation-ecaffbfc by 4e626abf.",
         "Administrative release of root coordinator claim for user-authorized Kat on external Hermes. Reuses the existing P1 review feedback; no new code review or product change. Kat has sole corrective implementation ownership; root retains status and independent-review coordination.",
         "Explicit user-authorized ownership reassignment to Kat on external Hermes after root released its coordinator lease in event 01M5WJHXB0H3B3EHJ797E4GRZ0. Override only the retained prior codex assignment; no implementation/review/testing gate is being waived. Root does not own or execute the WP05 correction. Kat may land her rehearsed two-file fix in existing lane-d, then run all required fixed-source checks and return evidence for independent review.",
-        "Kat external Hermes correction landed at 9ab00d85; completed fixed-source validation and source hashes preserved in PRIMARY correction-9ab00d85 before handoff. Re-review the existing P1 destination-hook finding. Administrative ownership release was not a new implementation review."
+        "Kat external Hermes correction landed at 9ab00d85; completed fixed-source validation and source hashes preserved in PRIMARY correction-9ab00d85 before handoff. Re-review the existing P1 destination-hook finding. Administrative ownership release was not a new implementation review.",
+        "Administrative release of review claim: claimed under codex by coordinator probe before reviewer dispatch; no review performed; re-claiming under the actual independent reviewer (claude)."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
