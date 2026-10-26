@@ -83,12 +83,23 @@ type Source interface {
     Snapshot(context.Context, Selection, Limits) (Snapshot, BlobSource, error)
 }
 type Destination interface {
+    Locator() Locator
     Capabilities(context.Context) ([]Capability, error)
     Plan(context.Context, Snapshot, Selection, Limits) ([]Intent, []Finding, error)
     Apply(context.Context, Intent, ApplyContext) (Receipt, error)
     Reconcile(context.Context, Intent, ApplyContext) (Reconciliation, error)
 }
 ```
+
+`Destination.Locator` returns a value copy of the adapter's resolved configured
+destination without mutation. Planning requires it to equal the selected
+destination; apply/resume requires it to equal the saved `Plan.Destination`
+before preflight or any effect. A composed destination checks every child before
+any component writes. There is no optional identity-check bypass. The separately
+bound Git remote and provider immutable repository/parent baselines still require
+their own pre-write checks; a static locator is not proof against replacement at
+the same selector. A mismatching receipt after a mutation is too late to enforce
+this invariant.
 
 `Selection` contains validated locator/scope/mappings. A receipt binds the plan,
 intent, destination, actual immutable remote identity, mutable lookup selector,
@@ -199,6 +210,11 @@ refresh during resume. Intent payloads are closed adapter inputs, not arbitrary
 HTTP requests or shell commands. Planning cannot mutate native refs or providers.
 
 Private locked progress binds plan digest and actor where native signing applies.
+Preparation seals an authenticated empty progress checkpoint. Open/apply refuse
+a missing or invalid checkpoint rather than treating an existing saved session as
+a new execution; first-use actor binding is allowed only on the authenticated
+empty checkpoint before effects. Missing state requires explicit recovery, never
+automatic repetition of confirmed or uncertain writes.
 Persist prepared → in-flight → confirmed state around the one side effect.
 After an uncertain create, exact positive evidence confirms it; absence,
 inaccessibility or ambiguity requires manual recovery. A negative lookup is not
