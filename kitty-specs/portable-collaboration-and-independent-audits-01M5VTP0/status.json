@@ -19,16 +19,17 @@
   "work_packages": {
     "WP01": {
       "actor": "codex",
-      "agent": null,
-      "agent_profile": "implementer-ivan",
-      "agent_profile_version": "1.0",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "for_review",
       "last_event_id": "01M5W12ZN7A36XC0VBSGGQ7C0W",
       "last_transition_at": "2026-10-26T11:56:14.887544+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review at 86dc00678c42d495c6442addfcc8da8abd983ffa: Go-only packager, two identical 11-asset runs, independent archive/native CLI inspection, Windows/macOS cross-compilation, full race exit 0 plus vet/build/format/diff pass. Evidence /tmp/hn-wp01-evidence/EVIDENCE.md; host runtime qualified only Linux AMD64. Initial baseline is framework pytest/JUnit coverage failure, not a Go test failure."
+        "Ready for independent review at 86dc00678c42d495c6442addfcc8da8abd983ffa: Go-only packager, two identical 11-asset runs, independent archive/native CLI inspection, Windows/macOS cross-compilation, full race exit 0 plus vet/build/format/diff pass. Evidence /tmp/hn-wp01-evidence/EVIDENCE.md; host runtime qualified only Linux AMD64. Initial baseline is framework pytest/JUnit coverage failure, not a Go test failure.",
+        "Cycle 1 P1 corrected at 3e6b301b; full race exit 0 and independent release acceptance pass. Durable evidence 3e1f6a44 on planning branch; lane a382f928 has identical entire Git tree to validated source 3e6b301b."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
