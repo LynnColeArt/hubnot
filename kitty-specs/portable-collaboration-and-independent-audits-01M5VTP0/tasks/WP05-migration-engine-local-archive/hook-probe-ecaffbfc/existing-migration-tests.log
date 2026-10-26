@@ -1,0 +1,38 @@
+=== RUN   TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries
+--- PASS: TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries (0.09s)
+=== RUN   TestMigrationVerifiedBlobRefusalBeforeWrites
+--- PASS: TestMigrationVerifiedBlobRefusalBeforeWrites (0.02s)
+=== RUN   TestMigrationJournalTamperLockAndUnsafePaths
+--- PASS: TestMigrationJournalTamperLockAndUnsafePaths (0.02s)
+=== RUN   TestMigrationMissingCheckpointNeverReplaysCreates
+--- PASS: TestMigrationMissingCheckpointNeverReplaysCreates (0.04s)
+=== RUN   TestMigrationDestinationChangeRefusedBeforeAnyEffect
+--- PASS: TestMigrationDestinationChangeRefusedBeforeAnyEffect (0.03s)
+=== RUN   TestMigrationLocalForeignRecordsOfflineAndArchiveRoundTrip
+--- PASS: TestMigrationLocalForeignRecordsOfflineAndArchiveRoundTrip (0.08s)
+=== RUN   TestMigrationLocalStaleRefPreservesVisibleState
+--- PASS: TestMigrationLocalStaleRefPreservesVisibleState (0.16s)
+=== RUN   TestMigrationLocalContinuationUsesOwnSignerAndKeepsDestinationPolicy
+--- PASS: TestMigrationLocalContinuationUsesOwnSignerAndKeepsDestinationPolicy (0.37s)
+=== RUN   TestMigrationExplicitImportedRecordsContinueWithCurrentLocalCode
+--- PASS: TestMigrationExplicitImportedRecordsContinueWithCurrentLocalCode (0.64s)
+=== RUN   TestMigrationAuditOnlyClosurePrivateExportAndLocalAdmission
+--- PASS: TestMigrationAuditOnlyClosurePrivateExportAndLocalAdmission (2.83s)
+=== RUN   TestMigrationOrdinaryIncompleteHistoryStillRefused
+--- PASS: TestMigrationOrdinaryIncompleteHistoryStillRefused (0.03s)
+=== RUN   TestMigrationNativeLostAckReconcilesExactRefs
+--- PASS: TestMigrationNativeLostAckReconcilesExactRefs (0.25s)
+=== RUN   TestMigrationComposedCodeAndCommunicationsGuardedGitResume
+--- PASS: TestMigrationComposedCodeAndCommunicationsGuardedGitResume (0.53s)
+=== RUN   TestMigrationComposedGitStaleBaselinePreventsProviderWrites
+--- PASS: TestMigrationComposedGitStaleBaselinePreventsProviderWrites (0.16s)
+=== RUN   TestMigrationExportRefusesPromisorWithoutLazyFetch
+--- PASS: TestMigrationExportRefusesPromisorWithoutLazyFetch (0.02s)
+=== RUN   TestMigrationAuthenticatedHTTPSGitRedactionAndFreshResumeCredentials
+--- PASS: TestMigrationAuthenticatedHTTPSGitRedactionAndFreshResumeCredentials (0.53s)
+=== RUN   TestMigrationHTTPSIgnoresAmbientCredentialStores
+--- PASS: TestMigrationHTTPSIgnoresAmbientCredentialStores (1.09s)
+=== RUN   TestMigrationHTTPSCredentialIsolationChild
+--- PASS: TestMigrationHTTPSCredentialIsolationChild (0.00s)
+PASS
+ok  	hubnot	7.910s

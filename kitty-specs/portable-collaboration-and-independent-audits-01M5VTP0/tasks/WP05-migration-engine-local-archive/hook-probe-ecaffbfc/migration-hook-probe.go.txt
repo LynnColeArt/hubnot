@@ -1,0 +1,94 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"hubnot/internal/migration"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestReviewWP05DestinationRelativeHookIsolation(t *testing.T) {
+	for _, bare := range []bool{true, false} {
+		name := "worktree"
+		if bare {
+			name = "bare"
+		}
+		t.Run(name, func(t *testing.T) {
+			source := inReplicationTestRepository(t)
+			ctx := context.Background()
+			l := migration.DefaultLimits()
+			snapshot, err := ExportProjectSnapshot(ctx, filepath.Join(source, ".git"), []string{"refs/heads/main"}, l)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer snapshot.Close()
+			dest := filepath.Join(t.TempDir(), "destination")
+			args := []string{"init", "--quiet"}
+			if bare {
+				args = append(args, "--bare")
+			}
+			args = append(args, dest)
+			if _, err = projectGit(ctx, "", nil, 4096, args...); err != nil {
+				t.Fatal(err)
+			}
+			gitdir := dest
+			if !bare {
+				gitdir = filepath.Join(dest, ".git")
+			}
+			if _, err = projectGit(ctx, gitdir, nil, 4096, "config", "core.hooksPath", "relative-hooks"); err != nil {
+				t.Fatal(err)
+			}
+			marker := filepath.Join(t.TempDir(), "hook-output")
+			hook := func(base, label string) {
+				t.Helper()
+				d := filepath.Join(base, "relative-hooks")
+				if err := os.Mkdir(d, 0700); err != nil {
+					t.Fatal(err)
+				}
+				content := "#!/bin/sh\nprintf '" + label + " %s\\n' \"$PWD\" >> '" + marker + "'\n"
+				if label == "DESTINATION" {
+					content += "exit 1\n"
+				}
+				if err := os.WriteFile(filepath.Join(d, "reference-transaction"), []byte(content), 0700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			hook(source, "SOURCE")
+			hook(dest, "DESTINATION")
+			d := LocalMigrationDestination{Repository: dest}
+			session, err := PrepareMigration(ctx, filepath.Join(t.TempDir(), "saved-plan"), snapshot.Snapshot, snapshot, migration.Selection{Destination: d.Locator()}, d, l, []migration.Decision{{FindingID: "local/governance", Action: "preserve", Mapping: json.RawMessage(`{}`)}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			applyErr := ApplyMigration(ctx, session, d, "")
+			got, err := os.ReadFile(marker)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ref, _ := migrationObservationRef(snapshot.Snapshot.SourceID, snapshot.Snapshot.NativeRefs[0])
+			installed, err := migrationReadRef(ctx, gitdir, ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Positive control: the identical destination hook, with execution anchored
+			// to the destination, refuses a second ref write as the operator intended.
+			_, controlErr := projectGit(ctx, "", nil, 4096, "-C", dest, "--git-dir="+gitdir, "update-ref", "refs/hn/remotes/control/code/main", snapshot.Snapshot.NativeRefs[0].OID)
+			after, err := os.ReadFile(marker)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join("/tmp/wp05-review-ecaffbfc", name+"-hook-markers.txt"), after, 0600); err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("ApplyMigration error=%v; source_hook_output=%q; observation_ref=%s value=%s; anchored_destination_control_error=%v; total_hook_output=%q", applyErr, got, ref, installed, controlErr, after)
+			if controlErr == nil {
+				t.Fatal("invalid control: destination rejection hook did not reject")
+			}
+			if applyErr == nil || installed != "" || string(got) == "" {
+				t.Fatalf("migration bypassed rejecting destination hook and executed source code; source=%s destination=%s", source, dest)
+			}
+		})
+	}
+}

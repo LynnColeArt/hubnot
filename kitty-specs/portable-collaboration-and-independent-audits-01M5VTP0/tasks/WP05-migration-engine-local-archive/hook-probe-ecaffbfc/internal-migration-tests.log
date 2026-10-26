@@ -1,0 +1,68 @@
+=== RUN   TestArchiveRoundTripDeterministicAndAttributed
+--- PASS: TestArchiveRoundTripDeterministicAndAttributed (0.00s)
+=== RUN   TestClosedIssueAndCommentContent
+--- PASS: TestClosedIssueAndCommentContent (0.00s)
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/zero
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/records
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/attachments
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/blob_size
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/missing_parent
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/wrong_parent
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/duplicate_record
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/duplicate_blob
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/native_attachment_alias
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/missing_blob
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/wrong_schema
+=== RUN   TestSnapshotRefusesDependencyDigestAndBudgets/credentials
+--- PASS: TestSnapshotRefusesDependencyDigestAndBudgets (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/zero (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/records (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/attachments (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/blob_size (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/missing_parent (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/wrong_parent (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/duplicate_record (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/duplicate_blob (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/native_attachment_alias (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/missing_blob (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/wrong_schema (0.00s)
+    --- PASS: TestSnapshotRefusesDependencyDigestAndBudgets/credentials (0.00s)
+=== RUN   TestArchiveHostileMemberMatrix
+=== RUN   TestArchiveHostileMemberMatrix/traversal
+=== RUN   TestArchiveHostileMemberMatrix/absolute
+=== RUN   TestArchiveHostileMemberMatrix/symlink
+=== RUN   TestArchiveHostileMemberMatrix/hardlink
+=== RUN   TestArchiveHostileMemberMatrix/unknown
+=== RUN   TestArchiveHostileMemberMatrix/duplicate
+=== RUN   TestArchiveHostileMemberMatrix/digest
+=== RUN   TestArchiveHostileMemberMatrix/missing
+=== RUN   TestArchiveHostileMemberMatrix/oversize
+=== RUN   TestArchiveHostileMemberMatrix/trailing
+=== RUN   TestArchiveHostileMemberMatrix/gzip
+--- PASS: TestArchiveHostileMemberMatrix (0.02s)
+    --- PASS: TestArchiveHostileMemberMatrix/traversal (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/absolute (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/symlink (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/hardlink (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/unknown (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/duplicate (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/digest (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/missing (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/oversize (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/trailing (0.00s)
+    --- PASS: TestArchiveHostileMemberMatrix/gzip (0.00s)
+=== RUN   TestArchiveVerifiesBeforeWriting
+--- PASS: TestArchiveVerifiesBeforeWriting (0.00s)
+=== RUN   TestSnapshotPreservesSourceCommentAnchor
+--- PASS: TestSnapshotPreservesSourceCommentAnchor (0.00s)
+=== RUN   TestCanonicalWritePresenceAndClosedSchemas
+--- PASS: TestCanonicalWritePresenceAndClosedSchemas (0.00s)
+=== RUN   TestPlanLossDecisionsAndDependencyBinding
+--- PASS: TestPlanLossDecisionsAndDependencyBinding (0.00s)
+=== RUN   TestProgressRequiresExactPreparedBytesAndConfirmedPredecessors
+--- PASS: TestProgressRequiresExactPreparedBytesAndConfirmedPredecessors (0.01s)
+=== RUN   TestReconciliationRequiresExactPositiveClosedReceipt
+--- PASS: TestReconciliationRequiresExactPositiveClosedReceipt (0.00s)
+PASS
+ok  	hubnot/internal/migration	1.057s
