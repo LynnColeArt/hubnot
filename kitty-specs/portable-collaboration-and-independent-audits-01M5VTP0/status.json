@@ -19,7 +19,7 @@
   "work_packages": {
     "WP01": {
       "actor": "user",
-      "agent": "codex",
+      "agent": null,
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -31,6 +31,7 @@
         "Ready for independent review at 86dc00678c42d495c6442addfcc8da8abd983ffa: Go-only packager, two identical 11-asset runs, independent archive/native CLI inspection, Windows/macOS cross-compilation, full race exit 0 plus vet/build/format/diff pass. Evidence /tmp/hn-wp01-evidence/EVIDENCE.md; host runtime qualified only Linux AMD64. Initial baseline is framework pytest/JUnit coverage failure, not a Go test failure."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP01-go-only-release-packager/review-cycle-1.md",
         "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP01-go-only-release-packager/review-cycle-1.md",
@@ -38,12 +39,12 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 5024,
-      "shell_pid_created_at": "1792851034.54",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done"
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned"
       }
     },
     "WP02": {
