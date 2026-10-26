@@ -293,8 +293,13 @@ Issue opening metadata records `audit/finding` (that digest), `audit/request` an
 links against verified audit facts and their findings. A later issue edit or
 removal of current metadata does not erase its original association.
 
-Before creating anything, follow-up validates the requested result/selection,
-checks prior authenticated opening links, and binds an actor-scoped operation to
+Before creating anything, follow-up validates the requested result/selection.
+Historical signed results may contain raw-unique keys that normalize to the same
+finding identity. Follow-up checks the complete selected finding set and refuses
+any such ambiguity before writing private intent or an issue, including ambiguous
+`--finding` selections. Choose an unambiguous finding or use a new result with
+distinct normalized keys; original signed finding bytes remain unchanged.
+It then checks prior authenticated opening links and binds an actor-scoped operation to
 its exact original result and selected finding identities. `--operation` accepts
 1–128 printable non-whitespace ASCII bytes; its default derives from that result
 and selection. Protected private intent files below the resolved Git directory

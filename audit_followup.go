@@ -74,13 +74,19 @@ func followUpAudit(o auditOptions, id *Identity) (*auditFollowUpResult, error) {
 			selected = append(selected, finding)
 		}
 	}
-	if o.finding != "" && len(selected) != 1 {
+	if o.finding != "" && len(selected) == 0 {
 		return nil, fmt.Errorf("finding was not found in the original result snapshot")
 	}
 	sort.Slice(selected, func(i, j int) bool { return selected[i].Key < selected[j].Key })
 	keys := []string{}
+	normalized := map[string]string{}
 	for _, f := range selected {
-		keys = append(keys, auditFindingIdentity(fact, f.Key))
+		identity := auditFindingIdentity(fact, f.Key)
+		if previous, exists := normalized[identity]; exists {
+			return nil, fmt.Errorf("ambiguous normalized finding identity for keys %q and %q; select an unambiguous finding or use a result with distinct normalized keys", previous, f.Key)
+		}
+		normalized[identity] = f.Key
+		keys = append(keys, identity)
 	}
 	selection := auditDigest(append([]string{o.id}, keys...)...)
 	operation := o.operation
