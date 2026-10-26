@@ -708,3 +708,102 @@ func TestMigrationDestinationRelativeHookAnchoring(t *testing.T) {
 		})
 	}
 }
+
+// TestMigrationDestinationStaleWorktreeRegistration is the P2 regression: a
+// linked-worktree destination whose gitdir registration names a missing .git
+// side must refuse to resolve a repository anchor at all. The mutation never
+// runs, so no hook executes anywhere — including the unrelated directory the
+// stale pointer names — and the observation ref stays invisible. The anchored
+// control at the real destination proves destination hook refusal was
+// configured and active; without the resolver guard it would have executed.
+func TestMigrationDestinationStaleWorktreeRegistration(t *testing.T) {
+	source := inReplicationTestRepository(t)
+	ctx := context.Background()
+	l := migration.DefaultLimits()
+	snapshot, err := ExportProjectSnapshot(ctx, filepath.Join(source, ".git"), []string{"refs/heads/main"}, l)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer snapshot.Close()
+	main := filepath.Join(t.TempDir(), "main")
+	dest := filepath.Join(t.TempDir(), "destination")
+	if _, err = projectGit(ctx, "", nil, 4096, "init", "--quiet", main); err != nil {
+		t.Fatal(err)
+	}
+	maindir := filepath.Join(main, ".git")
+	if _, err = projectGit(ctx, maindir, nil, 4096, "-c", "user.name=Setup", "-c", "user.email=setup@hn.invalid", "commit", "--allow-empty", "-q", "-m", "setup"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = projectGit(ctx, maindir, nil, 4096, "worktree", "add", "--detach", "--quiet", dest); err != nil {
+		t.Fatal(err)
+	}
+	gitdir, err := migrationDestinationGitDir(ctx, dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = projectGit(ctx, maindir, nil, 4096, "config", "core.hooksPath", "relative-hooks"); err != nil {
+		t.Fatal(err)
+	}
+	marker := filepath.Join(t.TempDir(), "hook-output")
+	hook := func(base, label string, reject bool) {
+		t.Helper()
+		d := filepath.Join(base, "relative-hooks")
+		if err := os.MkdirAll(d, 0700); err != nil {
+			t.Fatal(err)
+		}
+		content := "#!/bin/sh\nprintf '" + label + " %s\\n' \"$PWD\" >> '" + marker + "'\n"
+		if reject {
+			content += "exit 1\n"
+		}
+		if err := os.WriteFile(filepath.Join(d, "reference-transaction"), []byte(content), 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	hook(dest, "DESTINATION", true)
+	unrelated := filepath.Join(t.TempDir(), "unrelated")
+	if err := os.Mkdir(unrelated, 0700); err != nil {
+		t.Fatal(err)
+	}
+	hook(unrelated, "UNSELECTED", false)
+	// A moved or stale linked-worktree registration names a missing .git side;
+	// the selected destination's actual .git pointer stays intact.
+	if err := os.WriteFile(filepath.Join(gitdir, "gitdir"), []byte(filepath.Join(unrelated, ".git")+"\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	d := LocalMigrationDestination{Repository: dest}
+	session, err := PrepareMigration(ctx, filepath.Join(t.TempDir(), "saved-plan"), snapshot.Snapshot, snapshot, migration.Selection{Destination: d.Locator()}, d, l, []migration.Decision{{FindingID: "local/governance", Action: "preserve", Mapping: json.RawMessage(`{}`)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	applyErr := ApplyMigration(ctx, session, d, "")
+	// Hook refusal plus pre-mutation failure means NO hook runs anywhere;
+	// pre-create the marker so readback proves emptiness rather than absence.
+	if err := os.WriteFile(marker, []byte(""), 0600); err != nil {
+		t.Fatal(err)
+	}
+	markers, readErr := os.ReadFile(marker)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if len(markers) != 0 {
+		t.Fatalf("some hook executed under a stale registration: %q", string(markers))
+	}
+	ref, _ := migrationObservationRef(snapshot.Snapshot.SourceID, snapshot.Snapshot.NativeRefs[0])
+	installed, err := migrationReadRef(ctx, gitdir, ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, controlErr := projectGit(ctx, gitdir, nil, 4096, "-C", dest, "update-ref", "refs/hn/remotes/control/code/main", snapshot.Snapshot.NativeRefs[0].OID)
+	if controlErr == nil {
+		t.Fatal("invalid control: selected destination hook did not reject")
+	}
+	if applyErr == nil {
+		t.Fatalf("stale worktree registration must fail before promotion; markers=%q", string(markers))
+	}
+	if installed != "" {
+		t.Fatalf("observation ref visible despite stale registration: %s", installed)
+	}
+	if strings.Contains(string(markers), "UNSELECTED ") || strings.Contains(string(markers), "SOURCE ") {
+		t.Fatalf("unrelated/caller hooks executed under a stale registration: %q", string(markers))
+	}
+}

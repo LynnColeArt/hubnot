@@ -177,24 +177,26 @@ func migrationDestinationRepoDir(ctx context.Context, dir string) (string, error
 		if e != nil || !st.IsDir() {
 			return "", fmt.Errorf("destination worktree anchor invalid")
 		}
-		if raw, e := os.ReadFile(p); e == nil {
-			// The working-tree side must point back at exactly this git
-			// directory; unverified pointers never anchor a mutation.
-			text := strings.TrimSpace(string(raw))
-			target, ok := strings.CutPrefix(text, "gitdir:")
-			if !ok {
-				return "", fmt.Errorf("destination worktree anchor invalid")
-			}
-			target = strings.TrimSpace(target)
-			if !filepath.IsAbs(target) {
-				target = filepath.Join(filepath.Dir(p), target)
-			}
-			q, e := physical(target)
-			if e != nil || q != dir {
-				return "", fmt.Errorf("destination worktree anchor invalid")
-			}
-		} else if !os.IsNotExist(e) {
-			return "", e
+		// The working-tree side must exist and point back at exactly this git
+		// directory; a stale/moved registration (missing .git side, wrong
+		// target, unreadable pointer) refuses before promotion. No unverified
+		// pointer parent is ever returned as an anchor.
+		raw, e := os.ReadFile(p)
+		if e != nil {
+			return "", fmt.Errorf("destination worktree anchor invalid")
+		}
+		text := strings.TrimSpace(string(raw))
+		target, ok := strings.CutPrefix(text, "gitdir:")
+		if !ok {
+			return "", fmt.Errorf("destination worktree anchor invalid")
+		}
+		target = strings.TrimSpace(target)
+		if !filepath.IsAbs(target) {
+			target = filepath.Join(filepath.Dir(p), target)
+		}
+		q, e := physical(target)
+		if e != nil || q != dir {
+			return "", fmt.Errorf("destination worktree anchor invalid")
 		}
 		if root, e = physical(root); e != nil {
 			return "", fmt.Errorf("destination worktree anchor invalid")
