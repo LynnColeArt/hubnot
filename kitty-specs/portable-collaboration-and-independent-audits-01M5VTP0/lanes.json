@@ -1,0 +1,327 @@
+{
+  "version": 1,
+  "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
+  "mission_id": "01M5VTP0RY3K4D31E0N8JVMGHR",
+  "mission_branch": "kitty/mission-portable-collaboration-and-independent-audits-01M5VTP0",
+  "target_branch": "feat/portable-collaboration",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "cmd/hn-release/main.go",
+        "cmd/hn-release/main_test.go",
+        "docs/releasing.md",
+        "internal/release/package.go",
+        "internal/release/package_test.go",
+        "main.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02",
+        "WP03"
+      ],
+      "write_scope": [
+        "audit_authority.go",
+        "audit_authority_test.go",
+        "audit_commands.go",
+        "audit_commands_test.go",
+        "audit_execution.go",
+        "audit_execution_test.go",
+        "audit_followup.go",
+        "audit_followup_test.go",
+        "audit_protocol.go",
+        "audit_protocol_test.go",
+        "docs/audits-v1.md",
+        "event.go",
+        "event_test.go",
+        "policy.go",
+        "policy_commands.go",
+        "quarantine.go",
+        "shallow.go",
+        "store.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04",
+        "WP05"
+      ],
+      "write_scope": [
+        "docs/project-migration.md",
+        "internal/migration/archive.go",
+        "internal/migration/archive_test.go",
+        "internal/migration/plan.go",
+        "internal/migration/plan_test.go",
+        "internal/migration/progress.go",
+        "internal/migration/progress_test.go",
+        "internal/migration/snapshot.go",
+        "migration_engine.go",
+        "migration_engine_test.go",
+        "migration_journal.go",
+        "migration_journal_test.go",
+        "migration_local.go",
+        "migration_local_test.go",
+        "migration_native.go",
+        "migration_native_test.go",
+        "project_snapshot.go",
+        "project_snapshot_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "forge_github.go",
+        "github_disabled.go",
+        "github_discussions.go",
+        "github_discussions_test.go",
+        "github_import_test.go",
+        "github_projects.go",
+        "github_projects_test.go",
+        "github_workflows.go",
+        "github_workflows_test.go",
+        "internal/githubapi/**",
+        "internal/migration/conformance_test.go",
+        "internal/migration/provider.go",
+        "internal/migration/provider_test.go",
+        "migration_github.go",
+        "migration_github_test.go",
+        "migration_provider.go",
+        "migration_provider_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "forge_gitlab.go",
+        "forge_gitlab_test.go",
+        "internal/gitlabapi/client.go",
+        "internal/gitlabapi/client_test.go",
+        "internal/gitlabapi/migration.go",
+        "internal/gitlabapi/migration_test.go",
+        "migration_gitlab.go",
+        "migration_gitlab_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "forge_forgejo.go",
+        "forge_forgejo_test.go",
+        "forge_gitea.go",
+        "forge_gitea_test.go",
+        "internal/forgejoapi/client.go",
+        "internal/forgejoapi/client_test.go",
+        "internal/giteaapi/client.go",
+        "internal/giteaapi/client_test.go",
+        "migration_forgejo.go",
+        "migration_forgejo_test.go",
+        "migration_gitea.go",
+        "migration_gitea_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "internal/bitbucketapi/client.go",
+        "internal/bitbucketapi/client_test.go",
+        "internal/bitbucketapi/migration.go",
+        "internal/bitbucketapi/migration_test.go",
+        "migration_bitbucket.go",
+        "migration_bitbucket_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "forge_azure.go",
+        "forge_azure_test.go",
+        "internal/azureapi/client.go",
+        "internal/azureapi/client_test.go",
+        "internal/azureapi/migration.go",
+        "internal/azureapi/migration_test.go",
+        "migration_azure.go",
+        "migration_azure_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "docs/migration-cli.md",
+        "migration_acceptance_test.go",
+        "migration_commands.go",
+        "migration_commands_test.go",
+        "migration_wizard.go",
+        "migration_wizard_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "README.md",
+        "docs/github-interoperability.md",
+        "docs/protocol-v0.md",
+        "docs/threat-model.md",
+        "portable_collaboration_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g",
+        "lane-h",
+        "lane-i"
+      ],
+      "parallel_group": 5
+    }
+  ],
+  "computed_at": "2026-10-26T10:44:31.633749+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "d3ebe8481efa5565c59819b22fdfbf33ce1ff8ab",
+  "collapse_report": {
+    "events": [
+      {
+        "wp_a": "WP02",
+        "wp_b": "WP03",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'docs/audits-v1.md' vs 'docs/audits-v1.md'; WP03 depends on WP02"
+      },
+      {
+        "wp_a": "WP04",
+        "wp_b": "WP05",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'docs/project-migration.md' vs 'docs/project-migration.md'; WP05 depends on WP04"
+      }
+    ],
+    "total_merges": 2,
+    "independent_wps_collapsed": 0,
+    "by_rule": {
+      "write_scope_overlap": 2
+    }
+  }
+}
