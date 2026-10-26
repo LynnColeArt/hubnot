@@ -29,7 +29,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review at 86dc00678c42d495c6442addfcc8da8abd983ffa: Go-only packager, two identical 11-asset runs, independent archive/native CLI inspection, Windows/macOS cross-compilation, full race exit 0 plus vet/build/format/diff pass. Evidence /tmp/hn-wp01-evidence/EVIDENCE.md; host runtime qualified only Linux AMD64. Initial baseline is framework pytest/JUnit coverage failure, not a Go test failure.",
-        "Cycle 1 P1 corrected at 3e6b301b; full race exit 0 and independent release acceptance pass. Durable evidence 3e1f6a44 on planning branch; lane a382f928 has identical entire Git tree to validated source 3e6b301b."
+        "Cycle 1 P1 corrected at 3e6b301b; full race exit 0 and independent release acceptance pass. Durable evidence 3e1f6a44 on planning branch; lane a382f928 has identical entire Git tree to validated source 3e6b301b.",
+        "Review passed: original P1 resolved by effective-config filter refusal before status, with independent marker/state-preservation recheck; package/CLI race and full archive/runtime inspections pass. Validated source 3e6b301bb2e3142eff40727edf57a462b3e63e02; lane a382f928 tree identical 2d88e80ba7db1fd22b3765fe1103bc160717a588; durable review 692c885b. Full source-bound Go race exit0/1186passes verified; framework coverage authority remains unavailable/no_coverage without bypass. Anti-pattern checks dead-code/synthetic/silent-return/FR/frozen/locked/fragility PASS; shared-file ownership N/A. Windows/macOS host runtime remains unqualified; final noforge integration belongs WP06/WP12."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
