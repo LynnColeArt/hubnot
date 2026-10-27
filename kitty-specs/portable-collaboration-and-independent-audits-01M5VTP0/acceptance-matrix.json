@@ -6,223 +6,263 @@
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "Verify FR-001 is satisfied",
+      "description": "Preserve existing native commands, trust, defaults, signed facts, explicit execution, and required-check semantics. All new automation/transport is opt-in.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "Provide an inspectable portable project snapshot covering explicit selected code refs/history, native signed collaboration histories, attributed foreign resource records and retrieved attachments. Exclude Hubnot-managed private identities, ambient credentials, transfer journals, unrelated refs and working-tree junk. Intentionally selected committed history remains exact; this is not a secret-scrubbing promise.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-003",
-      "description": "Verify FR-003 is satisfied",
+      "description": "Native facts retain exact signed bytes and identities; archive import validates before visibility and never installs imported actors as local signing identities, silently adopts policy, or manufactures authority. Preserve historical policy objects for evidence verification; require an explicit decision before source governance is activated in a new destination checkout, and preserve existing destination governance.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-004",
-      "description": "Verify FR-004 is satisfied",
+      "description": "Preserve retrieved foreign issues/comments, PR/MR conversations/reviews, discussions, planning data and workflow source as attributed local records when native or destination equivalence is unavailable. Preserve retrieved attachment bytes with verified content digests.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-005",
-      "description": "Verify FR-005 is satisfied",
+      "description": "Support local repository, portable archive and hosted provider sources/destinations through the same migration engine; source observations and mapping/loss decisions are saved independently from secrets.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-006",
-      "description": "Verify FR-006 is satisfied",
+      "description": "Guided migration asks source, destination, scope and mapping decisions, then previews before explicit apply. Explicit arguments/saved plans expose equivalent noninteractive functionality.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-007",
-      "description": "Verify FR-007 is satisfied",
+      "description": "Report per-provider capabilities and per-plan mapped, preserved, requires-mapping, unsupported, missing-dependency and conflict findings before writes. Any loss or non-equivalent mapping requires an explicit decision; unread data is not preserved data.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-008",
-      "description": "Verify FR-008 is satisfied",
+      "description": "Keep current explicit transfer commands compatible and make adapter extension documented and testable through common interfaces/conformance cases rather than provider conditionals throughout native code.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-009",
-      "description": "Verify FR-009 is satisfied",
+      "description": "Cover GitHub and GitLab project snapshots and applicable imports/exports, including issue/comment read/write and GitLab self-hosted endpoints. Verify a genuine GitLab-to-GitHub flow with isolated provider fixtures.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-010",
-      "description": "Verify FR-010 is satisfied",
+      "description": "Cover Forgejo/Codeberg and Gitea through separate tested capability profiles, each including issue/comment read/write; shared transport does not imply untested API equivalence.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-011",
-      "description": "Verify FR-011 is satisfied",
+      "description": "Cover Bitbucket Cloud's available repository, PR-conversation and workflow-source interfaces. Explicitly report the removed issue tracker unavailable; do not silently substitute Jira or invent historical data.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-012",
-      "description": "Verify FR-012 is satisfied",
+      "description": "Cover Azure DevOps with explicit organization/project/repository selectors and work-item type/state mappings, including mapped work-item/comment read/write. Do not equate repositories, work items and planning projects. Document supported Services/Server API versions and supplied Entra-token/PAT authentication; do not depend on deprecated OAuth app registration.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-013",
-      "description": "Verify FR-013 is satisfied",
+      "description": "Persist guarded progress and support explicit resume. An uncertain write is reconciled by exact positive evidence or requires operator intervention; timeout/negative lookup never authorizes a blind duplicate create. Source deletion and background sync are outside migration.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-014",
-      "description": "Verify FR-014 is satisfied",
+      "description": "Foreign workflows remain inert source documents unless explicitly converted and separately authorized for native execution. Imported reviews, users, permissions and CI records never grant native approval, runner or maintainer authority.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-015",
-      "description": "Verify FR-015 is satisfied",
+      "description": "Provide an adapter-free build in addition to preserving the existing meaning of `nogithub`; native collaboration, local archives, audits and imported records work without network adapters.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-016",
-      "description": "Verify FR-016 is satisfied",
+      "description": "Add distinct signed audit requests/results for resolved code snapshots and identified rule revisions, independent of proposals. Audit facts are never eligible merge/acceptance evidence.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-017",
-      "description": "Verify FR-017 is satisfied",
+      "description": "Execute audit work only through explicit commands using the existing sandbox/unsafe-host boundary; no initialization, import, upgrade, proposal or merge starts audit work or a service.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-018",
-      "description": "Verify FR-018 is satisfied",
+      "description": "Record audit requester/executor, code/rules provenance, outcome, bounded evidence/logs and stable findings. Reads and replication validate the same relationships and permissions as local writes.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-019",
-      "description": "Verify FR-019 is satisfied",
+      "description": "Keep protected rule-change authority independent of audit scheduling and audited content. Current authority comes from an explicitly adopted local anchor; policy selectors can assert that choice but cannot substitute stale or candidate policies. Rules evolve through authorized revisions, including authorization by a sole designated owner; imported or collaboratively edited content never supplies its own authority.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-020",
-      "description": "Verify FR-020 is satisfied",
+      "description": "Optionally create linked native follow-up issues from audit findings, with inspectable finding identity, bounded processing, actor-scoped retry/recovery and explicit concurrent-publisher limitations.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-021",
-      "description": "Verify FR-021 is satisfied",
+      "description": "Replace Python archive packaging with Go/Git tooling portable to Linux/macOS/Windows, deterministic archive metadata, source/target/toolchain provenance, binary/source archives and SHA-256 checksums. Report actual host execution separately from cross-compilation; no unavailable host is claimed runtime-qualified.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     },
     {
       "criterion_id": "FR-022",
-      "description": "Verify FR-022 is satisfied",
+      "description": "Document command contracts, provider capability/mapping limits, offline use, audit independence, rule ownership, recovery, packaging requirements and platform verification in the same delivery.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "Snapshot operations use explicit positive budgets. Initial defaults: at most 10,000 records, 1,024 attachment blobs, 16 MiB per attachment/manifest, and 256 MiB total attachment data; archive expansion and Git object traversal use separately bounded documented budgets. Exceeding a bound refuses incomplete success.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "Reject traversal/absolute paths, duplicate archive entries, symlinks, unexpected members, mismatched digests, oversized/decompression bombs and partial native histories before accepted visibility. Cross-origin credential forwarding and unbounded pagination are forbidden.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "Changes pass formatting, full Go race tests, vet, build, diff checks and meaningful public CLI acceptance in ordinary, `nogithub` and adapter-free builds. Recovery/hostile input tests assert visible state preservation.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "Rebuilding release archives twice with the same declared inputs produces identical digests; cross-compile the packager for Windows and macOS and test archive formats/contents independently of the host. Runtime qualification is reported only for platforms actually exercised. Where a host is unavailable, record the remaining qualification gap explicitly; cross-compilation cannot satisfy a host-runtime claim.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     }
   ],
   "negative_invariants": []
