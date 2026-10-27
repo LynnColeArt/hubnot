@@ -1,0 +1,51 @@
+Outer SHA256SUMS: all entries PASS
+All six current lane owned-file digests: PASS
+Archive: 191 safe unique regular files/directories, digest 58c01d6f72f33dfa3307a921b8125fa8cc6c076dbbdfd925994b516aee77affa
+SHA256SUMS: PASS
+checks/full-race.command:
+go test -race -timeout 20m ./...
+
+checks/full-race.exit:
+0
+
+checks/full-race.log:
+ok  	hubnot	614.991s
+?   	hubnot/examples/issue-consumer	[no test files]
+ok  	hubnot/internal/azureapi	1.168s
+ok  	hubnot/internal/bitbucketapi	1.195s
+ok  	hubnot/internal/forge	1.026s
+ok  	hubnot/internal/forgejoapi	1.058s
+ok  	hubnot/internal/giteaapi	1.032s
+ok  	hubnot/internal/githubapi	16.718s
+ok  	hubnot/internal/gitlabapi	1.118s
+ok  	hubnot/internal/migration	1.122s
+
+root-preflight-credential-proof/guard-present.command.txt:
+GOFLAGS uses temporary overlay; no repository source edits.
+go test -count=1 -race -run ^TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites$ .
+
+root-preflight-credential-proof/guard-present.exit:
+0
+
+root-preflight-credential-proof/guard-present.json:
+{"Replace": {"/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-j/migration_acceptance_test.go": "/tmp/wp11-credential-proof-jv75sdyc/probe_test.go"}}
+root-preflight-credential-proof/guard-present.log:
+ok  	hubnot	1.921s
+
+root-preflight-credential-proof/guard-removed.command.txt:
+GOFLAGS uses temporary overlay; no repository source edits.
+go test -count=1 -race -run ^TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites$ .
+
+root-preflight-credential-proof/guard-removed.exit:
+1
+
+root-preflight-credential-proof/guard-removed.json:
+{"Replace": {"/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-j/migration_acceptance_test.go": "/tmp/wp11-credential-proof-jv75sdyc/probe_test.go", "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-j/migration_commands.go": "/tmp/wp11-credential-proof-jv75sdyc/removed_guard.go"}}
+root-preflight-credential-proof/source-head.txt:
+6393e122de29402cd8c0d41531a2cbaba89a2ee2
+
+root-preflight-credential-proof/source-sha256.txt:
+2d50a524e6c0da6a6385e7d32a7bcbfa8e1e1fc8cd53cb94433024c8c46e9a46  migration_commands.go
+5e8980af1feac5d829d10fc972b75069099e5f9b8f5bd65110a2f76af24ee38d  migration_acceptance_test.go
+
+Process transcript count: 94

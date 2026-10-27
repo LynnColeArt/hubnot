@@ -1,0 +1,50 @@
+=== RUN   TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites
+=== RUN   TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites/bearer
+=== RUN   TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites/pat
+--- PASS: TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites (3.12s)
+    --- PASS: TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites/bearer (0.27s)
+    --- PASS: TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites/pat (0.23s)
+=== RUN   TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline
+--- PASS: TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline (3.47s)
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState/no_proof
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState/ambiguous
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState/stale_git
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState/hostile_git
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState/stale_repository
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState/tampered_profile
+=== RUN   TestMigrationCLIPublicRefusalsPreserveRemoteState/missing_descriptor
+--- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState (2.13s)
+    --- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState/no_proof (0.28s)
+    --- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState/ambiguous (0.28s)
+    --- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState/stale_git (0.25s)
+    --- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState/hostile_git (0.23s)
+    --- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState/stale_repository (0.24s)
+    --- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState/tampered_profile (0.20s)
+    --- PASS: TestMigrationCLIPublicRefusalsPreserveRemoteState/missing_descriptor (0.20s)
+=== RUN   TestMigrationCLISelectedProfileCapabilitiesDoNotGuessCredentials
+--- PASS: TestMigrationCLISelectedProfileCapabilitiesDoNotGuessCredentials (0.47s)
+=== RUN   TestMigrationCLILossyGitLabQuickActionRefusedBeforeWrites
+--- PASS: TestMigrationCLILossyGitLabQuickActionRefusedBeforeWrites (0.44s)
+=== RUN   TestMigrationForeignInputsRequireExplicitProfile
+--- PASS: TestMigrationForeignInputsRequireExplicitProfile (0.00s)
+=== RUN   TestMigrationCLINativeOfflineBuildVariants
+=== RUN   TestMigrationCLINativeOfflineBuildVariants/tags=
+=== RUN   TestMigrationCLINativeOfflineBuildVariants/tags=nogithub
+=== RUN   TestMigrationCLINativeOfflineBuildVariants/tags=noforge
+--- PASS: TestMigrationCLINativeOfflineBuildVariants (8.43s)
+    --- PASS: TestMigrationCLINativeOfflineBuildVariants/tags= (1.86s)
+    --- PASS: TestMigrationCLINativeOfflineBuildVariants/tags=nogithub (5.14s)
+    --- PASS: TestMigrationCLINativeOfflineBuildVariants/tags=noforge (1.43s)
+=== RUN   TestMigrationCLIHostileArchiveIsReadOnlyRefusal
+--- PASS: TestMigrationCLIHostileArchiveIsReadOnlyRefusal (0.30s)
+=== RUN   TestMigrationDescriptorSealsExactNonsecretProfile
+--- PASS: TestMigrationDescriptorSealsExactNonsecretProfile (0.01s)
+=== RUN   TestMigrationNoninteractiveAndGuidedMissingInputAreActionable
+--- PASS: TestMigrationNoninteractiveAndGuidedMissingInputAreActionable (0.00s)
+=== RUN   TestMigrationWizardNeverConsentsAtEOFOrEmpty
+--- PASS: TestMigrationWizardNeverConsentsAtEOFOrEmpty (0.00s)
+=== RUN   TestMigrationArgumentsPreserveExplicitEmptyMapping
+--- PASS: TestMigrationArgumentsPreserveExplicitEmptyMapping (0.00s)
+PASS
+ok  	hubnot	18.368s
