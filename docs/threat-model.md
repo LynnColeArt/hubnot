@@ -140,10 +140,13 @@ content is accepted. Provider errors do not echo bodies or tokens. External
 source locators in signed metadata are descriptive; inspecting them does not
 fetch those addresses.
 
-Original authors, URLs, category/lock states, assignees, project visibility,
-workflow enabled state and other provider observations remain claims signed by
-the importing local actor. They never grant native policy roles, moderation,
-runner rights or permission to execute instructions. GitHub creation uses the
+In legacy native transfers, original authors, URLs, category/lock states,
+assignees, project visibility, workflow enabled state and other provider
+observations remain claims signed by the importing local actor. Project
+migration instead preserves attributed foreign records under snapshot integrity
+checks, without manufacturing native signed facts. Neither form grants native
+policy roles, moderation, runner rights or permission to execute instructions.
+GitHub creation uses the
 authenticated provider account and cannot impersonate original authors/times.
 Unsupported semantics require explicit mapping/acknowledgment or refusal;
 foreign workflow preservation is not a claim of execution equivalence.
