@@ -1,14 +1,14 @@
 {
   "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
-  "snapshot_id": "fd4d27c2-8d65-4c14-99b2-8d3ec73f241c",
-  "total_artifacts": 283,
+  "snapshot_id": "b018652b-7663-4fc5-bd11-a04b92c5df09",
+  "total_artifacts": 295,
   "required_artifacts": 3,
   "required_present": 3,
   "required_missing": 0,
-  "optional_artifacts": 280,
-  "optional_present": 270,
+  "optional_artifacts": 292,
+  "optional_present": 281,
   "completeness_status": "complete",
-  "parity_hash_sha256": "sha256:2ab88464dca7e9e912576d0a194adce13df678007fcee1ae8cb9974e4133420d",
+  "parity_hash_sha256": "sha256:4677c246cbab56ec73b1f45fbfff62fdb1c4348d5af6e014072d3b0af7dac563",
   "parity_hash_components": [
     "002a1f1b8d5c42f360603df9070f27d8610b4efaa73b9dede765fb3ad67da8d5",
     "005a037099c3b4f55cda728a098bda84536aeeeb4177a9f118202e6b5948ee90",
@@ -24,7 +24,9 @@
     "04a3ed81c20c111cee833c192304c52c397a3fbdf7954cabfa77fd3f27660dd4",
     "0548f53951af65202ea2dc96ff1bdd9304651bae8c4f7099a9a916b47b7eb2dc",
     "058419f54e61e878c6849db74d5d4fdfca0c60be90ee489166c57629f113c93a",
+    "059d35fea25924ab2fd61362a5546de91b4b8faa601d391701981adab552f7d2",
     "063f25ba01dec25ba12b385b22c39c39031379319ad464480ad93ab8ef0c1ca0",
+    "0762a4037d0dc08470aebf61801dc349aebc71b63a16d46ce1e37b75d79ccba9",
     "07f7c6af7fd620eb5c1fb852dcbb567608f08ddeb499b43a37f1f032e41313e9",
     "083b23ea42abc7be4ec3113adfe31e7fcb85bfed4096af174951bad6d7846aab",
     "089269fe1b7518e57673769f5cf565f8f26dba423a85c6fdb0fed675be87f658",
@@ -59,6 +61,7 @@
     "21ed02448b62738394a939b9fc1962eb8de606be7a95541091687221b79a9476",
     "2236d2febc0a2de2a385c1d18602a24aa18a2c596ecbbb35503909e520f8b860",
     "24a0d8b8d95a4cee9e20823816b2c852b7b4dd1f32e992ade05093e3721ff00d",
+    "265dfb3a7875f2ae37bb675dde0cff1e71aab5bf8fd98982d6b15d70fa8a8ed5",
     "26abdd076b3d467a41e18bed9881928d4d510b788508415d70ed14111ffe53f7",
     "26b4abc29f261e7fef10bc55a7c1563dec888b7b11d79595aad0db5f0d1a719e",
     "27c93b2dd1c83346b9633bd36b9cefc78bc9d57c12695c8ee087292bf9990664",
@@ -110,18 +113,20 @@
     "5780e2532b547b422b2e3963346b0e6bdb9c58315d43307c485781f79ac571ef",
     "57a3b815fd5f9e10ff39dc8513368bf3cbfec46e1ffc1849baa5ec1526df2e83",
     "57a3d3bbd089642cfb0eb8029ea347dd9ac3f939351cd41fb4d507723eb04d4b",
+    "57bd8575255298bd286ba20979800eaf9466c7cdb704ad1963789acdf0b4688b",
     "57fcafbfe553c7e7b2f1bbd8e601f99faa0c1fd0ea82c27b86a2b9c668736bff",
     "582d42b7642d6140cbbc3e272df1067cba6a99a6597693d1869444268c86cf2f",
     "59440f77af018be061d66b5b9d6fae0db1c4be2b99cbcfb21ca4b994c1b923b3",
+    "599003e31d78f5fa475f9980d3fbb0ac92e01d139e21066150df2e5f0ee79e67",
     "59a95af9ea53e1337f4d36b191940385cc10f0ec2014e6d73d15f24d8fe049e0",
     "59cc5945261bb80662477dd5315ca36a86c999daa1b6b23efa583e0333016e4a",
-    "5a9ff193cadb9ebd9e490b7027a36d8aebfd032e35891bf14724d485e2508664",
     "5b2b4d417ecc5a1ee9fb89e486e965d2f5f877000b8a0aae94dfb8120cf0b45a",
     "5b911e67553e9b4cb470955711605b71320e137b687be232980aa6c6899740fa",
     "5c37b32e8113c9cc41629f504c02c92f2aa5d85a08ccd3b824f609314a35ceaf",
     "5e39b162c032f9f06de9dd3b5638e25c6e019d0fb646a3e7c01b608e40a31179",
     "5e5ff384a42bc4d1daa7d436c59218cccd69db54ca5185ddaed39c3864fc0d83",
     "6138f7e09bd6b35968bdccbe0d5997dabc6faf71b6c177668201b0a76283d35e",
+    "62b40080ba16d5ca04fb6532c914b9e30305054640aca0ddbced584a5626f9b5",
     "630bb76c42fbc4c018838af799390bc9fe790f47ac2dd1ab77490e26fcdb675f",
     "637acab8f617ebc032bc75c919ff86e3490ebdb02117f5efc03e923a765d45f9",
     "645d3a1bdb106915f0d2dfaa3338b61d90f00385938ac8d1bb44754ceb3900bc",
@@ -153,6 +158,7 @@
     "88574a38b1f0b795ec4c4263aba8f02d5772882dde627c5e01f895297099f1d2",
     "8aef5aae812bb8a62875509873a9a2c6fec37898a9c9207e5a80cb4d332b1945",
     "8b5b2e4e51951178df48e57772f34e1dbb5da6caa1355db44469bc0c6bb65325",
+    "8cd4b861c7ac6351ef4ce3219e6ca8abac011a7da989908fcf8d92b721dfc07f",
     "8ce3737f54b461f7926c985b6bf23f6b97d29f73ac8f88e0fbc4a5e27ddc900b",
     "8d9b86b2d5a0a9e3ce5d93b03129b89eddda8c08f8da4204b102bea31cdf42ca",
     "8f283a1bb9d1b054a104fd307c944940d3086169df7ac47c69274322a5103b92",
@@ -164,6 +170,8 @@
     "9359bc26450ac8e800a2f58caac839b31ffe1fde3a40c093f0ea794e20da1e2e",
     "938f4a329afb6ead4f07844f4d718767747bab81d45f78483385ecb29b4ff434",
     "950e7be3dbdb62416780094184fa98619a7ff3a570f387b062880bf1953ed841",
+    "95ea4a434d3be796097f2e5c886ef8ed767763103ff4434da4095b9779fa8d8d",
+    "9710f858d305ca856083dc2709f63ecb3230262155bbf9540ec4bf1b56992d62",
     "9750da7a2b443345df38d41fa09b3ceac70c92b973c0e791b9a05630feb5a1fb",
     "98668d5bf231ae3abce1f3caba29c3f31cd39af1432fcdfe72d22ae05fd8dfa4",
     "99f502b76c590158ea419d80ff19deff495e7f482a03123361a69a3ca0d07bb8",
@@ -181,7 +189,6 @@
     "9f81b67bfe553165359862f7a1ff68a77419dd01fe9b4a6adb047851a3ad58c1",
     "a25ce47fb2a86408043febbbfa50cad7e9d3830002c9336e8736ab6134bba494",
     "a2ad52900a10cd7c6eae682a75e40f63f178a727e99583b948c512ef62d48879",
-    "a2e38dc4598efbcaae7a6aaaa5bb50b9e76818b6e6d947fabca82e9231727a77",
     "a30df7e0179829f255fc8c5402ae0fe7e860aa6d90d2e2a463fec6335853af3c",
     "a3c72cad0b6dfe16d7526428a08d03dcd291ae671e2c45eaffa706163b3cd363",
     "a547c5027463f8480894b8af9406102e97a655da722b0c786852f2efc9347da1",
@@ -195,6 +202,7 @@
     "a9341f0993656c9137b3eae50983943813b65e2868e0b153e73262ef9f5ac69d",
     "aa11d6a602abf88e306feb2da5c6b7afa39259f24a27513b06cd192b9ee7b3ba",
     "ac328a890f8064cbd369ee8fd13f30e123ea480f212652f9ebe695e206430c19",
+    "ade21f14bde753c13e15910b40f219e8021534b2c9e2cd6c9780edeade3abe88",
     "ae3405537f6448e2e7b4320bf4aca21a4a1db3aa65dbdcb4a367ced5006ebaba",
     "aed0038c88eab8ec46434137551733fe383b3023a8cd9a2ef04392080a36d08f",
     "af2e55b731497e8cb35edaf30ee83f048778182385681ae637289f6ac1c356e2",
@@ -267,9 +275,12 @@
     "e5da1d103db24c99688c873e9361101001855adf5e6fd3198432176257ccf3a8",
     "e70db71699a5fd1cb95cbbb74fa5ac2153fd69e38ea427861a850f990076e9f9",
     "e7872b330b01d1e4a703c356e7d862fb58e40692b5594032218f0ad4673e1f23",
+    "e8fe5f2d0fb30fa8a5953efd747b22df14e9f9cf565923453784c3bb2316996e",
+    "eb6c67a60bf3c419c0080b48b98dd449fed1480799be74d9391928b706988ea4",
     "ed5e2f4d45d37c6c7ab52c5953830711eb7cbeefd489476460332db3f9a7904d",
     "eda2c32abf7fa00488d1b80ec45d2fc3dfc8c0d307da69cda69ebf210cda8c1a",
     "f1f0d143c702b86999bbe1d37464ca66e2c5f089d74a69f5ec956e5e0fdc0b6b",
+    "f2206173986734d58f1234d8d756903d7719ae6438b9e8ef7faabef55ffeb797",
     "f2f9eb034064127f1485a08c2bea26eff882e17b4938aee2dfb0efddc6a20f69",
     "f44d2ee1cf2da501204a40dad5c122c94ef043ed8701377c988f419ddd3c46ee",
     "f598ca0cfac9f5a3d6043c51fc9e1df51ba654aa046bad0073713168d7b7bdc5",
@@ -296,7 +307,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.304817+00:00",
+      "indexed_at": "2026-10-27T03:31:58.924555+00:00",
       "provenance": null
     },
     {
@@ -310,7 +321,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.149957+00:00",
+      "indexed_at": "2026-10-27T03:31:59.869642+00:00",
       "provenance": null
     },
     {
@@ -324,7 +335,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.344185+00:00",
+      "indexed_at": "2026-10-27T03:31:58.976409+00:00",
       "provenance": null
     },
     {
@@ -338,7 +349,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.484522+00:00",
+      "indexed_at": "2026-10-27T03:31:59.124359+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.archive-member-list",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/archive-member-list.txt",
+      "content_hash_sha256": "8cd4b861c7ac6351ef4ce3219e6ca8abac011a7da989908fcf8d92b721dfc07f",
+      "size_bytes": 1375,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.851677+00:00",
       "provenance": null
     },
     {
@@ -352,7 +377,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.137108+00:00",
+      "indexed_at": "2026-10-27T03:31:59.830918+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.archive-members",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/archive-members.sha256",
+      "content_hash_sha256": "62b40080ba16d5ca04fb6532c914b9e30305054640aca0ddbced584a5626f9b5",
+      "size_bytes": 5731,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.845971+00:00",
       "provenance": null
     },
     {
@@ -366,7 +405,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.028765+00:00",
+      "indexed_at": "2026-10-27T03:31:59.715674+00:00",
       "provenance": null
     },
     {
@@ -380,7 +419,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.085543+00:00",
+      "indexed_at": "2026-10-27T03:31:59.775120+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.archive-verification",
+      "artifact_class": "evidence",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/archive-verification.log",
+      "content_hash_sha256": "265dfb3a7875f2ae37bb675dde0cff1e71aab5bf8fd98982d6b15d70fa8a8ed5",
+      "size_bytes": 1639,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.854563+00:00",
       "provenance": null
     },
     {
@@ -394,7 +447,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.346978+00:00",
+      "indexed_at": "2026-10-27T03:31:58.979802+00:00",
       "provenance": null
     },
     {
@@ -408,7 +461,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.819702+00:00",
+      "indexed_at": "2026-10-27T03:31:59.491344+00:00",
       "provenance": null
     },
     {
@@ -422,7 +475,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.750483+00:00",
+      "indexed_at": "2026-10-27T03:31:59.418977+00:00",
       "provenance": null
     },
     {
@@ -436,7 +489,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.499084+00:00",
+      "indexed_at": "2026-10-27T03:31:59.141115+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.baseline-tests",
+      "artifact_class": "evidence",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/baseline-tests.json",
+      "content_hash_sha256": "e8fe5f2d0fb30fa8a5953efd747b22df14e9f9cf565923453784c3bb2316996e",
+      "size_bytes": 479,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.144223+00:00",
       "provenance": null
     },
     {
@@ -450,7 +517,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.509077+00:00",
+      "indexed_at": "2026-10-27T03:31:59.153752+00:00",
       "provenance": null
     },
     {
@@ -464,7 +531,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.511934+00:00",
+      "indexed_at": "2026-10-27T03:31:59.156964+00:00",
       "provenance": null
     },
     {
@@ -478,7 +545,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.524969+00:00",
+      "indexed_at": "2026-10-27T03:31:59.169958+00:00",
       "provenance": null
     },
     {
@@ -492,7 +559,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.554208+00:00",
+      "indexed_at": "2026-10-27T03:31:59.201894+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.baseline-tests",
+      "artifact_class": "evidence",
+      "relative_path": "tasks/WP10-azure-devops-migration-adapter/baseline-tests.json",
+      "content_hash_sha256": "95ea4a434d3be796097f2e5c886ef8ed767763103ff4434da4095b9779fa8d8d",
+      "size_bytes": 479,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.222006+00:00",
       "provenance": null
     },
     {
@@ -506,7 +587,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.578572+00:00",
+      "indexed_at": "2026-10-27T03:31:59.236408+00:00",
       "provenance": null
     },
     {
@@ -520,7 +601,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.584681+00:00",
+      "indexed_at": "2026-10-27T03:31:59.242285+00:00",
       "provenance": null
     },
     {
@@ -534,7 +615,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.613743+00:00",
+      "indexed_at": "2026-10-27T03:31:59.268825+00:00",
       "provenance": null
     },
     {
@@ -548,7 +629,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.941967+00:00",
+      "indexed_at": "2026-10-27T03:31:59.627043+00:00",
       "provenance": null
     },
     {
@@ -562,7 +643,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.600844+00:00",
+      "indexed_at": "2026-10-27T03:31:59.256111+00:00",
       "provenance": null
     },
     {
@@ -576,7 +657,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.714946+00:00",
+      "indexed_at": "2026-10-27T03:31:59.380719+00:00",
       "provenance": null
     },
     {
@@ -590,7 +671,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.633736+00:00",
+      "indexed_at": "2026-10-27T03:31:59.288416+00:00",
       "provenance": null
     },
     {
@@ -604,7 +685,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.666883+00:00",
+      "indexed_at": "2026-10-27T03:31:59.326145+00:00",
       "provenance": null
     },
     {
@@ -618,7 +699,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.936249+00:00",
+      "indexed_at": "2026-10-27T03:31:59.619959+00:00",
       "provenance": null
     },
     {
@@ -632,7 +713,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.266835+00:00",
+      "indexed_at": "2026-10-27T03:31:59.920014+00:00",
       "provenance": null
     },
     {
@@ -646,7 +727,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.956813+00:00",
+      "indexed_at": "2026-10-27T03:31:59.643009+00:00",
       "provenance": null
     },
     {
@@ -660,7 +741,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.487374+00:00",
+      "indexed_at": "2026-10-27T03:31:59.127313+00:00",
       "provenance": null
     },
     {
@@ -674,7 +755,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.768444+00:00",
+      "indexed_at": "2026-10-27T03:31:59.439102+00:00",
       "provenance": null
     },
     {
@@ -688,7 +769,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.775058+00:00",
+      "indexed_at": "2026-10-27T03:31:59.444704+00:00",
       "provenance": null
     },
     {
@@ -702,7 +783,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.604924+00:00",
+      "indexed_at": "2026-10-27T03:31:59.259337+00:00",
       "provenance": null
     },
     {
@@ -716,7 +797,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.976649+00:00",
+      "indexed_at": "2026-10-27T03:31:59.662198+00:00",
       "provenance": null
     },
     {
@@ -730,7 +811,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.639123+00:00",
+      "indexed_at": "2026-10-27T03:31:59.295390+00:00",
       "provenance": null
     },
     {
@@ -744,7 +825,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.670391+00:00",
+      "indexed_at": "2026-10-27T03:31:59.328900+00:00",
       "provenance": null
     },
     {
@@ -758,7 +839,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.925554+00:00",
+      "indexed_at": "2026-10-27T03:31:59.606863+00:00",
       "provenance": null
     },
     {
@@ -772,7 +853,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.474706+00:00",
+      "indexed_at": "2026-10-27T03:31:59.115043+00:00",
       "provenance": null
     },
     {
@@ -786,7 +867,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.802214+00:00",
+      "indexed_at": "2026-10-27T03:31:59.471893+00:00",
       "provenance": null
     },
     {
@@ -800,7 +881,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.787885+00:00",
+      "indexed_at": "2026-10-27T03:31:59.456191+00:00",
       "provenance": null
     },
     {
@@ -814,7 +895,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.176625+00:00",
+      "indexed_at": "2026-10-27T03:31:59.897938+00:00",
       "provenance": null
     },
     {
@@ -828,7 +909,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.005019+00:00",
+      "indexed_at": "2026-10-27T03:31:59.692182+00:00",
       "provenance": null
     },
     {
@@ -842,7 +923,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.014436+00:00",
+      "indexed_at": "2026-10-27T03:31:59.700831+00:00",
       "provenance": null
     },
     {
@@ -856,7 +937,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.026082+00:00",
+      "indexed_at": "2026-10-27T03:31:59.711899+00:00",
       "provenance": null
     },
     {
@@ -870,7 +951,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.747848+00:00",
+      "indexed_at": "2026-10-27T03:31:59.415782+00:00",
       "provenance": null
     },
     {
@@ -884,7 +965,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.862757+00:00",
+      "indexed_at": "2026-10-27T03:31:59.542665+00:00",
       "provenance": null
     },
     {
@@ -898,7 +979,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.158845+00:00",
+      "indexed_at": "2026-10-27T03:31:59.878407+00:00",
       "provenance": null
     },
     {
@@ -912,7 +993,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.283858+00:00",
+      "indexed_at": "2026-10-27T03:31:59.938807+00:00",
       "provenance": null
     },
     {
@@ -926,7 +1007,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.882048+00:00",
+      "indexed_at": "2026-10-27T03:31:59.563154+00:00",
       "provenance": null
     },
     {
@@ -940,7 +1021,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.654334+00:00",
+      "indexed_at": "2026-10-27T03:31:59.313069+00:00",
       "provenance": null
     },
     {
@@ -954,7 +1035,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.681819+00:00",
+      "indexed_at": "2026-10-27T03:31:59.344540+00:00",
       "provenance": null
     },
     {
@@ -968,7 +1049,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.971249+00:00",
+      "indexed_at": "2026-10-27T03:31:59.656747+00:00",
       "provenance": null
     },
     {
@@ -982,7 +1063,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.045805+00:00",
+      "indexed_at": "2026-10-27T03:31:59.737146+00:00",
       "provenance": null
     },
     {
@@ -996,7 +1077,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.011695+00:00",
+      "indexed_at": "2026-10-27T03:31:59.697980+00:00",
       "provenance": null
     },
     {
@@ -1010,7 +1091,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.164138+00:00",
+      "indexed_at": "2026-10-27T03:31:59.883968+00:00",
       "provenance": null
     },
     {
@@ -1024,7 +1105,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.979328+00:00",
+      "indexed_at": "2026-10-27T03:31:59.665935+00:00",
       "provenance": null
     },
     {
@@ -1038,7 +1119,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.264153+00:00",
+      "indexed_at": "2026-10-27T03:31:59.917027+00:00",
       "provenance": null
     },
     {
@@ -1052,7 +1133,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.626166+00:00",
+      "indexed_at": "2026-10-27T03:31:59.280450+00:00",
       "provenance": null
     },
     {
@@ -1066,7 +1147,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.128701+00:00",
+      "indexed_at": "2026-10-27T03:31:59.820435+00:00",
       "provenance": null
     },
     {
@@ -1080,7 +1161,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.850545+00:00",
+      "indexed_at": "2026-10-27T03:31:59.529047+00:00",
       "provenance": null
     },
     {
@@ -1094,7 +1175,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.822561+00:00",
+      "indexed_at": "2026-10-27T03:31:59.494731+00:00",
       "provenance": null
     },
     {
@@ -1108,7 +1189,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.830792+00:00",
+      "indexed_at": "2026-10-27T03:31:59.506068+00:00",
       "provenance": null
     },
     {
@@ -1122,7 +1203,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.828085+00:00",
+      "indexed_at": "2026-10-27T03:31:59.502047+00:00",
       "provenance": null
     },
     {
@@ -1136,7 +1217,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.794328+00:00",
+      "indexed_at": "2026-10-27T03:31:59.462268+00:00",
       "provenance": null
     },
     {
@@ -1150,7 +1231,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.156018+00:00",
+      "indexed_at": "2026-10-27T03:31:59.875178+00:00",
       "provenance": null
     },
     {
@@ -1164,7 +1245,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.002004+00:00",
+      "indexed_at": "2026-10-27T03:31:59.689365+00:00",
       "provenance": null
     },
     {
@@ -1178,7 +1259,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.917262+00:00",
+      "indexed_at": "2026-10-27T03:31:59.597021+00:00",
       "provenance": null
     },
     {
@@ -1192,7 +1273,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.641917+00:00",
+      "indexed_at": "2026-10-27T03:31:59.299090+00:00",
       "provenance": null
     },
     {
@@ -1206,7 +1287,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.321654+00:00",
+      "indexed_at": "2026-10-27T03:31:58.944228+00:00",
       "provenance": null
     },
     {
@@ -1220,7 +1301,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.119191+00:00",
+      "indexed_at": "2026-10-27T03:31:59.811135+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.interface-notes",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/interface-notes.md",
+      "content_hash_sha256": "57bd8575255298bd286ba20979800eaf9466c7cdb704ad1963789acdf0b4688b",
+      "size_bytes": 7514,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.837330+00:00",
       "provenance": null
     },
     {
@@ -1234,7 +1329,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.730561+00:00",
+      "indexed_at": "2026-10-27T03:31:59.395552+00:00",
       "provenance": null
     },
     {
@@ -1248,7 +1343,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.812946+00:00",
+      "indexed_at": "2026-10-27T03:31:59.484921+00:00",
       "provenance": null
     },
     {
@@ -1262,7 +1357,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.318982+00:00",
+      "indexed_at": "2026-10-27T03:31:58.941379+00:00",
       "provenance": null
     },
     {
@@ -1276,7 +1371,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.313330+00:00",
+      "indexed_at": "2026-10-27T03:31:58.935159+00:00",
       "provenance": null
     },
     {
@@ -1290,7 +1385,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.712391+00:00",
+      "indexed_at": "2026-10-27T03:31:59.377261+00:00",
       "provenance": null
     },
     {
@@ -1304,7 +1399,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.726954+00:00",
+      "indexed_at": "2026-10-27T03:31:59.392775+00:00",
       "provenance": null
     },
     {
@@ -1318,7 +1413,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.173856+00:00",
+      "indexed_at": "2026-10-27T03:31:59.894528+00:00",
       "provenance": null
     },
     {
@@ -1332,7 +1427,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.990175+00:00",
+      "indexed_at": "2026-10-27T03:31:59.677144+00:00",
       "provenance": null
     },
     {
@@ -1346,7 +1441,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.324422+00:00",
+      "indexed_at": "2026-10-27T03:31:58.947665+00:00",
       "provenance": null
     },
     {
@@ -1360,7 +1455,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.799621+00:00",
+      "indexed_at": "2026-10-27T03:31:59.468881+00:00",
       "provenance": null
     },
     {
@@ -1374,7 +1469,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.352430+00:00",
+      "indexed_at": "2026-10-27T03:31:58.986693+00:00",
       "provenance": null
     },
     {
@@ -1388,7 +1483,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.859302+00:00",
+      "indexed_at": "2026-10-27T03:31:59.539734+00:00",
       "provenance": null
     },
     {
@@ -1402,7 +1497,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.839622+00:00",
+      "indexed_at": "2026-10-27T03:31:59.516318+00:00",
       "provenance": null
     },
     {
@@ -1416,7 +1511,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.836964+00:00",
+      "indexed_at": "2026-10-27T03:31:59.513147+00:00",
       "provenance": null
     },
     {
@@ -1430,7 +1525,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.847952+00:00",
+      "indexed_at": "2026-10-27T03:31:59.525845+00:00",
       "provenance": null
     },
     {
@@ -1444,7 +1539,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.765177+00:00",
+      "indexed_at": "2026-10-27T03:31:59.436324+00:00",
       "provenance": null
     },
     {
@@ -1458,7 +1553,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.772250+00:00",
+      "indexed_at": "2026-10-27T03:31:59.442112+00:00",
       "provenance": null
     },
     {
@@ -1472,7 +1567,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.338227+00:00",
+      "indexed_at": "2026-10-27T03:31:58.969703+00:00",
       "provenance": null
     },
     {
@@ -1486,7 +1581,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.131457+00:00",
+      "indexed_at": "2026-10-27T03:31:59.823643+00:00",
       "provenance": null
     },
     {
@@ -1500,7 +1595,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.610987+00:00",
+      "indexed_at": "2026-10-27T03:31:59.265836+00:00",
       "provenance": null
     },
     {
@@ -1514,7 +1609,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.833485+00:00",
+      "indexed_at": "2026-10-27T03:31:59.509110+00:00",
       "provenance": null
     },
     {
@@ -1528,7 +1623,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.825408+00:00",
+      "indexed_at": "2026-10-27T03:31:59.498420+00:00",
       "provenance": null
     },
     {
@@ -1542,7 +1637,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.856207+00:00",
+      "indexed_at": "2026-10-27T03:31:59.536919+00:00",
       "provenance": null
     },
     {
@@ -1556,7 +1651,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.853394+00:00",
+      "indexed_at": "2026-10-27T03:31:59.533440+00:00",
       "provenance": null
     },
     {
@@ -1570,7 +1665,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.617016+00:00",
+      "indexed_at": "2026-10-27T03:31:59.271521+00:00",
       "provenance": null
     },
     {
@@ -1584,7 +1679,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.742158+00:00",
+      "indexed_at": "2026-10-27T03:31:59.409131+00:00",
       "provenance": null
     },
     {
@@ -1598,7 +1693,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.153245+00:00",
+      "indexed_at": "2026-10-27T03:31:59.872298+00:00",
       "provenance": null
     },
     {
@@ -1612,7 +1707,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.310376+00:00",
+      "indexed_at": "2026-10-27T03:31:58.931844+00:00",
       "provenance": null
     },
     {
@@ -1626,7 +1721,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.944572+00:00",
+      "indexed_at": "2026-10-27T03:31:59.630312+00:00",
       "provenance": null
     },
     {
@@ -1640,7 +1735,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.257718+00:00",
+      "indexed_at": "2026-10-27T03:31:59.911452+00:00",
       "provenance": null
     },
     {
@@ -1654,7 +1749,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.953386+00:00",
+      "indexed_at": "2026-10-27T03:31:59.640208+00:00",
       "provenance": null
     },
     {
@@ -1668,7 +1763,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.330253+00:00",
+      "indexed_at": "2026-10-27T03:31:58.956289+00:00",
       "provenance": null
     },
     {
@@ -1682,7 +1777,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.965306+00:00",
+      "indexed_at": "2026-10-27T03:31:59.651236+00:00",
       "provenance": null
     },
     {
@@ -1696,7 +1791,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.928208+00:00",
+      "indexed_at": "2026-10-27T03:31:59.609741+00:00",
       "provenance": null
     },
     {
@@ -1710,7 +1805,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.939144+00:00",
+      "indexed_at": "2026-10-27T03:31:59.623870+00:00",
       "provenance": null
     },
     {
@@ -1724,7 +1819,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.974021+00:00",
+      "indexed_at": "2026-10-27T03:31:59.659547+00:00",
       "provenance": null
     },
     {
@@ -1738,7 +1833,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.753825+00:00",
+      "indexed_at": "2026-10-27T03:31:59.422133+00:00",
       "provenance": null
     },
     {
@@ -1752,7 +1847,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.797042+00:00",
+      "indexed_at": "2026-10-27T03:31:59.465599+00:00",
       "provenance": null
     },
     {
@@ -1766,7 +1861,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.745058+00:00",
+      "indexed_at": "2026-10-27T03:31:59.412035+00:00",
       "provenance": null
     },
     {
@@ -1780,7 +1875,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.865553+00:00",
+      "indexed_at": "2026-10-27T03:31:59.545693+00:00",
       "provenance": null
     },
     {
@@ -1794,7 +1889,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.739329+00:00",
+      "indexed_at": "2026-10-27T03:31:59.405662+00:00",
       "provenance": null
     },
     {
@@ -1808,7 +1903,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.873633+00:00",
+      "indexed_at": "2026-10-27T03:31:59.554548+00:00",
       "provenance": null
     },
     {
@@ -1822,7 +1917,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.630273+00:00",
+      "indexed_at": "2026-10-27T03:31:59.284815+00:00",
       "provenance": null
     },
     {
@@ -1836,7 +1931,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.651008+00:00",
+      "indexed_at": "2026-10-27T03:31:59.309821+00:00",
       "provenance": null
     },
     {
@@ -1850,7 +1945,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.679057+00:00",
+      "indexed_at": "2026-10-27T03:31:59.340974+00:00",
       "provenance": null
     },
     {
@@ -1864,7 +1959,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.684562+00:00",
+      "indexed_at": "2026-10-27T03:31:59.347965+00:00",
       "provenance": null
     },
     {
@@ -1878,7 +1973,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.587974+00:00",
+      "indexed_at": "2026-10-27T03:31:59.245064+00:00",
       "provenance": null
     },
     {
@@ -1892,7 +1987,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.594651+00:00",
+      "indexed_at": "2026-10-27T03:31:59.250675+00:00",
       "provenance": null
     },
     {
@@ -1906,7 +2001,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.622715+00:00",
+      "indexed_at": "2026-10-27T03:31:59.276884+00:00",
       "provenance": null
     },
     {
@@ -1920,7 +2015,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.161453+00:00",
+      "indexed_at": "2026-10-27T03:31:59.881293+00:00",
       "provenance": null
     },
     {
@@ -1934,7 +2029,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.920141+00:00",
+      "indexed_at": "2026-10-27T03:31:59.600833+00:00",
       "provenance": null
     },
     {
@@ -1948,7 +2043,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.959583+00:00",
+      "indexed_at": "2026-10-27T03:31:59.645694+00:00",
       "provenance": null
     },
     {
@@ -1962,7 +2057,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.962463+00:00",
+      "indexed_at": "2026-10-27T03:31:59.648573+00:00",
       "provenance": null
     },
     {
@@ -1976,7 +2071,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.984736+00:00",
+      "indexed_at": "2026-10-27T03:31:59.671655+00:00",
       "provenance": null
     },
     {
@@ -1990,7 +2085,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.987523+00:00",
+      "indexed_at": "2026-10-27T03:31:59.674487+00:00",
       "provenance": null
     },
     {
@@ -2004,7 +2099,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:03.008888+00:00",
+      "indexed_at": "2026-10-27T03:31:59.695049+00:00",
       "provenance": null
     },
     {
@@ -2018,7 +2113,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.949924+00:00",
+      "indexed_at": "2026-10-27T03:31:59.637382+00:00",
       "provenance": null
     },
     {
@@ -2032,7 +2127,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.995620+00:00",
+      "indexed_at": "2026-10-27T03:31:59.683265+00:00",
       "provenance": null
     },
     {
@@ -2046,7 +2141,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.992956+00:00",
+      "indexed_at": "2026-10-27T03:31:59.680617+00:00",
       "provenance": null
     },
     {
@@ -2060,7 +2155,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:03.170792+00:00",
+      "indexed_at": "2026-10-27T03:31:59.890727+00:00",
       "provenance": null
     },
     {
@@ -2074,7 +2169,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.664167+00:00",
+      "indexed_at": "2026-10-27T03:31:59.322897+00:00",
       "provenance": null
     },
     {
@@ -2088,7 +2183,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.695008+00:00",
+      "indexed_at": "2026-10-27T03:31:59.356804+00:00",
       "provenance": null
     },
     {
@@ -2102,7 +2197,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.709825+00:00",
+      "indexed_at": "2026-10-27T03:31:59.372965+00:00",
       "provenance": null
     },
     {
@@ -2116,7 +2211,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.272401+00:00",
+      "indexed_at": "2026-10-27T03:31:59.925738+00:00",
       "provenance": null
     },
     {
@@ -2130,7 +2225,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:02.721321+00:00",
+      "indexed_at": "2026-10-27T03:31:59.386648+00:00",
       "provenance": null
     },
     {
@@ -2144,7 +2239,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:02.781048+00:00",
+      "indexed_at": "2026-10-27T03:31:59.450464+00:00",
       "provenance": null
     },
     {
@@ -2158,7 +2253,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:02.661019+00:00",
+      "indexed_at": "2026-10-27T03:31:59.319226+00:00",
       "provenance": null
     },
     {
@@ -2172,7 +2267,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:02.692233+00:00",
+      "indexed_at": "2026-10-27T03:31:59.353706+00:00",
       "provenance": null
     },
     {
@@ -2186,7 +2281,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:02.700985+00:00",
+      "indexed_at": "2026-10-27T03:31:59.363322+00:00",
       "provenance": null
     },
     {
@@ -2200,7 +2295,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:02.894262+00:00",
+      "indexed_at": "2026-10-27T03:31:59.574928+00:00",
       "provenance": null
     },
     {
@@ -2214,7 +2309,7 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:02.907776+00:00",
+      "indexed_at": "2026-10-27T03:31:59.587275+00:00",
       "provenance": null
     },
     {
@@ -2228,7 +2323,21 @@
       "required_status": "optional",
       "is_present": false,
       "error_reason": "invalid_utf8",
-      "indexed_at": "2026-10-27T02:41:03.122476+00:00",
+      "indexed_at": "2026-10-27T03:31:59.814690+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.raw.tar",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/raw.tar.gz",
+      "content_hash_sha256": "",
+      "size_bytes": 91214,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": false,
+      "error_reason": "invalid_utf8",
+      "indexed_at": "2026-10-27T03:31:59.840250+00:00",
       "provenance": null
     },
     {
@@ -2242,7 +2351,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.411880+00:00",
+      "indexed_at": "2026-10-27T03:31:59.054046+00:00",
       "provenance": null
     },
     {
@@ -2256,7 +2365,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.736540+00:00",
+      "indexed_at": "2026-10-27T03:31:59.402522+00:00",
       "provenance": null
     },
     {
@@ -2270,7 +2379,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.759512+00:00",
+      "indexed_at": "2026-10-27T03:31:59.429050+00:00",
       "provenance": null
     },
     {
@@ -2284,7 +2393,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.807470+00:00",
+      "indexed_at": "2026-10-27T03:31:59.478669+00:00",
       "provenance": null
     },
     {
@@ -2298,7 +2407,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.845214+00:00",
+      "indexed_at": "2026-10-27T03:31:59.522319+00:00",
       "provenance": null
     },
     {
@@ -2312,7 +2421,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.870878+00:00",
+      "indexed_at": "2026-10-27T03:31:59.551632+00:00",
       "provenance": null
     },
     {
@@ -2326,7 +2435,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.315939+00:00",
+      "indexed_at": "2026-10-27T03:31:58.938396+00:00",
       "provenance": null
     },
     {
@@ -2340,7 +2449,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.349619+00:00",
+      "indexed_at": "2026-10-27T03:31:58.983179+00:00",
       "provenance": null
     },
     {
@@ -2354,7 +2463,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.079641+00:00",
+      "indexed_at": "2026-10-27T03:31:59.769792+00:00",
       "provenance": null
     },
     {
@@ -2368,7 +2477,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.103183+00:00",
+      "indexed_at": "2026-10-27T03:31:59.793643+00:00",
       "provenance": null
     },
     {
@@ -2382,7 +2491,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.597922+00:00",
+      "indexed_at": "2026-10-27T03:31:59.253334+00:00",
       "provenance": null
     },
     {
@@ -2396,7 +2505,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.636395+00:00",
+      "indexed_at": "2026-10-27T03:31:59.291979+00:00",
       "provenance": null
     },
     {
@@ -2410,7 +2519,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.031754+00:00",
+      "indexed_at": "2026-10-27T03:31:59.719083+00:00",
       "provenance": null
     },
     {
@@ -2424,7 +2533,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.113726+00:00",
+      "indexed_at": "2026-10-27T03:31:59.805231+00:00",
       "provenance": null
     },
     {
@@ -2438,7 +2547,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.146286+00:00",
+      "indexed_at": "2026-10-27T03:31:59.866908+00:00",
       "provenance": null
     },
     {
@@ -2452,7 +2561,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.277898+00:00",
+      "indexed_at": "2026-10-27T03:31:59.933034+00:00",
       "provenance": null
     },
     {
@@ -2466,7 +2575,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.557193+00:00",
+      "indexed_at": "2026-10-27T03:31:59.204996+00:00",
       "provenance": null
     },
     {
@@ -2480,7 +2589,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.490539+00:00",
+      "indexed_at": "2026-10-27T03:31:59.130821+00:00",
       "provenance": null
     },
     {
@@ -2494,7 +2603,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.502251+00:00",
+      "indexed_at": "2026-10-27T03:31:59.147478+00:00",
       "provenance": null
     },
     {
@@ -2508,7 +2617,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.514764+00:00",
+      "indexed_at": "2026-10-27T03:31:59.159713+00:00",
       "provenance": null
     },
     {
@@ -2522,7 +2631,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.531550+00:00",
+      "indexed_at": "2026-10-27T03:31:59.175948+00:00",
       "provenance": null
     },
     {
@@ -2536,7 +2645,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.569939+00:00",
+      "indexed_at": "2026-10-27T03:31:59.225942+00:00",
       "provenance": null
     },
     {
@@ -2550,7 +2659,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.581700+00:00",
+      "indexed_at": "2026-10-27T03:31:59.239187+00:00",
       "provenance": null
     },
     {
@@ -2564,7 +2673,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.493393+00:00",
+      "indexed_at": "2026-10-27T03:31:59.134438+00:00",
       "provenance": null
     },
     {
@@ -2578,7 +2687,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.518665+00:00",
+      "indexed_at": "2026-10-27T03:31:59.163335+00:00",
       "provenance": null
     },
     {
@@ -2592,7 +2701,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.537390+00:00",
+      "indexed_at": "2026-10-27T03:31:59.182383+00:00",
       "provenance": null
     },
     {
@@ -2606,7 +2715,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.572672+00:00",
+      "indexed_at": "2026-10-27T03:31:59.229229+00:00",
       "provenance": null
     },
     {
@@ -2620,7 +2729,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.548670+00:00",
+      "indexed_at": "2026-10-27T03:31:59.195335+00:00",
       "provenance": null
     },
     {
@@ -2634,7 +2743,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.566721+00:00",
+      "indexed_at": "2026-10-27T03:31:59.214889+00:00",
       "provenance": null
     },
     {
@@ -2648,7 +2757,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.559838+00:00",
+      "indexed_at": "2026-10-27T03:31:59.207675+00:00",
       "provenance": null
     },
     {
@@ -2662,7 +2771,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.527994+00:00",
+      "indexed_at": "2026-10-27T03:31:59.172679+00:00",
       "provenance": null
     },
     {
@@ -2676,7 +2785,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.539981+00:00",
+      "indexed_at": "2026-10-27T03:31:59.185487+00:00",
       "provenance": null
     },
     {
@@ -2690,7 +2799,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.496321+00:00",
+      "indexed_at": "2026-10-27T03:31:59.137616+00:00",
       "provenance": null
     },
     {
@@ -2704,7 +2813,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.521515+00:00",
+      "indexed_at": "2026-10-27T03:31:59.166849+00:00",
       "provenance": null
     },
     {
@@ -2718,7 +2827,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.551310+00:00",
+      "indexed_at": "2026-10-27T03:31:59.198984+00:00",
       "provenance": null
     },
     {
@@ -2732,7 +2841,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.575626+00:00",
+      "indexed_at": "2026-10-27T03:31:59.232651+00:00",
       "provenance": null
     },
     {
@@ -2746,7 +2855,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.562409+00:00",
+      "indexed_at": "2026-10-27T03:31:59.211063+00:00",
       "provenance": null
     },
     {
@@ -2760,7 +2869,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.545818+00:00",
+      "indexed_at": "2026-10-27T03:31:59.192360+00:00",
       "provenance": null
     },
     {
@@ -2774,7 +2883,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.534415+00:00",
+      "indexed_at": "2026-10-27T03:31:59.178994+00:00",
       "provenance": null
     },
     {
@@ -2788,7 +2897,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.968408+00:00",
+      "indexed_at": "2026-10-27T03:31:59.653980+00:00",
       "provenance": null
     },
     {
@@ -2802,7 +2911,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.506094+00:00",
+      "indexed_at": "2026-10-27T03:31:59.150518+00:00",
       "provenance": null
     },
     {
@@ -2816,7 +2925,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.542839+00:00",
+      "indexed_at": "2026-10-27T03:31:59.188893+00:00",
       "provenance": null
     },
     {
@@ -2830,7 +2939,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.019973+00:00",
+      "indexed_at": "2026-10-27T03:31:59.706377+00:00",
       "provenance": null
     },
     {
@@ -2844,7 +2953,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.022737+00:00",
+      "indexed_at": "2026-10-27T03:31:59.709114+00:00",
       "provenance": null
     },
     {
@@ -2858,7 +2967,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.068573+00:00",
+      "indexed_at": "2026-10-27T03:31:59.758976+00:00",
       "provenance": null
     },
     {
@@ -2872,7 +2981,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.071480+00:00",
+      "indexed_at": "2026-10-27T03:31:59.761771+00:00",
       "provenance": null
     },
     {
@@ -2886,7 +2995,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.166818+00:00",
+      "indexed_at": "2026-10-27T03:31:59.887869+00:00",
       "provenance": null
     },
     {
@@ -2900,7 +3009,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.182101+00:00",
+      "indexed_at": "2026-10-27T03:31:59.904081+00:00",
       "provenance": null
     },
     {
@@ -2914,7 +3023,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.184981+00:00",
+      "indexed_at": "2026-10-27T03:31:59.907430+00:00",
       "provenance": null
     },
     {
@@ -2928,7 +3037,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.608306+00:00",
+      "indexed_at": "2026-10-27T03:31:59.262300+00:00",
       "provenance": null
     },
     {
@@ -2942,7 +3051,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.281066+00:00",
+      "indexed_at": "2026-10-27T03:31:59.936156+00:00",
       "provenance": null
     },
     {
@@ -2956,7 +3065,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.703877+00:00",
+      "indexed_at": "2026-10-27T03:31:59.366882+00:00",
       "provenance": null
     },
     {
@@ -2970,7 +3079,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.724170+00:00",
+      "indexed_at": "2026-10-27T03:31:59.389489+00:00",
       "provenance": null
     },
     {
@@ -2984,7 +3093,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.733762+00:00",
+      "indexed_at": "2026-10-27T03:31:59.399345+00:00",
       "provenance": null
     },
     {
@@ -2998,7 +3107,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.756872+00:00",
+      "indexed_at": "2026-10-27T03:31:59.425520+00:00",
       "provenance": null
     },
     {
@@ -3012,7 +3121,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.784094+00:00",
+      "indexed_at": "2026-10-27T03:31:59.453454+00:00",
       "provenance": null
     },
     {
@@ -3026,7 +3135,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.804830+00:00",
+      "indexed_at": "2026-10-27T03:31:59.475255+00:00",
       "provenance": null
     },
     {
@@ -3040,7 +3149,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.842649+00:00",
+      "indexed_at": "2026-10-27T03:31:59.519176+00:00",
       "provenance": null
     },
     {
@@ -3054,7 +3163,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.868260+00:00",
+      "indexed_at": "2026-10-27T03:31:59.548870+00:00",
       "provenance": null
     },
     {
@@ -3068,7 +3177,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.897435+00:00",
+      "indexed_at": "2026-10-27T03:31:59.577643+00:00",
       "provenance": null
     },
     {
@@ -3082,7 +3191,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.911447+00:00",
+      "indexed_at": "2026-10-27T03:31:59.590115+00:00",
       "provenance": null
     },
     {
@@ -3096,7 +3205,35 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.125939+00:00",
+      "indexed_at": "2026-10-27T03:31:59.817418+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.sha256sums",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/SHA256SUMS",
+      "content_hash_sha256": "059d35fea25924ab2fd61362a5546de91b4b8faa601d391701981adab552f7d2",
+      "size_bytes": 681,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.842884+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.shared-plan-scope-handoff",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP10-azure-devops-migration-adapter/shared-plan-scope-handoff.md",
+      "content_hash_sha256": "ade21f14bde753c13e15910b40f219e8021534b2c9e2cd6c9780edeade3abe88",
+      "size_bytes": 1820,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.217933+00:00",
       "provenance": null
     },
     {
@@ -3110,7 +3247,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.644601+00:00",
+      "indexed_at": "2026-10-27T03:31:59.302855+00:00",
       "provenance": null
     },
     {
@@ -3124,7 +3261,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.647836+00:00",
+      "indexed_at": "2026-10-27T03:31:59.306230+00:00",
       "provenance": null
     },
     {
@@ -3138,7 +3275,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.673403+00:00",
+      "indexed_at": "2026-10-27T03:31:59.333143+00:00",
       "provenance": null
     },
     {
@@ -3152,7 +3289,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.676299+00:00",
+      "indexed_at": "2026-10-27T03:31:59.337416+00:00",
       "provenance": null
     },
     {
@@ -3166,7 +3303,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.933612+00:00",
+      "indexed_at": "2026-10-27T03:31:59.616190+00:00",
       "provenance": null
     },
     {
@@ -3180,7 +3317,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.706546+00:00",
+      "indexed_at": "2026-10-27T03:31:59.370166+00:00",
       "provenance": null
     },
     {
@@ -3194,7 +3331,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.762154+00:00",
+      "indexed_at": "2026-10-27T03:31:59.433001+00:00",
       "provenance": null
     },
     {
@@ -3208,7 +3345,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.810050+00:00",
+      "indexed_at": "2026-10-27T03:31:59.481731+00:00",
       "provenance": null
     },
     {
@@ -3222,7 +3359,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.900252+00:00",
+      "indexed_at": "2026-10-27T03:31:59.581268+00:00",
       "provenance": null
     },
     {
@@ -3236,7 +3373,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.914396+00:00",
+      "indexed_at": "2026-10-27T03:31:59.593565+00:00",
       "provenance": null
     },
     {
@@ -3250,7 +3387,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.017148+00:00",
+      "indexed_at": "2026-10-27T03:31:59.703554+00:00",
       "provenance": null
     },
     {
@@ -3264,7 +3401,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.477390+00:00",
+      "indexed_at": "2026-10-27T03:31:59.118697+00:00",
       "provenance": null
     },
     {
@@ -3278,7 +3415,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.134318+00:00",
+      "indexed_at": "2026-10-27T03:31:59.827702+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.source-sha256",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/source-sha256.txt",
+      "content_hash_sha256": "0762a4037d0dc08470aebf61801dc349aebc71b63a16d46ce1e37b75d79ccba9",
+      "size_bytes": 1082,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.857663+00:00",
       "provenance": null
     },
     {
@@ -3292,21 +3443,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.930974+00:00",
+      "indexed_at": "2026-10-27T03:31:59.612800+00:00",
       "provenance": null
     },
     {
       "artifact_key": "artifact.status",
       "artifact_class": "output",
       "relative_path": "status.json",
-      "content_hash_sha256": "5a9ff193cadb9ebd9e490b7027a36d8aebfd032e35891bf14724d485e2508664",
-      "size_bytes": 18845,
+      "content_hash_sha256": "eb6c67a60bf3c419c0080b48b98dd449fed1480799be74d9391928b706988ea4",
+      "size_bytes": 19800,
       "wp_id": null,
       "step_id": null,
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.298867+00:00",
+      "indexed_at": "2026-10-27T03:31:58.916440+00:00",
       "provenance": null
     },
     {
@@ -3320,21 +3471,35 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.140798+00:00",
+      "indexed_at": "2026-10-27T03:31:59.834317+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.status",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/status.txt",
+      "content_hash_sha256": "f2206173986734d58f1234d8d756903d7719ae6438b9e8ef7faabef55ffeb797",
+      "size_bytes": 2763,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.860385+00:00",
       "provenance": null
     },
     {
       "artifact_key": "artifact.status.events",
       "artifact_class": "output",
       "relative_path": "status.events.jsonl",
-      "content_hash_sha256": "a2e38dc4598efbcaae7a6aaaa5bb50b9e76818b6e6d947fabca82e9231727a77",
-      "size_bytes": 121088,
+      "content_hash_sha256": "599003e31d78f5fa475f9980d3fbb0ac92e01d139e21066150df2e5f0ee79e67",
+      "size_bytes": 124813,
       "wp_id": null,
       "step_id": null,
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.307664+00:00",
+      "indexed_at": "2026-10-27T03:31:58.927877+00:00",
       "provenance": null
     },
     {
@@ -3348,7 +3513,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.657261+00:00",
+      "indexed_at": "2026-10-27T03:31:59.316151+00:00",
       "provenance": null
     },
     {
@@ -3362,7 +3527,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.687853+00:00",
+      "indexed_at": "2026-10-27T03:31:59.350564+00:00",
       "provenance": null
     },
     {
@@ -3376,7 +3541,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.697901+00:00",
+      "indexed_at": "2026-10-27T03:31:59.360200+00:00",
       "provenance": null
     },
     {
@@ -3390,7 +3555,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.717994+00:00",
+      "indexed_at": "2026-10-27T03:31:59.383437+00:00",
       "provenance": null
     },
     {
@@ -3404,7 +3569,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.777612+00:00",
+      "indexed_at": "2026-10-27T03:31:59.447570+00:00",
       "provenance": null
     },
     {
@@ -3418,7 +3583,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.890734+00:00",
+      "indexed_at": "2026-10-27T03:31:59.572005+00:00",
       "provenance": null
     },
     {
@@ -3432,7 +3597,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.903702+00:00",
+      "indexed_at": "2026-10-27T03:31:59.584157+00:00",
       "provenance": null
     },
     {
@@ -3446,7 +3611,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.116510+00:00",
+      "indexed_at": "2026-10-27T03:31:59.808325+00:00",
       "provenance": null
     },
     {
@@ -3460,7 +3625,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.260860+00:00",
+      "indexed_at": "2026-10-27T03:31:59.914443+00:00",
       "provenance": null
     },
     {
@@ -3474,7 +3639,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.981959+00:00",
+      "indexed_at": "2026-10-27T03:31:59.668818+00:00",
       "provenance": null
     },
     {
@@ -3488,7 +3653,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.998332+00:00",
+      "indexed_at": "2026-10-27T03:31:59.686364+00:00",
       "provenance": null
     },
     {
@@ -3502,7 +3667,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.876435+00:00",
+      "indexed_at": "2026-10-27T03:31:59.557414+00:00",
       "provenance": null
     },
     {
@@ -3516,7 +3681,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.884945+00:00",
+      "indexed_at": "2026-10-27T03:31:59.566218+00:00",
       "provenance": null
     },
     {
@@ -3530,7 +3695,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.887837+00:00",
+      "indexed_at": "2026-10-27T03:31:59.569185+00:00",
       "provenance": null
     },
     {
@@ -3544,7 +3709,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.947324+00:00",
+      "indexed_at": "2026-10-27T03:31:59.634389+00:00",
       "provenance": null
     },
     {
@@ -3558,7 +3723,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.179318+00:00",
+      "indexed_at": "2026-10-27T03:31:59.900839+00:00",
       "provenance": null
     },
     {
@@ -3572,7 +3737,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.480830+00:00",
+      "indexed_at": "2026-10-27T03:31:59.121394+00:00",
       "provenance": null
     },
     {
@@ -3586,7 +3751,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.790665+00:00",
+      "indexed_at": "2026-10-27T03:31:59.459331+00:00",
       "provenance": null
     },
     {
@@ -3600,7 +3765,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.879184+00:00",
+      "indexed_at": "2026-10-27T03:31:59.560223+00:00",
       "provenance": null
     },
     {
@@ -3614,7 +3779,21 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.111079+00:00",
+      "indexed_at": "2026-10-27T03:31:59.802187+00:00",
+      "provenance": null
+    },
+    {
+      "artifact_key": "artifact.validation-summary",
+      "artifact_class": "output",
+      "relative_path": "tasks/WP08-forgejo-gitea-migration-adapters/validation-b6677667/validation-summary.md",
+      "content_hash_sha256": "9710f858d305ca856083dc2709f63ecb3230262155bbf9540ec4bf1b56992d62",
+      "size_bytes": 4356,
+      "wp_id": null,
+      "step_id": null,
+      "required_status": "optional",
+      "is_present": true,
+      "error_reason": null,
+      "indexed_at": "2026-10-27T03:31:59.848726+00:00",
       "provenance": null
     },
     {
@@ -3628,7 +3807,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.143556+00:00",
+      "indexed_at": "2026-10-27T03:31:59.864041+00:00",
       "provenance": null
     },
     {
@@ -3642,7 +3821,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.269787+00:00",
+      "indexed_at": "2026-10-27T03:31:59.922744+00:00",
       "provenance": null
     },
     {
@@ -3656,7 +3835,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.275357+00:00",
+      "indexed_at": "2026-10-27T03:31:59.929187+00:00",
       "provenance": null
     },
     {
@@ -3670,7 +3849,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.591937+00:00",
+      "indexed_at": "2026-10-27T03:31:59.247884+00:00",
       "provenance": null
     },
     {
@@ -3684,7 +3863,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.922873+00:00",
+      "indexed_at": "2026-10-27T03:31:59.604136+00:00",
       "provenance": null
     },
     {
@@ -3698,7 +3877,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.060415+00:00",
+      "indexed_at": "2026-10-27T03:31:59.750680+00:00",
       "provenance": null
     },
     {
@@ -3712,7 +3891,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.105838+00:00",
+      "indexed_at": "2026-10-27T03:31:59.796619+00:00",
       "provenance": null
     },
     {
@@ -3726,7 +3905,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.088152+00:00",
+      "indexed_at": "2026-10-27T03:31:59.778169+00:00",
       "provenance": null
     },
     {
@@ -3740,7 +3919,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.054925+00:00",
+      "indexed_at": "2026-10-27T03:31:59.745387+00:00",
       "provenance": null
     },
     {
@@ -3754,7 +3933,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.057811+00:00",
+      "indexed_at": "2026-10-27T03:31:59.747950+00:00",
       "provenance": null
     },
     {
@@ -3768,7 +3947,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.090967+00:00",
+      "indexed_at": "2026-10-27T03:31:59.780770+00:00",
       "provenance": null
     },
     {
@@ -3782,7 +3961,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.076896+00:00",
+      "indexed_at": "2026-10-27T03:31:59.767230+00:00",
       "provenance": null
     },
     {
@@ -3796,7 +3975,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.065841+00:00",
+      "indexed_at": "2026-10-27T03:31:59.756127+00:00",
       "provenance": null
     },
     {
@@ -3810,7 +3989,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.034675+00:00",
+      "indexed_at": "2026-10-27T03:31:59.723226+00:00",
       "provenance": null
     },
     {
@@ -3824,7 +4003,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.063244+00:00",
+      "indexed_at": "2026-10-27T03:31:59.753419+00:00",
       "provenance": null
     },
     {
@@ -3838,7 +4017,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.037458+00:00",
+      "indexed_at": "2026-10-27T03:31:59.727227+00:00",
       "provenance": null
     },
     {
@@ -3852,7 +4031,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.049502+00:00",
+      "indexed_at": "2026-10-27T03:31:59.739926+00:00",
       "provenance": null
     },
     {
@@ -3866,7 +4045,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.074140+00:00",
+      "indexed_at": "2026-10-27T03:31:59.764655+00:00",
       "provenance": null
     },
     {
@@ -3880,7 +4059,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.082609+00:00",
+      "indexed_at": "2026-10-27T03:31:59.772427+00:00",
       "provenance": null
     },
     {
@@ -3894,7 +4073,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.095136+00:00",
+      "indexed_at": "2026-10-27T03:31:59.785414+00:00",
       "provenance": null
     },
     {
@@ -3908,7 +4087,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.097938+00:00",
+      "indexed_at": "2026-10-27T03:31:59.788144+00:00",
       "provenance": null
     },
     {
@@ -3922,7 +4101,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.052351+00:00",
+      "indexed_at": "2026-10-27T03:31:59.742796+00:00",
       "provenance": null
     },
     {
@@ -3936,7 +4115,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.108552+00:00",
+      "indexed_at": "2026-10-27T03:31:59.799498+00:00",
       "provenance": null
     },
     {
@@ -3950,7 +4129,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.040275+00:00",
+      "indexed_at": "2026-10-27T03:31:59.731394+00:00",
       "provenance": null
     },
     {
@@ -3964,7 +4143,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.043028+00:00",
+      "indexed_at": "2026-10-27T03:31:59.734393+00:00",
       "provenance": null
     },
     {
@@ -3978,7 +4157,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:03.100472+00:00",
+      "indexed_at": "2026-10-27T03:31:59.790854+00:00",
       "provenance": null
     },
     {
@@ -3992,7 +4171,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.816829+00:00",
+      "indexed_at": "2026-10-27T03:31:59.488189+00:00",
       "provenance": null
     },
     {
@@ -4006,7 +4185,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.471566+00:00",
+      "indexed_at": "2026-10-27T03:31:59.111234+00:00",
       "provenance": null
     },
     {
@@ -4020,7 +4199,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.423981+00:00",
+      "indexed_at": "2026-10-27T03:31:59.063344+00:00",
       "provenance": null
     },
     {
@@ -4034,7 +4213,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.371039+00:00",
+      "indexed_at": "2026-10-27T03:31:59.007720+00:00",
       "provenance": null
     },
     {
@@ -4048,7 +4227,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.390626+00:00",
+      "indexed_at": "2026-10-27T03:31:59.030007+00:00",
       "provenance": null
     },
     {
@@ -4062,7 +4241,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.433053+00:00",
+      "indexed_at": "2026-10-27T03:31:59.072966+00:00",
       "provenance": null
     },
     {
@@ -4076,7 +4255,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.443434+00:00",
+      "indexed_at": "2026-10-27T03:31:59.082908+00:00",
       "provenance": null
     },
     {
@@ -4090,7 +4269,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.452023+00:00",
+      "indexed_at": "2026-10-27T03:31:59.092700+00:00",
       "provenance": null
     },
     {
@@ -4104,7 +4283,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.362854+00:00",
+      "indexed_at": "2026-10-27T03:31:58.997474+00:00",
       "provenance": null
     },
     {
@@ -4118,7 +4297,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.400138+00:00",
+      "indexed_at": "2026-10-27T03:31:59.040262+00:00",
       "provenance": null
     },
     {
@@ -4126,13 +4305,13 @@
       "artifact_class": "output",
       "relative_path": "tasks/WP10-azure-devops-migration-adapter.md",
       "content_hash_sha256": "0de3d8455ed9483ad6ffd10b09efb5d0e4ebdcb2211b9b7418a7119a831bf19b",
-      "size_bytes": 8668,
+      "size_bytes": 8851,
       "wp_id": null,
       "step_id": null,
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.408993+00:00",
+      "indexed_at": "2026-10-27T03:31:59.050308+00:00",
       "provenance": null
     },
     {
@@ -4146,7 +4325,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.380077+00:00",
+      "indexed_at": "2026-10-27T03:31:59.016810+00:00",
       "provenance": null
     },
     {
@@ -4160,7 +4339,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.462861+00:00",
+      "indexed_at": "2026-10-27T03:31:59.102486+00:00",
       "provenance": null
     },
     {
@@ -4174,7 +4353,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.335574+00:00",
+      "indexed_at": "2026-10-27T03:31:58.965693+00:00",
       "provenance": null
     },
     {
@@ -4188,7 +4367,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.301902+00:00",
+      "indexed_at": "2026-10-27T03:31:58.920311+00:00",
       "provenance": null
     },
     {
@@ -4202,7 +4381,7 @@
       "required_status": "optional",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.332811+00:00",
+      "indexed_at": "2026-10-27T03:31:58.960406+00:00",
       "provenance": null
     },
     {
@@ -4216,7 +4395,7 @@
       "required_status": "required",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.327004+00:00",
+      "indexed_at": "2026-10-27T03:31:58.951863+00:00",
       "provenance": null
     },
     {
@@ -4230,7 +4409,7 @@
       "required_status": "required",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.295847+00:00",
+      "indexed_at": "2026-10-27T03:31:58.912063+00:00",
       "provenance": null
     },
     {
@@ -4244,9 +4423,9 @@
       "required_status": "required",
       "is_present": true,
       "error_reason": null,
-      "indexed_at": "2026-10-27T02:41:02.341284+00:00",
+      "indexed_at": "2026-10-27T03:31:58.973078+00:00",
       "provenance": null
     }
   ],
-  "computed_at": "2026-10-27 02:41:06.667858+00:00"
+  "computed_at": "2026-10-27 03:32:03.466182+00:00"
 }
