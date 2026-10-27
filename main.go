@@ -7,7 +7,8 @@ import (
 	"sort"
 )
 
-const version = "0.0.1-dev"
+// version retains the development default; hn-release sets it explicitly at link time.
+var version = "0.0.1-dev"
 
 // Compiled native feature families can register local dispatch without altering
 // built-in commands. Registration performs no network or repository I/O.

@@ -70,7 +70,28 @@ func appendEventWithAttachments(event Event, identity *Identity, attachments map
 		return nil, err
 	}
 	id := eventID(payload)
-	if event.Kind == "run.result" {
+	if isAuditKind(event.Kind) {
+		if err := validateAuditAttachments(event, attachments); err != nil {
+			return nil, err
+		}
+		if err := importAuditPack("", attachments["audit.pack"], event); err != nil {
+			return nil, err
+		}
+		events, err := collectEvents()
+		if err != nil {
+			return nil, err
+		}
+		byID := make(map[string]StoredEvent, len(events))
+		for _, stored := range events {
+			byID[stored.ID] = stored
+		}
+		if err := validateAuditRelationshipAt("", "", StoredEvent{ID: id, Event: event}, byID); err != nil {
+			return nil, err
+		}
+		if err := validateCurrentAuditWrite(event, events); err != nil {
+			return nil, err
+		}
+	} else if event.Kind == "run.result" {
 		log, exists := attachments["log.txt"]
 		if !exists || len(attachments) != 1 || eventID(log) != event.Log {
 			return nil, fmt.Errorf("run result requires exactly one matching log attachment")
@@ -204,6 +225,41 @@ func loadStoredEventAt(gitDir, commit string) (*StoredEvent, error) {
 		return nil, fmt.Errorf("verify %s: %w", commit, err)
 	}
 	attachments := make(map[string][]byte)
+	if isAuditKind(event.Kind) {
+		stored := StoredEvent{ID: id, Commit: commit, Event: event}
+		if err := validateQuarantinedEventTree(gitDir, stored); err != nil {
+			return nil, err
+		}
+		names := []string{"audit.pack"}
+		if event.Kind == "audit.result" {
+			names = append(names, "log.txt")
+		}
+		for _, name := range names {
+			limit := int64(maxAuditPack)
+			if name == "log.txt" {
+				limit = maxRunLogSize
+			}
+			size, err := gitTextAt(gitDir, "cat-file", "-s", commit+":"+name)
+			if err != nil {
+				return nil, err
+			}
+			n, err := strconv.ParseInt(size, 10, 64)
+			if err != nil || n < 0 || n > limit {
+				return nil, fmt.Errorf("audit attachment %s exceeds bounds", name)
+			}
+			raw, err := gitOutputAt(gitDir, "show", commit+":"+name)
+			if err != nil {
+				return nil, err
+			}
+			attachments[name] = raw
+		}
+		if err := validateAuditAttachments(event, attachments); err != nil {
+			return nil, err
+		}
+		if err := importAuditPack(gitDir, attachments["audit.pack"], event); err != nil {
+			return nil, err
+		}
+	}
 	if event.Kind == "run.result" {
 		log, err := gitOutputAt(gitDir, "show", commit+":log.txt")
 		if err != nil {
@@ -316,6 +372,11 @@ func validateEventRelationships(events []StoredEvent) error {
 	}
 	for _, stored := range events {
 		event := stored.Event
+		if isAuditKind(event.Kind) {
+			if err := validateAuditRelationshipAt("", "", stored, byID); err != nil {
+				return err
+			}
+		}
 		switch event.Kind {
 		case "issue.comment":
 			subject, exists := byID[event.Subject]

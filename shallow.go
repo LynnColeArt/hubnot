@@ -956,6 +956,16 @@ func guardShallowEventClosure(operation string) error {
 				return err
 			}
 		}
+		for _, reference := range auditReferences(event) {
+			if err := missing(reference, shallowSelectedFact, "", ""); err != nil {
+				return err
+			}
+		}
+		for _, commit := range auditObjectRoots(event) {
+			if err := requireExactDependency(exactDependency{Operation: operation, Kind: shallowBaseCommit, MissingID: commit, ObjectType: "commit"}); err != nil {
+				return err
+			}
+		}
 		switch event.Kind {
 		case "proposal.revise", "review.submit":
 			if err := missing(event.Subject, shallowCandidateEvent, replicationProposal, event.Subject); err != nil {

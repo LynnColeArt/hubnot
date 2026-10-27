@@ -3,14 +3,41 @@
 Hubnot stores issues, planning projects, discussions and workflows as signed Git
 facts. Those resources work without GitHub, a `gh` executable, a service or a
 database. `hn gh issue` is a parallel local command interface. Network transfer
-is a separate, explicitly invoked operation. GitHub is the first optional
-adapter; provider-neutral transfer types and dispatch permit other adapters
-without making their SDK or service a native requirement.
+and project migration are separate, explicitly invoked operations. Provider adapters are optional;
+their accounts, SDKs and services are never native requirements.
 
 Native guides: [issues](issues-v1.md), [projects](projects-v1.md),
 [discussions](discussions-v1.md), [workflows](workflows-v1.md).
 
-## Build with or without GitHub
+## Project migration and provider profiles
+
+For whole-project ownership, use [guided/scripted migration](migration-cli.md),
+[portable snapshots](project-migration.md) and the [saved-plan engine](migration-engine.md).
+The explicit legacy `hn transfer` commands below retain their resource behavior.
+These two paths share native trust boundaries but have distinct container and
+recovery contracts. `hn migrate capabilities` reports the compiled registrations;
+select the exact endpoint, version, scope and credential mode deliberately.
+
+| Provider | Tested profile | Direction and limits |
+| --- | --- | --- |
+| GitHub | `2022-11-28` | Issue/comment read/write; open state and empty issue type. PR/review/planning/workflow source preservation is not equivalent recreation. |
+| GitLab | `v4`, explicit self-hosted `/api/v4` root | Issue/note read/write, nested project selectors and retrieved MR/thread/planning/workflow preservation. Slash-leading body lines, including fenced examples, refuse hosted recreation to avoid quick actions. |
+| Forgejo / Codeberg | `11`, `16`, explicit `/api/v1` root | Separate issue/comment read/write profile; existing numeric label mappings. Instance availability and workflow source limits remain explicit. |
+| Gitea | `1.24`, `1.27` | Separate tested issue/comment profile; 1.27 update requires observed `content_version`. Neither Gitea nor Forgejo PATCH changes labels. |
+| Bitbucket Cloud | `2.0` | Source-only repository/PR-conversation/workflow preservation; retired issues and destination PR recreation unavailable. No Jira substitution or app passwords. |
+| Azure DevOps | Services `services-7.1`, Server 2022 `server-7.0` | Mapped work-item/comment read/write. Organization/collection and project required; repository optional for Boards-only work, required for code/PR/YAML. Explicit process/type/state mappings and supplied Entra bearer/PAT; no OAuth registration. |
+
+Mapped native/remote issue content, raw retrieved source bytes and destination
+recreation are different capabilities. A source URL or unread/private resource
+is not preserved data. Preserve supported PR/MR/review/thread/planning detail as
+attributed records and digest-verified source blobs; inspect exact bytes offline.
+Unsupported creation, missing dependencies and identity conflicts require
+explicit decisions or refusal before writing. Imported users, permissions,
+reviews, CI and workflows confer no native policy or runner authority. Workflow
+source remains inert unless explicitly converted and separately authorized.
+No provider CLI, SDK, account provisioning, deletion or automatic sync is added.
+
+## Build with optional adapters
 
 Go 1.26+ and Git 2.x are required. The product uses the Go standard library and
 Git; there is no external Go module or `gh` subprocess dependency.
@@ -18,15 +45,19 @@ Git; there is no external Go module or `gh` subprocess dependency.
 ```sh
 go build -trimpath -o hn .
 go build -trimpath -tags nogithub -o hn-local .
-go list -deps -tags nogithub ./...
+go build -trimpath -tags noforge -o hn-native .
+go list -deps -tags noforge .
 ```
 
-The tagged dependency graph excludes `hubnot/internal/githubapi`. Both binaries
+`nogithub` excludes only `hubnot/internal/githubapi`; other adapters remain.
+`noforge` excludes every network client/registration. All variants
 retain native issue, project/item, discussion/reply, workflow and local
 `hn gh issue` operations. Previously imported facts remain readable and editable
 with the native commands. `hn-local github help` explains transport exclusion;
 GitHub transfer operations fail as an unavailable provider before network access.
-No account or token is needed for local operation. Private native keys are
+Local/archive migration, imported foreign inspection, independent audit execution
+and explicit follow-ups also remain available with `noforge`. No account or token
+is needed for local operation. Private native keys are
 needed for new native signed facts, not ordinary reads.
 
 ## Local gh-style issue interface
@@ -289,8 +320,8 @@ API emulation.
 
 ## Adding another provider
 
-The internal extension seam is `internal/forge`: an adapter supplies its bounded
-identity, opaque IDs and selectors, issue methods and/or the selected typed
+For legacy transfer, the internal extension seam is `internal/forge`: an adapter
+supplies its bounded identity, opaque IDs and selectors, issue methods and/or the selected typed
 resource-reader interfaces. An optional registration supplies a factory, its
 credential variable, explicit capabilities and resource export callbacks.
 Transfer planning, signed native storage and recovery stay provider-neutral;
@@ -302,3 +333,11 @@ This is an internal implementation boundary, not a runtime plugin loader or a
 stable external SDK promise. No unspecified alternate forge or workflow format
 is guessed. A provider's API or CI engine becoming unavailable cannot prevent
 native Git-backed collaboration.
+
+Project migration adapters instead implement `internal/migration` source,
+destination, capability, immutable identity, blob, receipt and exact
+reconciliation contracts. Dependent issue/comment writes bind confirmed parent
+receipts through the shared engine, never provider-local hidden state. Keep
+nonvacuous direction/version conformance and bounded endpoint/pagination checks;
+see [migration engine](migration-engine.md). Saved plans contain no credentials;
+API effects require fresh explicitly supplied credentials at apply/resume.

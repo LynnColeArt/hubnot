@@ -1,4 +1,4 @@
-//go:build !nogithub
+//go:build !nogithub && !noforge
 
 // Package githubapi is the optional, non-authoritative GitHub issue transport.
 // It performs no requests until explicitly called and has no gh dependency.
@@ -37,7 +37,13 @@ type Label struct {
 	Name string `json:"name"`
 }
 
+// IssueType is descriptive source metadata; migrations do not administer types.
+type IssueType struct {
+	Name string `json:"name"`
+}
+
 type Issue struct {
+	Type        *IssueType      `json:"type,omitempty"`
 	ID          int64           `json:"id"`
 	NodeID      string          `json:"node_id"`
 	Number      int             `json:"number"`
@@ -122,6 +128,12 @@ func NewClient(baseURL, token string) (*Client, error) {
 		return nil, errors.New("invalid GitHub API base path")
 	}
 	u.Host = strings.ToLower(u.Host)
+	if u.Scheme == "https" && strings.HasSuffix(u.Host, ":443") {
+		u.Host = strings.TrimSuffix(u.Host, ":443")
+	}
+	if u.Scheme == "http" && strings.HasSuffix(u.Host, ":80") {
+		u.Host = strings.TrimSuffix(u.Host, ":80")
+	}
 	for _, c := range token {
 		if c < 33 || c > 126 {
 			return nil, errors.New("invalid GitHub API token")
@@ -234,8 +246,8 @@ func (c *Client) request(ctx context.Context, method string, u *url.URL, input a
 
 func decodeResponse[T any](raw []byte) (T, error) {
 	var zero T
-	if !validJSONUnicode(raw) {
-		return zero, errors.New("invalid GitHub response JSON")
+	if !strictGraphQLJSON(raw) {
+		return zero, errors.New("invalid or ambiguous GitHub response JSON")
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	var result *T
@@ -287,7 +299,7 @@ func validJSONUnicode(raw []byte) bool {
 }
 
 func validIssue(v Issue) bool {
-	return v.ID > 0 && v.NodeID != "" && v.Number > 0 && (v.State == "open" || v.State == "closed")
+	return v.ID > 0 && v.NodeID != "" && v.Number > 0 && (v.State == "open" || v.State == "closed") && (v.Type == nil || v.Type.Name != "" && len(v.Type.Name) <= 256 && utf8.ValidString(v.Type.Name))
 }
 
 func validComment(v Comment) bool { return v.ID > 0 && v.NodeID != "" }

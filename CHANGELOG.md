@@ -18,15 +18,34 @@ experimental; alpha releases do not promise stable compatibility.
   This is a test-only correction after the first release; published executable
   bytes are unchanged. ([#10](https://github.com/LynnColeArt/hubnot/pull/10))
 
-### Required for the next release
+### Added
 
-- Replace the Python release packager with tooling that uses **Go and Git alone**
-  and runs on Linux, macOS, and Windows. Release packaging must not require
-  Python or a Unix-only shell. This is a packaging portability requirement;
-  Windows executable distribution remains a separate scope decision.
-- Keep runtime, source-build, and archive-reproduction requirements explicit.
-  Running a prebuilt `hn` requires Git 2.x; ordinary source builds require Go
-  and Git. The published `0.0.1-dev` artifacts remain unchanged.
+- Portable project snapshots and bounded archives retain explicitly selected Git
+  history, exact signed native facts, attributed foreign communications and
+  retrieved attachment bytes. Saved guided/scripted `hn migrate` plans preview
+  capabilities and explicit loss decisions before guarded apply/resume. Imported
+  history does not install signers, activate policy or grant runner authority.
+- Tested migration profiles for GitHub, GitLab including self-hosted endpoints,
+  separate Forgejo and Gitea versions, Bitbucket Cloud source preservation, and
+  explicitly mapped Azure DevOps Boards work items/comments. Preservation does
+  not imply destination recreation; unavailable reads and removed APIs are
+  reported. Legacy explicit transfer commands retain their behavior.
+- `noforge` excludes all network adapters while retaining native collaboration,
+  local/archive migration, foreign inspection, and independent audits.
+  `nogithub` continues to exclude GitHub only.
+- Independent signed audit authorizations, revocations, requests and results,
+  with separate explicit local authority adoption and existing sandbox/unsafe-host
+  execution boundaries. Audit outcomes never supply or block merge evidence.
+  Deliberate linked follow-up issues deduplicate retries and later findings,
+  preserve operator edits and expose concurrent publisher limits. No scheduler
+  or automatic execution is introduced; native policy defaults remain unchanged.
+- Go/Git-only `hn-release` packages an exact committed revision into deterministic
+  Linux/macOS binary and source archives with normalized metadata, SHA-256
+  checksums and declared provenance. Native-only packages omit all adapters.
+  The packager cross-compiles for Windows/macOS; their packager-host runtime
+  qualification remains outstanding. Packaging never publishes or changes tags.
+  The immutable `0.0.1-dev` artifacts retain their original Python reproduction
+  requirements and GitHub-only native-only meaning.
 
 ## [0.0.1-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.1-dev) — 2026-10-25
 
