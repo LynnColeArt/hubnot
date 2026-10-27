@@ -1,0 +1,11 @@
+Working tree preflight commands completed before commit:
+- spec-kitty charter context --include section:code-review-checklist (0; connected-teamspace warning only)
+- go vet ./... (0; no diagnostics)
+- go build ./... (0; no diagnostics)
+- git diff --check (0; no diagnostics)
+Focused final-source race command output captured from terminal session 85705:
+$ go test -race . -run '^TestGitLab' -count=1
+ok  	hubnot	4.502s
+$ go test -race ./internal/gitlabapi -count=1
+ok  	hubnot/internal/gitlabapi	1.070s
+Earlier fixture-only subprocess race and import-output lookup failures were corrected before these successful checks.

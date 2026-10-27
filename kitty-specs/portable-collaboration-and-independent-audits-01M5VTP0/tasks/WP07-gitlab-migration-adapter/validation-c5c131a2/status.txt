@@ -1,0 +1,20 @@
+privacy and quick-action root focused race	0
+privacy and quick-action client focused race	0
+hardening go vet ./...	0
+hardening go build ./...	0
+hardening format/diff	0
+2026-10-27T03:18:54Z START go test -race -timeout 20m ./...
+c5c131a2 build nogithub	0
+c5c131a2 nogithub native CLI Git-only PATH, empty credentials	0
+c5c131a2 build noforge	0
+c5c131a2 noforge native CLI Git-only PATH, empty credentials	0
+c5c131a2 variant GitLab capabilities/exclusion CLI	0
+c5c131a2 nogithub legacy/privacy/quick-action HTTP fixtures	0
+c5c131a2 noforge excludes provider clients	0
+c5c131a2 nogithub retains GitLab and excludes GitHub client	0
+go test -race -timeout 20m ./... at c5c131a2	0
+2026-10-27T03:30:20Z END final full race
+c5c131a2 noforge local/receipt recovery focused	0
+canonical T019 T020 T021 done	0
+canonical WP07 for_review transition/gate	1
+canonical WP07 for_review after root ownership resolution	0

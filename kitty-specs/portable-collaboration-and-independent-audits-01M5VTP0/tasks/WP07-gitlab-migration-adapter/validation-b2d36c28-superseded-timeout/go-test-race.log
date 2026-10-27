@@ -1,0 +1,532 @@
+Recorded accept decision e3f192818547 on proposal 75f717b2dadf under policy b6b300797b77
+Evidence: 1 signed event(s)
+Proposal: sha256:75f717b2dadff6e718cbd17fc0ab8486ead7e65c5575d77390e70b3d3cca0720
+Base: 2c781af6cf9a4ca5210ff71baa7e82ce87357873
+Head: 5b462624e5e0a3b841bcd9d201ff5b71b1dff892
+Policy: sha256:b6b300797b77a80b45fbb5660a23c11b34a38075a265d2b41e52f3f70684d1d1
+Target: main at 2c781af6cf9a4ca5210ff71baa7e82ce87357873
+Rule: docs
+Permitted executing actors:
+  ffa9a39ff0620176a07fad1b7d78f98d111545b7b58891899d7c28b6611b01ca
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Merged proposal 75f717b2dadf into main at 7cc0b526318f
+Recorded merge event 4a270f05cb08 with 1 acceptance decision(s)
+Proposal: sha256:75f717b2dadff6e718cbd17fc0ab8486ead7e65c5575d77390e70b3d3cca0720
+Base: 2c781af6cf9a4ca5210ff71baa7e82ce87357873
+Head: 5b462624e5e0a3b841bcd9d201ff5b71b1dff892
+Policy: sha256:b6b300797b77a80b45fbb5660a23c11b34a38075a265d2b41e52f3f70684d1d1
+Target: main at 7cc0b526318f1ba3a954ac2a5a193b366a1aab5c
+Rule: docs
+Permitted executing actors:
+  ffa9a39ff0620176a07fad1b7d78f98d111545b7b58891899d7c28b6611b01ca
+Changed paths:
+  "docs/safe.md"
+Blocked:
+  proposal is already recorded as merged
+  target no longer equals the signed base; revise the candidate (use hn merge for a missing merge-event repair)
+Recorded accept decision b01529d6d6d0 on proposal e7c9d7c00072 under policy 5f7a198292f4
+Evidence: 1 signed event(s)
+Recorded accept decision 84c31fbaabaa on proposal d9d9018d8798 under policy 9a991ff11687
+Evidence: 1 signed event(s)
+Recorded accept decision ed0f680d97c7 on proposal 1588d175190c under policy f10016cae19e
+Evidence: 1 signed event(s)
+Recorded accept decision 6225b4803dbe on proposal 3a6e41a72dab under policy 3f9bbbd2469c
+Evidence: 1 signed event(s)
+Recorded accept decision 28606568ca04 on proposal 591efe76ef1d under policy 8c27b37a4c44
+Evidence: 1 signed event(s)
+Recorded accept decision ff8388807e1e on proposal 53df4ce9c8b5 under policy 9510f9563aee
+Evidence: 1 signed event(s)
+Proposal: sha256:53df4ce9c8b5d3078f8b19b814e152a35b4ceed4404f5305a630a20b55d74951
+Base: 6a4964d88f772ecc9e455d364464059ee5260849
+Head: 9e2078a30e95edd7bab81ed03da8f748cbaad704
+Policy: sha256:9510f9563aee168b1a702dbd79a0f90904efec8cf70b46b97e1579acf4ce75ce
+Target: main at 6a4964d88f772ecc9e455d364464059ee5260849
+Rule: docs
+Permitted executing actors:
+  1e38a12e07828c3c4752e3a0e6ffc9af0815b6f9604f083ad35f5b7afe1e64f6
+Changed paths:
+  "docs/safe.md"
+Blocked:
+  current approval, protected check or CI evidence is not ready
+  proposal has a current trusted change request
+Recorded accept decision d0cdaa4cdbb5 on proposal 967703b7667f under policy 1d00d72967c5
+Evidence: 1 signed event(s)
+Proposal: sha256:967703b7667ffe1bcb5822000439e2b2b0c9397da60bfb234b36ee30fab5978a
+Base: c52485c917bb22f038a98fd6c4f143c26eecccef
+Head: 94cbdee6a2b1797d22fbfaba105e9021c79ecf54
+Policy: sha256:1d00d72967c50d4e972d9597c5f49ff7342a1ab6fb4008a8bde15e0b987e88c4
+Target: main at c52485c917bb22f038a98fd6c4f143c26eecccef
+Changed paths:
+  "docs/safe.md"
+Blocked:
+  automerge rule "other" does not exist in the signed base policy
+Recorded accept decision 0b8247f68452 on proposal 6cac6ee5068e under policy 31ad59357f87
+Evidence: 1 signed event(s)
+Proposal: sha256:6cac6ee5068e00482316fe1e70a68bf85d2297e21a8693ed36c6cef47c87cc3a
+Base: ebf07549cce0e3b58a3df8533e4c2ce1c5e143d3
+Head: 645962d7bbcbd37e7c4f1b6d9ae4b55cad518e04
+Policy: sha256:31ad59357f874913398d02ed075c1e4b625cec4a6c085457ee684cdd4c21beec
+Target: main at ebf07549cce0e3b58a3df8533e4c2ce1c5e143d3
+Rule: docs
+Permitted executing actors:
+  60659cfbfeccc1c4aa044294b820acfa8542201cede8211c1e29ea5d209f3385
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision edc4c0f54360 on proposal 7a6e4239036d under policy cd75e5f0dde2
+Evidence: 1 signed event(s)
+Proposal: sha256:7a6e4239036d5a2022008158b3cc56741d823ec54221916cd58eaed8a07e56b9
+Base: ecf4ba6676421e184d50cfcfbba89c6dd5b64dde
+Head: dddd2936e23f42216cc0ac8f4068d7cc2c8e6d52
+Policy: sha256:cd75e5f0dde254192d4b73514e2a7346eff58607fb4bf0deefdcf3cfbeace9d7
+Target: main at ecf4ba6676421e184d50cfcfbba89c6dd5b64dde
+Rule: docs
+Permitted executing actors:
+  af893bbcc9e3123c0e417f654a39516b3a5379b2b14fd201ffe881b1d88bca00
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision 7ef2bf1b9ff3 on proposal 61af4a706a53 under policy 7b19ca94e88a
+Evidence: 1 signed event(s)
+Proposal: sha256:61af4a706a53b54b617721b5cab764b3416c6ba15b960d04df4031688d8ec36e
+Base: 7785b16d3f52ea6807c804e66caf55459df48412
+Head: 154c663937ea0e71b50231f7b061cfca7c07f277
+Policy: sha256:7b19ca94e88a035e7073dc2c52bbe11621ef7749d5fc518317e88bafa4965af2
+Target: main at 7785b16d3f52ea6807c804e66caf55459df48412
+Rule: docs
+Permitted executing actors:
+  ad9d60d93dffc826fc7d181c1e3687f33f806f339a45396634792813270fcf81
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision 47ba6df5bd03 on proposal c66c125a48be under policy 0e8c10da3a54
+Evidence: 1 signed event(s)
+Proposal: sha256:c66c125a48be750e71130a2b0441b55dd289f400b7d627f4f823245875cbdef3
+Base: f50a2e6762733f9dc2b58dda25add542b336e84c
+Head: 378c8b002e4580a5834bf082bef1cb86dbe3d17d
+Policy: sha256:0e8c10da3a54d840d2c584153a7da12a1cf79c2c19fd90aae9df59871dfe6658
+Target: main at f50a2e6762733f9dc2b58dda25add542b336e84c
+Rule: docs
+Permitted executing actors:
+  b9f0401a48399430f9d02856eff65aa25d3e1edd4d305f7a63ed2e34d8be9625
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision a4b1b1ba8796 on proposal 15d5d9382ae4 under policy e04e8a182f47
+Evidence: 1 signed event(s)
+Proposal: sha256:15d5d9382ae46e05d576b147b2c984fd4aff32324cac728833c7d9a5d9d1ff9e
+Base: 1608b8501d3304d0606f5f9a77be9fee81dbd34d
+Head: c852d6535afd79e40b05c22a195d699eb1a2a6d4
+Policy: sha256:e04e8a182f472cf1a8fb7ad1d5e9e7efe4bb667d5a90a0bc27a8e31ccd089ac9
+Target: main at 1608b8501d3304d0606f5f9a77be9fee81dbd34d
+Rule: docs
+Permitted executing actors:
+  36f338b35c61f685a223f9de79a5a654ad46a3db23aec09bc1fde3aabac00231
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision f660e0c0fed2 on proposal d63135f16f6a under policy d3ecf0638dbe
+Evidence: 1 signed event(s)
+Proposal: sha256:d63135f16f6a995cbd8175db8c493f3713f7580baa43ab8b648e8058192799d0
+Base: 463a8919da70734b7ae0107502673dfa7da9ad95
+Head: 68ba5c74fe73ab3e394db391b689ff7b30d40551
+Policy: sha256:d3ecf0638dbe5b9de382f870af9b9d893ed8e77264c74ce3d7aebf147e2a00b3
+Target: main at 463a8919da70734b7ae0107502673dfa7da9ad95
+Rule: docs
+Permitted executing actors:
+  4ec600c2898e9d2116fafce085fc2abbca60e6b1452abeaec839a58c29e7dc75
+Changed paths:
+  "docs/ignored.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision 89fec83a3b0b on proposal 883b085dad8b under policy 9640f0b3036e
+Evidence: 1 signed event(s)
+Proposal: sha256:883b085dad8b80bba4fa361629f90f739f59426b6c14d559661c29a291570717
+Base: 65cb047dacbff279ddf83196ec19dc47e7568e57
+Head: 5f89d8e2fdef3d4f15eae1afb476f6db33e51f4f
+Policy: sha256:9640f0b3036e3918d806750747b41b8c681f4a65ccbd9040ce49fa8e09439b08
+Target: main at 65cb047dacbff279ddf83196ec19dc47e7568e57
+Rule: docs
+Permitted executing actors:
+  154f9f7268bd2269db01a3019ebdcf8d0277c91a8d394b85cb1e875d4a0cac78
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Merged proposal 883b085dad8b into main at 5dce33470046
+Recorded merge event 71e84a00644e with 1 acceptance decision(s)
+Recorded accept decision 0911e7fc15a5 on proposal d31a1551685d under policy 40ca3990faef
+Evidence: 1 signed event(s)
+Proposal: sha256:d31a1551685d5916d5a10625af1b69a751f39ede52b0883bfbab4ab14838f9f7
+Base: 9cdee778aa1d51ed28f5fdf81a15ab9a0c2a1223
+Head: 86e4acfde444fa5d95df8778a3e3101b09bd3e53
+Policy: sha256:40ca3990faef1c9610dc96fe40beb8749585617ee7344d103211dc58e1cbf704
+Target: main at 9cdee778aa1d51ed28f5fdf81a15ab9a0c2a1223
+Rule: docs
+Permitted executing actors:
+  abdc98d991f6d777950dc552bb4a1682870cc72f55df7b56a29c4175cf6925da
+Changed paths:
+  "docs/existing.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision c35e706e0f9d on proposal 58506dd45cf9 under policy c5c678468977
+Evidence: 1 signed event(s)
+Proposal: sha256:58506dd45cf92238878743d7ef04acb64d5313f6b3665538233ffd0c139bdb9c
+Base: 9ef4aade260a9401db2cfb4b0b48b8feaeeea944
+Head: 9e5789fd9fadcb135d4be4888ebe966eb6cf6330
+Policy: sha256:c5c6784689772eafcc231db95a452c34f305fefc3556a9cab34ebfc3f1d0e76a
+Target: main at 9ef4aade260a9401db2cfb4b0b48b8feaeeea944
+Rule: docs
+Permitted executing actors:
+  41e026c91f9d08603815d59f476d55686e1e8b902914bd8aa5e09114c8d861a6
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded missing merge event 28842d3f3dd2 for proposal 58506dd45cf9 at ed75ac8fb45c with 1 acceptance decision(s)
+Recorded accept decision cc60800ca95f on proposal faca2a66bd67 under policy f3a844ffc720
+Evidence: 1 signed event(s)
+Recorded accept decision 91a5bace031c on proposal 1d0a43b9ffe7 under policy f3a844ffc720
+Evidence: 1 signed event(s)
+Proposal: sha256:1d0a43b9ffe7889ca53b3a1e48f933a14aa467ef4e73f640fc50440d9fd26511
+Base: d538a392d49829579ca9c8ca706b7e830c24a9cb
+Head: fcf061e758f39ebb90731c85b612fb02580d0222
+Policy: sha256:f3a844ffc720ce30883fd0d2dc4a7f872a42848460bcf67fde2554faaa8aa11c
+Target: main at d538a392d49829579ca9c8ca706b7e830c24a9cb
+Rule: docs
+Permitted executing actors:
+  a283012016a9bb8c2172a84df33eb04871c017a285b28567f0db2cd20f541045
+Changed paths:
+  "docs"
+  "docs/existing.md"
+Blocked:
+  changed path "docs" is outside the rule allowlist
+Recorded accept decision e84520d8ec4d on proposal bd2c00eb8314 under policy cbce4b584b3a
+Evidence: 1 signed event(s)
+Recorded accept decision 3d38ba8e0bf3 on proposal ba705d9f4431 under policy 187aa0a9c0f7
+Evidence: 1 signed event(s)
+Proposal: sha256:ba705d9f443174f6a6a0d4e26c8690bf31422c3633880c124f57c0fe516f0e81
+Base: 3756dbfb6a2162e17a207928b2d7b6562543178b
+Head: 5f6a29a6eb014e7a131c70bac5ee37208c63fa24
+Policy: sha256:187aa0a9c0f70a92f943b60fc90944d2189da44be9c585d0bb0b112028c53c74
+Target: main at 3756dbfb6a2162e17a207928b2d7b6562543178b
+Rule: docs
+Permitted executing actors:
+  b553d766178744393f6e7bc5580be5a4754cd5ef59825c5289b7bc540d84117e
+Changed paths:
+  "docs/safe.md"
+Blocked:
+  checked-out branch does not match rule target "heads/main"
+Recorded accept decision 64c5fefa7bdf on proposal e73c0d12fcd6 under policy 1e1adc005e97
+Evidence: 1 signed event(s)
+Proposal: sha256:e73c0d12fcd62c422a90ceee38f8a09d8b7904b4b1b3c77865be5c74c72e546f
+Base: c31d02cef92f4ecdf0b68378434210ac76029506
+Head: 717c6a536023f853539efd2d6763af0e53d0d77d
+Policy: sha256:1e1adc005e97e79480ec54d31a229fdc56aea3e640ba64cc8ba7946beb05a219
+Target: main at c31d02cef92f4ecdf0b68378434210ac76029506
+Rule: docs
+Permitted executing actors:
+  46d487d76fa0032bbd7c8dae690cd2ce7844037f27ce3e870dafa0e156c84fdd
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Merged proposal e73c0d12fcd6 into heads/main at 3f6e456d767a
+Recorded merge event bb76d105d0d8 with 1 acceptance decision(s)
+Recorded accept decision 078ce87a75f6 on proposal 37de89c63e6d under policy f99da795f7da
+Evidence: 1 signed event(s)
+Requested pipeline check as run 5202b9b7da42
+Commit: d11cccfcd951  Definition: 7659e2308ff6
+Recorded accept decision bb039f1d9083 on proposal 0f0ea58cbcc9 under policy 955efd171e0a
+Evidence: 2 signed event(s)
+Recorded accept decision 860e190bd0a9 on proposal ab60fb7665ce under policy b966326abeb4
+Evidence: 1 signed event(s)
+Recorded reject decision 073591b1576b on proposal ab60fb7665ce under policy b966326abeb4
+Proposal: sha256:ab60fb7665ceb457f150046d758f37d3e58dade258d9a85a9f4becdc5e8ac377
+Base: 55165a6789c85db2cded2088cf249d6fa6ccbf40
+Head: 85f874601b27c4f6ffafa3617c87baf71dfa5edd
+Policy: sha256:b966326abeb4cc68dfb1ebde03b35de316d43c602b6539506e1f4e4669f00311
+Target: main at 55165a6789c85db2cded2088cf249d6fa6ccbf40
+Rule: docs
+Permitted executing actors:
+  7abc9bb7c9a8f750135dbabbd8eb7436f1f0827a57689a4435326b4fe0ca618d
+Changed paths:
+  "docs/safe.md"
+Blocked:
+  current required maintainer acceptances are missing
+  proposal has a current maintainer rejection
+Recorded accept decision 9f07f9cc7628 on proposal abce0bc20cc9 under policy ad62aff5aaab
+Evidence: 1 signed event(s)
+Proposal: sha256:abce0bc20cc912c105a6ebc5e18de42a50589ad99329a929118cbf3893e42b86
+Base: d2d91ed22d03561b15dc88f123f6ac7165b07e38
+Head: 66d1ccf71e228675327637db86d3f2a9946a70b9
+Policy: sha256:ad62aff5aaab4ffa65a3ffa590a4ee9894ada29c56c74f35f48d016c5e0960be
+Target: main at d2d91ed22d03561b15dc88f123f6ac7165b07e38
+Rule: docs
+Permitted executing actors:
+  0ea54fc7881cbaac662fd25adb4ebfb3020fdfbbe034bb1960712bf7662f045e
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Merged proposal abce0bc20cc9 into main at 662f1e2b3aae
+Recorded merge event 3c31d031e640 with 2 acceptance decision(s)
+Recorded accept decision e6ec188944db on proposal 846edbc6accb under policy dddd966d967d
+Evidence: 1 signed event(s)
+Recorded accept decision 6d5b8d0a01ed on proposal 6dd854f6270d under policy 0c2bd21ccf74
+Evidence: 1 signed event(s)
+Recorded accept decision be3ece3f43f0 on proposal 1ae0a212be0d under policy 1a2a1be0a578
+Evidence: 1 signed event(s)
+Recorded accept decision a95406230f9e on proposal 81c368ba377f under policy 46028c2ddf41
+Evidence: 1 signed event(s)
+Recorded accept decision 2577af60c92d on proposal a24ad418d393 under policy 6ddfda3ecf54
+Evidence: 1 signed event(s)
+Recorded accept decision ba0d352a5fa0 on proposal 3767b5ff6270 under policy 27d81dd756f3
+Evidence: 1 signed event(s)
+Recorded accept decision 6a056e597282 on proposal 2aaaa3612cde under policy 740ef37f48a6
+Evidence: 1 signed event(s)
+Recorded accept decision 80ee37ba94a3 on proposal f0870be0a175 under policy ee7fff34cfe9
+Evidence: 1 signed event(s)
+Recorded accept decision 60dfdb5318bf on proposal 6896c403d86d under policy ee7fff34cfe9
+Evidence: 1 signed event(s)
+Recorded accept decision eb2f4cefbffb on proposal c410e2e8f780 under policy 273c5b240036
+Evidence: 1 signed event(s)
+Proposal: sha256:c410e2e8f780ceb901e97d2a09818f7b9d1ff31326fc6c6f0ddbcedc33df6ede
+Base: 80d55c5e47d77956664f856dc09fbc5bc3216eb3
+Head: 803529f3c5861c024cf46f7c78e3e93cb8a11d0b
+Policy: sha256:273c5b240036d00e5c3cc417e76c65f74b871ed472f1fc680d4cefdd45081f48
+Target: main at 80d55c5e47d77956664f856dc09fbc5bc3216eb3
+Rule: docs
+Permitted executing actors:
+  838efc85cf75b1802b2ab6d27179cb53c05d390f708dad859f4c284ebe6f44c7
+Changed paths:
+  "docs/ignored.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision 6f4c570a6941 on proposal 277b20cb0ca6 under policy 92eeb57cfaea
+Evidence: 1 signed event(s)
+Proposal: sha256:277b20cb0ca696e70a9ba245900b69f2edfbd059faf6b27ec57572eccbd10870
+Base: 8bc64f9cc2161fe186db9133cf39a2a6611b51df
+Head: f79622ebf68c6d41ed78b429dedc9d933f26c45d
+Policy: sha256:92eeb57cfaea6b6cdb01e017878285352298f346933a9fa555c660dee9aa3572
+Target: main at 8bc64f9cc2161fe186db9133cf39a2a6611b51df
+Rule: docs
+Permitted executing actors:
+  3a09e92dd329df870e31c96d7953e3645b6588a7ea55b540af13f2c3bc3dd950
+Changed paths:
+  "docs/safe.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision 90c42219f2f4 on proposal 0def3b4cace0 under policy d7d956e50c2b
+Evidence: 1 signed event(s)
+Proposal: sha256:0def3b4cace0b8adec83ac96988f1dd2a4e9397e2e0806d60f50ead918fd99b2
+Base: 14b882f136c0340e68b7354c9ecb474aae7e063e
+Head: 16f79bac01b8f68845de8bcc129efb13b9284783
+Policy: sha256:d7d956e50c2bc17e1ab6b40cc5bba69cb24089cdc6b64d8ca1ad67e650ef2f35
+Target: main at 14b882f136c0340e68b7354c9ecb474aae7e063e
+Rule: docs
+Permitted executing actors:
+  697827a29de60ba09dc52c4c3066f39e3f30e8c246365097b052b3dc67647ebf
+Changed paths:
+  "docs/existing.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision 47edcea09ced on proposal 15487bb8ca41 under policy f88fdce08c90
+Evidence: 1 signed event(s)
+Proposal: sha256:15487bb8ca41098da2a9a0ffcd882efcc950ba8b04f16ec340191f97c48a693a
+Base: dae16eaeb9e14fa8d82663275a22c369f617cf7d
+Head: 12a209b9dae58823c25cdbd3cdf2abc28ae5c571
+Policy: sha256:f88fdce08c90aeeaf166156ce4ff0392a05b28fbf76f8b63ddbd0726d0bda730
+Target: main at dae16eaeb9e14fa8d82663275a22c369f617cf7d
+Rule: docs
+Permitted executing actors:
+  bb2acdf04a50b9fc866098afcc2c2be571a3d6e1bba5e0f255c6a8c4a93f5177
+Changed paths:
+  "docs/existing.md"
+Eligible: explicit --execute is required to merge locally.
+Merged proposal 15487bb8ca41 into main at 176daddb5453
+Recorded merge event 95813a74935e with 1 acceptance decision(s)
+Recorded accept decision b70617dd7b69 on proposal 04bacdbba83a under policy 56e9d0b03d41
+Evidence: 1 signed event(s)
+Proposal: sha256:04bacdbba83a1210ead31eb72d0f240c5a2ec158ab11d97a154e9776d73c00cb
+Base: f377399d51fbf510164385292dabaa4f094571d5
+Head: 3ff391049d1099d530421e97926f7c91d6459a2f
+Policy: sha256:56e9d0b03d4196657c4661183ef685a9a31200d66cbb4710d38784d4aa4a5a4d
+Target: main at f377399d51fbf510164385292dabaa4f094571d5
+Rule: docs
+Permitted executing actors:
+  3c8d09dc831fa3b332435949ad25ff52c19cf0e96a7355488094a503deca8d6e
+Changed paths:
+  "docs/existing.md"
+Eligible: explicit --execute is required to merge locally.
+Recorded accept decision b14a7f8a1fe4 on proposal d303f05b169e under policy af260c87b80a
+Evidence: 1 signed event(s)
+Recorded accept decision b202c19ffa72 on proposal af23fe478a48 under policy 93e9e53b4555
+Evidence: 1 signed event(s)
+Proposal: sha256:af23fe478a48e706a6028082a5c5621d2f30b0d54b1bc9be7fae0fcf8e98a34d
+Base: 252889d5e2e81d8add459d9fd1bce842c6ff0369
+Head: 0fb7f9e46204da0f8d6719a9f335de90c7543d0b
+Policy: sha256:93e9e53b4555d4930b93453c764b5a77e0fb2245ec06a64dbdf94ca348f4726b
+Target: main at 252889d5e2e81d8add459d9fd1bce842c6ff0369
+Rule: docs
+Permitted executing actors:
+  17d412e5d23eb1e31c11e8c8454ad75b6b12f8ab42995d522e93b2fcaebeb1e4
+Changed paths:
+  "docs/ignored.md"
+Eligible: explicit --execute is required to merge locally.
+Requested pipeline check as run 471201f8876e
+Commit: 152fd5272924  Definition: f25b29e77325
+Synchronized 2 verified events with origin; promoted 0 selections
+Replication actor 2a5546ac887f9ee8a41609f5001cde1ef9546a8de9dab33ec779b95016440361: promoted
+Replication proposal sha256:117421d1ebd2edab7da1dbfbe8cf48c68c83d8495bf394bfb9d8f4a863405a71: promoted
+Synchronized 2 verified events with origin; promoted 2 selections
+Replication actor 2a5546ac887f9ee8a41609f5001cde1ef9546a8de9dab33ec779b95016440361: promoted
+Replication proposal sha256:117421d1ebd2edab7da1dbfbe8cf48c68c83d8495bf394bfb9d8f4a863405a71: promoted
+Synchronized 2 verified events with origin; promoted 2 selections
+Replication actor 2a5546ac887f9ee8a41609f5001cde1ef9546a8de9dab33ec779b95016440361: promoted
+Replication proposal sha256:117421d1ebd2edab7da1dbfbe8cf48c68c83d8495bf394bfb9d8f4a863405a71: promoted
+Synchronized 2 verified events with origin; promoted 2 selections
+Runner accepted request 471201f8876e from 2a5546ac887f for pipeline check
+Runner recorded passed result bff33fe89d4a with host backend
+Replication actor 2a5546ac887f9ee8a41609f5001cde1ef9546a8de9dab33ec779b95016440361: promoted
+Replication proposal sha256:117421d1ebd2edab7da1dbfbe8cf48c68c83d8495bf394bfb9d8f4a863405a71: promoted
+Synchronized 3 verified events with origin; promoted 2 selections
+Recorded passed result 7c4c13014f51 with sandbox backend (exit 0, 10ms)
+Replication actor 2a5546ac887f9ee8a41609f5001cde1ef9546a8de9dab33ec779b95016440361: promoted
+Replication actor 4ce3a897d679eae287f4c8006b787b7146df8ae220e9421c47cb3a53488fd868: promoted
+Replication proposal sha256:117421d1ebd2edab7da1dbfbe8cf48c68c83d8495bf394bfb9d8f4a863405a71: promoted
+Synchronized 4 verified events with origin; promoted 3 selections
+Replication actor 2a5546ac887f9ee8a41609f5001cde1ef9546a8de9dab33ec779b95016440361: promoted
+Replication actor 4ce3a897d679eae287f4c8006b787b7146df8ae220e9421c47cb3a53488fd868: promoted
+Replication proposal sha256:117421d1ebd2edab7da1dbfbe8cf48c68c83d8495bf394bfb9d8f4a863405a71: promoted
+Synchronized 4 verified events with origin; promoted 3 selections
+{"resource":"discussion","direction":"export","nodes":1,"findings":[{"status":"mapped","path":"category","message":"C1"},{"status":"preserved","path":"history","message":"current text snapshots and source claims; source identity grants no provider authority"},{"status":"mapped","path":"publication","message":"0 separate journaled provider mutations; no complete history, roles or moderation equivalence"}]}
+Imported 1 issues from example
+{"provider":"example","capabilities":[{"resource":"issue","import":true,"export":true,"mapped_fields":["title","body"],"unsupported":[]},{"resource":"project","import":false,"export":false,"reason":"explicit provider mapping not implemented","mapped_fields":[],"unsupported":["native representation and provider mapping required"]},{"resource":"workflow","import":false,"export":false,"reason":"explicit provider mapping not implemented","mapped_fields":[],"unsupported":["native representation and provider mapping required"]},{"resource":"discussion","import":false,"export":false,"reason":"explicit provider mapping not implemented","mapped_fields":[],"unsupported":["native representation and provider mapping required"]}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+GitHub project already matches the selected native snapshot
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":1,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"},{"status":"requires_mapping","path":"content:sha256:106205afc325e8b63e2fcd07ee068069c5f036d62b590a7f84c2bd980a12f0a8","message":"supply destination Issue/PullRequest global ID via --map content.00aace668af23e117b8ffd1f3be560d94d4637df716bfdc625a6ac8cfef1937a=NODE_ID"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"recovery","message":"resume exact frozen native snapshot; uncertain writes require exact positive observation"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":3,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":3,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":3,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":3,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":3,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+{"resource":"project","direction":"export","nodes":2,"findings":[{"status":"mapped","path":"project","message":"supported fields/items and explicit content mappings; provider-created defaults are retained"},{"status":"preserved","path":"authority","message":"no provider permission, automation or source author becomes native authority"},{"status":"mapped","path":"recovery-identity","message":"actual export requires the active native identity to sign private recovery state; reuse the same identity for recovery; dry-run needs no private key"}]}
+Exported native project to GitHub Projects V2
+Requested pipeline check as run 63bbee4b3e8f
+Commit: 33621a0daf89  Definition: 0a2ff40e8166
+Recorded accept decision 0bce2a3d4baf on proposal 0d14c91b004d under policy f9763668b0cc
+Evidence: 2 signed event(s)
+Recorded reject decision f736475fc03e on proposal f150ab993994 under policy f9763668b0cc
+Rotated identity from ea29482af52e7c871b29699fdc9f8ea4e113d246aa66bdcb702ff216e39ca5f7 to 416e1dd10e3a43f2bf4bcd0eefc524332b569903062606387c26ae0b91d7e151
+Rotated identity from 48ca4d75e92c795e5c291695c81d540c1ef4013d99ef64616b1c39745995384f to 40404ebeea0c0c42cd4f3baead6c792bdee94d64ff03a74b2060e7189758762a
+Rotated identity from 71885948aa0c493df023403e305724c5ce086b0af5483cd3f2d99e8efb930bfd to 190ffd8d3075f69edcdde7197e21ab6f29aaee8bedd7b7c3ef23b26c708cbcd7
+Rotated identity from c691b407fef1826e64de7aa4b98a90e447a3fcfb2fa4522ab921088ae6d20df8 to 40e958abd8002f2b6b745edf0f2039a7cc1c277e777a38f163680fde7c855417
+Rotated identity from 4ee9c3ac6002ac79366cc80b31879c790b622a31c6e539453d3c57dc333f6000 to b5d2b98139eaabfab40b33b49be2625f7e5e407a376e742d435f7f8242686dd5
+Rotated identity from 7d85d5233f86c86a752b2ef0100142d89b6954c7fa6f813f8473ce675d8b90d5 to d34b9208064325a9dc2463beb5dccc6c6849d5481205932be4520c6570a99579
+Rotated identity from 1698f8486e96d18e4624efcde70f671d23c496f732f79b246971a6c440cdd799 to 177c63c1da0b5e5d8f5cc61dc3689116deda7a2cdf2ff2034bf5778ac1446637
+Rotated identity from 7271b8247209c9b500df8e9b97b74c922718e2ebf2525dbbd7a7f88cb46d5330 to ac2f81f16a4d52fcf46688531a4c8eec52c17621a08d34591b0db1a4c7734009
+Accepted identity authorization sha256:5906c7249b0c758038f719e449a0707d3ef3cd964ec730abb5abcbccc78b8a65 (sha256:f08f2a54dc3e6667a66cd8076491163be1da0e5d37e3689872349808a75fa429)
+flag provided but not defined: -content
+Usage of memory handoff:
+  -applies string
+    	applicability mode
+  -at string
+    	exact Git revision
+  -input string
+    	strict JSON input file or -
+  -json
+    	emit JSON
+panic: test timed out after 10m0s
+	running tests:
+		TestMemoryIndexTenThousandRecordsPerformanceAndRecovery (1m25s)
+
+goroutine 221855 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/local/go/src/testing/testing.go:2802 +0x605
+created by time.goFunc
+	/usr/local/go/src/time/sleep.go:215 +0x45
+
+goroutine 1 [chan receive, 1 minutes]:
+testing.(*T).Run(0xc0000ea248, {0x125a70e, 0x37}, 0x1284c50)
+	/usr/local/go/src/testing/testing.go:2109 +0xb3e
+testing.runTests.func1(0xc0000ea248)
+	/usr/local/go/src/testing/testing.go:2585 +0x85
+testing.tRunner(0xc0000ea248, 0xc000207ad0)
+	/usr/local/go/src/testing/testing.go:2036 +0x21d
+testing.runTests({0x120f608, 0x6}, {0x120f608, 0x6}, 0xc000016180, {0x192aa80, 0x22a, 0x22a}, {0xc2b023483a6a4292, 0x8bb2dffffd, ...})
+	/usr/local/go/src/testing/testing.go:2583 +0x9ea
+testing.(*M).Run(0xc0000c2500)
+	/usr/local/go/src/testing/testing.go:2443 +0xf4c
+main.main()
+	_testmain.go:1154 +0x165
+
+goroutine 221926 [runnable]:
+hubnot.validateMemoryIndexV0({0x0, {0xc000036230, 0x47}, {0xc005fbe000, 0x2710, 0x2e69}, {0xc004580000, 0x271e, 0x2ccc}, {{0xc0005c7380, ...}, ...}})
+	/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-f/memory_index.go:635 +0x6aa
+hubnot.queryMemoryIndexV0({0x0, {0xc000036230, 0x47}, {0xc005fbe000, 0x2710, 0x2e69}, {0xc004580000, 0x271e, 0x2ccc}, {{0xc0005c7380, ...}, ...}}, ...)
+	/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-f/memory_index.go:811 +0x88
+hubnot.TestMemoryIndexTenThousandRecordsPerformanceAndRecovery(0xc0003a0fc8)
+	/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-f/memory_index_test.go:1100 +0x39a5
+testing.tRunner(0xc0003a0fc8, 0x1284c50)
+	/usr/local/go/src/testing/testing.go:2036 +0x21d
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:2101 +0xb13
+FAIL	hubnot	600.182s
+?   	hubnot/examples/issue-consumer	[no test files]
+ok  	hubnot/internal/forge	1.019s
+ok  	hubnot/internal/githubapi	18.242s
+ok  	hubnot/internal/gitlabapi	1.107s
+ok  	hubnot/internal/migration	1.107s
+FAIL
