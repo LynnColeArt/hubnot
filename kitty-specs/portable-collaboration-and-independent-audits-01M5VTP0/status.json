@@ -248,7 +248,8 @@
       "last_transition_at": "2026-10-27T03:37:39.389834+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: distinct Forgejo11/16 and Gitea1.24/1.27 profiles; real issue/comment read-create-update, raw PR/review/assets/workflow preservation, immutable guarded recovery and legacy transfer; fixed source b6677667; complete full race with finite20m retry after preserved600s unchanged memory-index timeout, plus vet/build/tagged/native/exclusion gates passed. Evidence /tmp/hubnot-wp08-validation-VC9IZH."
+        "Ready for independent review: distinct Forgejo11/16 and Gitea1.24/1.27 profiles; real issue/comment read-create-update, raw PR/review/assets/workflow preservation, immutable guarded recovery and legacy transfer; fixed source b6677667; complete full race with finite20m retry after preserved600s unchanged memory-index timeout, plus vet/build/tagged/native/exclusion gates passed. Evidence /tmp/hubnot-wp08-validation-VC9IZH.",
+        "Independent review passed at b6677667: eight checklist items PASS, 12 source and 66 archive hashes verified, fresh focused race PASS; complete exact-head full race PASS644.228s with original timeout retained; no_coverage architectural authority disclosed. Report review-renata-b6677667.md."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
