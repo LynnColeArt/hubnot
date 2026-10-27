@@ -4,12 +4,16 @@ package main
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 
+	"hubnot/internal/azureapi"
 	"hubnot/internal/gitlabapi"
 	"hubnot/internal/migration"
 )
@@ -19,6 +23,97 @@ func migrationCLISeedGitLab(f *gitlabMigrationFixture) {
 	defer f.Mu.Unlock()
 	f.Issue = gitlabapi.Issue{ID: 7001, IID: 7, ProjectID: 42, Title: "Portable issue", Body: "Original issue body", State: "opened", Type: "issue", Labels: []string{}, Assignees: []gitlabapi.User{}, Author: gitlabapi.User{ID: 3, Username: "source-author"}, CreatedAt: "2026-01-02T00:00:00Z", UpdatedAt: "2026-01-02T00:00:00Z"}
 	f.Notes = []gitlabapi.Note{{ID: 9001, Body: "Original conversation", NoteableID: 7001, Author: gitlabapi.User{ID: 4, Username: "source-commenter"}, CreatedAt: "2026-01-03T00:00:00Z", UpdatedAt: "2026-01-03T00:00:00Z"}}
+}
+
+func TestMigrationCLIAuthenticatedModesNeverFallBackToAnonymousWrites(t *testing.T) {
+	binary := buildMigrationCLIBinary(t, "")
+	for _, mode := range []string{"bearer", "pat"} {
+		t.Run(mode, func(t *testing.T) {
+			source := newGitLabMigrationFixture(t)
+			migrationCLISeedGitLab(source)
+			var writes atomic.Int32
+			project := azureapi.Project{ID: azureProjectID, Name: "P", State: "wellFormed", Capabilities: map[string]map[string]string{"processTemplate": {"templateTypeId": azureProcessID}}}
+			// This endpoint deliberately accepts mutation without Authorization. A
+			// server 401 or another adapter's token guard cannot make this test pass.
+			dest := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				write := func(v any) { _ = json.NewEncoder(w).Encode(v) }
+				switch {
+				case r.Method == "POST" || r.Method == "PATCH":
+					writes.Add(1)
+					if strings.HasSuffix(r.URL.Path, "/comments") {
+						write(azureapi.Comment{ID: 91, WorkItemID: 71, Version: 1, Text: "anonymous effect"})
+						return
+					}
+					item := azureFixtureItem(71, "Portable issue", "")
+					var operations []azureapi.Patch
+					_ = json.NewDecoder(r.Body).Decode(&operations)
+					for _, op := range operations {
+						if op.Op == "add" {
+							raw, _ := json.Marshal(op.Value)
+							item.Fields[strings.TrimPrefix(op.Path, "/fields/")] = raw
+						}
+					}
+					write(item)
+				case strings.HasPrefix(r.URL.Path, "/org/_apis/projects/"):
+					write(project)
+				case strings.Contains(r.URL.Path, "/wit/workitemtypes/"):
+					write(map[string]any{"name": "Task", "referenceName": "Microsoft.VSTS.WorkItemTypes.Task", "states": []map[string]string{{"name": "Active"}}})
+				case strings.Contains(r.URL.Path, "/_apis/git/repositories/"):
+					write(azureapi.Repository{ID: azureRepoID, Name: "R", Project: project})
+				default:
+					t.Errorf("unexpected anonymously-writable fixture read %s %s", r.Method, r.URL)
+					w.WriteHeader(404)
+				}
+			}))
+			defer dest.Close()
+			directory := t.TempDir()
+			session := filepath.Join(directory, "saved")
+			args := []string{"--source-kind", "gitlab", "--source-endpoint", source.Config().Locator.Endpoint, "--source-repository", "group/nested/repo", "--source-api-version", "v4", "--source-credential-mode", "private-token", "--source-token-env", "MIGRATION_SOURCE_TOKEN", "--destination-kind", "azure", "--destination-endpoint", dest.URL, "--destination-organization", "org", "--destination-project", "P", "--destination-api-version", "services-7.1", "--destination-credential-mode", mode, "--destination-token-env", "ABSENT_FRESH_AZURE_TOKEN", "--kind", "issue", "--kind", "comment", "--map", "process=" + azureProcessID, "--map", "type:issue=Task", "--map", "state:opened=Active", "--session", session}
+			env := map[string]string{"MIGRATION_SOURCE_TOKEN": "supplied-secret", "ABSENT_FRESH_AZURE_TOKEN": ""}
+			previewOut := migrationCLIProcess(t, binary, directory, "", env, false, append([]string{"plan"}, args...)...)
+			preview := migrationCLIPreview(t, previewOut)
+			if len(preview.Intents) != 2 || preview.Intents[0].Kind != "work_item" || preview.Intents[1].Kind != "comment" {
+				t.Fatal("fixture has no real API mutation intents")
+			}
+			decisions := ""
+			readyArgs := append([]string{}, args...)
+			for _, finding := range preview.Findings {
+				if finding.Status != "mapped" && finding.Status != "preserved" {
+					decisions += "preserve\n"
+					readyArgs = append(readyArgs, "--decision", finding.ID+"=preserve")
+				}
+			}
+			migrationCLIProcess(t, binary, directory, "", env, true, append([]string{"plan"}, readyArgs...)...)
+			for _, command := range []string{"apply", "resume"} {
+				output := migrationCLIProcess(t, binary, directory, "", env, false, command, "--session", session, "--confirm-apply", "--destination-token-env", "ABSENT_FRESH_AZURE_TOKEN")
+				if !strings.Contains(output, "fresh nonempty API credential") {
+					t.Fatalf("missing credential did not fail before effects:\n%s", output)
+				}
+				if writes.Load() != 0 {
+					t.Fatal("authenticated saved apply fell back to anonymous mutation")
+				}
+			}
+			guidedArgs := append([]string{"plan", "--guided"}, args...)
+			guidedArgs = append(guidedArgs, "--session", filepath.Join(directory, "guided"))
+			output := migrationCLIProcess(t, binary, directory, "-\n-\n-\n-\n"+decisions+"APPLY\n", env, false, guidedArgs...)
+			if !strings.Contains(output, "fresh nonempty API credential") {
+				t.Fatalf("guided apply did not require fresh credential:\n%s", output)
+			}
+			if writes.Load() != 0 {
+				t.Fatal("guided authenticated apply fell back to anonymous mutation")
+			}
+			// A code-only saved intent remains independent of API write credentials.
+			code := migrationCLIRepository(t)
+			remote := migrationBare(t)
+			codePlan := filepath.Join(directory, "code-only")
+			codeArgs := []string{"plan", "--source-kind", "local", "--source-repository", code, "--ref", "refs/heads/main", "--destination-kind", "azure", "--destination-endpoint", dest.URL, "--destination-organization", "org", "--destination-project", "P", "--destination-repository", "R", "--destination-api-version", "services-7.1", "--destination-credential-mode", mode, "--destination-token-env", "ABSENT_FRESH_AZURE_TOKEN", "--git-remote", remote, "--map", "refs/heads/main=refs/heads/main", "--session", codePlan}
+			migrationCLIProcess(t, binary, directory, "", env, true, codeArgs...)
+			migrationCLIProcess(t, binary, directory, "", env, true, "apply", "--session", codePlan, "--confirm-apply", "--destination-token-env", "ABSENT_FRESH_AZURE_TOKEN")
+			if writes.Load() != 0 {
+				t.Fatal("Git-only migration unexpectedly invoked an API mutation")
+			}
+		})
+	}
 }
 
 func migrationCLIProviderArgs(source *gitlabMigrationFixture, dest *githubMigrationFixture, git, remote, session string) []string {

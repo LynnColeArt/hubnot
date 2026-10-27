@@ -103,6 +103,12 @@ transient value is `email:api-token`; the email is not persisted separately.
 `anonymous` requires an empty credential. The CLI never fabricates a token or
 changes the chosen mode to make construction succeed.
 
+Before either guided or saved apply, a nonanonymous foreign mode requires a
+fresh nonempty API credential whenever the saved plan contains API effects.
+An anonymously writable destination cannot silently substitute anonymous writes
+for that chosen mode. Public metadata/read-only planning, native/archive effects
+and Git-only intents remain independent of API write credentials.
+
 The saved sealed `cli.json` is a strict bounded allowlist: schema, canonical plan
 digest, normalized destination locator and the exact accepted API version and
 credential mode. It contains no token, environment name or arbitrary config.

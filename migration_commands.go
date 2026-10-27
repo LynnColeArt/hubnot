@@ -528,7 +528,7 @@ func runMigrationCLI(ctx context.Context, args []string, in io.Reader, out io.Wr
 		if answer != "APPLY" {
 			return fmt.Errorf("apply refused: exact APPLY confirmation required")
 		}
-		if e = ApplyMigration(ctx, session, d, o.actor); e != nil {
+		if e = migrationCLIApply(ctx, session, d, o.destination, o.actor); e != nil {
 			return e
 		}
 		_, e = fmt.Fprintln(out, "Saved migration intents confirmed:", session.Directory)
@@ -770,11 +770,24 @@ func applyMigrationCLI(ctx context.Context, o migrationCLIOptions, w *migrationW
 	if e = migrationCLIPrintCapabilities(ctx, out, "Destination", d); e != nil {
 		return e
 	}
-	if e = ApplyMigration(ctx, s, d, o.actor); e != nil {
+	if e = migrationCLIApply(ctx, s, d, o.destination, o.actor); e != nil {
 		return e
 	}
 	_, e = fmt.Fprintln(out, "Saved migration intents confirmed:", s.Directory)
 	return e
+}
+
+// Metadata and source reads may be public. An explicitly authenticated write
+// mode must never fall back to anonymous effects when a fresh token is absent.
+func migrationCLIApply(ctx context.Context, s *MigrationSession, d migration.Destination, c migration.ProviderConfig, actor string) error {
+	if migrationCLIForeign(c.Locator.Kind) && c.CredentialMode != "anonymous" && c.Token == "" {
+		for _, intent := range s.Plan.Intents {
+			if intent.Kind != "git_refs" {
+				return fmt.Errorf("selected destination credential mode %q requires a fresh nonempty API credential before apply; supply --destination-token-env NAME (or the selected registration's token environment)", c.CredentialMode)
+			}
+		}
+	}
+	return ApplyMigration(ctx, s, d, actor)
 }
 
 type migrationSavedSource struct{ directory string }
