@@ -1,0 +1,839 @@
+{
+  "review_head": "170b3254e7ca7422b90fd149c38b9cb6f7fe339d",
+  "approved_source": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+  "full_gate_source": "8c88ede54ce98c176d0cec7211581de23140b923",
+  "public_baseline": "76446469b23d502a436c56cd7d704511d775b4d5",
+  "meta_baseline": "80b1b7c7bfe7f9b089398985a08c1f8682304f88",
+  "product_entries": 345,
+  "committed_mismatches": [],
+  "working_mismatches": [],
+  "full_to_approved_changed_paths": [
+    "docs/threat-model.md"
+  ],
+  "full_to_approved_unchanged_entries": 670,
+  "go_module_entries_unchanged": 190,
+  "approved_is_ancestor": true,
+  "archives": {
+    "raw-proof.tar.gz": {
+      "sha256": "a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877",
+      "members": 1009,
+      "verified_payload_hashes": 1008
+    },
+    "negative-proof.tar.gz": {
+      "sha256": "400a16f391fb131c32a90c147381f9b0ee9a49c0f3c0820a62fa995c4bb86433",
+      "members": 252,
+      "verified_payload_hashes": 251
+    },
+    "canonical-records.tar.gz": {
+      "sha256": "1f779b3906779d425b9e1645fe834416272c151fc9cdc584f16190090e2dc7c8",
+      "members": 56,
+      "verified_payload_hashes": 55
+    }
+  },
+  "reused_gate_records": {
+    "raw/full-race.exit": "0\n",
+    "raw/full-race.log": "ok  \thubnot\t744.090s\nok  \thubnot/cmd/hn-release\t1.027s\n?   \thubnot/examples/issue-consumer\t[no test files]\nok  \thubnot/internal/azureapi\t1.169s\nok  \thubnot/internal/bitbucketapi\t1.226s\nok  \thubnot/internal/forge\t1.045s\nok  \thubnot/internal/forgejoapi\t1.054s\nok  \thubnot/internal/giteaapi\t1.060s\nok  \thubnot/internal/githubapi\t15.059s\nok  \thubnot/internal/gitlabapi\t1.119s\nok  \thubnot/internal/migration\t1.132s\nok  \thubnot/internal/release\t8.197s\n",
+    "raw/vet.exit": "0\n",
+    "raw/build.exit": "0\n",
+    "raw/format.exit": "0\n",
+    "raw/public-nogithub.exit": "0\n",
+    "raw/public-noforge.exit": "0\n",
+    "raw/packager-darwin.exit": "0\n",
+    "raw/packager-windows.exit": "0\n",
+    "raw/final-docs-c4aaa4e8/package-independent.exit": "0\n",
+    "platform-final-arm/standard.exit": "0\n",
+    "platform-final-arm/native-only.exit": "0\n"
+  },
+  "latest_wp_status": {
+    "WP01": "done",
+    "WP02": "done",
+    "WP03": "done",
+    "WP04": "done",
+    "WP05": "done",
+    "WP06": "done",
+    "WP07": "done",
+    "WP08": "done",
+    "WP09": "done",
+    "WP10": "done",
+    "WP11": "done",
+    "WP12": "done"
+  },
+  "historical_forced_transition_counts": {
+    "WP02": 1,
+    "WP01": 1,
+    "WP03": 1,
+    "WP05": 9
+  },
+  "historical_forced_transitions": [
+    {
+      "event_id": "01M5VZS046XYW1WX3FZ0P3WPK7",
+      "wp_id": "WP02",
+      "from_lane": "in_review",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_review -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP02-native-audit-protocol-admission/review-cycle-1.md"
+    },
+    {
+      "event_id": "01M5VZVZ6B4H54S3SVHNM83YDK",
+      "wp_id": "WP01",
+      "from_lane": "in_review",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_review -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP01-go-only-release-packager/review-cycle-1.md"
+    },
+    {
+      "event_id": "01M5WEFCSH61KXE734MT2GJC6Y",
+      "wp_id": "WP03",
+      "from_lane": "in_review",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_review -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP03-audit-execution-followup-issues/review-cycle-1.md"
+    },
+    {
+      "event_id": "01M5WEY6TPCJ8ZZJAE3YS8B8C3",
+      "wp_id": "WP05",
+      "from_lane": "in_review",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_review -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP05-migration-engine-local-archive/review-cycle-1.md"
+    },
+    {
+      "event_id": "01M5WJHXB0H3B3EHJ797E4GRZ0",
+      "wp_id": "WP05",
+      "from_lane": "in_progress",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_progress -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP05-migration-engine-local-archive/review-cycle-2.md: Administrative release of root coordinator claim for user-authorized Kat on external Hermes. Reuses the existing P1 review feedback; no new code review or product change. Kat has sole corrective implementation ownership; root retains status and independent-review coordination."
+    },
+    {
+      "event_id": "01M5WJRMPVF66PCA1KJYDW84EV",
+      "wp_id": "WP05",
+      "from_lane": "planned",
+      "to_lane": "in_progress",
+      "reason": "Explicit user-authorized ownership reassignment to Kat on external Hermes after root released its coordinator lease in event 01M5WJHXB0H3B3EHJ797E4GRZ0. Override only the retained prior codex assignment; no implementation/review/testing gate is being waived. Root does not own or execute the WP05 correction. Kat may land her rehearsed two-file fix in existing lane-d, then run all required fixed-source checks and return evidence for independent review."
+    },
+    {
+      "event_id": "01M5WPDYB43DEJTVHBN83C3WV2",
+      "wp_id": "WP05",
+      "from_lane": "in_review",
+      "to_lane": "for_review",
+      "reason": "backward rewind: in_review -> for_review: Administrative release of review claim: claimed under codex by coordinator probe before reviewer dispatch; no review performed; re-claiming under the actual independent reviewer (claude)."
+    },
+    {
+      "event_id": "01M5WPHGEDQXCYRFDDWD168ZFF",
+      "wp_id": "WP05",
+      "from_lane": "in_review",
+      "to_lane": "for_review",
+      "reason": "backward rewind: in_review -> for_review: Administrative release of review claim: claimed under claude by coordinator probe before reviewer dispatch; per explicit user direction the independent reviewer is codex (OpenAI-hosted); re-claiming under the actual reviewer. No review performed by claude."
+    },
+    {
+      "event_id": "01M5WY6M8AD8WSJ0RQAQ7QTG62",
+      "wp_id": "WP05",
+      "from_lane": "in_review",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_review -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP05-migration-engine-local-archive/review-cycle-3.md: Direct independent root review of Kat-authored 9ab00d85 requested by user. Reproduced stale linked-worktree backpointer accepting missing reciprocal .git: wrong-directory hooks run and observation ref is promoted. Evidence bc9c3e27. Administrative claim rewinds are not implementation review cycles."
+    },
+    {
+      "event_id": "01M5WZ6G5GFJEY509G8M1KDQW3",
+      "wp_id": "WP05",
+      "from_lane": "in_progress",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_progress -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP05-migration-engine-local-archive/review-cycle-4.md: Administrative implementation claim release at explicit user direction: user reported classifier tripped and is handing correction back to Kat/Hermes. Root made no product edits after claim. Existing P2 remains unchanged; this handoff is not an additional implementation review or rejection. Release runtime claim so Kat can take over."
+    },
+    {
+      "event_id": "01M5X5JJQDS4YZ8Y7YHVEJDD5G",
+      "wp_id": "WP05",
+      "from_lane": "in_review",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_review -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP05-migration-engine-local-archive/review-cycle-5.md: Independent review bc6c8db5: production P2 verified fixed; test-only changes requested. Marker is truncated after ApplyMigration and control errors on absent object without running hook. Fault injection proves erased evidence still passes. Evidence 813316f0. Prior unrecorded review retained as context, not backfilled; administrative releases do not count as actual review rejections."
+    },
+    {
+      "event_id": "01M5XDBDNRWBT68JPVPDFHVNTW",
+      "wp_id": "WP05",
+      "from_lane": "in_progress",
+      "to_lane": "planned",
+      "reason": "backward rewind: in_progress -> planned: review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP05-migration-engine-local-archive/review-cycle-6.md: Administrative claim release after test-correction agent failed with classifier possible cybersecurity risk. Preserve uncommitted migration_native_test.go patch at bc6c8db5 for Kat. Required validation and independent review incomplete; no approval or additional implementation review. Runtime claim must not block external handoff."
+    }
+  ],
+  "owned_file_map": [
+    {
+      "wp": "WP01",
+      "owned_files": [
+        "cmd/hn-release/main.go",
+        "cmd/hn-release/main_test.go",
+        "internal/release/package.go",
+        "internal/release/package_test.go",
+        "main.go",
+        "docs/releasing.md"
+      ],
+      "changed_owned_files": [
+        "cmd/hn-release/main.go",
+        "cmd/hn-release/main_test.go",
+        "docs/releasing.md",
+        "internal/release/package.go",
+        "internal/release/package_test.go",
+        "main.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP02",
+      "owned_files": [
+        "audit_protocol.go",
+        "audit_protocol_test.go",
+        "audit_authority.go",
+        "audit_authority_test.go",
+        "event.go",
+        "event_test.go",
+        "store.go",
+        "quarantine.go",
+        "shallow.go",
+        "policy.go",
+        "policy_commands.go",
+        "docs/audits-v1.md"
+      ],
+      "changed_owned_files": [
+        "audit_authority.go",
+        "audit_authority_test.go",
+        "audit_protocol.go",
+        "audit_protocol_test.go",
+        "docs/audits-v1.md",
+        "event.go",
+        "policy.go",
+        "policy_commands.go",
+        "quarantine.go",
+        "shallow.go",
+        "store.go"
+      ],
+      "unchanged_owned_files": [
+        "event_test.go"
+      ]
+    },
+    {
+      "wp": "WP03",
+      "owned_files": [
+        "audit_commands.go",
+        "audit_commands_test.go",
+        "audit_execution.go",
+        "audit_execution_test.go",
+        "audit_followup.go",
+        "audit_followup_test.go",
+        "docs/audits-v1.md"
+      ],
+      "changed_owned_files": [
+        "audit_commands.go",
+        "audit_commands_test.go",
+        "audit_execution.go",
+        "audit_execution_test.go",
+        "audit_followup.go",
+        "audit_followup_test.go",
+        "docs/audits-v1.md"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP04",
+      "owned_files": [
+        "internal/migration/snapshot.go",
+        "internal/migration/archive.go",
+        "internal/migration/archive_test.go",
+        "project_snapshot.go",
+        "project_snapshot_test.go",
+        "docs/project-migration.md"
+      ],
+      "changed_owned_files": [
+        "docs/project-migration.md",
+        "internal/migration/archive.go",
+        "internal/migration/archive_test.go",
+        "internal/migration/snapshot.go",
+        "project_snapshot.go",
+        "project_snapshot_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP05",
+      "owned_files": [
+        "internal/migration/plan.go",
+        "internal/migration/plan_test.go",
+        "internal/migration/progress.go",
+        "internal/migration/progress_test.go",
+        "migration_engine.go",
+        "migration_engine_test.go",
+        "migration_native.go",
+        "migration_native_test.go",
+        "migration_local.go",
+        "migration_local_test.go",
+        "migration_journal.go",
+        "migration_journal_test.go",
+        "docs/migration-engine.md"
+      ],
+      "changed_owned_files": [
+        "docs/migration-engine.md",
+        "internal/migration/plan.go",
+        "internal/migration/plan_test.go",
+        "internal/migration/progress.go",
+        "internal/migration/progress_test.go",
+        "migration_engine.go",
+        "migration_engine_test.go",
+        "migration_journal.go",
+        "migration_journal_test.go",
+        "migration_local.go",
+        "migration_local_test.go",
+        "migration_native.go",
+        "migration_native_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP06",
+      "owned_files": [
+        "internal/migration/provider.go",
+        "internal/migration/provider_test.go",
+        "internal/migration/conformance_test.go",
+        "migration_provider.go",
+        "migration_provider_test.go",
+        "migration_github.go",
+        "migration_github_test.go",
+        "forge_github.go",
+        "github_disabled.go",
+        "github_discussions.go",
+        "github_projects.go",
+        "github_workflows.go",
+        "github_discussions_test.go",
+        "github_import_test.go",
+        "github_projects_test.go",
+        "github_workflows_test.go",
+        "internal/githubapi/**"
+      ],
+      "changed_owned_files": [
+        "forge_github.go",
+        "github_disabled.go",
+        "github_discussions.go",
+        "github_discussions_test.go",
+        "github_import_test.go",
+        "github_projects.go",
+        "github_projects_test.go",
+        "github_workflows.go",
+        "github_workflows_test.go",
+        "internal/githubapi/client.go",
+        "internal/githubapi/client_test.go",
+        "internal/githubapi/discussions.go",
+        "internal/githubapi/discussions_test.go",
+        "internal/githubapi/graphql.go",
+        "internal/githubapi/graphql_test.go",
+        "internal/githubapi/migration.go",
+        "internal/githubapi/migration_test.go",
+        "internal/githubapi/projects.go",
+        "internal/githubapi/projects_test.go",
+        "internal/githubapi/workflows.go",
+        "internal/githubapi/workflows_test.go",
+        "internal/migration/conformance_test.go",
+        "internal/migration/provider.go",
+        "internal/migration/provider_test.go",
+        "migration_github.go",
+        "migration_github_test.go",
+        "migration_provider.go",
+        "migration_provider_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP07",
+      "owned_files": [
+        "internal/gitlabapi/client.go",
+        "internal/gitlabapi/client_test.go",
+        "internal/gitlabapi/migration.go",
+        "internal/gitlabapi/migration_test.go",
+        "migration_gitlab.go",
+        "migration_gitlab_test.go",
+        "forge_gitlab.go",
+        "forge_gitlab_test.go"
+      ],
+      "changed_owned_files": [
+        "forge_gitlab.go",
+        "forge_gitlab_test.go",
+        "internal/gitlabapi/client.go",
+        "internal/gitlabapi/client_test.go",
+        "internal/gitlabapi/migration.go",
+        "internal/gitlabapi/migration_test.go",
+        "migration_gitlab.go",
+        "migration_gitlab_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP08",
+      "owned_files": [
+        "internal/forgejoapi/client.go",
+        "internal/forgejoapi/client_test.go",
+        "internal/giteaapi/client.go",
+        "internal/giteaapi/client_test.go",
+        "migration_forgejo.go",
+        "migration_forgejo_test.go",
+        "migration_gitea.go",
+        "migration_gitea_test.go",
+        "forge_forgejo.go",
+        "forge_forgejo_test.go",
+        "forge_gitea.go",
+        "forge_gitea_test.go"
+      ],
+      "changed_owned_files": [
+        "forge_forgejo.go",
+        "forge_forgejo_test.go",
+        "forge_gitea.go",
+        "forge_gitea_test.go",
+        "internal/forgejoapi/client.go",
+        "internal/forgejoapi/client_test.go",
+        "internal/giteaapi/client.go",
+        "internal/giteaapi/client_test.go",
+        "migration_forgejo.go",
+        "migration_forgejo_test.go",
+        "migration_gitea.go",
+        "migration_gitea_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP09",
+      "owned_files": [
+        "internal/bitbucketapi/client.go",
+        "internal/bitbucketapi/client_test.go",
+        "internal/bitbucketapi/migration.go",
+        "internal/bitbucketapi/migration_test.go",
+        "migration_bitbucket.go",
+        "migration_bitbucket_test.go"
+      ],
+      "changed_owned_files": [
+        "internal/bitbucketapi/client.go",
+        "internal/bitbucketapi/client_test.go",
+        "internal/bitbucketapi/migration.go",
+        "internal/bitbucketapi/migration_test.go",
+        "migration_bitbucket.go",
+        "migration_bitbucket_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP10",
+      "owned_files": [
+        "internal/azureapi/client.go",
+        "internal/azureapi/client_test.go",
+        "internal/azureapi/migration.go",
+        "internal/azureapi/migration_test.go",
+        "migration_azure.go",
+        "migration_azure_test.go",
+        "forge_azure.go",
+        "forge_azure_test.go"
+      ],
+      "changed_owned_files": [
+        "forge_azure.go",
+        "forge_azure_test.go",
+        "internal/azureapi/client.go",
+        "internal/azureapi/client_test.go",
+        "internal/azureapi/migration.go",
+        "internal/azureapi/migration_test.go",
+        "migration_azure.go",
+        "migration_azure_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP11",
+      "owned_files": [
+        "migration_commands.go",
+        "migration_commands_test.go",
+        "migration_acceptance_test.go",
+        "migration_wizard.go",
+        "migration_wizard_test.go",
+        "docs/migration-cli.md"
+      ],
+      "changed_owned_files": [
+        "docs/migration-cli.md",
+        "migration_acceptance_test.go",
+        "migration_commands.go",
+        "migration_commands_test.go",
+        "migration_wizard.go",
+        "migration_wizard_test.go"
+      ],
+      "unchanged_owned_files": []
+    },
+    {
+      "wp": "WP12",
+      "owned_files": [
+        "portable_collaboration_acceptance_test.go",
+        "README.md",
+        "CHANGELOG.md",
+        "docs/protocol-v0.md",
+        "docs/threat-model.md",
+        "docs/github-interoperability.md"
+      ],
+      "changed_owned_files": [
+        "CHANGELOG.md",
+        "README.md",
+        "docs/github-interoperability.md",
+        "docs/protocol-v0.md",
+        "docs/threat-model.md",
+        "portable_collaboration_acceptance_test.go"
+      ],
+      "unchanged_owned_files": []
+    }
+  ],
+  "issue_matrix": {
+    "rows": {
+      "#13": {
+        "evidence_ref": "Actual compiled integrated audit request/explicit execution/follow-up/dedup/edit-preservation/Git replication/keyless-inspection proof at c4aaa4e8; unchanged Go full-race PASS8c88ede5, three public variants, final Linux AMD64+ARM64 artifacts. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json FR-016 through FR-020 and raw-proof.tar.gz SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. External GitHub issue remains open until reviewed public PR merge; no self-approval.",
+        "fr": null,
+        "nfr": null,
+        "repo": null,
+        "sc": null,
+        "scope": null,
+        "source_file": null,
+        "title": null,
+        "verdict": "fixed",
+        "wp": "WP03"
+      }
+    },
+    "schema_version": 1
+  },
+  "live_unused_decoder": {
+    "declaration": "internal/migration/plan.go:488",
+    "production_callers": [],
+    "typed_validator_live": "migration_engine.go:332 CanonicalReconciliation"
+  },
+  "product_changed_files": [
+    "CHANGELOG.md",
+    "README.md",
+    "audit_authority.go",
+    "audit_authority_test.go",
+    "audit_commands.go",
+    "audit_commands_test.go",
+    "audit_execution.go",
+    "audit_execution_test.go",
+    "audit_followup.go",
+    "audit_followup_test.go",
+    "audit_protocol.go",
+    "audit_protocol_test.go",
+    "cmd/hn-release/main.go",
+    "cmd/hn-release/main_test.go",
+    "docs/audits-v1.md",
+    "docs/github-interoperability.md",
+    "docs/migration-cli.md",
+    "docs/migration-engine.md",
+    "docs/project-migration.md",
+    "docs/protocol-v0.md",
+    "docs/releasing.md",
+    "docs/threat-model.md",
+    "event.go",
+    "forge_azure.go",
+    "forge_azure_test.go",
+    "forge_forgejo.go",
+    "forge_forgejo_test.go",
+    "forge_gitea.go",
+    "forge_gitea_test.go",
+    "forge_github.go",
+    "forge_gitlab.go",
+    "forge_gitlab_test.go",
+    "github_disabled.go",
+    "github_discussions.go",
+    "github_discussions_test.go",
+    "github_import_test.go",
+    "github_projects.go",
+    "github_projects_test.go",
+    "github_workflows.go",
+    "github_workflows_test.go",
+    "internal/azureapi/client.go",
+    "internal/azureapi/client_test.go",
+    "internal/azureapi/migration.go",
+    "internal/azureapi/migration_test.go",
+    "internal/bitbucketapi/client.go",
+    "internal/bitbucketapi/client_test.go",
+    "internal/bitbucketapi/migration.go",
+    "internal/bitbucketapi/migration_test.go",
+    "internal/forgejoapi/client.go",
+    "internal/forgejoapi/client_test.go",
+    "internal/giteaapi/client.go",
+    "internal/giteaapi/client_test.go",
+    "internal/githubapi/client.go",
+    "internal/githubapi/client_test.go",
+    "internal/githubapi/discussions.go",
+    "internal/githubapi/discussions_test.go",
+    "internal/githubapi/graphql.go",
+    "internal/githubapi/graphql_test.go",
+    "internal/githubapi/migration.go",
+    "internal/githubapi/migration_test.go",
+    "internal/githubapi/projects.go",
+    "internal/githubapi/projects_test.go",
+    "internal/githubapi/workflows.go",
+    "internal/githubapi/workflows_test.go",
+    "internal/gitlabapi/client.go",
+    "internal/gitlabapi/client_test.go",
+    "internal/gitlabapi/migration.go",
+    "internal/gitlabapi/migration_test.go",
+    "internal/migration/archive.go",
+    "internal/migration/archive_test.go",
+    "internal/migration/conformance_test.go",
+    "internal/migration/plan.go",
+    "internal/migration/plan_test.go",
+    "internal/migration/progress.go",
+    "internal/migration/progress_test.go",
+    "internal/migration/provider.go",
+    "internal/migration/provider_test.go",
+    "internal/migration/snapshot.go",
+    "internal/release/package.go",
+    "internal/release/package_test.go",
+    "kitty-ops/01M5VV7J9ZYY5P4AX8CQ7JGAGQ.jsonl",
+    "kitty-ops/01M5VV7QNM7WD0GE7S9ZMBMXHQ.jsonl",
+    "kitty-ops/01M5VV7VX0DP0A3Y346R6Y9QS2.jsonl",
+    "kitty-ops/01M5VV8093QBFTP9CGDT0MJG95.jsonl",
+    "kitty-ops/01M5VV84J32JMDE35QDXEKERQA.jsonl",
+    "kitty-ops/01M5VV88WSF00MH94VB9MB6ZYG.jsonl",
+    "kitty-ops/01M5VV8D4CZWWE03FWWZW74YCX.jsonl",
+    "kitty-ops/01M5VWJ17M66T3WJP5S3RQZDCY.jsonl",
+    "kitty-ops/01M5VWJ66EW9RWD0P0M16WF8RJ.jsonl",
+    "kitty-ops/01M5VWJAN0N8T40AAX5GWB0362.jsonl",
+    "kitty-ops/01M5VWJF9STESA2H9DAH67Q0A3.jsonl",
+    "kitty-ops/01M5VWJKQ1TQ99DXP4W2ZYFA7B.jsonl",
+    "kitty-ops/01M5VWJR1WM76NT05FXFR6FYXE.jsonl",
+    "kitty-ops/01M5VWJW8KT1M50HR7M25VZEJW.jsonl",
+    "kitty-ops/01M5VX0P7YNQ88EVSZWZ9E7A0V.jsonl",
+    "kitty-ops/01M5VX0VAYBKYA1HXS61NJ3AXJ.jsonl",
+    "kitty-ops/01M5VX0ZR16H7S8MWW3TBKRCAV.jsonl",
+    "kitty-ops/01M5VX149RZQ1SXS6H6B9QAJ7Z.jsonl",
+    "main.go",
+    "migration_acceptance_test.go",
+    "migration_azure.go",
+    "migration_azure_test.go",
+    "migration_bitbucket.go",
+    "migration_bitbucket_test.go",
+    "migration_commands.go",
+    "migration_commands_test.go",
+    "migration_engine.go",
+    "migration_engine_test.go",
+    "migration_forgejo.go",
+    "migration_forgejo_test.go",
+    "migration_gitea.go",
+    "migration_gitea_test.go",
+    "migration_github.go",
+    "migration_github_test.go",
+    "migration_gitlab.go",
+    "migration_gitlab_test.go",
+    "migration_journal.go",
+    "migration_journal_test.go",
+    "migration_local.go",
+    "migration_local_test.go",
+    "migration_native.go",
+    "migration_native_test.go",
+    "migration_provider.go",
+    "migration_provider_test.go",
+    "migration_wizard.go",
+    "migration_wizard_test.go",
+    "policy.go",
+    "policy_commands.go",
+    "portable_collaboration_acceptance_test.go",
+    "project_snapshot.go",
+    "project_snapshot_test.go",
+    "quarantine.go",
+    "shallow.go",
+    "store.go"
+  ],
+  "reviewer": {
+    "agent": "/root/mission_fidelity_review",
+    "profile": "reviewer-renata",
+    "independent_from_implementation": true,
+    "date": "2026-10-27",
+    "verdict": "FAIL"
+  },
+  "gates": {
+    "vet": {
+      "command": "go vet ./...",
+      "exit_code": 1,
+      "result": "FAIL"
+    },
+    "compile_all": {
+      "command": "go test -run '^$' ./...",
+      "exit_code": 1,
+      "result": "FAIL",
+      "scope": "test discovery/compilation only; no test execution"
+    },
+    "build": {
+      "command": "go build ./...",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    "diff": {
+      "command": "git diff --check 76446469b23d502a436c56cd7d704511d775b4d5...HEAD",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    "focused_race": {
+      "command": "go test -race -count=1 -timeout 3m -v -run '^(TestAuditMalformedSnapshotsRefuseLocalAndRemote|TestAuditPublicFollowUpNormalizedCollisionPreservesState|TestMigrationDestinationStaleWorktreeRegistration)$' .",
+      "result": "PASS in actual log",
+      "elapsed_root_seconds": 34.171,
+      "exit_code": null,
+      "exit_limitation": "Initial runner exit was not separately preserved; raw log ends PASS and ok hubnot 34.171s. No invented exit receipt."
+    }
+  },
+  "live_log_records": {
+    "vet.log": {
+      "path": "/tmp/hubnot-mission-review-170b3254/vet.log",
+      "bytes": 1390,
+      "sha256": "fdac4d13a930d37def348398c1f0252e35bd4db7469c8cbdb540c191d2aa3df2"
+    },
+    "compile-all.log": {
+      "path": "/tmp/hubnot-mission-review-170b3254/compile-all.log",
+      "bytes": 7971,
+      "sha256": "56f62ce82408ce81a6f821a0797ce8a7f33db36e456f0209065ca32c7d51da6e"
+    },
+    "build.log": {
+      "path": "/tmp/hubnot-mission-review-170b3254/build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diff-check.log": {
+      "path": "/tmp/hubnot-mission-review-170b3254/diff-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "prior-blocker-closures.log": {
+      "path": "/tmp/hubnot-mission-review-170b3254/prior-blocker-closures.log",
+      "bytes": 5234,
+      "sha256": "60fb14d9b38bd08a249fbfed4905f0f23b2dd2149cd259e208862e39fd721a8c"
+    }
+  },
+  "vet_failure_text": "# hubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8\n# [hubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8]\nvet: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go:13:15: undefined: auditFixture\n# hubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906\n# [hubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906]\nvet: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go:9:41: undefined: Identity\n# hubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2\n# [hubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2]\nvet: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go:9:41: undefined: Identity\n",
+  "compile_all_failure_summary": [
+    "FAIL\thubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8 [build failed]",
+    "FAIL\thubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906 [build failed]",
+    "FAIL\thubnot/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2 [build failed]",
+    "FAIL"
+  ],
+  "fresh_compile_boundary_inventory": {
+    "ordinary": {
+      "commands": [
+        [
+          "go",
+          "list",
+          "-deps",
+          "."
+        ],
+        [
+          "go",
+          "list",
+          "-json",
+          "."
+        ]
+      ],
+      "exit_codes": [
+        0,
+        0
+      ],
+      "compiled_api_packages": [
+        "hubnot/internal/azureapi",
+        "hubnot/internal/bitbucketapi",
+        "hubnot/internal/forgejoapi",
+        "hubnot/internal/giteaapi",
+        "hubnot/internal/githubapi",
+        "hubnot/internal/gitlabapi"
+      ],
+      "compiled_adapter_files": [
+        "forge_azure.go",
+        "forge_forgejo.go",
+        "forge_gitea.go",
+        "forge_github.go",
+        "forge_gitlab.go",
+        "migration_azure.go",
+        "migration_bitbucket.go",
+        "migration_forgejo.go",
+        "migration_gitea.go",
+        "migration_github.go",
+        "migration_gitlab.go"
+      ]
+    },
+    "nogithub": {
+      "commands": [
+        [
+          "go",
+          "list",
+          "-deps",
+          "-tags",
+          "nogithub",
+          "."
+        ],
+        [
+          "go",
+          "list",
+          "-json",
+          "-tags",
+          "nogithub",
+          "."
+        ]
+      ],
+      "exit_codes": [
+        0,
+        0
+      ],
+      "compiled_api_packages": [
+        "hubnot/internal/azureapi",
+        "hubnot/internal/bitbucketapi",
+        "hubnot/internal/forgejoapi",
+        "hubnot/internal/giteaapi",
+        "hubnot/internal/gitlabapi"
+      ],
+      "compiled_adapter_files": [
+        "forge_azure.go",
+        "forge_forgejo.go",
+        "forge_gitea.go",
+        "forge_gitlab.go",
+        "migration_azure.go",
+        "migration_bitbucket.go",
+        "migration_forgejo.go",
+        "migration_gitea.go",
+        "migration_gitlab.go"
+      ]
+    },
+    "noforge": {
+      "commands": [
+        [
+          "go",
+          "list",
+          "-deps",
+          "-tags",
+          "noforge",
+          "."
+        ],
+        [
+          "go",
+          "list",
+          "-json",
+          "-tags",
+          "noforge",
+          "."
+        ]
+      ],
+      "exit_codes": [
+        0,
+        0
+      ],
+      "compiled_api_packages": [],
+      "compiled_adapter_files": []
+    }
+  },
+  "canonical_historical_acceptance": {
+    "pass_criteria": 26,
+    "negative_confirmed_absent": 3,
+    "current_NFR003_overridden_by_new_failure_in_this_report": true,
+    "mutated_by_reviewer": false
+  },
+  "added_go_discovery_inputs": [
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go",
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go",
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go"
+  ],
+  "overlay_original_sha256": {
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go": "26b4abc29f261e7fef10bc55a7c1563dec888b7b11d79595aad0db5f0d1a719e",
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go": "ed5e2f4d45d37c6c7ab52c5953830711eb7cbeefd489476460332db3f9a7904d",
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go": "af91829bba357baf27e0499441bbbe52079006098860e0b5d29ef69f81306275"
+  },
+  "outer_wp12_hashes_verified": 17,
+  "verification_script": {
+    "path": "/tmp/hubnot-mission-review-170b3254/inspect.py",
+    "sha256": "1bd0259d13dbe68c79687e6bbdcf2977b0aab57f0326f799f81ddcb9bbe0ddf7",
+    "exit_code": 0
+  }
+}
