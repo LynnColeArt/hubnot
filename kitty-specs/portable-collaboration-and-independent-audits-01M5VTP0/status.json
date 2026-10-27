@@ -375,7 +375,8 @@
       "last_transition_at": "2026-10-27T06:32:48.113305+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Integrated public acceptance complete at c4aaa4e8; identical Go/config/assets to single unfiltered full-race PASS8c88ede5 (744.090s), final packages reproducible twice, actual final LinuxAMD64/ARM64 standard/native-only smoke PASS; 26 canonical criteria and issue13 proof committed. Ready for independent review; framework architectural authority remains unverified, no force/skip."
+        "Integrated public acceptance complete at c4aaa4e8; identical Go/config/assets to single unfiltered full-race PASS8c88ede5 (744.090s), final packages reproducible twice, actual final LinuxAMD64/ARM64 standard/native-only smoke PASS; 26 canonical criteria and issue13 proof committed. Ready for independent review; framework architectural authority remains unverified, no force/skip.",
+        "Independent review passed at c4aaa4e8 against c9a0092a: all26 FR/NFR and eight checklist items assessed; 19 fresh focused race tests, vet/build/format, canonical26+3 negatives, exact artifact/source bytes and all evidence hashes verified. Full race744.090s at source-equivalent8c88 and final LinuxAMD64/ARM64 runtime qualification remain accurately bound; framework architectural helper and unavailable hosts stay UNVERIFIED. Report independent-review-c4aaa4e8.md commit52ea5a9328cd064d47f8d1b92186121d272c1024. No blocking findings, force or skip."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
