@@ -371,6 +371,14 @@ func optionalScalarChange(base int, inBase bool, proposed int, inProposed bool) 
 }
 
 func printOptionalPolicy(policy PolicyDocument) {
+	if p := policy.Audits; p != nil {
+		fmt.Printf("Audits: enabled (scope %s; observational)\n", p.Scope)
+		printActors("Audit rule owners:", p.RuleOwners)
+		printActors("Audit requesters:", p.Requesters)
+		printActors("Audit executors:", p.Executors)
+	} else {
+		fmt.Println("Audits: disabled")
+	}
 	if p := policy.ProtectedChecks; p != nil {
 		fmt.Printf("Protected checks: enabled (required designated approvals %d; author excluded)\n", p.RequiredApprovals)
 		printActors("Designated reviewers:", p.TrustedReviewers)
@@ -401,6 +409,18 @@ func printOptionalPolicy(policy PolicyDocument) {
 
 func compareOptionalPolicies(base, proposed PolicyDocument) []policyChange {
 	changes := []policyChange{{Label: "protected checks enabled", Value: boolChange(base.ProtectedChecks != nil, proposed.ProtectedChecks != nil)}, {Label: "automerge enabled", Value: boolChange(base.Automerge != nil, proposed.Automerge != nil)}}
+	changes = append(changes, policyChange{Label: "audits enabled", Value: boolChange(base.Audits != nil, proposed.Audits != nil)})
+	var oldAudit, newAudit AuditPolicy
+	if base.Audits != nil {
+		oldAudit = *base.Audits
+	}
+	if proposed.Audits != nil {
+		newAudit = *proposed.Audits
+	}
+	changes = append(changes, policyChange{Label: "audit scope", Value: fmt.Sprintf("%q -> %q", oldAudit.Scope, newAudit.Scope)})
+	changes = append(changes, actorChanges("audit rule owners", oldAudit.RuleOwners, newAudit.RuleOwners)...)
+	changes = append(changes, actorChanges("audit requesters", oldAudit.Requesters, newAudit.Requesters)...)
+	changes = append(changes, actorChanges("audit executors", oldAudit.Executors, newAudit.Executors)...)
 	var a, b ProtectedChecksPolicy
 	if base.ProtectedChecks != nil {
 		a = *base.ProtectedChecks
