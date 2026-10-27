@@ -252,9 +252,9 @@ func (b *bitbucketMigration) Snapshot(ctx context.Context, sel migration.Selecti
 					} else {
 						kinds := map[int64]string{}
 						for _, comment := range comments {
-							kind := "inline_comment"
-							if comment.Parent != nil {
-								kind = "reply"
+							kind := "reply"
+							if comment.Inline != nil && comment.Parent == nil {
+								kind = "inline_comment"
 							}
 							kinds[comment.ID] = kind
 						}

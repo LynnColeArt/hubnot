@@ -36,7 +36,7 @@ func bbFixture(t *testing.T, status int, replace bool) (*httptest.Server, *int) 
 			}
 			fmt.Fprint(w, `{"values":[{"id":7,"title":"PR","author":{"uuid":"alice"},"created_on":"2026-01-01T00:00:00Z"}]}`)
 		case strings.HasSuffix(r.URL.Path, "/comments"):
-			fmt.Fprint(w, `{"values":[{"id":2,"content":{"raw":"root"},"inline":{"path":"a.go","to":5},"user":{"uuid":"alice"}},{"id":3,"parent":{"id":2},"content":{"raw":"reply"},"user":{"uuid":"bob"}},{"id":4,"deleted":true}]}`)
+			fmt.Fprint(w, `{"values":[{"id":1,"content":{"raw":"global discussion root"},"user":{"uuid":"global-author"}},{"id":2,"content":{"raw":"inline root"},"inline":{"path":"a.go","to":5},"user":{"uuid":"alice"}},{"id":3,"parent":{"id":2},"inline":{"path":"a.go","to":5},"content":{"raw":"inline reply"},"user":{"uuid":"bob"}},{"id":4,"deleted":true},{"id":5,"parent":{"id":1},"content":{"raw":"global reply"},"user":{"uuid":"global-replier"}}]}`)
 		case strings.HasSuffix(r.URL.Path, "/activity"):
 			fmt.Fprint(w, `{"values":[{"approval":{"user":{"uuid":"carol"},"date":"2026-01-02T00:00:00Z"}},{"update":{"state":"MERGED","author":{"uuid":"alice"}}}]}`)
 		case strings.Contains(r.URL.Path, "/src/"):
@@ -86,12 +86,14 @@ func TestBitbucketRegisteredOfflineSnapshot(t *testing.T) {
 	}
 	counts := map[string]int{}
 	var root, reply migration.Record
+	comments := map[string]migration.Record{}
 	pipeline := false
 	deleted := false
 	approvalAttribution := false
 	inlinePosition := false
 	for _, r := range snap.Records {
 		counts[r.Key.Kind]++
+		comments[r.Key.ID] = r
 		if r.Key.Kind == "review" && r.Author == "carol" && r.CreatedAt == "2026-01-02T00:00:00Z" {
 			approvalAttribution = true
 		}
@@ -127,7 +129,7 @@ func TestBitbucketRegisteredOfflineSnapshot(t *testing.T) {
 			deleted = true
 		}
 	}
-	if counts["change_request"] != 1 || counts["review"] != 2 || counts["inline_comment"] != 2 || counts["reply"] != 1 || !pipeline || !deleted || !approvalAttribution || !inlinePosition {
+	if counts["change_request"] != 1 || counts["review"] != 2 || counts["inline_comment"] != 1 || counts["reply"] != 4 || !pipeline || !deleted || !approvalAttribution || !inlinePosition {
 		t.Fatalf("coverage %v pipeline %v deleted %v", counts, pipeline, deleted)
 	}
 	parent := false
@@ -138,6 +140,33 @@ func TestBitbucketRegisteredOfflineSnapshot(t *testing.T) {
 	}
 	if !parent {
 		t.Fatal("reply topology lost")
+	}
+	// A general PR discussion is not a code-anchored inline comment. Both
+	// thread shapes retain their actual parent kind, even when replies repeat
+	// inline coordinates and tombstones lack them entirely.
+	for _, tc := range []struct{ id, kind, author, parent string }{
+		{"1", "reply", "global-author", ""},
+		{"2", "inline_comment", "alice", ""},
+		{"3", "reply", "bob", "2"},
+		{"4", "reply", "", ""},
+		{"5", "reply", "global-replier", "1"},
+	} {
+		r, ok := comments["pr:7:comment:"+tc.id]
+		if !ok || r.Key.Kind != tc.kind || r.Author != tc.author {
+			t.Fatalf("comment %s classification/attribution: %+v", tc.id, r)
+		}
+		parents := 0
+		for _, link := range r.Links {
+			if link.Relation == "parent" {
+				parents++
+				if tc.parent == "" || link.Target != comments["pr:7:comment:"+tc.parent].Key {
+					t.Fatalf("comment %s points to incorrect parent %+v", tc.id, link.Target)
+				}
+			}
+		}
+		if (tc.parent != "") != (parents == 1) {
+			t.Fatalf("comment %s parent topology: %+v", tc.id, r.Links)
+		}
 	}
 	if _, e = migration.CanonicalSnapshot(snap, migration.DefaultLimits()); e != nil {
 		t.Fatal(e)
