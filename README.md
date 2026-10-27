@@ -36,27 +36,36 @@ post-alpha roadmap.
 
 ## Download and install
 
-[Hubnot 0.0.1-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.1-dev)
-is the first packaged operational-alpha prerelease. Prebuilt executables require
+[Hubnot 0.0.2-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev)
+is the current portable-collaboration alpha prerelease. Prebuilt executables require
 **Git 2.x** on your PATH. Running them requires no Python, Go, Docker, or forge
 account.
 
+**Mac runtime testing is still pending for 0.0.2-dev.** Both macOS architectures
+have been cross-compiled and inspected. Both Linux architectures passed runtime
+smoke checks in standard and native-only variants.
+
 | Platform | CPU | Standard | Native only |
 | --- | --- | --- | --- |
-| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_amd64_native-only.tar.gz) |
-| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_linux_arm64_native-only.tar.gz) |
-| macOS 12+ | Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_amd64_native-only.tar.gz) |
-| macOS 12+ | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/hubnot_0.0.1-dev_darwin_arm64_native-only.tar.gz) |
+| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64_native-only.tar.gz) |
+| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_arm64_native-only.tar.gz) |
+| macOS | Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_amd64_native-only.tar.gz) |
+| macOS | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_arm64_native-only.tar.gz) |
 
-Standard builds include the optional GitHub transfer adapter. Native-only builds
-omit that adapter and retain every native feature, including local `hn gh issue`
-commands. Both variants install as `hn`; choose one. Protected checks and
-automerge remain independently disabled by default.
+Standard builds include the optional GitHub, GitLab, Forgejo/Codeberg, Gitea,
+Bitbucket Cloud and Azure DevOps adapters. Native-only builds omit every network
+provider adapter and retain native collaboration, local/archive migration,
+independent audits and local `hn gh issue` commands. Both variants install as
+`hn`; choose one. Protected checks, automerge and audits remain independently
+disabled by default.
 
-Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.1-dev/SHA256SUMS)
+Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/SHA256SUMS)
 alongside your archive and verify it before extraction. On Linux, use
 `sha256sum --ignore-missing -c SHA256SUMS`. On macOS, use
 `shasum -a 256 <archive.tar.gz>` and compare the matching checksum entry.
+The [source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_source.tar.gz)
+and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/PROVENANCE.json)
+are also available.
 Extract your archive, enter its directory, then install:
 
 ```sh
@@ -68,15 +77,17 @@ hn version
 
 Keep that PATH setting in your shell configuration if needed. The archives also
 contain the MIT license, build provenance, and product documentation. See the
-[changelog](CHANGELOG.md) for release history and next-release requirements.
+[changelog](CHANGELOG.md) for release history and platform qualification.
 
-Both Linux architectures have been runtime-tested: AMD64 through packaged CLI
-smoke checks, and ARM64 through native resource and policy acceptance scenarios.
-Both Apple Silicon variants passed packaged CLI smoke checks on macOS; Intel Mac
-builds have been cross-compiled and inspected but have not been runtime-tested.
+All eleven release assets reproduced byte-for-byte with Go 1.26.4, and published
+downloads match the verified local bundle. Linux AMD64 and ARM64 runtime smoke
+checks covered signed native issues, saved archive migration, exact imported
+actor history and local continuation. Mac runtime testing remains pending for
+both Intel and Apple Silicon; testing of the previous release does not qualify
+these new binaries.
 macOS downloads have no Apple Developer ID signature or notarization, so a
 quarantined download may require approval in Privacy & Security. The
-[release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.1-dev)
+[release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev)
 include the detailed platform evidence and distribution limits.
 
 ## Build and verify
@@ -93,14 +104,14 @@ go build -trimpath -tags nogithub -o hn-local .
 go build -trimpath -tags noforge -o hn-native .
 ```
 
-The first release's separate `build-release.py` packaging script requires
-Python 3.12+, Git, and Go 1.26.4 to reproduce its archives. That requirement is
-limited to that historical packaging script. Current source includes the
-Go/Git-only packager:
+Packaging 0.0.2-dev uses Go and Git alone, with no Python requirement. The
+published archives were built with Go 1.26.4 from commit
+`e80880abc792e2c386182e06027fc251b134c0d2`. Build the Go-only packager and
+select that exact revision to reproduce them:
 
 ```sh
 go build -trimpath -o hn-release ./cmd/hn-release
-./hn-release --rev COMMITTED_REV --version 0.0.2-dev --out NEW_DIRECTORY
+./hn-release --rev e80880abc792e2c386182e06027fc251b134c0d2 --version 0.0.2-dev --out NEW_DIRECTORY
 ```
 
 The output directory must not exist. Optional `--source DIRECTORY`,
@@ -114,8 +125,9 @@ the published first release's native-only assets excluded GitHub only.
 
 The packager cross-compiles for macOS and Windows; execution on those packager
 hosts remains unverified for this delivery. CLI target cross-compilation also
-requires separate runtime evidence. The download/platform statements above
-refer to the immutable first release, whose tags and assets stay unchanged.
+requires separate runtime evidence, as qualified above. The immutable first
+release's `build-release.py` still requires Python 3.12+, Git and Go 1.26.4 to
+reproduce its historical archives; its tags and assets stay unchanged.
 Windows CLI distribution remains outside the current target set.
 
 The end-to-end acceptance scenarios compile the CLI and exercise the

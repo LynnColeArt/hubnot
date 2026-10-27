@@ -5,6 +5,12 @@ experimental; alpha releases do not promise stable compatibility.
 
 ## Unreleased
 
+## [0.0.2-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev) — 2026-10-27
+
+Portable-collaboration alpha prerelease, built from
+`e80880abc792e2c386182e06027fc251b134c0d2`. The executable reports `0.0.2-dev`.
+**Mac runtime testing is still pending for both Intel and Apple Silicon.**
+
 ### Removed
 
 - Obsolete tracked `.nh/policy.json` and `.nh/pipelines/test.json` from the retired
@@ -15,8 +21,8 @@ experimental; alpha releases do not promise stable compatibility.
 
 - Test repository fixtures now resolve physical paths consistently with Git when
   temporary directories use aliases, including macOS `/var` and `/private/var`.
-  This is a test-only correction after the first release; published executable
-  bytes are unchanged. ([#10](https://github.com/LynnColeArt/hubnot/pull/10))
+  This correction changes tests only; existing `0.0.1-dev` assets remain
+  unchanged. ([#10](https://github.com/LynnColeArt/hubnot/pull/10))
 
 ### Added
 
@@ -46,6 +52,44 @@ experimental; alpha releases do not promise stable compatibility.
   qualification remains outstanding. Packaging never publishes or changes tags.
   The immutable `0.0.1-dev` artifacts retain their original Python reproduction
   requirements and GitHub-only native-only meaning.
+
+### Downloads
+
+| Platform | Standard | Native-only |
+| --- | --- | --- |
+| Linux AMD64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64_native-only.tar.gz) |
+| Linux ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_arm64_native-only.tar.gz) |
+| macOS Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_amd64_native-only.tar.gz) |
+| macOS Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_arm64_native-only.tar.gz) |
+
+[Source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_source.tar.gz),
+[SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/SHA256SUMS)
+and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/PROVENANCE.json)
+accompany the binary packages. Native-only excludes every network provider
+adapter while retaining native commands and local/archive migration.
+
+### Verification and distribution limits
+
+- The release source passed the full race suite, independent mission review,
+  and final pre-merge vet/build/targeted race checks.
+- All eleven assets reproduced byte-for-byte with Go 1.26.4. Independent
+  inspection verified exact source files, archive contents and metadata,
+  executable architectures, static Linux linking, checksums and provenance.
+  All eleven published downloads match the verified local files.
+- Both Linux AMD64 and ARM64 standard/native-only binaries passed runtime smoke
+  checks with Git-only application PATH and no provider credentials, including
+  signed native issues, saved archive migration, exact native actor history
+  import and local continuation. No new full ARM64 Go-suite run is claimed.
+- Both macOS architectures were cross-compiled and inspected. **Mac runtime
+  testing is still pending for 0.0.2-dev**; previous Apple Silicon test results
+  apply only to the earlier release. The packages have no Apple Developer ID
+  signature or notarization.
+- Running prebuilt binaries requires Git 2.x. Source builds and the new release
+  tooling require Go and Git alone; Python is not required. macOS/Windows
+  packager-host execution remains unverified, and Windows CLI distribution
+  remains outside this release matrix.
+- Protected checks, automerge and independent audits remain optional and
+  disabled by default. No scheduler, service or background worker is installed.
 
 ## [0.0.1-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.1-dev) — 2026-10-25
 
