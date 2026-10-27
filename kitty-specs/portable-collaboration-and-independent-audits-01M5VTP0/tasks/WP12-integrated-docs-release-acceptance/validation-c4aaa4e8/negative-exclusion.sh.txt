@@ -1,0 +1,40 @@
+#!/bin/bash
+set -euo pipefail
+negative_repo=$1
+negative_expected=$2
+[ "$(git -C "$negative_repo" rev-parse HEAD)" = "$negative_expected" ]
+[ -z "$(git -C "$negative_repo" status --porcelain)" ]
+negative_artifacts=$(mktemp -d /tmp/wp12-negative-exclusion.XXXXXX)
+negative_public="$negative_artifacts/public"
+mkdir "$negative_public" "$negative_artifacts/binaries"
+trap 'rm -rf "$negative_artifacts/binaries"' EXIT
+printf 'Source: %s\nPublic-only proof: %s\n' "$negative_expected" "$negative_public"
+for negative_variant in standard nogithub noforge; do
+  negative_flags=()
+  if [ "$negative_variant" != standard ]; then negative_flags=(-tags "$negative_variant"); fi
+  go -C "$negative_repo" list -deps "${negative_flags[@]}" . > "$negative_public/$negative_variant-deps.log"
+  go -C "$negative_repo" list -f '{{join .GoFiles "\n"}}' "${negative_flags[@]}" . > "$negative_public/$negative_variant-files.log"
+  go -C "$negative_repo" build -buildvcs=false "${negative_flags[@]}" -o "$negative_artifacts/binaries/hn-$negative_variant" .
+  go tool nm "$negative_artifacts/binaries/hn-$negative_variant" > "$negative_public/$negative_variant-symbols.log"
+  for negative_client in githubapi gitlabapi forgejoapi giteaapi bitbucketapi azureapi; do
+    negative_excluded=false
+    if [ "$negative_variant" = noforge ] || { [ "$negative_variant" = nogithub ] && [ "$negative_client" = githubapi ]; }; then negative_excluded=true; fi
+    if $negative_excluded; then
+      if grep -F "hubnot/internal/$negative_client" "$negative_public/$negative_variant-deps.log" "$negative_public/$negative_variant-symbols.log"; then exit 1; fi
+    elif [ "$negative_client" != giteaapi ]; then
+      grep -Fx "hubnot/internal/$negative_client" "$negative_public/$negative_variant-deps.log" >/dev/null
+      grep -F "hubnot/internal/$negative_client" "$negative_public/$negative_variant-symbols.log" >/dev/null
+    fi
+  done
+  for negative_provider in github gitlab forgejo gitea bitbucket azure; do
+    if [ "$negative_variant" = noforge ] || { [ "$negative_variant" = nogithub ] && [ "$negative_provider" = github ]; }; then
+      if grep -Fx "migration_$negative_provider.go" "$negative_public/$negative_variant-files.log"; then exit 1; fi
+    else
+      grep -Fx "migration_$negative_provider.go" "$negative_public/$negative_variant-files.log" >/dev/null
+    fi
+  done
+  sha256sum "$negative_artifacts/binaries/hn-$negative_variant"
+  printf 'PASS %s actual dependency/file/symbol assertions\n' "$negative_variant"
+done
+[ "$(git -C "$negative_repo" rev-parse HEAD)" = "$negative_expected" ]
+[ -z "$(git -C "$negative_repo" status --porcelain)" ]
