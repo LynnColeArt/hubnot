@@ -284,6 +284,9 @@
       "last_event_id": "01M5XSN1NP3REX1Z4D2SZJC52E",
       "last_transition_at": "2026-10-27T04:24:47.030787+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: fixed91c580cd Bitbucket Cloud snapshots, explicit unsupported destination writes, complete source-bound validation"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
