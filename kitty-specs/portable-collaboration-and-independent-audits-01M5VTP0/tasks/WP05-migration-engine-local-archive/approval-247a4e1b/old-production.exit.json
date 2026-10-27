@@ -1,0 +1,1 @@
+{"command": ["go", "test", "-race", "-count=1", "-overlay", "/tmp/hn-wp05-final-review-cn6Gir/old-production-overlay.json", "-run", "^TestMigrationDestinationStaleWorktreeRegistration$", "-v", "."], "source": "247a4e1b26295459ae159674c109bcd91aa1a954", "exit": 1}

@@ -1,0 +1,13 @@
+{
+  "source_head": "247a4e1b26295459ae159674c109bcd91aa1a954",
+  "response_to": "review-cycle-5.md / review-cycle-6.md (test-only P2)",
+  "prior_landed": [
+    "9ab00d85 (P1 anchor)",
+    "bc6c8db5 (P2 resolver)"
+  ],
+  "source_worktree": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-d",
+  "file_sha256": {
+    "migration_native.go": "4e32b777e0daab1469166ce6a3065638726272a2029af9a315656ab22764bc26",
+    "migration_native_test.go": "4727adc053191a3060ccd953668f561ec8d96a349c6581ff0dfabcf25e3da53e"
+  }
+}

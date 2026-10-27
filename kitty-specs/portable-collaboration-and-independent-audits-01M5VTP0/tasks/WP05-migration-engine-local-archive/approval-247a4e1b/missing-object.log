@@ -1,0 +1,6 @@
+=== RUN   TestMigrationDestinationStaleWorktreeRegistration
+    migration_native_test.go:819: invalid control: destination hook must run and reject; err=bounded Git 020115661b2c0fc6d1ca0d84f0b9340d91250eb4 failed: exit status 128 markers=""
+--- FAIL: TestMigrationDestinationStaleWorktreeRegistration (0.21s)
+FAIL
+FAIL	hubnot	0.233s
+FAIL
