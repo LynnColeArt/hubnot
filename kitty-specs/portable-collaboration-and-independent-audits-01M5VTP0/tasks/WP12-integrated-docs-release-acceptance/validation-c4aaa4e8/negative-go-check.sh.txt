@@ -1,11 +1,8 @@
 #!/bin/bash
 set -euo pipefail
-negative_repo=$1
-negative_expected=$2
+source "$(dirname "${BASH_SOURCE[0]}")/negative-source-guard.sh.txt"
+negative_select_and_guard "$1" "$2"
 shift 2
-[ "$(git -C "$negative_repo" rev-parse HEAD)" = "$negative_expected" ]
-[ -z "$(git -C "$negative_repo" status --porcelain)" ]
-[ "$(go -C "$negative_repo" env GOMOD)" = "$negative_repo/go.mod" ]
 negative_names=("$@")
 negative_pattern='^('
 for negative_name in "${negative_names[@]}"; do
@@ -22,6 +19,5 @@ go -C "$negative_repo" test -v -count=1 -run "$negative_pattern" -timeout 5m . 2
 for negative_name in "${negative_names[@]}"; do
   grep -F -- "--- PASS: $negative_name (" "$negative_public/go-test.log" >/dev/null
 done
-[ "$(git -C "$negative_repo" rev-parse HEAD)" = "$negative_expected" ]
-[ -z "$(git -C "$negative_repo" status --porcelain)" ]
+negative_select_and_guard "$negative_repo" "$negative_expected"
 printf 'PASS all named real assertions executed at unchanged source %s\n' "$negative_expected"

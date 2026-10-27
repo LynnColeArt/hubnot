@@ -1,0 +1,17 @@
+#!/bin/bash
+# Evidence-only replay guard. Metadata HEAD may advance after consolidation;
+# executable Go/module/configuration/assets must still equal the fixed source.
+negative_select_and_guard() {
+  negative_repo=$1
+  negative_expected=$2
+  [[ "$negative_expected" =~ ^[0-9a-f]{40}$ ]]
+  if ! git -C "$negative_repo" rev-parse --show-toplevel >/dev/null 2>&1; then
+    negative_repo=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)
+  fi
+  negative_inputs=('*.go' go.mod go.sum '.hn/**' '.github/**' 'testdata/**' 'examples/**' 'scripts/**' '*.json' '*.yaml' '*.yml' '*.toml' ':!kitty-specs/**' ':!.kittify/**')
+  git -C "$negative_repo" cat-file -e "$negative_expected^{commit}"
+  git -C "$negative_repo" diff --quiet "$negative_expected" -- "${negative_inputs[@]}"
+  [ -z "$(git -C "$negative_repo" ls-files --others --exclude-standard -- "${negative_inputs[@]}")" ]
+  [ "$(go -C "$negative_repo" env GOMOD)" = "$negative_repo/go.mod" ]
+  printf 'Verified unchanged Go/module/configuration/assets against %s; actual repo=%s HEAD=%s\n' "$negative_expected" "$negative_repo" "$(git -C "$negative_repo" rev-parse HEAD)"
+}

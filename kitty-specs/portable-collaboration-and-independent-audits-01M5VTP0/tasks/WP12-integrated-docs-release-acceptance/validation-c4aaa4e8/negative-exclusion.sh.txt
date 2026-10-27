@@ -1,9 +1,7 @@
 #!/bin/bash
 set -euo pipefail
-negative_repo=$1
-negative_expected=$2
-[ "$(git -C "$negative_repo" rev-parse HEAD)" = "$negative_expected" ]
-[ -z "$(git -C "$negative_repo" status --porcelain)" ]
+source "$(dirname "${BASH_SOURCE[0]}")/negative-source-guard.sh.txt"
+negative_select_and_guard "$1" "$2"
 negative_artifacts=$(mktemp -d /tmp/wp12-negative-exclusion.XXXXXX)
 negative_public="$negative_artifacts/public"
 mkdir "$negative_public" "$negative_artifacts/binaries"
@@ -36,5 +34,4 @@ for negative_variant in standard nogithub noforge; do
   sha256sum "$negative_artifacts/binaries/hn-$negative_variant"
   printf 'PASS %s actual dependency/file/symbol assertions\n' "$negative_variant"
 done
-[ "$(git -C "$negative_repo" rev-parse HEAD)" = "$negative_expected" ]
-[ -z "$(git -C "$negative_repo" status --porcelain)" ]
+negative_select_and_guard "$negative_repo" "$negative_expected"
