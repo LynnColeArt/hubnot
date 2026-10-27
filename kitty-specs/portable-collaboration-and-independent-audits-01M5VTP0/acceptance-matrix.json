@@ -273,6 +273,14 @@
       "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestPortableCollaborationIntegratedPublicVariants TestAuditPolicyStrictAndDisabledDefault TestAuditFactsNeverSatisfyProposalEvidence TestAuditPublicCandidateStalePolicyAndRoleRefusals",
       "result": "confirmed_absent",
       "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    },
+    {
+      "invariant_id": "NI-PLANNING-EOF-NO-BLIND-CREATE",
+      "description": "Public guided EOF/missing approval and stale/private/inexact recovery refuse without remote effects; exact saved parent receipts are preserved, missing progress never authorizes blind duplicate creates.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline TestMigrationCLIPublicRefusalsPreserveRemoteState TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries TestMigrationMissingCheckpointNeverReplaysCreates",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
     }
   ]
 }
