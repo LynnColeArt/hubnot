@@ -1,4 +1,4 @@
-//go:build nogithub
+//go:build nogithub || noforge
 
 package main
 
@@ -9,8 +9,8 @@ import (
 
 func cmdGitHub(args []string) error {
 	if len(args) == 0 || len(args) == 1 && (args[0] == "help" || args[0] == "--help" || args[0] == "-h") {
-		fmt.Println("GitHub transport is excluded by the nogithub build. Native hn issue and hn gh issue commands remain available offline.")
+		fmt.Println("GitHub transport is excluded by the nogithub or noforge build. Native hn issue and hn gh issue commands remain available offline.")
 		return nil
 	}
-	return errors.New("GitHub transport is excluded by the nogithub build; use native hn issue or hn gh issue commands")
+	return errors.New("GitHub transport is excluded by the nogithub or noforge build; use native hn issue or hn gh issue commands")
 }
