@@ -775,12 +775,12 @@ func TestMigrationDestinationStaleWorktreeRegistration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	applyErr := ApplyMigration(ctx, session, d, "")
 	// Hook refusal plus pre-mutation failure means NO hook runs anywhere;
 	// pre-create the marker so readback proves emptiness rather than absence.
-	if err := os.WriteFile(marker, []byte(""), 0600); err != nil {
+	if err := os.WriteFile(marker, nil, 0600); err != nil {
 		t.Fatal(err)
 	}
+	applyErr := ApplyMigration(ctx, session, d, "")
 	markers, readErr := os.ReadFile(marker)
 	if readErr != nil {
 		t.Fatal(readErr)
@@ -793,10 +793,6 @@ func TestMigrationDestinationStaleWorktreeRegistration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, controlErr := projectGit(ctx, gitdir, nil, 4096, "-C", dest, "update-ref", "refs/hn/remotes/control/code/main", snapshot.Snapshot.NativeRefs[0].OID)
-	if controlErr == nil {
-		t.Fatal("invalid control: selected destination hook did not reject")
-	}
 	if applyErr == nil {
 		t.Fatalf("stale worktree registration must fail before promotion; markers=%q", string(markers))
 	}
@@ -805,5 +801,20 @@ func TestMigrationDestinationStaleWorktreeRegistration(t *testing.T) {
 	}
 	if strings.Contains(string(markers), "UNSELECTED ") || strings.Contains(string(markers), "SOURCE ") {
 		t.Fatalf("unrelated/caller hooks executed under a stale registration: %q", string(markers))
+	}
+	// Use an object already in the destination: refused migration never copies
+	// the source snapshot object. A missing-object error would not prove that
+	// the rejecting destination hook actually ran.
+	head, err := projectGit(ctx, gitdir, nil, 256, "rev-parse", "HEAD")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, controlErr := projectGit(ctx, gitdir, nil, 4096, "-C", dest, "update-ref", "refs/hn/remotes/control/code/main", strings.TrimSpace(string(head)))
+	controlMarkers, readErr := os.ReadFile(marker)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if controlErr == nil || !strings.Contains(string(controlMarkers), "DESTINATION ") {
+		t.Fatalf("invalid control: destination hook must run and reject; err=%v markers=%q", controlErr, controlMarkers)
 	}
 }
