@@ -2,7 +2,7 @@
   "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "fail",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -248,10 +248,10 @@
       "criterion_id": "NFR-003",
       "description": "Changes pass formatting, full Go race tests, vet, build, diff checks and meaningful public CLI acceptance in ordinary, `nogithub` and adapter-free builds. Recovery/hostile input tests assert visible state preservation.",
       "proof_type": "automated_test",
-      "evidence": "Post-consolidation independent mission review e5833894 at170b3254: unqualified go vet ./... and go test -run ^$ ./... exit1 because three historical overlay .go evidence files are discovered as uncompilable packages. See mission-review.md RISK-1/DRIFT-1 and mission-review-evidence.json. Original successful8c88/c4 lane gates remain historical; current PRIMARY NFR003 is FAIL until inert byte-preserving representation correction and fresh whole-repository verification.",
-      "pass_fail": "fail",
+      "evidence": "Independent closure c4d13f80 mission-review-followup.md supersedes FAIL e5833894 for corrected61fa1c35 plus proof24a2fbf9. Fresh actualPRIMARY go test -race -count=1 -timeout20m ./... PASS627.964s/all11testedpackages/exit0; independent AFTER-proof unqualified vet/build/compile/discovery/format/diff PASS. All189Go+go.mod across ENTIRErepo includingmetadata exact,12realpackages/noevidencepackages;3historicaloverlays preservedbyte-identicallyastext,39frozenrecords unchanged. RawproofSHA9fc8dd1931857fa60f52605286c32b28352d7600d796e3f5393cc3f9f718b6b7. RISK1/DRIFT1closed, all26independentdispositionsPASS; host/framework/LOWhelpernotesremainexplicit.",
+      "pass_fail": "pass",
       "verified_by": "codex",
-      "verified_at": "2026-10-27T06:53:50.465763+00:00",
+      "verified_at": "2026-10-27T07:33:24.955326+00:00",
       "notes": "Combined source verification completed; independent WP12 review approved in report52ea5a9328cd064d47f8d1b92186121d272c1024 and canonical review_result01M5Y0ZEQHEAWTZ3JR9WTXPTYW. Historical implementer proof retains its original pending-review wording. Platform/framework boundaries are recorded in independent-review-c4aaa4e8.md."
     },
     {
