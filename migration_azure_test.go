@@ -25,6 +25,7 @@ const azureRepoID = "22222222-2222-4222-8222-222222222222"
 const azureProcessID = "33333333-3333-4333-8333-333333333333"
 
 type azureFixture struct {
+	definitionOverride                                                               json.RawMessage
 	apiVersion, commentsVersion                                                      string
 	pat                                                                              bool
 	mu                                                                               sync.Mutex
@@ -198,6 +199,10 @@ func newAzureFixture(t *testing.T) *azureFixture {
 				_, _ = w.Write([]byte("steps:\n- script: never-execute\n"))
 			}
 		case strings.Contains(r.URL.Path, "/build/definitions/"):
+			if f.definitionOverride != nil {
+				_, _ = w.Write(f.definitionOverride)
+				return
+			}
 			write(map[string]any{"id": 4, "revision": 2, "process": map[string]any{"type": 1, "phases": []any{map[string]string{"name": "inert classic"}}}, "variables": map[string]any{"secret": map[string]any{"isSecret": true, "value": "must-not-persist"}, "ordinary": map[string]any{"value": "retained"}}})
 		default:
 			t.Error("unexpected Azure request", r.Method, r.URL)
@@ -814,5 +819,104 @@ func TestAzureMigrationSelectedProjectPreservesCompleteRetrievedMetadata(t *test
 	raw, _ := io.ReadAll(r)
 	if !strings.Contains(string(raw), "full planning description") || !strings.Contains(string(raw), `"visibility":"private"`) {
 		t.Fatal("retrieved project fields lost", string(raw))
+	}
+}
+
+func TestAzureMigrationClassicServiceManagedCredentialsExcluded(t *testing.T) {
+	f := newAzureFixture(t)
+	cfg := f.config()
+	cfg.Locator.Repository = ""
+	cfg.PlanningSelectors = []string{"definition:4@2"}
+	src, e := OpenMigrationSource(cfg)
+	if e != nil {
+		t.Fatal(e)
+	}
+	definition := func(secret string) json.RawMessage {
+		return azureJSON(map[string]any{"id": 4, "revision": 2, "process": map[string]int{"type": 1}, "properties": map[string]any{"large": int64(9007199254740993)}, "variables": map[string]any{"secret": map[string]any{"isSecret": true, "value": secret + "-top"}, "ordinary": map[string]any{"isSecret": false, "value": "ordinary-retained"}}, "variableGroups": []any{map[string]any{"id": 9, "name": "group-retained", "variables": map[string]any{"secret": map[string]any{"isSecret": true, "value": secret + "-group"}, "ordinary": map[string]any{"value": "group-ordinary-retained"}}}}, "processParameters": map[string]any{"dataSourceBindings": []any{map[string]any{"endpointId": "endpoint-reference-retained", "headers": []any{map[string]any{"name": "Authorization", "value": secret + "-header"}}}}}})
+	}
+	var firstDigest string
+	for _, secret := range []string{"private-value-first", "private-value-second-longer"} {
+		f.definitionOverride = definition(secret)
+		s, blobs, e := src.Snapshot(context.Background(), migration.Selection{Source: cfg.Locator, Kinds: []string{"workflow"}}, migration.DefaultLimits())
+		if e != nil {
+			t.Fatal(e)
+		}
+		if len(s.Records) != 1 || len(s.Blobs) != 1 {
+			t.Fatal("selected classic missing", s)
+		}
+		r, e := blobs.Open(context.Background(), s.Blobs[0].Digest)
+		if e != nil {
+			t.Fatal(e)
+		}
+		raw, _ := io.ReadAll(r)
+		r.Close()
+		for _, text := range []string{secret, "-top", "-group", "-header"} {
+			if strings.Contains(string(raw), text) {
+				t.Fatal("credential leaked", text, string(raw))
+			}
+		}
+		for _, text := range []string{"ordinary-retained", "group-ordinary-retained", "endpoint-reference-retained", "Authorization", "group-retained", "9007199254740993"} {
+			if !strings.Contains(string(raw), text) {
+				t.Fatal("nonsecret source metadata lost", text)
+			}
+		}
+		excluded := false
+		for _, finding := range s.Findings {
+			if finding.Status == "unsupported" && strings.Contains(finding.Message, "credential values excluded") {
+				excluded = true
+			}
+		}
+		if !excluded {
+			t.Fatal("missing explicit credential exclusion finding", s.Findings)
+		}
+		canonical, e := migration.CanonicalSnapshot(s, migration.DefaultLimits())
+		if e != nil {
+			t.Fatal(e)
+		}
+		digest := migration.Digest(canonical)
+		if firstDigest == "" {
+			firstDigest = digest
+		} else if firstDigest != digest {
+			t.Fatal("original credential value fingerprint persisted")
+		}
+		if s.Records[0].Revision != migration.Digest(raw) || s.Records[0].Blobs[0] != migration.Digest(raw) {
+			t.Fatal("evidence does not bind sanitized bytes")
+		}
+		var archive bytes.Buffer
+		if e = migration.WriteArchive(context.Background(), &archive, s, blobs, migration.DefaultLimits()); e != nil {
+			t.Fatal(e)
+		}
+		if bytes.Contains(archive.Bytes(), []byte(secret)) {
+			t.Fatal("archive leaked credentials")
+		}
+	}
+}
+func TestAzureMigrationClassicMalformedCredentialDeclarationsRefuse(t *testing.T) {
+	for _, fields := range []string{
+		`"variables":{"x":{"isSecret":"true","value":"private"}}`,
+		`"variables":{"x":{"isSecret":null,"value":"private"}}`,
+		`"variables":{"x":{"isSecret":1,"value":"private"}}`,
+		`"variables":{"x":{"isSecret":true,"isSecret":false,"value":"private"}}`,
+		`"variables":{"x":{"IsSecret":true,"value":"private"}}`,
+		`"Variables":{"x":{"isSecret":true,"value":"private"}}`,
+		`"variables":{"x":{"isSecret":true,"Value":"private"}}`,
+		`"variables":{"x":{"isSecret":false,"value":"public","value":"private"}}`,
+		`"variableGroups":[{"id":9,"variables":{"x":{"isSecret":null,"value":"private"}}}]`,
+		`"processParameters":{"dataSourceBindings":[{"headers":[{"name":"Authorization","Value":"private"}]}]}`,
+	} {
+		t.Run(strconv.Itoa(len(fields))+fields[:12], func(t *testing.T) {
+			f := newAzureFixture(t)
+			f.definitionOverride = json.RawMessage(`{"id":4,"revision":2,"process":{"type":1},` + fields + `}`)
+			cfg := f.config()
+			cfg.Locator.Repository = ""
+			cfg.PlanningSelectors = []string{"definition:4@2"}
+			src, _ := OpenMigrationSource(cfg)
+			if _, _, e := src.Snapshot(context.Background(), migration.Selection{Source: cfg.Locator, Kinds: []string{"workflow"}}, migration.DefaultLimits()); e == nil {
+				t.Fatal("ambiguous credential declaration copied", fields)
+			}
+			if f.writes != 0 || f.commentWrites != 0 {
+				t.Fatal("malformed source caused effects")
+			}
+		})
 	}
 }

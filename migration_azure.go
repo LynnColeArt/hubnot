@@ -45,6 +45,9 @@ func (a *azureMigration) Capabilities(context.Context) ([]migration.Capability, 
 	out := []migration.Capability{{Kind: "work_item", Read: true, Preserve: true, Create: true, Update: true, Limits: []string{"Explicit process GUID, type and state mappings validated against destination metadata; title/description/type/state only; no universal open/closed mapping, custom-field recreation or bypassRules", "Services REST 7.1/comments 7.1-preview.4; Server 2022 REST 7.0/comments 7.0-preview.3; supplied Entra bearer or PAT only", "200 Work Items per detail batch; 100 pages per collection; 4 MiB API response; 64 MiB total operation read budget; plan budgets are additional ceilings", "Original fields/relations and attribution preserved as inert source blobs; deterministic plain-text recovery marker augments destination descriptions"}}, {Kind: "comment", Read: true, Preserve: true, Create: true, Limits: []string{"WIT comments, continuation-token complete reads; confirmed engine receipt resolves parent; original authors/times remain attribution; deleted comments preservation only"}}}
 	for _, k := range []string{"project", "change_request", "review", "inline_comment", "reply", "workflow", "attachment"} {
 		out = append(out, migration.Capability{Kind: k, Read: true, Preserve: true, Limits: []string{"Preservation only; no destination-native recreation or execution/permission adoption", "PRs require explicit repository; selected YAML requires exact existing commit and path; classic definitions require ID@revision; attachment bytes require explicit same-origin selection", "Unexpected thread continuation is refused because the qualified endpoint documents no cursor parameter"}})
+		if k == "workflow" {
+			out[len(out)-1].Limits = append(out[len(out)-1].Limits, "Classic definitions exclude top/group isSecret-marked variable values and service data-source authorization-header values; ambiguous declarations refuse; committed YAML/Git bytes are not secret-scrubbed")
+		}
 	}
 	return out, nil
 }
@@ -436,30 +439,16 @@ func (a *azureMigration) snapshotWorkflows(ctx context.Context, c *azureapi.Clie
 			if e != nil {
 				return e
 			}
-			// The API normally masks secrets. Even an overprivileged/malformed response
-			// cannot place a secret variable value into the snapshot archive.
-			var object map[string]json.RawMessage
-			if e = json.Unmarshal(raw, &object); e != nil {
+			raw, excluded, e := azureapi.SanitizeDefinition(raw)
+			if e != nil {
 				return e
 			}
-			if vars, ok := object["variables"]; ok {
-				var values map[string]map[string]json.RawMessage
-				if e = json.Unmarshal(vars, &values); e != nil {
-					return e
-				}
-				for name, value := range values {
-					var secret bool
-					_ = json.Unmarshal(value["isSecret"], &secret)
-					if secret {
-						delete(value, "value")
-						values[name] = value
-					}
-				}
-				object["variables"] = azureJSON(values)
+			if excluded > 0 {
+				finding(id+"-credentials", "unsupported", strconv.Itoa(excluded)+" documented service-managed credential values excluded; preserved blob and revision bind sanitized source only")
 			}
-			raw = azureJSON(object)
-			b.preserve("workflow", "definition:"+parts[0]+"@"+parts[1], "Retrieved classic build definition at exact revision; secret variable values excluded; execution/queues/permissions remain inert", raw, nil)
-			finding(id, "preserved", "Selected classic definition retrieved at exact revision; secret values excluded and execution/permission adoption unsupported")
+
+			b.preserve("workflow", "definition:"+parts[0]+"@"+parts[1], "Retrieved classic build definition at exact revision; service-managed credential values excluded; execution/queues/permissions remain inert", raw, nil)
+			finding(id, "preserved", "Selected classic definition retrieved at exact revision; documented credential values excluded and execution/permission adoption unsupported")
 		} else {
 			return errors.New("Azure workflow selector must be yaml:/path or definition:ID@revision")
 		}

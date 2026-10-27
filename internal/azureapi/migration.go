@@ -3,16 +3,19 @@
 package azureapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"path"
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type Project struct {
@@ -491,4 +494,228 @@ func (c *Client) getPullRequest(ctx context.Context, org, project, repo string, 
 		return nil, errors.New("Azure PR detail identity changed")
 	}
 	return raw, nil
+}
+
+// SanitizeDefinition follows the qualified BuildDefinition schema, not a
+// heuristic scan of user-authored task/YAML strings. Secret-marked variables
+// occur at variables and variableGroups[].variables; service authorization
+// values occur at processParameters.dataSourceBindings[].headers[].value.
+// https://learn.microsoft.com/rest/api/azure/devops/build/definitions/get?view=azure-devops-rest-7.1
+// Returned bytes (and only these bytes) may enter preservation digests.
+func SanitizeDefinition(raw json.RawMessage) (json.RawMessage, int, error) {
+	if e := definitionUniqueJSON(raw); e != nil {
+		return nil, 0, e
+	}
+	object, e := definitionObject(raw, "variables", "variableGroups", "processParameters")
+	if e != nil {
+		return nil, 0, e
+	}
+	excluded := 0
+	redactVariables := func(container map[string]json.RawMessage) error {
+		variables, present := container["variables"]
+		if !present || string(bytes.TrimSpace(variables)) == "null" {
+			return nil
+		}
+		var values map[string]json.RawMessage
+		if json.Unmarshal(variables, &values) != nil || values == nil {
+			return errors.New("invalid Azure classic variable collection")
+		}
+		names := map[string]bool{}
+		for name, value := range values {
+			lower := strings.ToLower(name)
+			if names[lower] {
+				return errors.New("ambiguous Azure classic variable names")
+			}
+			names[lower] = true
+			v, e := definitionObject(value, "isSecret", "value")
+			if e != nil {
+				return e
+			}
+			secret := false
+			if flag, ok := v["isSecret"]; ok {
+				switch string(bytes.TrimSpace(flag)) {
+				case "true":
+					secret = true
+				case "false":
+				default:
+					return errors.New("Azure classic isSecret must be an unambiguous boolean")
+				}
+			}
+			if secret {
+				if _, ok := v["value"]; ok {
+					delete(v, "value")
+					excluded++
+				}
+			}
+			values[name], e = json.Marshal(v)
+			if e != nil {
+				return e
+			}
+		}
+		container["variables"], e = json.Marshal(values)
+		return e
+	}
+	if e = redactVariables(object); e != nil {
+		return nil, 0, e
+	}
+	if groups, present := object["variableGroups"]; present && string(bytes.TrimSpace(groups)) != "null" {
+		var rows []json.RawMessage
+		if json.Unmarshal(groups, &rows) != nil || rows == nil {
+			return nil, 0, errors.New("invalid Azure classic variable groups")
+		}
+		for i, row := range rows {
+			group, e := definitionObject(row, "variables")
+			if e != nil {
+				return nil, 0, e
+			}
+			if e = redactVariables(group); e != nil {
+				return nil, 0, e
+			}
+			rows[i], e = json.Marshal(group)
+			if e != nil {
+				return nil, 0, e
+			}
+		}
+		object["variableGroups"], e = json.Marshal(rows)
+		if e != nil {
+			return nil, 0, e
+		}
+	}
+	if parameters, present := object["processParameters"]; present && string(bytes.TrimSpace(parameters)) != "null" {
+		params, e := definitionObject(parameters, "dataSourceBindings")
+		if e != nil {
+			return nil, 0, e
+		}
+		if bindings, present := params["dataSourceBindings"]; present && string(bytes.TrimSpace(bindings)) != "null" {
+			var rows []json.RawMessage
+			if json.Unmarshal(bindings, &rows) != nil || rows == nil {
+				return nil, 0, errors.New("invalid Azure classic data source bindings")
+			}
+			for i, row := range rows {
+				binding, e := definitionObject(row, "headers")
+				if e != nil {
+					return nil, 0, e
+				}
+				if headers, present := binding["headers"]; present && string(bytes.TrimSpace(headers)) != "null" {
+					var entries []json.RawMessage
+					if json.Unmarshal(headers, &entries) != nil || entries == nil {
+						return nil, 0, errors.New("invalid Azure classic authorization headers")
+					}
+					for j, entry := range entries {
+						header, e := definitionObject(entry, "name", "value")
+						if e != nil {
+							return nil, 0, e
+						}
+						var name string
+						if json.Unmarshal(header["name"], &name) != nil || name == "" {
+							return nil, 0, errors.New("invalid Azure classic authorization header name")
+						}
+						if _, present := header["value"]; present {
+							delete(header, "value")
+							excluded++
+						}
+						entries[j], e = json.Marshal(header)
+						if e != nil {
+							return nil, 0, e
+						}
+					}
+					binding["headers"], e = json.Marshal(entries)
+					if e != nil {
+						return nil, 0, e
+					}
+				}
+				rows[i], e = json.Marshal(binding)
+				if e != nil {
+					return nil, 0, e
+				}
+			}
+			params["dataSourceBindings"], e = json.Marshal(rows)
+			if e != nil {
+				return nil, 0, e
+			}
+		}
+		object["processParameters"], e = json.Marshal(params)
+		if e != nil {
+			return nil, 0, e
+		}
+	}
+	sanitized, e := json.Marshal(object)
+	return sanitized, excluded, e
+}
+func definitionObject(raw json.RawMessage, reserved ...string) (map[string]json.RawMessage, error) {
+	var object map[string]json.RawMessage
+	if json.Unmarshal(raw, &object) != nil || object == nil {
+		return nil, errors.New("invalid Azure classic definition object")
+	}
+	for name := range object {
+		for _, key := range reserved {
+			if strings.EqualFold(name, key) && name != key {
+				return nil, errors.New("ambiguous Azure classic credential field casing")
+			}
+		}
+	}
+	return object, nil
+}
+
+// Duplicate keys anywhere in a definition are refused before map decoding can
+// erase a contradictory secret flag/value. Null is allowed for ordinary API
+// metadata; isSecret is validated separately as exactly true or false.
+func definitionUniqueJSON(raw []byte) error {
+	if !utf8.Valid(raw) {
+		return errors.New("invalid Azure classic JSON encoding")
+	}
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
+	var walk func(int) error
+	walk = func(depth int) error {
+		if depth > 64 {
+			return errors.New("Azure classic JSON nesting budget exceeded")
+		}
+		token, e := decoder.Token()
+		if e != nil {
+			return errors.New("invalid Azure classic JSON")
+		}
+		switch token {
+		case json.Delim('{'):
+			names := map[string]bool{}
+			for decoder.More() {
+				key, e := decoder.Token()
+				if e != nil {
+					return errors.New("invalid Azure classic JSON key")
+				}
+				name, ok := key.(string)
+				if !ok || names[name] {
+					return errors.New("duplicate Azure classic JSON key")
+				}
+				names[name] = true
+				if e = walk(depth + 1); e != nil {
+					return e
+				}
+			}
+			end, e := decoder.Token()
+			if e != nil || end != json.Delim('}') {
+				return errors.New("invalid Azure classic JSON object")
+			}
+		case json.Delim('['):
+			for decoder.More() {
+				if e = walk(depth + 1); e != nil {
+					return e
+				}
+			}
+			end, e := decoder.Token()
+			if e != nil || end != json.Delim(']') {
+				return errors.New("invalid Azure classic JSON array")
+			}
+		case json.Delim('}'), json.Delim(']'):
+			return errors.New("invalid Azure classic JSON delimiter")
+		}
+		return nil
+	}
+	if e := walk(0); e != nil {
+		return e
+	}
+	if _, e := decoder.Token(); e != io.EOF {
+		return errors.New("trailing Azure classic JSON")
+	}
+	return nil
 }
