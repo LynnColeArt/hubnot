@@ -1,7 +1,7 @@
 {
   "rows": {
     "#13": {
-      "evidence_ref": "Native independent audit execution and deduplicated follow-up issues are assigned to WP02/WP03 and final integration WP12; implementation and independent review remain in progress.",
+      "evidence_ref": "Actual compiled integrated audit request/explicit execution/follow-up/dedup/edit-preservation/Git replication/keyless-inspection proof at c4aaa4e8; unchanged Go full-race PASS8c88ede5, three public variants, final Linux AMD64+ARM64 artifacts. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json FR-016 through FR-020 and raw-proof.tar.gz SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. External GitHub issue remains open until reviewed public PR merge; no self-approval.",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -9,7 +9,7 @@
       "scope": null,
       "source_file": null,
       "title": null,
-      "verdict": "in-mission",
+      "verdict": "fixed",
       "wp": "WP03"
     }
   },
