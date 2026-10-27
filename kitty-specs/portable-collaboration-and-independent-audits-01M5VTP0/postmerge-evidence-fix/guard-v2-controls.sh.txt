@@ -1,0 +1,43 @@
+#!/bin/bash
+set -euo pipefail
+evidence_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "$evidence_directory/source-guard-v2.sh.txt"
+evidence_fixture=$(mktemp -d /tmp/hubnot-go-guard-control.XXXXXX)
+trap 'rm -rf "$evidence_fixture"' EXIT
+printf 'module guard.fixture\n\ngo 1.26\n' > "$evidence_fixture/go.mod"
+printf 'package fixture\n' > "$evidence_fixture/root.go"
+printf 'kitty-specs/ignored/\n' > "$evidence_fixture/.gitignore"
+mkdir -p "$evidence_fixture/kitty-specs"
+printf '{"note":"baseline"}\n' > "$evidence_fixture/kitty-specs/note.json"
+git -C "$evidence_fixture" init -q -b main
+git -C "$evidence_fixture" add .
+git -C "$evidence_fixture" -c user.name=Guard -c user.email=guard@example.invalid commit -qm baseline
+evidence_base=$(git -C "$evidence_fixture" rev-parse HEAD)
+negative_select_and_guard "$evidence_fixture" "$evidence_base"
+printf '{"note":"non-Go metadata change"}\n' > "$evidence_fixture/kitty-specs/note.json"
+negative_select_and_guard "$evidence_fixture" "$evidence_base"
+printf 'PASS non-Go governance record may differ\n'
+mkdir -p "$evidence_fixture/kitty-specs/tracked"
+printf 'package fixture\n' > "$evidence_fixture/kitty-specs/tracked/probe_test.go"
+git -C "$evidence_fixture" add kitty-specs/tracked/probe_test.go
+if negative_select_and_guard "$evidence_fixture" "$evidence_base"; then exit 1; fi
+printf 'PASS tracked metadata Go is rejected\n'
+git -C "$evidence_fixture" reset -q -- kitty-specs/tracked/probe_test.go
+rm "$evidence_fixture/kitty-specs/tracked/probe_test.go"
+mkdir -p "$evidence_fixture/kitty-specs/ignored"
+printf 'package fixture\n' > "$evidence_fixture/kitty-specs/ignored/overlay_test.go"
+[ -z "$(git -C "$evidence_fixture" ls-files --others --exclude-standard -- '*.go')" ]
+go -C "$evidence_fixture" list ./... | grep -Fx guard.fixture/kitty-specs/ignored
+if negative_select_and_guard "$evidence_fixture" "$evidence_base"; then exit 1; fi
+printf 'PASS Gitignored but Go-discoverable untracked metadata Go is rejected\n'
+rm "$evidence_fixture/kitty-specs/ignored/overlay_test.go"
+mkdir -p "$evidence_fixture/.worktrees/hidden"
+printf 'package fixture\n' > "$evidence_fixture/.worktrees/hidden/ignored.go"
+[ "$(go -C "$evidence_fixture" list ./... | wc -l)" -eq 1 ]
+negative_select_and_guard "$evidence_fixture" "$evidence_base"
+printf 'PASS Go-inherent hidden-directory skip does not hide a discoverable package\n'
+mkdir -p "$evidence_fixture/.kittify"
+printf 'package fixture\n' > "$evidence_fixture/.kittify/tracked.go"
+git -C "$evidence_fixture" add .kittify/tracked.go
+if negative_select_and_guard "$evidence_fixture" "$evidence_base"; then exit 1; fi
+printf 'PASS ALL tracked Go includes hidden metadata too\n'

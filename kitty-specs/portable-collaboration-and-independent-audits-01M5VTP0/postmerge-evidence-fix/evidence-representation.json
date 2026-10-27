@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "pre_fix_head": "73b34581e6cc93f322452780ee7125b33b991b3e",
+  "failing_review_source": "170b3254e7ca7422b90fd149c38b9cb6f7fe339d",
+  "approved_executable_source": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+  "moves": [
+    {
+      "original_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go",
+      "preserved_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go.txt",
+      "sha256": "26b4abc29f261e7fef10bc55a7c1563dec888b7b11d79595aad0db5f0d1a719e",
+      "size": 3136,
+      "filesystem_mode": "0o664",
+      "git_mode": "100644",
+      "original_git_blob": "d96d5b1adbab4743275f6eb36cc44323d82a0cd8",
+      "representation": "Byte-identical historical overlay input stored as text; no package-discovery Go source."
+    },
+    {
+      "original_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go",
+      "preserved_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go.txt",
+      "sha256": "ed5e2f4d45d37c6c7ab52c5953830711eb7cbeefd489476460332db3f9a7904d",
+      "size": 3955,
+      "filesystem_mode": "0o664",
+      "git_mode": "100644",
+      "original_git_blob": "50009add848d5295895617013a7d90efb31a10ad",
+      "representation": "Byte-identical historical overlay input stored as text; no package-discovery Go source."
+    },
+    {
+      "original_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go",
+      "preserved_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go.txt",
+      "sha256": "af91829bba357baf27e0499441bbbe52079006098860e0b5d29ef69f81306275",
+      "size": 5022,
+      "filesystem_mode": "0o664",
+      "git_mode": "100644",
+      "original_git_blob": "0281a7ed7df038f2efaba027d0e22abb91b0483f",
+      "representation": "Byte-identical historical overlay input stored as text; no package-discovery Go source."
+    }
+  ],
+  "historical_reference_resolution": "Resolve each old path to preserved_path before verifying the unchanged historical digest. Historical reports, overlay JSON/source.json and checksum files keep their original bytes, including old logical filenames. A replay may create a temporary resolved overlay map; do not edit frozen originals.",
+  "historical_intent_evidence": [
+    {
+      "file": "tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/overlay.json",
+      "meaning": "Replace maps virtual lane-b/zz_independent_adversarial_test.go into the root main package; the stored file was an overlay source, not a standalone evidence package."
+    },
+    {
+      "file": "tasks/WP03-audit-execution-followup-issues/review-20923906/source.json",
+      "meaning": "overlay Replace maps lane-b/zz_wp03_review_test.go to the archived external probe."
+    },
+    {
+      "file": "tasks/WP03-audit-execution-followup-issues/review-53c0ead2/source.json",
+      "meaning": "overlay Replace maps lane-b/zz_wp03_review_test.go to the archived external probe."
+    }
+  ],
+  "protected_historical_files": {
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/adversarial.log": {
+      "sha256": "d8016ca6f7b3c639b8c6a2692b7462900d87ed57540af5c126c9676bef52724e",
+      "filesystem_mode": 436,
+      "size": 2245
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/focused.log": {
+      "sha256": "188f0fd26767c07aa26fbcffe88a1443594fa51c9a5c2ca513051f26272dcefb",
+      "filesystem_mode": 436,
+      "size": 3047
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go": {
+      "sha256": "26b4abc29f261e7fef10bc55a7c1563dec888b7b11d79595aad0db5f0d1a719e",
+      "filesystem_mode": 436,
+      "size": 3136
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/overlay.json": {
+      "sha256": "15a636f0a49ef61dc3e8e9e18ddf841b8675aeca1b9b2df9a4feb0435f38e3ee",
+      "filesystem_mode": 436,
+      "size": 355
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/review.md": {
+      "sha256": "dbbea2f63adb13f482c66a24835750295bb71a99211976133f54988aa417eaea",
+      "filesystem_mode": 436,
+      "size": 1315
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/verification.json": {
+      "sha256": "a30df7e0179829f255fc8c5402ae0fe7e860aa6d90d2e2a463fec6335853af3c",
+      "filesystem_mode": 436,
+      "size": 1972
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/commands.txt": {
+      "sha256": "5e5ff384a42bc4d1daa7d436c59218cccd69db54ca5185ddaed39c3864fc0d83",
+      "filesystem_mode": 436,
+      "size": 658
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/evidence.sha256": {
+      "sha256": "420b39a6b530f60ad065d04369ea349692a614cbeea1d3129c294061fd5b9376",
+      "filesystem_mode": 436,
+      "size": 495
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/focused-existing.log": {
+      "sha256": "a92afca0203cf844600805e0ba182fc2c37b3fda223b4adf4afbf473704bce8d",
+      "filesystem_mode": 436,
+      "size": 740
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go": {
+      "sha256": "ed5e2f4d45d37c6c7ab52c5953830711eb7cbeefd489476460332db3f9a7904d",
+      "filesystem_mode": 436,
+      "size": 3955
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/public-probes-final.log": {
+      "sha256": "9adea942b8babe9d00ac26a1426e3e65892560e580d25261523c4e5cd3d41485",
+      "filesystem_mode": 436,
+      "size": 2023
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/source.json": {
+      "sha256": "cdac5639e2808f62ce59297778e628b7f9ae864dc117455f4c887a2ccb06e350",
+      "filesystem_mode": 436,
+      "size": 717
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/source.sha256": {
+      "sha256": "0e40fc82b9adf994f11c80473c6bf36df4840c1c5e8e51fdf792d39a7912c0f9",
+      "filesystem_mode": 436,
+      "size": 605
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/commands.txt": {
+      "sha256": "ccfea12cef17c8adface95474c8eb684c008c77118a8f622534d3546ed8013f6",
+      "filesystem_mode": 436,
+      "size": 772
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/evidence.sha256": {
+      "sha256": "da52100160f2bc7485c25a00b208714e8ea6cb5233b0f808bd9da7ec54936a45",
+      "filesystem_mode": 436,
+      "size": 570
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/focused-existing.log": {
+      "sha256": "3f88c185cb820d50a42461ca5ff0c32480292fd03a3cf2b7bba75df7fbf6430f",
+      "filesystem_mode": 436,
+      "size": 2390
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/independent-probes.log": {
+      "sha256": "4f8c14dabd54848e74444e9790550cd22c52c96b500fafd6f41b89ced4ef93f2",
+      "filesystem_mode": 436,
+      "size": 530
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go": {
+      "sha256": "af91829bba357baf27e0499441bbbe52079006098860e0b5d29ef69f81306275",
+      "filesystem_mode": 436,
+      "size": 5022
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/review.md": {
+      "sha256": "8ce3737f54b461f7926c985b6bf23f6b97d29f73ac8f88e0fbc4a5e27ddc900b",
+      "filesystem_mode": 436,
+      "size": 6710
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/source.json": {
+      "sha256": "91824dbdd8ad07ca453688b97fb37783ef6d2266a8afb88282551d46c63ffef2",
+      "filesystem_mode": 436,
+      "size": 703
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/source.sha256": {
+      "sha256": "beb301d19dd70b6bd31dfca2a7fb26f66356d2944bdee99b30396ee84ab78ec6",
+      "filesystem_mode": 436,
+      "size": 605
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/SHA256SUMS": {
+      "sha256": "fc1cbaa7a2408116f3bf3fb915f541a06a02c1a39eff0e050c0a301a67c3f6f5",
+      "filesystem_mode": 436,
+      "size": 1502
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json": {
+      "sha256": "6ee339664c32ae4f7f9a90e4773d9728854ab2445a5f30047f2b5adf8486662d",
+      "filesystem_mode": 436,
+      "size": 33756
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/canonical-outcome.json": {
+      "sha256": "5200222e704db38bbecdc380fcbab256e028b0fe393bb776fa848c730623d6a5",
+      "filesystem_mode": 436,
+      "size": 11956
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/canonical-records.tar.gz": {
+      "sha256": "1f779b3906779d425b9e1645fe834416272c151fc9cdc584f16190090e2dc7c8",
+      "filesystem_mode": 436,
+      "size": 3407
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/final-primary-diff.exit": {
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "filesystem_mode": 436,
+      "size": 2
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/final-primary-diff.log.gz": {
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "filesystem_mode": 436,
+      "size": 20
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/inner-sha256.json": {
+      "sha256": "10e05961b0a66f72998cdef490d99915b3d5454a423a4b16b69113eb161eb53f",
+      "filesystem_mode": 436,
+      "size": 119275
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/mark-subtasks.exit": {
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "filesystem_mode": 436,
+      "size": 2
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/mark-subtasks.log.gz": {
+      "sha256": "bc0857329e1bfb1bc128a1467180c780eb08e918545f7efe71e570e2a779f983",
+      "filesystem_mode": 436,
+      "size": 187
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/move-for-review.exit": {
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "filesystem_mode": 436,
+      "size": 2
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/move-for-review.log.gz": {
+      "sha256": "bfbf87a9352ac44593792aec229036ec147af56cf9e36c73ecb14f1e6fa40649",
+      "filesystem_mode": 436,
+      "size": 522
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-exclusion.sh.txt": {
+      "sha256": "8d1e3062255b2a7e92361d1f064f50dc8d92a33f3426ca93f9e15971c7f4459f",
+      "filesystem_mode": 436,
+      "size": 2504
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt": {
+      "sha256": "201aea0a228054830110c283c080ad9a9b0a2ac40b76c27ed860f57c5ef49314",
+      "filesystem_mode": 436,
+      "size": 1156
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-invariants.json": {
+      "sha256": "f269d204e62aa22602b7b1a5eca3ebf56f700739a4cae8bb36b3c481e10540f3",
+      "filesystem_mode": 436,
+      "size": 6777
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-proof.tar.gz": {
+      "sha256": "400a16f391fb131c32a90c147381f9b0ee9a49c0f3c0820a62fa995c4bb86433",
+      "filesystem_mode": 436,
+      "size": 426783
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-source-guard.sh.txt": {
+      "sha256": "7266d895d1675d27e97632ae55f0c8136a2d5535763f51fa60e90404020cafb1",
+      "filesystem_mode": 436,
+      "size": 1141
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/raw-proof.tar.gz": {
+      "sha256": "a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877",
+      "filesystem_mode": 436,
+      "size": 1016541
+    },
+    "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/summary.md": {
+      "sha256": "d1c05a3811fb316ddf43174e85049a3b37f19f69f1e6f8e21d593b41387e422b",
+      "filesystem_mode": 436,
+      "size": 9510
+    }
+  },
+  "frozen_wp12_v1_guard": "Unchanged at its original path and hash7266d895d1675d27e97632ae55f0c8136a2d5535763f51fa60e90404020cafb1; its metadata-Go exclusion was unsafe after consolidation. New v2 guard supersedes future source verification. All old WP12 literal SHA256SUMS entries remain valid."
+}

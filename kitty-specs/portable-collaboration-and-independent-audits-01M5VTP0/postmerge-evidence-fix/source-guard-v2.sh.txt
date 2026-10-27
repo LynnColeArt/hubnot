@@ -1,0 +1,46 @@
+#!/bin/bash
+# Evidence guard v2: ALL tracked Go/module inputs, including governance trees.
+# Non-Go governance records can change without changing executable source.
+negative_go_discoverable_path() {
+  local negative_part negative_leaf negative_path=$1
+  local -a negative_parts
+  IFS=/ read -r -a negative_parts <<< "$negative_path"
+  negative_leaf=${negative_parts[${#negative_parts[@]}-1]}
+  for negative_part in "${negative_parts[@]:0:${#negative_parts[@]}-1}"; do
+    case "$negative_part" in .*|_*|testdata|vendor) return 1 ;; esac
+  done
+  case "$negative_leaf" in .*|_*) return 1 ;; esac
+  return 0
+}
+negative_select_and_guard() {
+  negative_repo=$1
+  negative_expected=$2
+  [[ "$negative_expected" =~ ^[0-9a-f]{40}$ ]] || return 1
+  if ! git -C "$negative_repo" rev-parse --show-toplevel >/dev/null 2>&1; then
+    negative_repo=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || return 1
+  fi
+  git -C "$negative_repo" cat-file -e "$negative_expected^{commit}" || return 1
+  # No kitty-specs/.kittify exclusion applies to this first-class Go comparison.
+  negative_go_inputs=('*.go' go.mod go.sum go.work go.work.sum '**/go.mod' '**/go.sum' '**/go.work' '**/go.work.sum')
+  if ! git -C "$negative_repo" diff --quiet "$negative_expected" -- "${negative_go_inputs[@]}"; then
+    printf 'REFUSED v2: tracked Go/module input differs from %s\n' "$negative_expected" >&2
+    git -C "$negative_repo" diff --name-status "$negative_expected" -- "${negative_go_inputs[@]}" >&2
+    return 1
+  fi
+  negative_untracked_found=0
+  # Deliberately do not use --exclude-standard: Gitignored ordinary directories
+  # can still create Go ./... packages. Only Go-inherent directory/file skips
+  # are excluded; tracked Go is compared above even in those skipped locations.
+  while IFS= read -r -d '' negative_path; do
+    if negative_go_discoverable_path "$negative_path"; then
+      printf 'REFUSED v2: untracked Go/module discovery input: %q\n' "$negative_path" >&2
+      negative_untracked_found=1
+    fi
+  done < <(git -C "$negative_repo" ls-files --others -z -- "${negative_go_inputs[@]}")
+  [ "$negative_untracked_found" -eq 0 ] || return 1
+  negative_non_go_inputs=('.hn/**' '.github/**' 'testdata/**' 'examples/**' 'scripts/**' '*.json' '*.yaml' '*.yml' '*.toml' ':!kitty-specs/**' ':!.kittify/**')
+  git -C "$negative_repo" diff --quiet "$negative_expected" -- "${negative_non_go_inputs[@]}" || return 1
+  [ -z "$(git -C "$negative_repo" ls-files --others --exclude-standard -- "${negative_non_go_inputs[@]}")" ] || return 1
+  [ "$(go -C "$negative_repo" env GOMOD)" = "$negative_repo/go.mod" ] || return 1
+  printf 'PASS source guard v2: ALL tracked Go/module inputs and untracked Go discovery inputs match %s; repo=%s HEAD=%s\n' "$negative_expected" "$negative_repo" "$(git -C "$negative_repo" rev-parse HEAD)"
+}
