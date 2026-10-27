@@ -1,7 +1,7 @@
 {
-  "event_count": 90,
-  "last_event_id": "01M5XKYQBV7QE8ETAFQAPWMWWA",
-  "materialized_at": "2026-10-27T02:45:12.699069+00:00",
+  "event_count": 91,
+  "last_event_id": "01M5XPD4719PXQ58KRFVBKHYRF",
+  "materialized_at": "2026-10-27T03:28:01.761554+00:00",
   "mission_number": "",
   "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 3,
+    "for_review": 1,
+    "in_progress": 2,
     "in_review": 0,
     "planned": 3
   },
@@ -235,14 +235,19 @@
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M5XKPRWK4G7DEHDMQ9MD0R3A",
-      "last_transition_at": "2026-10-27T02:40:52.114743+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M5XPD4719PXQ58KRFVBKHYRF",
+      "last_transition_at": "2026-10-27T03:28:01.761554+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
-      "shell_pid_created_at": "1792851034.54"
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T022": "done",
+        "T023": "done",
+        "T024": "done"
+      }
     },
     "WP09": {
       "actor": "finalize-tasks",
