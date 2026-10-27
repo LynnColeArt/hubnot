@@ -127,11 +127,14 @@ GitHub clients and registrations are excluded with `nogithub`; `noforge`
 excludes every network adapter. All
 native facts remain usable without a provider, credential or service.
 
-Only explicit transfer or migration commands contact an explicitly selected provider.
+Only explicit transfer or migration commands contact an explicitly selected
+provider.
 Transport requires HTTPS except explicit loopback-IP HTTP and refuses redirects
 or pagination outside the requested endpoint. Requests/responses, nested
-pagination, aggregate bytes, whole-command time, native payloads and complete
-future checkpoints have finite bounds. GraphQL errors/partial data, malformed
+pagination, aggregate bytes, native payloads and complete future checkpoints
+have finite bounds. Legacy transfer also bounds whole-command time; project
+migration uses per-request timeouts and positive traversal/byte budgets without
+a global command deadline. GraphQL errors/partial data, malformed
 or ambiguous JSON, invalid Unicode and incomplete traversal fail before their
 content is accepted. Provider errors do not echo bodies or tokens. External
 source locators in signed metadata are descriptive; inspecting them does not

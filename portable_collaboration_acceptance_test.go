@@ -5,11 +5,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -344,4 +347,92 @@ func portableData(t *testing.T, output string) json.RawMessage {
 		t.Fatal(err)
 	}
 	return v.Data
+}
+
+// A Boards project has no Git repository. This real saved public apply guards
+// the shared Project-or-Repository plan exception while requiring explicit WIT mappings.
+func TestPortableCollaborationAzureBoardsProjectOnlyPublicApply(t *testing.T) {
+	binary := buildMigrationCLIBinary(t, "")
+	const projectID = "11111111-1111-4111-8111-111111111111"
+	const processID = "33333333-3333-4333-8333-333333333333"
+	var mu sync.Mutex
+	fields := map[string]any{"System.TeamProject": "P", "System.WorkItemType": "Task"}
+	writes, comments := 0, 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		if r.Header.Get("Authorization") != "Bearer explicit-boards-fixture" {
+			t.Error("missing explicit credential")
+		}
+		send := func(v any) {
+			if err := json.NewEncoder(w).Encode(v); err != nil {
+				t.Error(err)
+			}
+		}
+		item := func() map[string]any {
+			return map[string]any{"id": 71, "rev": 1, "fields": fields, "relations": []any{}}
+		}
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/org/_apis/projects/"):
+			send(map[string]any{"id": projectID, "name": "P", "state": "wellFormed", "capabilities": map[string]any{"processTemplate": map[string]string{"templateTypeId": processID}}})
+		case strings.Contains(r.URL.Path, "/wit/workitemtypes/Task"):
+			send(map[string]any{"name": "Task", "referenceName": "Microsoft.VSTS.WorkItemTypes.Task", "states": []map[string]string{{"name": "Active"}}})
+		case r.Method == "POST" && strings.HasSuffix(r.URL.Path, "/workitems/$Task"):
+			var patches []struct {
+				Op, Path string
+				Value    any
+			}
+			if err := json.NewDecoder(r.Body).Decode(&patches); err != nil {
+				t.Error(err)
+			}
+			for _, p := range patches {
+				if p.Op == "add" {
+					fields[strings.TrimPrefix(p.Path, "/fields/")] = p.Value
+				}
+			}
+			writes++
+			send(item())
+		case r.Method == "GET" && strings.HasSuffix(r.URL.Path, "/workitems/71"):
+			send(item())
+		case r.Method == "POST" && strings.HasSuffix(r.URL.Path, "/workItems/71/comments"):
+			var v struct{ Text string }
+			if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
+				t.Error(err)
+			}
+			comments++
+			send(map[string]any{"id": 91, "workItemId": 71, "version": 1, "text": v.Text})
+		default:
+			t.Errorf("unexpected Boards-only request %s %s", r.Method, r.URL)
+			w.WriteHeader(404)
+		}
+	}))
+	defer server.Close()
+	directory := t.TempDir()
+	source := filepath.Join(directory, "source.hn")
+	snapshot, blobs := migrationForeignSnapshot()
+	f, err := os.Create(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = migration.WriteArchive(context.Background(), f, snapshot, blobs, migration.DefaultLimits())
+	closeErr := f.Close()
+	if err != nil || closeErr != nil {
+		t.Fatal(err, closeErr)
+	}
+	session := filepath.Join(directory, "boards-plan")
+	environment := map[string]string{"BOARDS_FIXTURE_TOKEN": "explicit-boards-fixture"}
+	migrationCLIPlanWithDecisions(t, binary, directory, environment, "--source-kind", "archive", "--source-repository", source, "--destination-kind", "azure", "--destination-endpoint", server.URL, "--destination-organization", "org", "--destination-project", "P", "--destination-api-version", "services-7.1", "--destination-credential-mode", "bearer", "--destination-token-env", "BOARDS_FIXTURE_TOKEN", "--map", "process="+processID, "--map", "type:=Task", "--map", "state:open=Active", "--session", session)
+	mu.Lock()
+	initialWrites := writes + comments
+	mu.Unlock()
+	if initialWrites != 0 {
+		t.Fatal("plan mutated Boards")
+	}
+	migrationCLIProcess(t, binary, directory, "", environment, true, "apply", "--session", session, "--confirm-apply", "--destination-token-env", "BOARDS_FIXTURE_TOKEN")
+	migrationCLIProcess(t, binary, directory, "", environment, true, "resume", "--session", session, "--confirm-apply", "--destination-token-env", "BOARDS_FIXTURE_TOKEN")
+	mu.Lock()
+	defer mu.Unlock()
+	if writes != 1 || comments != 1 || fields["System.State"] != "Active" || fields["System.WorkItemType"] != "Task" || fields["System.Title"] != "Foreign issue" {
+		t.Fatalf("Boards-only actual effects: items=%d comments=%d fields=%v", writes, comments, fields)
+	}
 }
