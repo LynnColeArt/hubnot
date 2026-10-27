@@ -60,6 +60,12 @@ refusal is specifically for their collision; a directory-component collision
 is tested too. No case-sensitivity probe, skip, assertion relaxation or temporary
 filesystem change may substitute for constructing that input.
 
+Fixtures asserting object-database immutability disable automatic Git
+maintenance before their first commit. Otherwise a newer Git can detach a
+maintenance process whose transient lock races the assertion's directory
+snapshot. Keep the complete byte-for-byte assertion; do not ignore disappearing
+files or weaken it to accommodate unrelated fixture background activity.
+
 ## Repeatable gates
 
 ```sh

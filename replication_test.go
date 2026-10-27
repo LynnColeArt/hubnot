@@ -398,6 +398,11 @@ func inReplicationTestRepository(t *testing.T) string {
 		t.Fatal(err)
 	}
 	mustGit(t, "init", "-q", "-b", "main")
+	// Object-immutability assertions require a quiescent fixture: recent Git
+	// versions can detach auto-maintenance after commits and race directory
+	// snapshots (including creating/removing objects/maintenance.lock).
+	mustGit(t, "config", "maintenance.auto", "false")
+	mustGit(t, "config", "gc.auto", "0")
 	mustGit(t, "config", "user.name", "Test")
 	mustGit(t, "config", "user.email", "test@hn.invalid")
 	mustGit(t, "commit", "--allow-empty", "-q", "-m", "base")
