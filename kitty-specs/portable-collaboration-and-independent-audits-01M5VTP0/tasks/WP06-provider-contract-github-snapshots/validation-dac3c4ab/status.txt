@@ -1,0 +1,53 @@
+2026-10-27T02:15:29Z START race
+2026-10-27T02:25:36Z EXIT race 0
+2026-10-27T02:25:36Z START vet
+2026-10-27T02:25:37Z EXIT vet 0
+2026-10-27T02:25:37Z START build
+2026-10-27T02:25:37Z EXIT build 0
+2026-10-27T02:25:37Z START nogithub-focused
+2026-10-27T02:26:05Z EXIT nogithub-focused 0
+2026-10-27T02:26:05Z START noforge-focused
+2026-10-27T02:26:28Z EXIT noforge-focused 0
+2026-10-27T02:26:28Z START nogithub-build
+2026-10-27T02:26:28Z EXIT nogithub-build 0
+2026-10-27T02:26:28Z START noforge-build
+2026-10-27T02:26:29Z EXIT noforge-build 0
+2026-10-27T02:26:29Z START ordinary-build
+2026-10-27T02:26:30Z EXIT ordinary-build 0
+2026-10-27T02:26:30Z START dependencies
+2026-10-27T02:26:30Z EXIT dependencies 0
+2026-10-27T02:26:30Z START ordinary-deps
+2026-10-27T02:26:30Z EXIT ordinary-deps 0
+2026-10-27T02:26:30Z START nogithub-deps
+2026-10-27T02:26:30Z EXIT nogithub-deps 0
+2026-10-27T02:26:30Z START noforge-deps
+2026-10-27T02:26:30Z EXIT noforge-deps 0
+2026-10-27T02:26:30Z START noforge-symbols
+2026-10-27T02:26:30Z EXIT noforge-symbols 0
+2026-10-27T02:26:30Z START noforge-buildinfo
+2026-10-27T02:26:30Z EXIT noforge-buildinfo 0
+2026-10-27T02:26:30Z START ordinary-help
+2026-10-27T02:26:30Z EXIT ordinary-help 0
+2026-10-27T02:26:30Z START nogithub-help
+2026-10-27T02:26:30Z EXIT nogithub-help 0
+2026-10-27T02:26:30Z START noforge-help
+2026-10-27T02:26:30Z EXIT noforge-help 0
+2026-10-27T02:26:30Z START noforge-native-help
+2026-10-27T02:26:30Z EXIT noforge-native-help 0
+2026-10-27T02:26:30Z START ordinary-native-cli
+2026-10-27T02:26:30Z EXIT ordinary-native-cli 0
+2026-10-27T02:26:30Z START nogithub-native-cli
+2026-10-27T02:26:30Z EXIT nogithub-native-cli 0
+2026-10-27T02:26:30Z START noforge-native-cli
+2026-10-27T02:26:31Z EXIT noforge-native-cli 0
+2026-10-27T02:26:31Z START noforge-files
+2026-10-27T02:26:31Z EXIT noforge-files 0
+2026-10-27T02:26:31Z START nogithub-files
+2026-10-27T02:26:31Z EXIT nogithub-files 0
+2026-10-27T02:26:31Z START format
+2026-10-27T02:26:31Z EXIT format 0
+2026-10-27T02:26:31Z START diff-check
+2026-10-27T02:26:31Z EXIT diff-check 0
+2026-10-27T02:26:31Z START tag-check
+2026-10-27T02:26:31Z EXIT tag-check 0
+2026-10-27T02:26:31Z PASS fixed-head validation
