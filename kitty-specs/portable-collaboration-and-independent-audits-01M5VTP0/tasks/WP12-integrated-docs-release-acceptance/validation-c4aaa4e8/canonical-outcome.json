@@ -274,5 +274,40 @@
   "all_26_implementation_verdicts": "pass",
   "issue_13_in_mission_verdict": "fixed",
   "independent_wp_review": "pending; no self-approval",
-  "inherited_narrative_notes": "Preserved by official seam; root will reconcile after actual independent review without changing canonical evidence/verifier fields."
+  "inherited_narrative_notes": "Preserved by official seam; root will reconcile after actual independent review without changing canonical evidence/verifier fields.",
+  "first_class_negative_results": {
+    "NI-ACTUAL-FORGE-COMPILE-EXCLUSION": {
+      "success": true,
+      "mission": "portable-collaboration-and-independent-audits-01M5VTP0",
+      "negative_invariant": "NI-ACTUAL-FORGE-COMPILE-EXCLUSION",
+      "result": "confirmed_absent",
+      "overall_verdict": "pass",
+      "write_status": "committed",
+      "destination_surface": "feat/portable-collaboration",
+      "commit_hash": "ddf5bdf8dc9080365bbb2b9cb5a585a6ce21d974"
+    },
+    "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE": {
+      "success": true,
+      "mission": "portable-collaboration-and-independent-audits-01M5VTP0",
+      "negative_invariant": "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE",
+      "result": "confirmed_absent",
+      "overall_verdict": "pass",
+      "write_status": "committed",
+      "destination_surface": "feat/portable-collaboration",
+      "commit_hash": "75bb9a859e621c91f8b88e9815532ca7171c0e64"
+    },
+    "NI-PLANNING-EOF-NO-BLIND-CREATE": {
+      "success": true,
+      "mission": "portable-collaboration-and-independent-audits-01M5VTP0",
+      "negative_invariant": "NI-PLANNING-EOF-NO-BLIND-CREATE",
+      "result": "confirmed_absent",
+      "overall_verdict": "pass",
+      "write_status": "committed",
+      "destination_surface": "feat/portable-collaboration",
+      "commit_hash": "7c54eb1f16196632608f80393486128f7152c887"
+    }
+  },
+  "negative_proof_archive_sha256": "400a16f391fb131c32a90c147381f9b0ee9a49c0f3c0820a62fa995c4bb86433",
+  "normal_for_review_event": "01M5XZKKPH790Z6PKBMFESAE7Z",
+  "normal_pre_review_gate": "completed no_coverage; architecture authority unverified; blocked=false; force_bypassed=false"
 }
