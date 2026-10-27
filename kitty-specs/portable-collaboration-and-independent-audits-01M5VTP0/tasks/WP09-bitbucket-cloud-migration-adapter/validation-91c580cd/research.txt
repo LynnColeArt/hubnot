@@ -1,0 +1,23 @@
+WP09 actual primary-source API research, 2026-10-27 UTC.
+https://developer.atlassian.com/cloud/bitbucket/changelog/
+  2026-08-20: native Cloud Issue Tracker API endpoints fully removed.
+  2026-08-18: API tokens support Bearer; Basic remains supported.
+https://community.atlassian.com/forums/discussion/3237429/deprecation-notice-bitbucket-cloud-app-password-brownout-schedule-and-next-steps
+  Atlassian Team announcement: app passwords fully removed 2026-07-28.
+https://developer.atlassian.com/cloud/bitbucket/rest/intro/
+  Explicit scoped API token Basic auth uses Atlassian email + token; OAuth bearer.
+  Opaque pagination uses next URL, not constructed page numbers.
+https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/
+  GET repository pullrequests: default open only; repeat state for all states.
+  GET PR comments includes global/inline/replies; parent and inline source retained.
+  GET PR activity includes approval/update/comment variants, no universal event ID.
+https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/
+  Repository UUID identity distinct from workspace/repository selector and grouping project.
+https://developer.atlassian.com/cloud/bitbucket/rest/api-group-source/
+  GET /src/{commit}/{path} returns exact file bytes without character recoding.
+Profile deliberately requires explicit Cloud API 2.0 + credential mode, and pinned full
+workflow commit hash. Transient Basic credential encoding is email:api-token within
+ProviderConfig.Token (json:-), first colon split; OAuth/API-token Bearer separate.
+Frozen shared v1 cannot encode PR/thread parents: no remote destination effects,
+receipts or simulated recovery. Native/archive preservation and shared Git composition
+are verified instead. Public CLI migration wiring belongs to dependency WP11.

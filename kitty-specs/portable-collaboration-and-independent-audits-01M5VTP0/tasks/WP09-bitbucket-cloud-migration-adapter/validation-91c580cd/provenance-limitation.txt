@@ -1,0 +1,12 @@
+Go1.26.4 nested worktree VCS-stamping limitation (read-only diagnosis).
+Actual pwd/GOMOD/package directories are the lane-h worktree; git HEAD is
+91c580cda750a77493e933e086d0b535d4e7c724 and all six source SHA256 remain fixed.
+However `go build -x` discovers the enclosing PRIMARY Git checkout for VCS
+metadata, explicitly running git status/log in /home/lynn/projects/nichthub.
+Therefore the binary's embedded VCS revision is primary ddce2120+dirty, not lane
+HEAD91c580cd. Do not claim matching embedded revision or release provenance.
+Verbose build trace and package-directories output preserve the discrepancy.
+Static/focused/race commands bind actual source HEAD/hash and package files;
+dependency/compiled-file/symbol proofs demonstrate actual adapter inclusion.
+No source/toolchain/release changes or provenance suppression were performed.
+No binaries from this development worktree are published as release artifacts.
