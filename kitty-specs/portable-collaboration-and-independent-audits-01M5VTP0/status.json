@@ -299,6 +299,9 @@
       "last_event_id": "01M5XRZA8W13PVNRDPQNGRQTX3",
       "last_transition_at": "2026-10-27T04:12:54.941003+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 29771aed34e68503c6a4c3f660cbb56f2a335ab0: explicit Azure Work Item/comment migration and inert source preservation; all final-head checks pass including serialized full race 600.198s, original p95 failure retained. Shared plan.go/plan_test.go ownership exception authorized in 1dd7f7e0 shared-plan-scope-handoff.md; no schema change. Evidence: tasks/WP10-azure-devops-migration-adapter/validation-29771aed."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
