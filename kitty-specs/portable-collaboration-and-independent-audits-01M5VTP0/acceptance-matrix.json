@@ -281,6 +281,14 @@
       "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline TestMigrationCLIPublicRefusalsPreserveRemoteState TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries TestMigrationMissingCheckpointNeverReplaysCreates",
       "result": "confirmed_absent",
       "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    },
+    {
+      "invariant_id": "NI-ACTUAL-FORGE-COMPILE-EXCLUSION",
+      "description": "Actual ordinary/nogithub/noforge binaries: nogithub excludes only GitHub and retains other network clients; noforge excludes all network client dependencies, compiled symbols and all six adapter files, with positive ordinary/other-provider controls.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-exclusion.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
     }
   ]
 }
