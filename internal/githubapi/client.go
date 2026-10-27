@@ -1,4 +1,4 @@
-//go:build !nogithub
+//go:build !nogithub && !noforge
 
 // Package githubapi is the optional, non-authoritative GitHub issue transport.
 // It performs no requests until explicitly called and has no gh dependency.
@@ -122,6 +122,12 @@ func NewClient(baseURL, token string) (*Client, error) {
 		return nil, errors.New("invalid GitHub API base path")
 	}
 	u.Host = strings.ToLower(u.Host)
+	if u.Scheme == "https" && strings.HasSuffix(u.Host, ":443") {
+		u.Host = strings.TrimSuffix(u.Host, ":443")
+	}
+	if u.Scheme == "http" && strings.HasSuffix(u.Host, ":80") {
+		u.Host = strings.TrimSuffix(u.Host, ":80")
+	}
 	for _, c := range token {
 		if c < 33 || c > 126 {
 			return nil, errors.New("invalid GitHub API token")
@@ -234,8 +240,8 @@ func (c *Client) request(ctx context.Context, method string, u *url.URL, input a
 
 func decodeResponse[T any](raw []byte) (T, error) {
 	var zero T
-	if !validJSONUnicode(raw) {
-		return zero, errors.New("invalid GitHub response JSON")
+	if !strictGraphQLJSON(raw) {
+		return zero, errors.New("invalid or ambiguous GitHub response JSON")
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	var result *T
