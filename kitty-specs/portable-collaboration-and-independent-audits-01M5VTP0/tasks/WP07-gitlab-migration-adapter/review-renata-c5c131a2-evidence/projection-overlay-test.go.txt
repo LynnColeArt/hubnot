@@ -1,0 +1,66 @@
+package main
+
+import (
+ "context"
+ "encoding/json"
+ "path/filepath"
+ "strings"
+ "testing"
+
+ "hubnot/internal/migration"
+)
+
+func TestRenataGitLabExactProjectionRecovery(t *testing.T) {
+ for _, field := range []string{"title", "body", "state", "type", "labels", "assignees", "privacy", "project"} {
+  t.Run(field, func(t *testing.T) {
+   ctx := context.Background()
+   f := newGitLabMigrationFixture(t)
+   f.LoseIssue = true
+   s, blobs := gitlabMigrationSourceFixture()
+   var issue migration.IssueContent
+   if err := json.Unmarshal(s.Records[0].Content, &issue); err != nil { t.Fatal(err) }
+   issue.Labels, issue.Assignees = []string{"old-label"}, []string{"old-user"}
+   s.Records[0].Content = gitlabJSON(issue)
+   d, err := OpenMigrationDestination(f.Config())
+   if err != nil { t.Fatal(err) }
+   session, err := PrepareMigration(ctx, filepath.Join(t.TempDir(), "session"), s, blobs, migration.Selection{Destination: d.Locator(), Mappings: map[string]string{"label:old-label":"mapped", "assignee:old-user":"10"}}, d, migration.DefaultLimits(), nil)
+   if err != nil { t.Fatal(err) }
+   if err = ApplyMigration(ctx, session, d, ""); err == nil || f.IssueWrites != 1 || f.NoteWrites != 0 { t.Fatalf("lost create not isolated: %v %d %d", err, f.IssueWrites, f.NoteWrites) }
+   original := f.Issue
+   switch field {
+   case "title": f.Issue.Title += " changed"
+   case "body": f.Issue.Body = "changed"
+   case "state": f.Issue.State = "closed"
+   case "type": f.Issue.Type = "incident"
+   case "labels": f.Issue.Labels = nil
+   case "assignees": f.Issue.Assignees = nil
+   case "privacy": f.Issue.Confidential = true
+   case "project": f.Issue.ProjectID++
+   }
+   fresh, err := OpenMigrationDestination(f.Config())
+   if err != nil { t.Fatal(err) }
+   reopened, err := OpenMigrationSession(ctx, session.Directory)
+   if err != nil { t.Fatal(err) }
+   if err = ApplyMigration(ctx, reopened, fresh, ""); err == nil || !strings.Contains(err.Error(), "manual recovery") || f.IssueWrites != 1 || f.NoteWrites != 0 { t.Fatalf("changed %s projection confirmed/repeated: %v %d %d", field, err, f.IssueWrites, f.NoteWrites) }
+   f.Issue = original
+   if err = ApplyMigration(ctx, reopened, fresh, ""); err != nil || f.IssueWrites != 1 || f.NoteWrites != 1 { t.Fatalf("exact projection did not recover: %v %d %d", err, f.IssueWrites, f.NoteWrites) }
+  })
+ }
+}
+
+func TestRenataGitLabSourceIdentitySelectorIndependence(t *testing.T) {
+ f := newGitLabMigrationFixture(t)
+ var identity string
+ for _, selector := range []string{"group/nested/repo", "42"} {
+  config := f.Config()
+  config.Locator.Repository = selector
+  config.Locator.Endpoint += "/"
+  source, err := OpenMigrationSource(config)
+  if err != nil { t.Fatal(err) }
+  snapshot, _, err := source.Snapshot(context.Background(), migration.Selection{Source: config.Locator, Kinds: []string{"issue"}}, migration.DefaultLimits())
+  if err != nil { t.Fatal(err) }
+  if identity != "" && identity != snapshot.SourceID { t.Fatal("mutable selector changed source identity") }
+  identity = snapshot.SourceID
+  if strings.HasSuffix(snapshot.Source.Endpoint, "/") { t.Fatal("instance root not normalized") }
+ }
+}

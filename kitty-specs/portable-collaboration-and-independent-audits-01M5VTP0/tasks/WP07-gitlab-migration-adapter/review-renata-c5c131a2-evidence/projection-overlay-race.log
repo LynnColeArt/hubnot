@@ -1,0 +1,22 @@
+=== RUN   TestRenataGitLabExactProjectionRecovery
+=== RUN   TestRenataGitLabExactProjectionRecovery/title
+=== RUN   TestRenataGitLabExactProjectionRecovery/body
+=== RUN   TestRenataGitLabExactProjectionRecovery/state
+=== RUN   TestRenataGitLabExactProjectionRecovery/type
+=== RUN   TestRenataGitLabExactProjectionRecovery/labels
+=== RUN   TestRenataGitLabExactProjectionRecovery/assignees
+=== RUN   TestRenataGitLabExactProjectionRecovery/privacy
+=== RUN   TestRenataGitLabExactProjectionRecovery/project
+--- PASS: TestRenataGitLabExactProjectionRecovery (0.84s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/title (0.13s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/body (0.11s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/state (0.11s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/type (0.09s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/labels (0.11s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/assignees (0.09s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/privacy (0.09s)
+    --- PASS: TestRenataGitLabExactProjectionRecovery/project (0.10s)
+=== RUN   TestRenataGitLabSourceIdentitySelectorIndependence
+--- PASS: TestRenataGitLabSourceIdentitySelectorIndependence (0.00s)
+PASS
+ok  	hubnot	1.862s
