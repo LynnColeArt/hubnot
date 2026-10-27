@@ -1,4 +1,4 @@
-//go:build !nogithub
+//go:build !nogithub && !noforge
 
 package main
 
