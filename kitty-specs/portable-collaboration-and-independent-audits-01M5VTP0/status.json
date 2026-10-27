@@ -1,7 +1,7 @@
 {
-  "event_count": 99,
-  "last_event_id": "01M5XRZA8W13PVNRDPQNGRQTX3",
-  "materialized_at": "2026-10-27T04:12:54.941003+00:00",
+  "event_count": 100,
+  "last_event_id": "01M5XS4FDYDYQ7BM5VF3MCTAKV",
+  "materialized_at": "2026-10-27T04:15:44.062633+00:00",
   "mission_number": "",
   "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 1,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 2
   },
   "work_packages": {
@@ -292,18 +292,18 @@
     "WP10": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M5XRZA8W13PVNRDPQNGRQTX3",
-      "last_transition_at": "2026-10-27T04:12:54.941003+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M5XS4FDYDYQ7BM5VF3MCTAKV",
+      "last_transition_at": "2026-10-27T04:15:44.062633+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review at 29771aed34e68503c6a4c3f660cbb56f2a335ab0: explicit Azure Work Item/comment migration and inert source preservation; all final-head checks pass including serialized full race 600.198s, original p95 failure retained. Shared plan.go/plan_test.go ownership exception authorized in 1dd7f7e0 shared-plan-scope-handoff.md; no schema change. Evidence: tasks/WP10-azure-devops-migration-adapter/validation-29771aed."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 5024,
       "shell_pid_created_at": "1792851034.54",
       "subtasks": {
