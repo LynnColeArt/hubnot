@@ -2,6 +2,6 @@ The one requested fixed-head full gate ran on clean source b2d36c287fd46f2fdeeae
   go test -race ./...
 It exited 1 because the root package reached Go's default 10m0s timeout. The running test was the unchanged TestMemoryIndexTenThousandRecordsPerformanceAndRecovery (1m25s at timeout), with stack frames memory_index.go:635/811 and memory_index_test.go:1100. Root package duration: 600.182s.
 
-The complete raw output is go-test-race.log. The log shows no assertion failure or GitLab test failure before the timeout. Package forge/githubapi/gitlabapi/migration race tests passed. This is not a full-suite pass and must not be reported as one.
+The complete raw output is preserved losslessly in go-test-race.log.gz; raw-log-sha256.txt binds the decoded bytes. The log shows no assertion failure or GitLab test failure before the timeout. Package forge/githubapi/gitlabapi/migration race tests passed. This is not a full-suite pass and must not be reported as one.
 
 The coordinator was notified immediately. The full suite has not been repeated, the timeout has not been raised, tests have not been skipped, and unowned memory-index sources remain untouched. Further full-gate handling awaits coordination.
