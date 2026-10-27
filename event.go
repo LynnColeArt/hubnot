@@ -49,6 +49,7 @@ type Event struct {
 	Operation string      `json:"operation,omitempty"`
 	Request   string      `json:"request,omitempty"`
 	Intent    string      `json:"intent,omitempty"`
+	Audit     *AuditFact  `json:"audit,omitempty"`
 }
 
 type StoredEvent struct {
@@ -107,6 +108,11 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 			return Event{}, "", fmt.Errorf("invalid resource event JSON: %w", err)
 		}
 	}
+	if isAuditKind(event.Kind) {
+		if err := strictAuditJSON(payload, &event); err != nil {
+			return Event{}, "", fmt.Errorf("invalid audit JSON: %w", err)
+		}
+	}
 	// Bound the authenticated bytes, not a re-encoding which can omit unknown
 	// fields and whitespace. Legacy signed issues retain their original bounds.
 	if len(payload) > maxIssuePayload && isIssueKind(event.Kind) && (event.Kind == "issue.revise" || hasIssueFields(event)) {
@@ -139,6 +145,12 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 }
 
 func validateEventContent(event Event) error {
+	if isAuditKind(event.Kind) {
+		return validateAuditEvent(event)
+	}
+	if event.Audit != nil {
+		return fmt.Errorf("audit payload requires an audit kind")
+	}
 	if isResourceKind(event.Kind) {
 		if event.Previous != "" && !validEventID(event.Previous) {
 			return fmt.Errorf("invalid previous event ID")
