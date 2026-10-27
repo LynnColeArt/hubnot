@@ -1,0 +1,300 @@
+schema_version: 1
+mission_id: 01M5VTP0RY3K4D31E0N8JVMGHR
+mission_slug: portable-collaboration-and-independent-audits-01M5VTP0
+mission_number:
+friendly_name: portable collaboration and independent audits
+mission_type: software-dev
+target_branch: feat/portable-collaboration
+created_at: '2026-10-27T06:36:22.667073+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-27T06:36:22.667073+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP04 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-002
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-003
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-004
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-005
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-006
+  category: implementation
+  summary: WP10 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-007
+  category: implementation
+  summary: WP11 completed without rejection cycles
+  evidence_refs:
+  - e-017
+- id: h-008
+  category: implementation
+  summary: WP12 completed without rejection cycles
+  evidence_refs:
+  - e-017
+not_helpful:
+- id: n-014
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-031
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-010
+  category: implementation
+  summary: WP01 needed 2 implementation cycles
+  evidence_refs:
+  - e-027
+  details: WP WP01 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-011
+  category: implementation
+  summary: WP02 needed 2 implementation cycles
+  evidence_refs:
+  - e-028
+  details: WP WP02 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-012
+  category: implementation
+  summary: WP03 needed 2 implementation cycles
+  evidence_refs:
+  - e-029
+  details: WP WP03 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-013
+  category: implementation
+  summary: WP05 needed 7 implementation cycles
+  evidence_refs:
+  - e-030
+  details: WP WP05 entered in_progress 7 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-006
+  category: process
+  summary: WP01 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-023
+  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-007
+  category: process
+  summary: WP02 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-024
+  details: WP WP02 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-008
+  category: process
+  summary: WP03 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-025
+  details: WP WP03 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-005
+  category: process
+  summary: WP05 had 3 lane bounce(s) before approval
+  evidence_refs:
+  - e-022
+  details: WP WP05 moved backward across workflow lanes 3 time(s) outside the documented reviewer-feedback flow.
+- id: n-009
+  category: process
+  summary: WP05 required 9 --force override(s) during workflow
+  evidence_refs:
+  - e-026
+  details: WP WP05 required 9 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP01 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-018
+  details: WP WP01 was sent back from review to planning 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP02 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-019
+  details: WP WP02 was sent back from review to planning 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP03 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-020
+  details: WP WP03 was sent back from review to planning 1 time(s).
+- id: n-004
+  category: review_loop
+  summary: WP05 required 3 rejection cycle(s) before approval
+  evidence_refs:
+  - e-021
+  details: WP WP05 was sent back from review to planning 3 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP01-go-only-release-packager.md
+- id: e-006
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission.md
+- id: e-007
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues.md
+- id: e-008
+  kind: file
+  path:
+    kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP04-portable-project-snapshot-archive.md
+- id: e-009
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP05-migration-engine-local-archive.md
+- id: e-010
+  kind: file
+  path:
+    kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP06-provider-contract-github-snapshots.md
+- id: e-011
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP07-gitlab-migration-adapter.md
+- id: e-012
+  kind: file
+  path:
+    kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP08-forgejo-gitea-migration-adapters.md
+- id: e-013
+  kind: file
+  path:
+    kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP09-bitbucket-cloud-migration-adapter.md
+- id: e-014
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP10-azure-devops-migration-adapter.md
+- id: e-015
+  kind: file
+  path:
+    kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP11-guided-migration-public-acceptance.md
+- id: e-016
+  kind: file
+  path:
+    kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance.md
+- id: e-017
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+- id: e-018
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5VZVZ6B4H54S3SVHNM83YDK
+- id: e-019
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5VZS046XYW1WX3FZ0P3WPK7
+- id: e-020
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5WEFCSH61KXE734MT2GJC6Y
+- id: e-021
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5WEY6TPCJ8ZZJAE3YS8B8C3..01M5X5JJQDS4YZ8Y7YHVEJDD5G
+- id: e-022
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5WJHXB0H3B3EHJ797E4GRZ0..01M5XDBDNRWBT68JPVPDFHVNTW
+- id: e-023
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5VZVZ6B4H54S3SVHNM83YDK
+- id: e-024
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5VZS046XYW1WX3FZ0P3WPK7
+- id: e-025
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5WEFCSH61KXE734MT2GJC6Y
+- id: e-026
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: 01M5WEY6TPCJ8ZZJAE3YS8B8C3..01M5XDBDNRWBT68JPVPDFHVNTW
+- id: e-027
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: implementation_cycles
+- id: e-028
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: implementation_cycles
+- id: e-029
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: implementation_cycles
+- id: e-030
+  kind: event_range
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/status.events.jsonl
+  range: implementation_cycles
+- id: e-031
+  kind: file
+  path: kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/analysis-report.md
+generator_version: '1.0'
+provenance_history: []
