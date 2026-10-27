@@ -1,9 +1,0 @@
-Reviewed packager source: 86dc00678c42d495c6442addfcc8da8abd983ffa
-Packager SHA256: cff66f1b5e2602909a4c447cbc2f594564ce053872ec8f9677fcc233e37e524e
-Invocation: ['/tmp/hn-release-review-filter-ncv7l91u/hn-release-review', '--source', '/tmp/hn-release-review-filter-ncv7l91u/fixture', '--rev', 'HEAD', '--version', '1.2.3', '--out', '/tmp/hn-release-review-filter-ncv7l91u/output', '--targets', 'linux/amd64', '--variants', 'standard']
-Exit: 0
-Stdout: 
-Stderr: Release assets written to /tmp/hn-release-review-filter-ncv7l91u/output
-Filter shell/external touch invoked: True
-Output successfully published: True
-CONFIRMED BLOCKER: a clean source invokes repository-configured shell commands during packaging

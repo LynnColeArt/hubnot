@@ -1,9 +1,9 @@
 # Portable collaboration and independent audits
 
-**Created**: 2026-10-26  
-**Branch / integration target**: `feat/portable-collaboration`  
-**Status**: Specification for implementation  
-**Change mode**: New capabilities, preserving existing native behavior  
+**Created**: 2026-10-26
+**Branch / integration target**: `feat/portable-collaboration`
+**Status**: Specification for implementation
+**Change mode**: New capabilities, preserving existing native behavior
 **Backlog source**: [Deferred audits, issue 13](https://github.com/LynnColeArt/hubnot/issues/13), plus the accepted migration vision and next-release packaging requirement from this conversation.
 
 ## Intent and scope

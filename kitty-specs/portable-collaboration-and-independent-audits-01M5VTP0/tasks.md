@@ -458,4 +458,3 @@ Retain the exact acceptance boundary and independently review this WP before app
 | T034 | Add integrated public acceptance and negative controls | WP12 | P1 | No; sequence within WP |
 | T035 | Synchronize operator docs, examples and capability limits | WP12 | P1 | No; sequence within WP |
 | T036 | Run release/readiness gates and trace all requirements | WP12 | P1 | No; sequence within WP |
-

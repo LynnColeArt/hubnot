@@ -134,8 +134,8 @@ Reviewers must independently assess this WP's acceptance example and FR-004, FR-
 ## Activity Log
 
 - 2026-10-26T10:30:30Z — system — Draft prompt authored for task finalization.
+- 2026-10-27T03:40:14Z – codex – shell_pid=5024 – Approval provenance clarification: root Codex performed independent review under reviewer-renata claim; report5916a0ca at b6677667. Approval01M5XPYR9XA1DPJ28QKE4JZQPG used CLI default actor user (not a claim of human review). Attempted metadata-only approved->approved correction was refused without mutation; original durable verdict remains. Future approvals pass explicit reviewer/agent/profile.
 
 ## Updating Status
 
 Use `spec-kitty agent tasks mark-status T022 T023 T024 --status done` only with the canonical command's accepted argument shape. Use runtime-provided WP action/transition commands for implementation and independent review. Never author lane, review-status or completion truth in this Markdown.
-

@@ -125,4 +125,3 @@ Reviewers must independently assess this WP's acceptance example and FR-002, FR-
 ## Updating Status
 
 Use `spec-kitty agent tasks mark-status T010 T011 T012 --status done` only with the canonical command's accepted argument shape. Use runtime-provided WP action/transition commands for implementation and independent review. Never author lane, review-status or completion truth in this Markdown.
-
