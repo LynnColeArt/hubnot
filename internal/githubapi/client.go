@@ -37,7 +37,13 @@ type Label struct {
 	Name string `json:"name"`
 }
 
+// IssueType is descriptive source metadata; migrations do not administer types.
+type IssueType struct {
+	Name string `json:"name"`
+}
+
 type Issue struct {
+	Type        *IssueType      `json:"type,omitempty"`
 	ID          int64           `json:"id"`
 	NodeID      string          `json:"node_id"`
 	Number      int             `json:"number"`
@@ -293,7 +299,7 @@ func validJSONUnicode(raw []byte) bool {
 }
 
 func validIssue(v Issue) bool {
-	return v.ID > 0 && v.NodeID != "" && v.Number > 0 && (v.State == "open" || v.State == "closed")
+	return v.ID > 0 && v.NodeID != "" && v.Number > 0 && (v.State == "open" || v.State == "closed") && (v.Type == nil || v.Type.Name != "" && len(v.Type.Name) <= 256 && utf8.ValidString(v.Type.Name))
 }
 
 func validComment(v Comment) bool { return v.ID > 0 && v.NodeID != "" }

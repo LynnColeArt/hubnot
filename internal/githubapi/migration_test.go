@@ -154,3 +154,25 @@ func TestMigrationCanonicalOriginsRemoveDefaultPorts(t *testing.T) {
 		}
 	}
 }
+
+func TestMigrationIssueTypeMetadataNullAndAbsentRemainUntyped(t *testing.T) {
+	for _, field := range []string{"", `,"type":null`, `,"type":{"id":9,"name":"Bug"}`} {
+		t.Run(field, func(t *testing.T) {
+			c, server := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprint(w, `{"id":1,"node_id":"I1","number":1,"state":"open"`+field+`}`)
+			}, "")
+			defer server.Close()
+			v, e := c.GetIssue(context.Background(), "a/b", 1)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if strings.Contains(field, "Bug") {
+				if v.Type == nil || v.Type.Name != "Bug" {
+					t.Fatal("typed metadata missing", v.Type)
+				}
+			} else if v.Type != nil {
+				t.Fatal("null/absent type gained a type", v.Type)
+			}
+		})
+	}
+}

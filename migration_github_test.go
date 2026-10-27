@@ -27,6 +27,7 @@ type githubMigrationFixture struct {
 	comments                                                              []githubapi.Comment
 	issueWrites, commentWrites                                            int
 	loseIssue, loseComment, hideIssue, hideComments, duplicate, dropLabel bool
+	defaultType                                                           string
 	pageCycle                                                             bool
 }
 
@@ -59,6 +60,9 @@ func newGithubMigrationFixture(t *testing.T) *githubMigrationFixture {
 			}
 			for _, x := range in.Assignees {
 				f.issue.Assignees = append(f.issue.Assignees, githubapi.User{Login: x})
+			}
+			if f.defaultType != "" {
+				f.issue.Type = &githubapi.IssueType{Name: f.defaultType}
 			}
 			if f.loseIssue {
 				f.loseIssue = false
@@ -599,5 +603,176 @@ func TestGitHubMigrationUsesSharedSelectedGitTransportAndSecretFreeArchive(t *te
 	}
 	if source.issueWrites != 0 || destination.issueWrites != 1 {
 		t.Fatal("source mutated or destination issue missing")
+	}
+}
+
+func TestGitHubMigrationPlanReportsRecoveryMarkerCapacityBeforeWrites(t *testing.T) {
+	for _, kind := range []string{"issue", "comment"} {
+		t.Run(kind, func(t *testing.T) {
+			f := newGithubMigrationFixture(t)
+			s, _ := githubMigrationSourceFixture()
+			d, _ := OpenMigrationDestination(f.config())
+			sel := migration.Selection{Destination: d.Locator()}
+			ins, _, e := d.Plan(context.Background(), s, sel, migration.DefaultLimits())
+			if e != nil {
+				t.Fatal(e)
+			}
+			marker := "\n\n<!-- hn-migration:" + migration.Digest(nil) + ":" + ins[0].ID + ":" + migration.Digest(nil) + " -->"
+			budget := 65536 - len(marker)
+			if kind == "issue" {
+				var c migration.IssueContent
+				_ = json.Unmarshal(s.Records[0].Content, &c)
+				c.Body = strings.Repeat("x", budget+1)
+				s.Records[0].Content = githubMigrationJSON(c)
+			} else {
+				var c migration.CommentContent
+				_ = json.Unmarshal(s.Records[1].Content, &c)
+				c.Body = strings.Repeat("x", budget+1)
+				s.Records[1].Content = githubMigrationJSON(c)
+			}
+			ins, fs, e := d.Plan(context.Background(), s, sel, migration.DefaultLimits())
+			if e != nil {
+				t.Fatal(e)
+			}
+			unsupported := false
+			for _, finding := range fs {
+				if finding.Status == "unsupported" && strings.Contains(finding.Message, "marker") {
+					unsupported = true
+				}
+			}
+			if !unsupported || kind == "issue" && len(ins) != 0 || kind == "comment" && len(ins) != 1 {
+				t.Fatal("known marker capacity was not reported in plan", len(ins), fs)
+			}
+			if f.issueWrites != 0 || f.commentWrites != 0 {
+				t.Fatal("planning mutated destination")
+			}
+		})
+	}
+}
+func TestGitHubMigrationExplicitWorkItemToIssueMappingRetainsCommentDependency(t *testing.T) {
+	f := newGithubMigrationFixture(t)
+	s, blobs := githubMigrationSourceFixture()
+	s.Source.Kind = "azure"
+	s.Source.Endpoint = "https://azure.invalid"
+	s.Records[0].Key.Provider = "azure"
+	s.Records[0].Key.Instance = s.Source.Endpoint
+	s.Records[0].Key.Kind = "work_item"
+	s.Records[1].Key.Provider = "azure"
+	s.Records[1].Key.Instance = s.Source.Endpoint
+	s.Records[1].Links[0].Relation = "work_item"
+	s.Records[1].Links[0].Target = s.Records[0].Key
+	var c migration.IssueContent
+	_ = json.Unmarshal(s.Records[0].Content, &c)
+	c.Type = "Task"
+	c.State = "Active"
+	s.Records[0].Content = githubMigrationJSON(c)
+	d, _ := OpenMigrationDestination(f.config())
+	sel := migration.Selection{Destination: d.Locator()}
+	ins, fs, e := d.Plan(context.Background(), s, sel, migration.DefaultLimits())
+	if e != nil || len(ins) != 0 || fs[0].Status != "requires_mapping" {
+		t.Fatal("work-item mapping was implicit or not explained", ins, fs, e)
+	}
+	sel.Mappings = map[string]string{"state:Active": "open", "type:Task": ""}
+	session, e := PrepareMigration(context.Background(), filepath.Join(t.TempDir(), "s"), s, blobs, sel, d, migration.DefaultLimits(), nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(session.Plan.Intents) != 2 || session.Plan.Intents[0].Kind != "issue" || session.Plan.Intents[0].Sources[0].Kind != "work_item" {
+		t.Fatal("source/destination models conflated", session.Plan.Intents)
+	}
+	if e = ApplyMigration(context.Background(), session, d, ""); e != nil {
+		t.Fatal(e)
+	}
+	if f.issueWrites != 1 || f.commentWrites != 1 {
+		t.Fatal("work item/comment mapping missing")
+	}
+}
+func TestGitHubMigrationSnapshotRetainsIssueTypeName(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/repos/a/b":
+			fmt.Fprint(w, `{"id":42,"node_id":"R42","full_name":"a/b","created_at":"2026-01-01T00:00:00Z"}`)
+		case "/repos/a/b/issues":
+			fmt.Fprint(w, `[{"id":7001,"node_id":"I7001","number":7,"title":"Typed source","body":"body","state":"open","type":{"id":1,"name":"Bug"}}]`)
+		default:
+			t.Errorf("unexpected path %s", r.URL.Path)
+			w.WriteHeader(404)
+		}
+	}))
+	defer server.Close()
+	config := migration.ProviderConfig{Locator: migration.Locator{Kind: "github", Endpoint: server.URL, Repository: "a/b"}}
+	source, _ := OpenMigrationSource(config)
+	s, _, e := source.Snapshot(context.Background(), migration.Selection{Source: config.Locator, Kinds: []string{"issue"}}, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	var c migration.IssueContent
+	if len(s.Records) != 1 {
+		t.Fatal(s)
+	}
+	if e = json.Unmarshal(s.Records[0].Content, &c); e != nil || c.Type != "Bug" {
+		t.Fatal("retrieved issue type silently emptied", c, e)
+	}
+}
+
+func TestGitHubMigrationExactMarkedBodyCapacitySucceeds(t *testing.T) {
+	f := newGithubMigrationFixture(t)
+	s, blobs := githubMigrationSourceFixture()
+	d, _ := OpenMigrationDestination(f.config())
+	sel := migration.Selection{Destination: d.Locator()}
+	ins, _, e := d.Plan(context.Background(), s, sel, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	wireMarker := "\n\n<!-- hn-migration:" + migration.Digest(nil) + ":" + ins[0].ID + ":" + migration.Digest(nil) + " -->"
+	var c migration.IssueContent
+	_ = json.Unmarshal(s.Records[0].Content, &c)
+	c.Body = strings.Repeat("x", 65536-len(wireMarker))
+	s.Records[0].Content = githubMigrationJSON(c)
+	session, e := PrepareMigration(context.Background(), filepath.Join(t.TempDir(), "s"), s, blobs, sel, d, migration.DefaultLimits(), nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = ApplyMigration(context.Background(), session, d, ""); e != nil {
+		t.Fatal(e)
+	}
+	if len(f.issue.Body) != 65536 || f.issueWrites != 1 || f.commentWrites != 1 {
+		t.Fatal("exact marked body capacity refused or changed", len(f.issue.Body), f.issueWrites, f.commentWrites)
+	}
+}
+func TestGitHubMigrationUnsupportedDestinationTypesNeverClaimUntypedSuccess(t *testing.T) {
+	for _, mode := range []string{"existing", "default"} {
+		t.Run(mode, func(t *testing.T) {
+			f := newGithubMigrationFixture(t)
+			s, blobs := githubMigrationSourceFixture()
+			d, _ := OpenMigrationDestination(f.config())
+			sel := migration.Selection{Destination: d.Locator()}
+			if mode == "existing" {
+				f.issue = githubapi.Issue{ID: 7001, NodeID: "I7001", Number: 7, State: "open", Title: "Typed destination", Type: &githubapi.IssueType{Name: "Bug"}}
+				sel.Mappings = map[string]string{"target:" + s.Records[0].Key.String(): "7"}
+				ins, fs, e := d.Plan(context.Background(), s, sel, migration.DefaultLimits())
+				if e != nil || len(ins) != 0 || fs[0].Status != "unsupported" {
+					t.Fatal("typed update was silently planned as untyped", ins, fs, e)
+				}
+				if f.issueWrites != 0 {
+					t.Fatal("planning changed a type")
+				}
+				return
+			}
+			f.defaultType = "Bug"
+			session, e := PrepareMigration(context.Background(), filepath.Join(t.TempDir(), "s"), s, blobs, sel, d, migration.DefaultLimits(), nil)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if e = ApplyMigration(context.Background(), session, d, ""); e == nil {
+				t.Fatal("default typed issue confirmed as untyped")
+			}
+			if e = ApplyMigration(context.Background(), session, d, ""); e == nil {
+				t.Fatal("default typed issue reconciled as untyped")
+			}
+			if f.issueWrites != 1 || f.commentWrites != 0 {
+				t.Fatal("uncertain type projection retried")
+			}
+		})
 	}
 }

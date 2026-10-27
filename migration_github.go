@@ -53,7 +53,7 @@ func newGitHubMigration(c migration.ProviderConfig) (*githubMigration, error) {
 }
 func (g *githubMigration) Locator() migration.Locator { return g.config.Locator }
 func (g *githubMigration) Capabilities(context.Context) ([]migration.Capability, error) {
-	out := []migration.Capability{{Kind: "issue", Read: true, Preserve: true, Create: true, Update: true, Limits: []string{"REST v2022-11-28; open-state creates/updates only; closed source state requires explicit mapping or preservation", "source authors/times remain attribution, not impersonation", "100 pages per connection; 4 MiB API response; 64 MiB aggregate snapshot wire budget; selected plan budgets are additional ceilings", "labels/assignees require explicit mapping; no hosted permission migration"}}, {Kind: "comment", Read: true, Preserve: true, Create: true, Limits: []string{"issue comments only; parent immutable identity checked from confirmed receipt"}}}
+	out := []migration.Capability{{Kind: "issue", Read: true, Preserve: true, Create: true, Update: true, Limits: []string{"REST v2022-11-28; open-state creates/updates only; closed source state requires explicit mapping or preservation", "source authors/times remain attribution, not impersonation", "work_item inputs require explicit type/state mappings to GitHub issues; issue types are observed but never administered", "100 pages per connection; 4 MiB API response; 64 MiB aggregate snapshot wire budget; selected plan budgets are additional ceilings", "labels/assignees require explicit mapping; no hosted permission migration"}}, {Kind: "comment", Read: true, Preserve: true, Create: true, Limits: []string{"issue comments only; parent immutable identity checked from confirmed receipt"}}}
 	for _, kind := range []string{"change_request", "review", "inline_comment", "discussion", "reply", "project", "project_item", "workflow", "attachment"} {
 		out = append(out, migration.Capability{Kind: kind, Read: true, Preserve: true, Limits: []string{"preservation only; no destination-native recreation", "explicit planning/attachment selections; same-origin attachments only; workflow source inert"}})
 	}
@@ -197,7 +197,7 @@ func (g *githubMigration) Snapshot(ctx context.Context, sel migration.Selection,
 				for _, x := range v.Assignees {
 					assignees = append(assignees, x.Login)
 				}
-				content := githubMigrationJSON(migration.IssueContent{Schema: "hn.migration.issue/1", Title: v.Title, Body: v.Body, State: v.State, Labels: labels, Assignees: assignees})
+				content := githubMigrationJSON(migration.IssueContent{Schema: "hn.migration.issue/1", Title: v.Title, Body: v.Body, State: v.State, Type: githubMigrationIssueType(v), Labels: labels, Assignees: assignees})
 				r := migration.Record{Key: b.key("issue", githubMigrationID(v.ID)), Selector: strconv.Itoa(v.Number), Revision: githubMigrationRevision(v), SourceURL: v.HTMLURL, Author: v.User.Login, CreatedAt: v.CreatedAt, UpdatedAt: v.UpdatedAt, Schema: "hn.migration.issue/1", Content: content}
 				representable := true
 				if _, err := migration.CanonicalContent("issue", content); err != nil {
@@ -498,11 +498,19 @@ func (g *githubMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 	}
 	// Stable partition ensures issues precede comments regardless of archive order.
 	for _, r := range s.Records {
-		if r.Key.Kind != "issue" {
+		if r.Key.Kind != "issue" && r.Key.Kind != "work_item" {
 			continue
 		}
 		var c migration.IssueContent
 		_ = json.Unmarshal(r.Content, &c)
+		if r.Key.Kind == "work_item" {
+			_, stateMapped := sel.Mappings["state:"+c.State]
+			_, typeMapped := sel.Mappings["type:"+c.Type]
+			if !stateMapped || !typeMapped {
+				finding(r, "requires_mapping", "Work-item to GitHub issue conversion requires explicit source type and state mappings")
+				continue
+			}
+		}
 		state := c.State
 		if mapped, ok := sel.Mappings["state:"+state]; ok {
 			state = mapped
@@ -512,7 +520,7 @@ func (g *githubMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 			typ = mapped
 		}
 		if state != "open" || typ != "" {
-			finding(r, "requires_mapping", "GitHub issue creates require explicit open state and empty type mapping; closed creation would require a second write")
+			finding(r, "requires_mapping", "GitHub issue creates/updates support open state and empty type only; closed creation would require a second write and type administration is unsupported")
 			continue
 		}
 		labels := []string{}
@@ -538,6 +546,10 @@ func (g *githubMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 		}
 		w := migration.IssueWrite{Schema: "hn.migration.issue-write/1", Title: c.Title, Body: c.Body, State: state, Type: typ, Labels: labels, Assignees: assignees}
 		in := migration.Intent{ID: g.intentID(repo, r.Key), Kind: "issue", Action: "create", Sources: []migration.Key{r.Key}, DependsOn: []string{}}
+		if len(w.Body) > githubMigrationBodyBudget(in.ID) {
+			finding(r, "unsupported", "Issue body plus the required recovery marker exceeds GitHub's body capacity; source bytes remain preserved without truncation")
+			continue
+		}
 		if target := sel.Mappings["target:"+r.Key.String()]; target != "" {
 			number, err := githubKey(target)
 			if err != nil {
@@ -549,6 +561,10 @@ func (g *githubMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 			}
 			if len(current.PullRequest) > 0 && string(current.PullRequest) != "null" {
 				return nil, nil, errors.New("cannot update pull request through issue migration")
+			}
+			if githubMigrationIssueType(current) != "" {
+				finding(r, "unsupported", "Existing destination issue has a type; type administration is unsupported and cannot be silently cleared")
+				continue
 			}
 			in.Action = "update"
 			in.ExpectedID = githubMigrationID(current.ID)
@@ -564,7 +580,7 @@ func (g *githubMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 		finding(r, "mapped", "Issue body/state/labels/assignees mapped; API body appends a deterministic HTML recovery marker; original author/times retained in source snapshot rather than impersonated")
 	}
 	for _, r := range s.Records {
-		if r.Key.Kind == "issue" {
+		if r.Key.Kind == "issue" || r.Key.Kind == "work_item" {
 			continue
 		}
 		if r.Key.Kind != "comment" {
@@ -573,7 +589,7 @@ func (g *githubMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 		}
 		var parent migration.Intent
 		for _, link := range r.Links {
-			if link.Relation == "issue" {
+			if link.Relation == "issue" || link.Relation == "work_item" {
 				parent = parents[link.Target.String()]
 			}
 		}
@@ -585,6 +601,10 @@ func (g *githubMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 		_ = json.Unmarshal(r.Content, &c)
 		w := migration.CommentWrite{Schema: "hn.migration.comment-write/1", Parent: migration.RemoteRef{Receipt: &migration.ReceiptRef{IntentID: parent.ID, Field: "remote_key"}}, Body: c.Body}
 		in := migration.Intent{ID: g.intentID(repo, r.Key), Kind: "comment", Action: "create", Sources: []migration.Key{r.Key}, DependsOn: []string{parent.ID}, Payload: githubMigrationJSON(w)}
+		if len(w.Body) > githubMigrationBodyBudget(in.ID) {
+			finding(r, "unsupported", "Comment body plus the required recovery marker exceeds GitHub's body capacity; source bytes remain preserved without truncation")
+			continue
+		}
 		ins = append(ins, in)
 		finding(r, "mapped", "Comment mapped to confirmed issue receipt; API body appends a deterministic HTML recovery marker; original source attribution retained in saved snapshot")
 	}
@@ -604,9 +624,22 @@ func (g *githubMigration) bound(in migration.Intent, ac migration.ApplyContext) 
 	}
 	return in, nil
 }
+
+const githubMigrationMarkerPrefix = "\n\n<!-- hn-migration:"
+const githubMigrationMarkerSuffix = " -->"
+
+func githubMigrationBodyBudget(intentID string) int {
+	return 65536 - len(githubMigrationMarkerPrefix) - 2*len(migration.Digest(nil)) - 2 - len(intentID) - len(githubMigrationMarkerSuffix)
+}
+func githubMigrationIssueType(v githubapi.Issue) string {
+	if v.Type == nil {
+		return ""
+	}
+	return v.Type.Name
+}
 func githubMigrationMarker(ac migration.ApplyContext) string {
 	w := ac.BoundWrite()
-	return "\n\n<!-- hn-migration:" + w.PlanDigest + ":" + w.IntentID + ":" + w.PayloadDigest + " -->"
+	return githubMigrationMarkerPrefix + w.PlanDigest + ":" + w.IntentID + ":" + w.PayloadDigest + githubMigrationMarkerSuffix
 }
 func githubMigrationIssueInput(w migration.IssueWrite, ac migration.ApplyContext) (githubapi.IssueInput, error) {
 	if w.Type != "" || w.State != "open" {
@@ -719,7 +752,7 @@ func (g *githubMigration) Apply(ctx context.Context, in migration.Intent, ac mig
 	return g.receipt(in, ac, githubMigrationID(v.ID), strconv.FormatInt(v.ID, 10), githubMigrationRevision(v)), nil
 }
 func githubMigrationIssueMatches(v githubapi.Issue, w githubapi.IssueInput) bool {
-	if v.Title != w.Title || v.Body != w.Body || v.State != w.State || len(v.PullRequest) > 0 && string(v.PullRequest) != "null" {
+	if githubMigrationIssueType(v) != "" || v.Title != w.Title || v.Body != w.Body || v.State != w.State || len(v.PullRequest) > 0 && string(v.PullRequest) != "null" {
 		return false
 	}
 	labels := []string{}
