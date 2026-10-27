@@ -82,3 +82,20 @@ func TestPlanLossDecisionsAndDependencyBinding(t *testing.T) {
 		t.Fatal("cycle accepted")
 	}
 }
+
+func TestPlanDestinationScopeKeepsProjectAndRepositorySeparate(t *testing.T) {
+	for _, scope := range []Locator{{Kind: "fixture", Endpoint: "https://instance.invalid", Project: "immutable-project"}, {Kind: "fixture", Endpoint: "https://instance.invalid", Repository: "owner/repo"}, {Kind: "fixture", Endpoint: "https://instance.invalid", Project: "project", Repository: "repo"}} {
+		p := testPlan()
+		p.Destination = scope
+		if _, e := CanonicalPlan(p); e != nil {
+			t.Fatal("explicit project/repository scope refused", scope, e)
+		}
+	}
+	for _, scope := range []Locator{{Kind: "fixture"}, {Kind: "fixture", Organization: "org"}, {Kind: "fixture", Project: "project", Repository: strings.Repeat("x", 4097)}, {Kind: "fixture", Project: strings.Repeat("x", 1025), Repository: "repo"}, {Kind: "fixture", Project: "\x00", Repository: "repo"}, {Kind: "fixture", Project: "project", Repository: "\xff"}, {Kind: "fixture", Project: "project", Endpoint: "https://user:password@instance.invalid"}} {
+		p := testPlan()
+		p.Destination = scope
+		if _, e := CanonicalPlan(p); e == nil {
+			t.Fatal("invalid/unscoped destination accepted", scope)
+		}
+	}
+}

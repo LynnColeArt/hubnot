@@ -284,7 +284,7 @@ func writeTarget(m map[string]json.RawMessage, in Intent, resolved bool) error {
 }
 
 func CanonicalPlan(p Plan) ([]byte, error) {
-	if p.Schema != "hn.migration-plan/1" || !ValidDigest(p.SnapshotDigest) || !text(p.Destination.Kind, 128, true) || !validURL(p.Destination.Endpoint) || !text(p.Destination.Repository, 4096, true) {
+	if p.Schema != "hn.migration-plan/1" || !ValidDigest(p.SnapshotDigest) || !text(p.Destination.Kind, 128, true) || !validURL(p.Destination.Endpoint) || !text(p.Destination.Repository, 4096, false) || (p.Destination.Repository == "" && p.Destination.Project == "") {
 		return nil, fmt.Errorf("invalid plan binding")
 	}
 	for _, v := range []string{p.Destination.Organization, p.Destination.Project} {
