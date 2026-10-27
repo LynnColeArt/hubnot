@@ -33,3 +33,9 @@ root-preflight-credential-proof/ is separate root-authored temporary-overlay con
 checks/full-race-process-snapshot.log is an ambient, unattributed host process observation. Parentage of its architecture subprocess was not established; it is NOT assigned to this gate or used as architectural coverage evidence. The repository has no internal/architecture directory. The architectural helper's no_coverage authority remains UNVERIFIED, regardless of Go PASS.
 
 No public pushes, source deletion, account provisioning, authority/workflow/audit activation, policies, background services, modules, SDKs or release/tag changes were performed. This is implementation evidence for independent review, not self-approval, mission completion or runtime qualification of another OS.
+
+## Canonical lifecycle closeout
+
+T031, T032 and T033 were marked done by the canonical command. The first normal for_review attempt refused newly captured uncommitted lifecycle logs; those scoped evidence files were committed, then the command was retried with its live output outside the repository.
+
+The final normal move completed with transition_applied=true, WP11 in_progress -> for_review, event 01M5XWMEK60FG4KZBNMDHNK73M, explicit agent codex and profile implementer-ivan. No force or skip override was used. The pre-review surface completed with outcome=no_coverage: tests.architectural._gate_coverage is not importable, authority unavailable/unverified, block_enabled=false, blocked=false, force_bypassed=false. This is NOT an architectural PASS. The unchanged source's real Go gates above remain PASS. Independent review is still required.
