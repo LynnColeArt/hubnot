@@ -123,10 +123,11 @@ actor and explicit runner backend checks remain the execution authority.
 
 The local `hn gh issue` subset calls native issue functions and performs no
 forge access. Provider-neutral transfer models contain no HTTP/SDK dependency;
-network clients and GitHub registrations are excluded with `nogithub`. All
+GitHub clients and registrations are excluded with `nogithub`; `noforge`
+excludes every network adapter. All
 native facts remain usable without a provider, credential or service.
 
-Only explicit transfer commands contact an explicitly selected provider.
+Only explicit transfer or migration commands contact an explicitly selected provider.
 Transport requires HTTPS except explicit loopback-IP HTTP and refuses redirects
 or pagination outside the requested endpoint. Requests/responses, nested
 pagination, aggregate bytes, whole-command time, native payloads and complete
@@ -229,3 +230,54 @@ Interrupted checkout/ref/event steps can leave inspectable work or a missing
 merge fact. Recovery observes the actual target, preserves local changes and
 uses the existing manual missing-event repair where applicable; uncertain
 outcomes do not authorize a second merge or destructive reset.
+
+## Portable migrations and independent audits
+
+Treat saved plans, foreign records, archives and Git objects as untrusted input.
+Planning freezes observations, positive budgets, destination identity/baselines,
+explicit mapping/loss decisions and dependency-ordered intents without provider
+secrets. It cannot publish native refs or mutate a provider. Before the single
+side effect, the engine binds confirmed prerequisite receipts into a canonical
+actual payload and persists its digest. Apply and reconciliation receive that
+same bound write and verified bounded blob access. A missing/invalid progress
+checkpoint, changed actor/destination, private or ambiguous lookup refuses;
+removing a journal cannot safely reset uncertainty.
+
+A lost response requires one exact positive match of the full intended remote
+projection, identity, parent and provenance. A marker, timeout or complete
+negative search alone cannot authorize another create. Existing remote edits
+remain preserved or require manual recovery. APIs, Git and files provide no
+single transaction or distributed exactly-once guarantee. There is no background
+sync or source deletion.
+
+Archives admit only canonical manifests and declared digest-named regular blobs.
+Traversal, absolute paths, duplicate/unknown members, links, special files,
+digest/size mismatch and positive-budget exhaustion refuse before accepted
+visibility. Native objects pass structural, signature, actor-chain and dependency
+checks in isolated quarantine before expected-old observation-ref promotion.
+Private identities, anchors, credentials, journals, working junk and unselected
+refs are excluded; deliberately selected committed sensitive bytes remain exact.
+Historical policy is verification material, not permission to replace destination
+governance. Foreign authors/reviews/CI/workflows cannot become native approvers,
+maintainers, runners or rule owners. Raw source preservation is distinct from
+explicit conversion and separately authorized native execution.
+
+Audits require an optional committed role policy and separately adopted private
+named-branch authority anchor. Imported/candidate/stale policy selectors cannot
+choose the active authority. Current lineage, policy digest, roles and rule-head
+checks prevent foreign history, withdrawals, revocations or conflicts from
+silently authorizing new work; historical facts remain readable keylessly.
+Sole owners may authorize their own rule. Requests, imports, initialization,
+upgrades, proposals and merges execute no audit. Only explicit execute uses the
+existing sandbox boundary; unsafe host execution needs the per-invocation flag.
+Passing/failing audit results neither qualify nor block proposal merge evidence.
+Follow-up creation is separate, bounded and actor-scoped; retries preserve issue
+edits and concurrent independent publishers remain an explicit limitation.
+
+Source hooks and imported workflow text never execute during audit snapshot
+extraction, request or import. This is separate from an operator's installed
+`reference-transaction` hook on actual destination Git ref writes, which retains
+normal Git behavior. Suppressing hooks on the private uncommitted operation guard
+does not globally disable operator hooks. Adapter-free `noforge` retains native
+execution, follow-ups, local/archive work and foreign inspection with Git and no
+provider credentials, Python or service.

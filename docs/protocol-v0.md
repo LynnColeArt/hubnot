@@ -359,3 +359,42 @@ histories that contain them. Exact container/schema/answer references participat
 in reader, quarantine and shallow recovery closure before promotion. See
 [Native resources](resources-v1.md) for typed schemas, command grammar, conflict
 projection, bounds and authority limits.
+
+## Independent audit facts and portable observations
+
+The additive `audit.rule-authorize`, `audit.rule-revoke`, `audit.request` and
+`audit.result` kinds use the existing signed `hn/0` actor envelope with a strict
+versioned `audit` payload. Absent audit fields remain omitted: earlier signed
+encodings, signatures and IDs do not change. Older clients reject unknown kinds
+and must be upgraded before selecting histories containing these facts.
+[Audit schemas](audits-v1.md) define exact policy/scope, predecessor, target,
+rule-definition, requester/executor, outcome, finding, log and backend bindings.
+Results are observational: neither passed nor failed audit facts qualify as
+`run.result`, review, proposal acceptance or merge evidence. Follow-up issues
+use ordinary signed native issue state with finding/request/result links.
+
+Historical audit admission validates recorded policy, exact relationships,
+source/target objects, typed attachments and bounded logs identically for local
+writes, fetched histories, shallow recovery and portable imports. Audit snapshot
+packs preserve exact required target/rule trees; an absent unreferenced parent
+of a snapshot target is allowed, while ordinary incomplete selected ancestry
+still refuses. Structural/type checks precede accepted visibility. Read validation
+needs no private audit anchor. Current authoring/execution separately requires
+explicit local adoption of a named authority branch and its current policy,
+roles and unconflicted rule heads; imported history never supplies that choice.
+
+[Project snapshots](project-migration.md) use `hn.project-snapshot/1`; uncompressed
+portable tar archives use `hn.project-archive/1`, canonical manifests and
+content-addressed blobs. These are new containers, not a rewrite of signed facts
+or a standard `git bundle`. Exact selected native refs/dependencies are validated
+in private quarantine before guarded promotion to remote-observation refs.
+Signing-owned actor streams, private keys, local audit anchors and active
+destination policy are not imported. Explicit selected committed history remains
+exact, including historical sensitive bytes; export is not a secret scrubber.
+
+Foreign records preserve source identity, attribution, topology and verified
+retrieved bytes. Reviews, users, permissions, CI and workflows remain inert
+observations and grant no native identity, policy or execution authority.
+[Saved migration](migration-engine.md) binds immutable observations, destination
+baselines, explicit decisions and dependent write payloads. Source inspection,
+archive creation and admission never implicitly execute content or publish code.
