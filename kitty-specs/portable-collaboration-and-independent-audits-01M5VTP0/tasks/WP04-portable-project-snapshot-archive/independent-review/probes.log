@@ -1,0 +1,16 @@
+=== RUN   TestIndependentWP04FullHistoryAndHostileObjectSets
+=== RUN   TestIndependentWP04FullHistoryAndHostileObjectSets/sha1
+=== RUN   TestIndependentWP04FullHistoryAndHostileObjectSets/sha1/missing-ancestor
+=== RUN   TestIndependentWP04FullHistoryAndHostileObjectSets/sha1/valid-unrelated-object
+=== RUN   TestIndependentWP04FullHistoryAndHostileObjectSets/sha256
+=== RUN   TestIndependentWP04FullHistoryAndHostileObjectSets/sha256/missing-ancestor
+=== RUN   TestIndependentWP04FullHistoryAndHostileObjectSets/sha256/valid-unrelated-object
+--- PASS: TestIndependentWP04FullHistoryAndHostileObjectSets (0.22s)
+    --- PASS: TestIndependentWP04FullHistoryAndHostileObjectSets/sha1 (0.11s)
+        --- PASS: TestIndependentWP04FullHistoryAndHostileObjectSets/sha1/missing-ancestor (0.01s)
+        --- PASS: TestIndependentWP04FullHistoryAndHostileObjectSets/sha1/valid-unrelated-object (0.02s)
+    --- PASS: TestIndependentWP04FullHistoryAndHostileObjectSets/sha256 (0.11s)
+        --- PASS: TestIndependentWP04FullHistoryAndHostileObjectSets/sha256/missing-ancestor (0.01s)
+        --- PASS: TestIndependentWP04FullHistoryAndHostileObjectSets/sha256/valid-unrelated-object (0.02s)
+PASS
+ok  	hubnot	1.232s

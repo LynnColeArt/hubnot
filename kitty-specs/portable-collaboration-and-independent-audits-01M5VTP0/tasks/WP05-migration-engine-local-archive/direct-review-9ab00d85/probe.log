@@ -1,0 +1,8 @@
+=== RUN   TestReviewWP05MissingWorktreeBacklink
+    zz_wp05_direct_review_test.go:57: applyErr=<nil> installed="8c3e979edf54260187d621adaf0de097951b64fa" markers="UNSELECTED /tmp/TestReviewWP05MissingWorktreeBacklink3458881250/005/unrelated\nUNSELECTED /tmp/TestReviewWP05MissingWorktreeBacklink3458881250/005/unrelated\n"
+    zz_wp05_direct_review_test.go:60: anchored controlErr=bounded Git 8c3e979edf54260187d621adaf0de097951b64fa failed: exit status 128 markers="UNSELECTED /tmp/TestReviewWP05MissingWorktreeBacklink3458881250/005/unrelated\nUNSELECTED /tmp/TestReviewWP05MissingWorktreeBacklink3458881250/005/unrelated\nDESTINATION /tmp/TestReviewWP05MissingWorktreeBacklink3458881250/003/destination\nDESTINATION /tmp/TestReviewWP05MissingWorktreeBacklink3458881250/003/destination\n"
+    zz_wp05_direct_review_test.go:63: broken worktree registration must fail before promotion/hooks
+--- FAIL: TestReviewWP05MissingWorktreeBacklink (0.20s)
+FAIL
+FAIL	hubnot	0.215s
+FAIL

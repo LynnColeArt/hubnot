@@ -1,0 +1,7 @@
+=== RUN   TestWP03ReviewAuthenticatedLinksAndConcurrentAssociations
+--- PASS: TestWP03ReviewAuthenticatedLinksAndConcurrentAssociations (1.41s)
+=== RUN   TestWP03ReviewUnicodeCollisionSelectiveRecovery
+    zz_wp03_review_test.go:63: five Unicode ambiguity selections preserved refs/private state/signed result/issue count=1; selective and cross-result dedup returned sha256:7cdb4e7927ff2c8f9b8f82b0ae24c7bcbb89c026e4d4f2e3c5aac1d743e6b6a9
+--- PASS: TestWP03ReviewUnicodeCollisionSelectiveRecovery (8.42s)
+PASS
+ok  	hubnot	10.844s

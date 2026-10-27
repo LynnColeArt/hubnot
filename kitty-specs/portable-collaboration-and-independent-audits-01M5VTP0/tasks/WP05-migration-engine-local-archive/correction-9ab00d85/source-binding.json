@@ -1,0 +1,15 @@
+{
+  "source_head": "9ab00d85dee0fac114f303d5eecd2cd7e00f5cae",
+  "wp05_fix_base": "3269fabbbdb526830acddc72f9450d6519062414",
+  "source_worktree": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-d",
+  "fix_scope": "migration_native.go only product file; migration_native_test.go only test file; no other lane changes vs 3269fabb",
+  "contract": "PRIMARY contracts/migration-v1.md (Locator equality, sealed checkpoint, uncertain write semantics)",
+  "response_to": "review-feedback-1.md P1 + hook-probe-ecaffbfc (event 01M5WEY6TPCJ8ZZJAE3YS8B8C3)",
+  "file_sha256": {
+    "migration_native.go": "026710676834d242efa04ada303ca14656c1c215ddcb4dbedf888eb103803735",
+    "migration_native_test.go": "88753dfbc7bf5892f80d4670dcf7e4e657c5dace4004d1b56fa3065dbc62300f",
+    "migration_engine.go": "52c2f7187cbacfc8022cfa095195046b4579bf7716f0ad02512fdc3c8d7bbc5d",
+    "migration_local.go": "5b22f2936f923df274af840ca179dfbdd25830dfdd1a4dd2d8f878d5c9955307",
+    "project_snapshot.go": "ea5ce6fb2688a91e0398661320d3c0d8af3b6736d194b808ef51f48368fd11f4"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "source_head": "ecaffbfc89affc63bf6af7289a55cd3ac403bdff",
+  "wp05_diff_base": "a99daad2",
+  "source_worktree": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-d",
+  "contract": "PRIMARY contracts/migration-v1.md (required Locator and sealed initial checkpoint)",
+  "scope": "No source/product edits. Overlay-only independent production boundary probe. Bare + ordinary worktree actual execution; linked worktree required correction validation, not yet claimed exercised.",
+  "checks": {
+    "existing_migration_race": {
+      "exit": 0,
+      "elapsed_seconds": 7.91
+    },
+    "internal_migration_race": {
+      "exit": 0,
+      "elapsed_seconds": 1.057
+    },
+    "hook_probe_race": {
+      "exit": 1,
+      "elapsed_seconds": 0.398,
+      "subtests_failed": [
+        "bare",
+        "worktree"
+      ]
+    },
+    "full_suite": "Reused checksummed fixed-head implementation evidence; no duplicate full suite."
+  },
+  "file_sha256": {
+    "migration_native.go": "b937fd620a315e13aab32e052cc42d4071c365f49d5640228943788d4784ae65",
+    "project_snapshot.go": "ea5ce6fb2688a91e0398661320d3c0d8af3b6736d194b808ef51f48368fd11f4",
+    "migration_engine.go": "52c2f7187cbacfc8022cfa095195046b4579bf7716f0ad02512fdc3c8d7bbc5d",
+    "migration_local.go": "5b22f2936f923df274af840ca179dfbdd25830dfdd1a4dd2d8f878d5c9955307"
+  }
+}

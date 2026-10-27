@@ -16,9 +16,9 @@ The current operational alpha supports signed issues, planning projects and item
 threaded discussions, versioned native workflows, immutable proposal
 candidates and revisions, reviews, CI requests/results/logs, governance
 decisions and merge facts, distinct device actors, policy amendments, selected
-quarantined replication, exact shallow-history recovery, and deliberate signed
-agent memory. It remains an experimental protocol, not a stable or hardened
-multi-tenant system.
+quarantined replication, exact shallow-history recovery, deliberate signed
+agent memory, portable project migrations and independent observational audits.
+It remains an experimental protocol, not a stable or hardened multi-tenant system.
 
 ## Project status
 
@@ -88,15 +88,35 @@ are not required for the following build and test commands.
 go build -trimpath -o hn .
 go test -count=1 ./...
 
-# Optional: omit the GitHub transport while retaining all native commands.
+# Omit GitHub only, or every network adapter. Native commands remain available.
 go build -trimpath -tags nogithub -o hn-local .
+go build -trimpath -tags noforge -o hn-native .
 ```
 
 The first release's separate `build-release.py` packaging script requires
 Python 3.12+, Git, and Go 1.26.4 to reproduce its archives. That requirement is
-limited to that packaging script. For the next release, packaging must use
-**Go and Git alone** and run on Linux, macOS, and Windows. The published first
-release stays unchanged; this requirement does not announce Windows binaries.
+limited to that historical packaging script. Current source includes the
+Go/Git-only packager:
+
+```sh
+go build -trimpath -o hn-release ./cmd/hn-release
+./hn-release --rev COMMITTED_REV --version 0.0.2-dev --out NEW_DIRECTORY
+```
+
+The output directory must not exist. Optional `--source DIRECTORY`,
+`--targets linux/amd64,linux/arm64,darwin/amd64,darwin/arm64` and
+`--variants standard,native-only` select declared inputs. The packager isolates
+the exact committed source, disables automatic VCS stamping, uses no shell or
+module network, and writes normalized binary/source archives, `BUILD.json`,
+`PROVENANCE.json` and `SHA256SUMS`. It never tags or publishes. Current
+native-only packages exclude all network adapters with `nogithub,noforge`;
+the published first release's native-only assets excluded GitHub only.
+
+The packager cross-compiles for macOS and Windows; execution on those packager
+hosts remains unverified for this delivery. CLI target cross-compilation also
+requires separate runtime evidence. The download/platform statements above
+refer to the immutable first release, whose tags and assets stay unchanged.
+Windows CLI distribution remains outside the current target set.
 
 The end-to-end acceptance scenarios compile the CLI and exercise the
 self-hosted governance/CI loop, repository-native agent memory, and rich issues
@@ -110,7 +130,7 @@ go test -count=1 -run '^TestOperationalRichIssue' -v ./...
 Run the full local release checks with:
 
 ```sh
-go test -race -count=1 ./...
+go test -race -timeout 20m ./...
 go vet ./...
 git diff --check
 ```
@@ -121,6 +141,47 @@ replication, inspection, or verification commands. The explicit unsafe host
 executor remains available for controlled debugging. macOS has no bundled safe
 CI execution backend; host execution requires the existing explicit
 `--allow-unsafe-host-execution` opt-in.
+
+## Portable projects and independent audits
+
+[Guided and scripted migration](docs/migration-cli.md) uses one saved
+plan/apply/resume engine for local repositories, archives and explicitly selected
+providers. Inspect capabilities, source bytes and loss/mapping findings before
+writing; apply requires `--confirm-apply` or the exact guided answer `APPLY`.
+A timeout or negative lookup never authorizes repeating an uncertain create.
+[Snapshots](docs/project-migration.md) retain selected Git history, exact signed
+native facts and retrieved attributed foreign records/blobs. Import preserves
+destination governance and private identity state; source history grants no
+native roles. Offline inspection and local continuation work with `noforge`.
+The [provider guide](docs/github-interoperability.md) distinguishes tested
+profiles, native mappings, raw source preservation and unavailable recreation.
+Existing explicit `hn transfer` behavior remains available.
+
+[Independent audits](docs/audits-v1.md) require optional committed audit roles,
+a separately adopted private authority anchor, owner-authorized rules, an
+explicit request and a separate execute command. For example, after declaring
+the roles and committing `.hn/pipelines/check.json`:
+
+```sh
+hn audit authority set --ref refs/heads/main --expect absent
+hn audit rule authorize check --source pipeline --at HEAD
+hn audit request --at CODE_REV --rule check --operation inspect-release
+hn audit execute FULL_REQUEST --backend sandbox
+hn audit show FULL_RESULT
+hn audit follow-up FULL_RESULT --operation triage-release
+```
+
+Reads need no signing key. Audits can inspect old or already merged code without
+a proposal. Passing and failing audit results neither block nor qualify proposal
+CI, reviews, acceptance or merge. Execution preserves the sandbox default;
+`--backend host` requires `--allow-unsafe-host-execution` on every invocation.
+Follow-ups are explicit linked native issues, deduplicated across retries and
+later results without overwriting operator edits. Concurrent independent
+publishers remain visible; there is no distributed exactly-once guarantee.
+Imports, requests, initialization, upgrades and merges start no audit worker.
+Protected checks, automerge and audits are independent opt-ins, all disabled
+unless explicitly configured. No scheduler, service or provider account is
+required.
 
 ## Start a repository
 

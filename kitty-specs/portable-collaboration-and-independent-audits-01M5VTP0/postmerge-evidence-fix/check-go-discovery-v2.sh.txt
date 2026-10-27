@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+evidence_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "$evidence_directory/source-guard-v2.sh.txt"
+negative_select_and_guard "$1" "$2"
+evidence_graph=$(mktemp /tmp/hubnot-go-graph.XXXXXX)
+trap 'rm -f "$evidence_graph"' EXIT
+if git -C "$negative_repo" ls-files '*.go' | grep '^kitty-specs/'; then
+  printf 'REFUSED: historical evidence is discoverable Go source\n' >&2
+  exit 1
+fi
+go -C "$negative_repo" list ./... | sort > "$evidence_graph"
+diff -u "$evidence_directory/approved-c4-package-graph.txt" "$evidence_graph"
+[ "$(wc -l < "$evidence_graph")" -eq 12 ]
+cat "$evidence_graph"
+printf 'PASS actual Go ./... graph equals approved c4: 12 real packages, zero evidence packages\n'
+negative_select_and_guard "$negative_repo" "$negative_expected"

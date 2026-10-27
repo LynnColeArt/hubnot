@@ -1,0 +1,556 @@
+{
+  "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+  "criteria": {
+    "FR-001": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "policy_rules_acceptance_test.go:TestPolicyRulesPublicAcceptance",
+        "audit_protocol_test.go:TestAuditFactsNeverSatisfyProposalEvidence"
+      ],
+      "negative_invariants": "Init installs no policy; no-anchor/unsafe-host audit refusal preserves accepted refs. Failed audit leaves exact public proposal readiness unchanged, cannot satisfy CI or permit decide/merge; real native CI permits merge despite audit failure. Existing optional protected-check/automerge public matrix remains unchanged.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-002": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "project_snapshot_test.go:TestProjectSnapshotExactSignedHistoryAndIsolation",
+        "migration_native_test.go:TestMigrationAuditOnlyClosurePrivateExportAndLocalAdmission"
+      ],
+      "negative_invariants": "Selected code/native dependency closure and actual payload/signature/attachment bytes remain exact; private identity, anchor, journals, unrelated refs and working junk stay excluded. Export does not scrub selected committed history.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-003": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_local_test.go:TestMigrationLocalContinuationUsesOwnSignerAndKeepsDestinationPolicy",
+        "project_snapshot_test.go:TestProjectSnapshotKeylessObservedHistoriesRoundTrip"
+      ],
+      "negative_invariants": "Archive admission preserves destination policy bytes; keyless read works, authoring/execute has no imported signer or anchor. Source streams remain observations; local continuation uses a distinct actor and only deliberate local policy/anchor/rule adoption enables new audit execution.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-004": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_acceptance_test.go:TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline",
+        "migration_github_test.go:TestGitHubMigrationSnapshotPRTopologyAttachmentsAndBudgets",
+        "migration_gitlab_test.go:TestGitLabSnapshotFidelityTopologyUploadsAndInertCI",
+        "migration_azure_test.go:TestAzureMigrationSnapshotPreservesCustomFieldsAttachmentsAndPRTopology"
+      ],
+      "negative_invariants": "Actual retrieved foreign workflow/blob bytes and attributed issue/comment parent links survive public saved-plan/archive/import/offline inspection. Provider suites distinguish source records/topology/raw bytes from unsupported destination recreation; unread URLs are not preserved data.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-005": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_acceptance_test.go:TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline",
+        "migration_native_test.go:TestMigrationComposedCodeAndCommunicationsGuardedGitResume"
+      ],
+      "negative_invariants": "One public engine serves local/imported/archive/provider routes. Saved export still applies after source checkout is renamed away; no implicit refresh, provider-specific engine or secret-bearing plan.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-006": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_acceptance_test.go:TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline",
+        "migration_commands_test.go:TestMigrationNoninteractiveAndGuidedMissingInputAreActionable"
+      ],
+      "negative_invariants": "Guided missing decisions/final-confirmation EOF never grants apply; preview/plan create no provider writes. Equivalent explicit plan/apply/resume/inspect command paths run in fresh processes.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-007": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "internal/migration/plan_test.go:TestPlanLossDecisionsAndDependencyBinding",
+        "migration_acceptance_test.go:TestMigrationCLIPublicRefusalsPreserveRemoteState"
+      ],
+      "negative_invariants": "Missing governance/loss decisions, stale scopes and unsupported mappings refuse before accepted refs/provider effects; findings preserve mapped/preserved/requires_mapping/unsupported/missing_dependency/identity_conflict distinctions.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-008": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "internal/migration/conformance_test.go:TestProviderCoverageRejectsVacuousAndDishonestProfiles",
+        "migration_github_test.go:TestGitHubMigrationRegistryCoverageAndConstructorsAreInert"
+      ],
+      "negative_invariants": "Shared registry has nonvacuous resource/direction coverage; unknown/all-unsupported profiles fail. Existing legacy transfer/public compatibility tests run unchanged in full suite; registration performs no network or credential effects.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-009": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_acceptance_test.go:TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline",
+        "migration_acceptance_test.go:TestMigrationCLIPublicRefusalsPreserveRemoteState"
+      ],
+      "negative_invariants": "Actual compiled self-hosted GitLab fixture to GitHub issue/comment + selected Git writes uses explicit mapping; lost comment response resumes in fresh process with confirmed issue receipt, no duplicate creates. Negative/inexact/private/stale cases preserve remote state.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-010": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_forgejo_test.go:TestForgejoMigrationEngineRecovery",
+        "migration_gitea_test.go:TestGiteaMigrationEngineRecovery",
+        "migration_gitea_test.go:TestV1MigrationRegistrationsOfflineAndDistinct",
+        "migration_gitea_test.go:TestGiteaMigrationProjectionLossRefusesRecovery"
+      ],
+      "negative_invariants": "Separate Forgejo/Gitea version profiles and useful issue/comment directions are tested; version/resource/identity guards and incomplete full-projection proof refuse without duplicate effects. Shared HTTP transport does not grant profile equivalence.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-011": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_bitbucket_test.go:TestBitbucketRegisteredOfflineSnapshot",
+        "migration_bitbucket_test.go:TestBitbucketUnsupportedAndMissingDifferFromEmpty",
+        "migration_bitbucket_test.go:TestBitbucketSharedGitAndOfflineNativePreservation"
+      ],
+      "negative_invariants": "Bitbucket Cloud is useful source preservation only; retired issues, unavailable reads and destination recreation are explicitly unsupported, never empty/preserved success or Jira substitution. Code + conversation + offline native preservation works.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-012": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationAzureBoardsProjectOnlyPublicApply",
+        "migration_azure_test.go:TestAzureMigrationServerPATReadsAndWrites",
+        "internal/migration/plan_test.go:TestPlanDestinationScopeKeepsProjectAndRepositorySeparate"
+      ],
+      "negative_invariants": "Positive compiled saved plan/apply/resume creates exactly one mapped Boards work item and comment with Project and no Repository, explicit process/type/state. Planning writes zero; unexpected repository requests fail fixture. Repository-scoped providers retain scope guards; Services/Server and bearer/PAT remain explicit.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-013": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_acceptance_test.go:TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline",
+        "migration_engine_test.go:TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries",
+        "migration_journal_test.go:TestMigrationMissingCheckpointNeverReplaysCreates",
+        "migration_journal_test.go:TestMigrationDestinationChangeRefusedBeforeAnyEffect",
+        "migration_native_test.go:TestMigrationNativeLostAckReconcilesExactRefs"
+      ],
+      "negative_invariants": "Persisted prepared/inflight/confirmed state binds actual payload/digest and immutable prerequisite receipts. Missing checkpoint, actor/destination changes and negative/ambiguous/private/inexact observations never repeat uncertain creates; exact positive full projection or actual guarded Git refs reconcile.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-014": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "audit_commands_test.go:TestAuditPublicOperatorReferenceHookAndInertSources",
+        "audit_protocol_test.go:TestAuditWorkflowAuthorizationIsExplicitAndRevisionBound",
+        "migration_github_test.go:TestGitHubMigrationWorkflowSourceIsPinnedAndInert"
+      ],
+      "negative_invariants": "Foreign source/users/reviews/CI/workflows grant no signer, native role, policy, audit anchor or runner authority and execute nothing on import/request. Explicit conversion and separate local authorization are required; operator Git ref hooks retain normal behavior.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-015": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "migration_commands_test.go:TestMigrationCLINativeOfflineBuildVariants"
+      ],
+      "negative_invariants": "Three actual compiled variants execute native collaboration, saved local/archive migration, foreign-byte inspection, audit execute/follow-up and Git replication under closed HOME/Git-only PATH/no provider credentials/Python/Go/services. Actual root dependencies, symbols and GoFiles exclude GH only under nogithub/all clients under noforge.",
+      "artifacts": [
+        "raw/compiled-exclusion-verification.json",
+        "raw/deps-standard.log",
+        "raw/deps-nogithub.log",
+        "raw/deps-noforge.log",
+        "raw/files-standard.log",
+        "raw/files-nogithub.log",
+        "raw/files-noforge.log",
+        "raw/symbols-standard.log",
+        "raw/symbols-nogithub.log",
+        "raw/symbols-noforge.log",
+        "raw/full-race.log",
+        "raw/public-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-016": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "audit_protocol_test.go:TestAuditFactsNeverSatisfyProposalEvidence",
+        "audit_protocol_test.go:TestAuditOldEventEncodingPreserved"
+      ],
+      "negative_invariants": "Distinct signed audits inspect resolved old/already-merged code independently of proposals. Passed and failed audit facts are refused as run/review/acceptance evidence; earlier encoding bytes remain unchanged.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-017": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "audit_commands_test.go:TestAuditPublicOperatorReferenceHookAndInertSources",
+        "audit_execution_test.go:TestAuditExecutionRefusesTransportAndMidRunAuthorityWithdrawal"
+      ],
+      "negative_invariants": "Request/import/inspect/init/upgrade/proposal/merge never starts audit work or a worker. Explicit execute keeps sandbox default and refuses host without per-invocation unsafe opt-in before result publication; mid-run authority withdrawal prevents publication. Source hooks differ from operator reference-transaction hooks.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-018": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "audit_protocol_test.go:TestAuditNativeReplicationOldCodeKeylessAndNoAnchor",
+        "audit_protocol_test.go:TestAuditMalformedSnapshotsRefuseLocalAndRemote",
+        "audit_protocol_test.go:TestAuditLocalAndFetchedForgedRelationshipParity",
+        "audit_protocol_test.go:TestAuditPackRejectsUnexpectedObjectsCorruptionAndMissingMembers",
+        "migration_native_test.go:TestMigrationOrdinaryIncompleteHistoryStillRefused"
+      ],
+      "negative_invariants": "Actual request/result/log/dependency bytes migrate and replicate for keyless inspection. Local/fetched forged or malformed relationships refuse before accepted visibility; snapshot-only missing unreferenced parent differs from incomplete ordinary ancestry; finding/log/tree bounds remain enforced.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-019": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "audit_authority_test.go:TestAuditAuthorityExplicitAnchorAndWithdrawal",
+        "audit_commands_test.go:TestAuditPublicCandidateStalePolicyAndRoleRefusals",
+        "audit_protocol_test.go:TestAuditForeignAuthorityHistoryCannotPoisonCurrentHeads"
+      ],
+      "negative_invariants": "Imported history never adopts/replaces private anchor; no-anchor author/execute refuses. Explicit local adoption succeeds; sole owner authorization, current lineage/policy/roles/head checks resist candidate/stale/foreign authority. Code-only policy-identical advances are allowed; withdrawal/revocation/conflict blocks new execution without erasing history.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-020": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "audit_followup_test.go:TestAuditPublicFollowUpInterruptedCreateRecoveryAndEditedIssue",
+        "audit_followup_test.go:TestAuditPublicFollowUpNormalizedCollisionPreservesState"
+      ],
+      "negative_invariants": "Public execute creates no issue implicitly; explicit linked follow-up deduplicates retry/later results and preserves edited issue/ref state. Collision refusal precedes intent/issue effects; ordinary Git replication retains finding/request/result links. Concurrent independent publishers remain an explicit limitation.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-021": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "internal/release/package_test.go:TestPackageReproducibleExactSourceAndProvenance",
+        "internal/release/package_test.go:TestPackagePinsRequestedCommitDespiteHEADAndReplaceRef",
+        "internal/release/package_test.go:TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution"
+      ],
+      "negative_invariants": "Existing Go/Git-only packager runs in empty environment with only Go/Git on PATH from exact committed source. Two all-target/variant outputs match; independent verifier checks every source/member/binary/BUILD/provenance/checksum/header/order/mode. No tags/releases/public assets change; default enclosing VCS stamp is not source authority.",
+      "artifacts": [
+        "raw/final-docs-c4aaa4e8/package-one.log",
+        "raw/final-docs-c4aaa4e8/package-two.log",
+        "raw/final-docs-c4aaa4e8/package-independent.log",
+        "raw/final-docs-c4aaa4e8/package-independent.log",
+        "raw/source-binding.json",
+        "raw/packager-windows-metadata.log",
+        "raw/packager-darwin-metadata.log",
+        "platform-final-arm/",
+        "platform-linux-amd64/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "FR-022": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants"
+      ],
+      "negative_invariants": "README/CHANGELOG/protocol/threat/provider guide match shipped tested command grammar, all provider profiles and native mapping vs raw preservation vs recreation limits; audit independence, authority, recovery, noforge, Go/Git packaging and unavailable host/runtime boundaries are explicit. Existing immutable release documentation/bytes are preserved.",
+      "artifacts": [
+        "source README.md, CHANGELOG.md, docs/protocol-v0.md, docs/threat-model.md, docs/github-interoperability.md at c4aaa4e8",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/",
+        "raw/final-docs-c4aaa4e8/package-independent.log",
+        "platform-final-arm/summary.md"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "NFR-001": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "internal/migration/archive_test.go:TestSnapshotRefusesDependencyDigestAndBudgets",
+        "migration_github_test.go:TestGitHubMigrationSnapshotPRTopologyAttachmentsAndBudgets",
+        "migration_gitlab_test.go:TestGitLabSnapshotExactRecordBlobAndAggregateBudgets",
+        "migration_azure_test.go:TestAzureMigrationSnapshotBudgetsExactAndExcess"
+      ],
+      "negative_invariants": "Positive record/blob/ref/native-object/expansion budgets propagate through composed sources and verified ApplyContext blobs. Exact-boundary/excess and bounded pagination/wire tests refuse incomplete success; no unlimited zero/default bypass.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "NFR-002": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "internal/migration/archive_test.go:TestArchiveHostileMemberMatrix",
+        "internal/migration/archive_test.go:TestArchiveVerifiesBeforeWriting",
+        "project_snapshot_test.go:TestProjectSnapshotNativeDependencyAndHostileRefRefusal",
+        "migration_bitbucket_test.go:TestBitbucketSelectedAttachmentsStayBoundedAndOnOrigin"
+      ],
+      "negative_invariants": "Public hostile traversal plan leaves entire destination repository snapshot unchanged and writes no escaped file; digest/size/duplicate/link/unknown/oversize/corrupt/partial native failures refuse before accepted visibility. Provider attachment/pagination/redirect tests enforce origin/no credential forwarding.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/public-transcripts/",
+        "raw/migration-transcripts/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "NFR-003": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants"
+      ],
+      "negative_invariants": "Exact final source passes formatter, vet, build, meaningful ordinary/nogithub/noforge public acceptance and one unchanged unfiltered race -timeout20m. Owned/product diff is clean; inherited lane planning-only broad failure is preserved with canonical primary/root scope authority and final-consolidation obligation. Framework tests.architectural._gate_coverage remains no_coverage/UNVERIFIED, never a fake pass/skip.",
+      "artifacts": [
+        "raw/full-race.log",
+        "raw/vet.log",
+        "raw/build.log",
+        "raw/format.log",
+        "raw/public-nogithub.log",
+        "raw/public-noforge.log",
+        "raw/diff-owned.log",
+        "raw/diff-whole-product.log",
+        "raw/diff-whole-inherited-planning.log",
+        "raw/planning-whitespace-coordination.md"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    },
+    "NFR-004": {
+      "source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "proof_boundaries": [
+        "portable_collaboration_acceptance_test.go:TestPortableCollaborationIntegratedPublicVariants",
+        "internal/release/package_test.go:TestPackageReproducibleExactSourceAndProvenance"
+      ],
+      "negative_invariants": "All eleven outputs reproduce across independent temp builds. Packager WindowsAMD64/macOSARM64 cross-compilation is separate from runtime. Only actual LinuxAMD64 and LinuxARM64 packaged public journeys are qualified; no complete ARM Go suite, macOS/Windows host runtime or Windows CLI distribution is claimed.",
+      "artifacts": [
+        "raw/final-docs-c4aaa4e8/package-independent.log",
+        "raw/packager-windows-metadata.log",
+        "raw/packager-darwin-metadata.log",
+        "platform-final-arm/summary.md",
+        "platform-linux-amd64/"
+      ],
+      "implementation_result": "pass",
+      "independent_review": "pending; implementer evidence is not WP approval",
+      "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+      "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+    }
+  },
+  "full_gate_go_source_commit": "8c88ede54ce98c176d0cec7211581de23140b923",
+  "final_source_binding": "raw/final-docs-c4aaa4e8/docs-only-source-binding.json"
+}

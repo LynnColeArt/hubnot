@@ -1,0 +1,5 @@
+=== RUN   TestMigrationDestinationStaleWorktreeRegistration
+    migration_native_test.go:786: Before landed marker reset: "UNSELECTED /tmp/TestMigrationDestinationStaleWorktreeRegistration150377678/005/unrelated\nUNSELECTED /tmp/TestMigrationDestinationStaleWorktreeRegistration150377678/005/unrelated\n"
+--- PASS: TestMigrationDestinationStaleWorktreeRegistration (0.19s)
+PASS
+ok  	hubnot	1.204s

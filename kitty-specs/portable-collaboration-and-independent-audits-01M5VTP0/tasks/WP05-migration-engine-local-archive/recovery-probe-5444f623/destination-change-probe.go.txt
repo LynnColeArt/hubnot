@@ -1,0 +1,10 @@
+func TestProbeSavedDestinationChangeRefusesBeforeWrite(t *testing.T) {
+ ctx:=context.Background()
+ snap, blobs:=migrationForeignSnapshot()
+ d:=&migrationReceiptDestination{locator:migration.Locator{Kind:"fixture",Repository:"planned-destination"}}
+ s,e:=PrepareMigration(ctx,filepath.Join(t.TempDir(),"session"),snap,blobs,migration.Selection{Destination:d.locator},d,migration.DefaultLimits(),nil)
+ if e!=nil {t.Fatal(e)}
+ d.locator.Repository="different-destination"
+ e=ApplyMigration(ctx,s,d,"actor")
+ if d.creates!=0 || d.comments!=0 {t.Fatalf("changed destination detected only after mutation: issues=%d comments=%d err=%v",d.creates,d.comments,e)}
+}

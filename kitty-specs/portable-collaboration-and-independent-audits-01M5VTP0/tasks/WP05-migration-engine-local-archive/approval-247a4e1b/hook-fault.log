@@ -1,0 +1,6 @@
+=== RUN   TestMigrationDestinationStaleWorktreeRegistration
+    migration_native_test.go:793: some hook executed under a stale registration: "UNSELECTED /tmp/TestMigrationDestinationStaleWorktreeRegistration3315364445/005/unrelated\nUNSELECTED /tmp/TestMigrationDestinationStaleWorktreeRegistration3315364445/005/unrelated\n"
+--- FAIL: TestMigrationDestinationStaleWorktreeRegistration (0.18s)
+FAIL
+FAIL	hubnot	0.193s
+FAIL

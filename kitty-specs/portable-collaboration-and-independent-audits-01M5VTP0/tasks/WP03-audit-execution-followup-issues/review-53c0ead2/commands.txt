@@ -1,0 +1,7 @@
+# Fixed source 53c0ead287307736e7db9a0e6c63a135a4a9d2a0; independent probes use a temporary test-only overlay.
+go test -race -overlay /tmp/hn-wp03-rereview-53c0ead2/overlay.json -run '^TestWP03Review' -count=1 -v .
+# exit0, 10.844s, independent-probes.log
+go test -race -run '^TestAudit(PublicExplicitExecutionFollowUpAndReplication|PublicFollowUpInterruptedCreateRecoveryAndEditedIssue|PublicFollowUpNormalizedCollisionPreservesState|PublicOperatorReferenceHookAndInertSources|PublicInvalidUnicodeRefusesBeforeMutation|ExecutionRefusesTransportAndMidRunAuthorityWithdrawal|RequestGuardClientTerminationReleasesPreparedLock)$' -count=1 -v .
+# exit0,29.931s,focused-existing.log
+sha256sum -c /tmp/hn-wp03-rereview-53c0ead2/source.sha256
+git diff --check 6d687af5..53c0ead2

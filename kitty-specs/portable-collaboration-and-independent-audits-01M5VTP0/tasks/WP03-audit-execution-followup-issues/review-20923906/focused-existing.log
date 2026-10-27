@@ -1,0 +1,12 @@
+=== RUN   TestAuditPublicOperatorReferenceHookAndInertSources
+--- PASS: TestAuditPublicOperatorReferenceHookAndInertSources (2.82s)
+=== RUN   TestAuditPublicInvalidUnicodeRefusesBeforeMutation
+--- PASS: TestAuditPublicInvalidUnicodeRefusesBeforeMutation (0.49s)
+=== RUN   TestAuditExecutionRefusesTransportAndMidRunAuthorityWithdrawal
+--- PASS: TestAuditExecutionRefusesTransportAndMidRunAuthorityWithdrawal (0.63s)
+=== RUN   TestAuditRequestGuardClientTerminationReleasesPreparedLock
+--- PASS: TestAuditRequestGuardClientTerminationReleasesPreparedLock (0.04s)
+=== RUN   TestAuditPublicFollowUpInterruptedCreateRecoveryAndEditedIssue
+--- PASS: TestAuditPublicFollowUpInterruptedCreateRecoveryAndEditedIssue (2.76s)
+PASS
+ok  	hubnot	7.765s

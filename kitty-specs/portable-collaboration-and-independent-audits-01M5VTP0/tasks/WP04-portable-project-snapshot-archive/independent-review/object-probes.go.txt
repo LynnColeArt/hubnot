@@ -1,0 +1,44 @@
+package main
+import (
+ "bufio"
+ "bytes"
+ "context"
+ "crypto/sha1"
+ "crypto/sha256"
+ "encoding/hex"
+ "fmt"
+ "io"
+ "os/exec"
+ "path/filepath"
+ "sort"
+ "strings"
+ "testing"
+ "hubnot/internal/migration"
+)
+func TestIndependentWP04FullHistoryAndHostileObjectSets(t *testing.T) {
+ for _,format:=range []string{"sha1","sha256"} { t.Run(format,func(t *testing.T){
+  root:=t.TempDir()
+  git:=func(args ...string) string {t.Helper(); out,e:=exec.Command("git",append([]string{"-C",root},args...)...).CombinedOutput(); if e!=nil {t.Fatalf("git %v: %v %s",args,e,out)};return strings.TrimSpace(string(out))}
+  git("init","--quiet","--initial-branch=main","--object-format="+format)
+  git("config","user.name","Independent WP04 review");git("config","user.email","review@example.invalid")
+  git("-c","commit.gpgsign=false","commit","--allow-empty","-qm","oldest")
+  oldest:=git("rev-parse","HEAD")
+  git("-c","commit.gpgsign=false","commit","--allow-empty","-qm","newest")
+  newest:=git("rev-parse","HEAD")
+  l:=migration.DefaultLimits(); ctx:=context.Background()
+  p,e:=ExportProjectSnapshot(ctx,filepath.Join(root,".git"),[]string{"refs/heads/main"},l); if e!=nil{t.Fatal(e)};defer p.Close()
+  r,e:=p.Open(ctx,p.Snapshot.GitBundle);if e!=nil{t.Fatal(e)};raw,e:=io.ReadAll(r);r.Close();if e!=nil{t.Fatal(e)}
+  q,e:=StageProjectSnapshot(ctx,p.Snapshot,p,l);if e!=nil{t.Fatal(e)};defer q.Close()
+  for _,id:=range []string{oldest,newest}{if _,e:=gitOutputAt(q.GitDir,"cat-file","-e",id+"^{commit}");e!=nil{t.Fatalf("selected ancestor missing: %v",e)}}
+  records:=map[string][]byte{}; br:=bufio.NewReader(bytes.NewReader(raw));line,_:=br.ReadString('\n');if line!=projectGitSchema{t.Fatal("schema")}
+  for {line,e=br.ReadString('\n');if e==io.EOF{break};if e!=nil{t.Fatal(e)};var id,kind string;var n int;fmt.Sscanf(line,"%s %s %d",&id,&kind,&n);data:=make([]byte,n+1);if _,e=io.ReadFull(br,data);e!=nil{t.Fatal(e)};records[id]=append([]byte(line),data...)}
+  for _,attack:=range []string{"missing-ancestor","valid-unrelated-object"}{t.Run(attack,func(t *testing.T){
+   changed:=map[string][]byte{};for id,data:=range records{changed[id]=data}
+   if attack=="missing-ancestor"{delete(changed,oldest)}else{payload:=[]byte("valid unrelated review blob");data:=append([]byte(fmt.Sprintf("blob %d\x00",len(payload))),payload...);h:=sha1.Sum(data);id:=hex.EncodeToString(h[:]);if format=="sha256"{h:=sha256.Sum256(data);id=hex.EncodeToString(h[:])};changed[id]=[]byte(fmt.Sprintf("%s blob %d\n%s\n",id,len(payload),payload))}
+   ids:=[]string{};for id:=range changed{ids=append(ids,id)};sort.Strings(ids);var b bytes.Buffer;b.WriteString(projectGitSchema);for _,id:=range ids{b.Write(changed[id])}
+   s:=p.Snapshot;d:=migration.Digest(b.Bytes());s.GitBundle=d;s.Blobs=[]migration.Blob{{Digest:d,Size:int64(b.Len()),MediaType:"application/vnd.hn.git-objects"}}
+   if q,e:=StageProjectSnapshot(ctx,s,projectTestBlobs{d:b.Bytes()},l);e==nil{q.Close();t.Fatal("hostile object set accepted")}
+   if got:=git("rev-parse","refs/heads/main");got!=newest{t.Fatal("source ref changed")}
+  })}
+ })}
+}

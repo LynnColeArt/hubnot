@@ -1,0 +1,13 @@
+{
+  "product_commit": "5444f6236ded9c1732d0cb9e1744d75f28d86a1f",
+  "hash_algorithm": "sha256",
+  "git_blob_bytes": {
+    "migration_engine.go": "44f83f882f1a743bbcdc957dbfb47e6fa3574702faa19fd57026b83e318d7ca1",
+    "internal/migration/plan.go": "233a9b91494b342722cbf78ec918952fc346e3fd3a9ca737f75a6c58da46d165",
+    "internal/migration/progress.go": "7cf2a6c4a116fd6aa691ced4829bee0f305b16e6095a4a52c58f5c60ed847fd9",
+    "migration_journal.go": "e9be6dab0ad8d7daca8828c3b7d41d073edb5dbda2551891b15ba8b46849d17b",
+    "migration_engine_test.go": "3909c531ba19711c9c0de40e0bcc692ebde66e62084a20e93f1ec41dfc444163"
+  },
+  "scope": "Read-only debugging evidence; no lifecycle verdict or full-suite claim.",
+  "capture_note": "Logs transcribed verbatim from original captured go test stdout, with capture metadata prepended; no new test execution during packaging."
+}

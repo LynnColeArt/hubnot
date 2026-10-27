@@ -1,0 +1,60 @@
+focused-race EXIT 0
+focused-race-final EXIT 0
+2026-10-27T03:02:07Z START race
+2026-10-27T03:12:09Z EXIT race 1
+2026-10-27T03:13:05Z EXIT vet 0
+2026-10-27T03:13:27Z EXIT build 0
+2026-10-27T03:13:43Z START nogithub-focused
+2026-10-27T03:14:38Z EXIT nogithub-focused 0
+2026-10-27T03:14:38Z START noforge-focused
+2026-10-27T03:15:16Z EXIT noforge-focused 0
+2026-10-27T03:15:16Z START ordinary-build
+2026-10-27T03:15:17Z EXIT ordinary-build 0
+2026-10-27T03:15:17Z START nogithub-build
+2026-10-27T03:15:17Z EXIT nogithub-build 0
+2026-10-27T03:15:17Z START noforge-build
+2026-10-27T03:15:19Z EXIT noforge-build 0
+2026-10-27T03:15:19Z START dependencies
+2026-10-27T03:15:19Z EXIT dependencies 0
+2026-10-27T03:15:19Z START ordinary-deps
+2026-10-27T03:15:19Z EXIT ordinary-deps 0
+2026-10-27T03:15:19Z START nogithub-deps
+2026-10-27T03:15:20Z EXIT nogithub-deps 0
+2026-10-27T03:15:20Z START noforge-deps
+2026-10-27T03:15:20Z EXIT noforge-deps 0
+2026-10-27T03:15:20Z START noforge-symbols
+2026-10-27T03:15:20Z EXIT noforge-symbols 0
+2026-10-27T03:15:20Z START noforge-buildinfo
+2026-10-27T03:15:20Z EXIT noforge-buildinfo 0
+2026-10-27T03:15:20Z START ordinary-forgejo-capabilities
+2026-10-27T03:15:20Z EXIT ordinary-forgejo-capabilities 0
+2026-10-27T03:15:20Z START ordinary-gitea-capabilities
+2026-10-27T03:15:20Z EXIT ordinary-gitea-capabilities 0
+2026-10-27T03:15:20Z START nogithub-forgejo-capabilities
+2026-10-27T03:15:20Z EXIT nogithub-forgejo-capabilities 0
+2026-10-27T03:15:20Z START nogithub-gitea-capabilities
+2026-10-27T03:15:20Z EXIT nogithub-gitea-capabilities 0
+2026-10-27T03:15:20Z START noforge-provider-refusal
+2026-10-27T03:15:20Z EXIT noforge-provider-refusal 0
+2026-10-27T03:15:20Z START ordinary-native-cli
+2026-10-27T03:15:20Z EXIT ordinary-native-cli 0
+2026-10-27T03:15:20Z START nogithub-native-cli
+2026-10-27T03:15:20Z EXIT nogithub-native-cli 0
+2026-10-27T03:15:20Z START noforge-native-cli
+2026-10-27T03:15:20Z EXIT noforge-native-cli 0
+2026-10-27T03:15:20Z START noforge-files
+2026-10-27T03:15:20Z EXIT noforge-files 0
+2026-10-27T03:15:20Z START nogithub-files
+2026-10-27T03:15:20Z EXIT nogithub-files 0
+2026-10-27T03:15:20Z START format
+2026-10-27T03:15:20Z EXIT format 0
+2026-10-27T03:15:20Z START diff-check
+2026-10-27T03:15:20Z EXIT diff-check 0
+2026-10-27T03:15:20Z START tag-check
+2026-10-27T03:15:20Z EXIT tag-check 0
+2026-10-27T03:15:20Z PASS fixed-head validation
+2026-10-27T03:15:34Z START race-20m (same-head retry after preserved600s package timeout; no source/config/assertion changes)
+2026-10-27T03:15:57Z NOTE remaining-checks.sh PASS covers non-full checks only; original race timed out; race-20m result is pending
+2026-10-27T03:27:15Z EXIT race-20m 0
+2026-10-27T03:27:50Z EXIT mark-status 0
+2026-10-27T03:28:10Z EXIT for-review 0

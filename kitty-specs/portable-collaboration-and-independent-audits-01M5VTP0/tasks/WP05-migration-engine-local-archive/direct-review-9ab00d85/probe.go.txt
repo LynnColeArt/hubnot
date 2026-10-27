@@ -1,0 +1,85 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"hubnot/internal/migration"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestReviewWP05MissingWorktreeBacklink(t *testing.T) {
+	source := inReplicationTestRepository(t)
+	ctx := context.Background()
+	limits := migration.DefaultLimits()
+	snapshot, err := ExportProjectSnapshot(ctx, filepath.Join(source, ".git"), []string{"refs/heads/main"}, limits)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer snapshot.Close()
+	main := filepath.Join(t.TempDir(), "main")
+	dest := filepath.Join(t.TempDir(), "destination")
+	git := func(dir string, args ...string) []byte {
+		t.Helper()
+		out, err := projectGit(ctx, dir, nil, 4096, args...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	}
+	git("", "init", "--quiet", main)
+	maindir := filepath.Join(main, ".git")
+	git(maindir, "-C", main, "-c", "user.name=Setup", "-c", "user.email=setup@hn.invalid", "commit", "--allow-empty", "-q", "-m", "setup")
+	git(maindir, "worktree", "add", "--detach", "--quiet", dest)
+	gitdir, err := migrationDestinationGitDir(ctx, dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	git(maindir, "config", "core.hooksPath", "relative-hooks")
+	marker := filepath.Join(t.TempDir(), "markers")
+	hook := func(base, label string, reject bool) {
+		t.Helper()
+		hooks := filepath.Join(base, "relative-hooks")
+		if err := os.MkdirAll(hooks, 0700); err != nil {
+			t.Fatal(err)
+		}
+		content := "#!/bin/sh\nprintf '" + label + " %s\\n' \"$PWD\" >> '" + marker + "'\n"
+		if reject {
+			content += "exit 1\n"
+		}
+		if err := os.WriteFile(filepath.Join(hooks, "reference-transaction"), []byte(content), 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	unrelated := filepath.Join(t.TempDir(), "unrelated")
+	hook(dest, "DESTINATION", true)
+	hook(unrelated, "UNSELECTED", false)
+	// A moved or stale linked-worktree registration names a missing .git side.
+	// The selected destination still has its actual .git pointer.
+	if err := os.WriteFile(filepath.Join(gitdir, "gitdir"), []byte(filepath.Join(unrelated, ".git")+"\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	d := LocalMigrationDestination{Repository: dest}
+	session, err := PrepareMigration(ctx, filepath.Join(t.TempDir(), "session"), snapshot.Snapshot, snapshot, migration.Selection{Destination: d.Locator()}, d, limits, []migration.Decision{{FindingID: "local/governance", Action: "preserve", Mapping: json.RawMessage("{}")}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	applyErr := ApplyMigration(ctx, session, d, "")
+	markers, _ := os.ReadFile(marker)
+	ref, _ := migrationObservationRef(snapshot.Snapshot.SourceID, snapshot.Snapshot.NativeRefs[0])
+	installed, err := migrationReadRef(ctx, gitdir, ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("applyErr=%v installed=%q markers=%q", applyErr, installed, markers)
+	_, controlErr := projectGit(ctx, gitdir, nil, 4096, "-C", dest, "update-ref", "refs/hn/remotes/control/code/main", snapshot.Snapshot.NativeRefs[0].OID)
+	controlMarkers, _ := os.ReadFile(marker)
+	t.Logf("anchored controlErr=%v markers=%q", controlErr, controlMarkers)
+	if controlErr == nil {
+		t.Fatal("invalid control: selected destination hook did not reject")
+	}
+	if applyErr == nil || installed != "" || len(markers) > 0 {
+		t.Fatalf("broken worktree registration must fail before promotion/hooks")
+	}
+}

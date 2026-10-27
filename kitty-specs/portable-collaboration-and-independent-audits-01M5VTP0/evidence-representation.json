@@ -1,0 +1,20 @@
+{
+  "schema": "evidence-representation/1",
+  "reason": "Lossless archival of two original WP01 negative-control logs containing whitespace; no test/source/verdict bytes altered. Historical references resolve to the identical decoded bytes.",
+  "records": [
+    {
+      "original_path": "tasks/WP01-go-only-release-packager/fix-cycle-1-evidence-3e6b301b/filter-package-cli-red.log",
+      "lossless_path": "tasks/WP01-go-only-release-packager/fix-cycle-1-evidence-3e6b301b/filter-package-cli-red.log.gz",
+      "uncompressed_sha256": "00800155a8b9a2f66a657e346d497febc532a29190c4f1f5ab30703fca9b7ea8",
+      "compressed_sha256": "1207200bfe8b478cb9471555ac9d223a1a5bb504ce237384649f0ac1e63f6bba",
+      "original_bytes": 2758
+    },
+    {
+      "original_path": "tasks/WP01-go-only-release-packager/review-evidence-86dc0067/reproduce-clean-filter.log",
+      "lossless_path": "tasks/WP01-go-only-release-packager/review-evidence-86dc0067/reproduce-clean-filter.log.gz",
+      "uncompressed_sha256": "9c19cfc674eac50715bd7b28cb6bb5c02c15c00f67ccce141fccf622823f41e7",
+      "compressed_sha256": "b8f185b40bd520e8ca76982fb098cf603e89c8b709dabf3604449a5f0dbb6f76",
+      "original_bytes": 706
+    }
+  ]
+}

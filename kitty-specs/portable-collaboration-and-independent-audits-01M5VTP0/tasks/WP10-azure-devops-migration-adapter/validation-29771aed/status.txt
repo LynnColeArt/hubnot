@@ -1,0 +1,56 @@
+2026-10-27T03:38:13Z START race
+2026-10-27T03:50:46Z EXIT race 1
+2026-10-27T03:52:24Z START vet
+2026-10-27T03:52:26Z EXIT vet 0
+2026-10-27T03:52:26Z START build
+2026-10-27T03:52:27Z EXIT build 0
+2026-10-27T03:52:27Z START nogithub-focused
+2026-10-27T03:53:11Z EXIT nogithub-focused 0
+2026-10-27T03:53:11Z START noforge-focused
+2026-10-27T03:53:45Z EXIT noforge-focused 0
+2026-10-27T03:53:46Z START ordinary-build
+2026-10-27T03:53:46Z EXIT ordinary-build 0
+2026-10-27T03:53:46Z START nogithub-build
+2026-10-27T03:53:47Z EXIT nogithub-build 0
+2026-10-27T03:53:47Z START noforge-build
+2026-10-27T03:53:50Z EXIT noforge-build 0
+2026-10-27T03:53:50Z START modules
+2026-10-27T03:53:50Z EXIT modules 0
+2026-10-27T03:53:50Z START ordinary-deps
+2026-10-27T03:53:50Z EXIT ordinary-deps 0
+2026-10-27T03:53:50Z START nogithub-deps
+2026-10-27T03:53:50Z EXIT nogithub-deps 0
+2026-10-27T03:53:50Z START noforge-deps
+2026-10-27T03:53:50Z EXIT noforge-deps 0
+2026-10-27T03:53:50Z START noforge-symbols
+2026-10-27T03:53:50Z EXIT noforge-symbols 0
+2026-10-27T03:53:50Z START noforge-buildinfo
+2026-10-27T03:53:50Z EXIT noforge-buildinfo 0
+2026-10-27T03:53:50Z START ordinary-legacy
+2026-10-27T03:53:50Z EXIT ordinary-legacy 0
+2026-10-27T03:53:50Z START nogithub-legacy
+2026-10-27T03:53:50Z EXIT nogithub-legacy 0
+2026-10-27T03:53:50Z START noforge-native-help
+2026-10-27T03:53:50Z EXIT noforge-native-help 0
+2026-10-27T03:53:50Z START ordinary-native-cli
+2026-10-27T03:53:51Z EXIT ordinary-native-cli 0
+2026-10-27T03:53:51Z START nogithub-native-cli
+2026-10-27T03:53:51Z EXIT nogithub-native-cli 0
+2026-10-27T03:53:51Z START noforge-native-cli
+2026-10-27T03:53:51Z EXIT noforge-native-cli 0
+2026-10-27T03:53:51Z START ordinary-files
+2026-10-27T03:53:51Z EXIT ordinary-files 0
+2026-10-27T03:53:51Z START nogithub-files
+2026-10-27T03:53:51Z EXIT nogithub-files 0
+2026-10-27T03:53:51Z START noforge-files
+2026-10-27T03:53:51Z EXIT noforge-files 0
+2026-10-27T03:53:51Z START format
+2026-10-27T03:53:51Z EXIT format 0
+2026-10-27T03:53:51Z START diff-check
+2026-10-27T03:53:51Z EXIT diff-check 0
+2026-10-27T03:53:51Z START tag-check
+2026-10-27T03:53:51Z EXIT tag-check 0
+2026-10-27T03:53:51Z PASS post-race checks; full race remains failed pending authorized serialized rerun
+2026-10-27T04:00:07Z START race-attempt2 (coordinator-serialized same-head unfiltered retry)
+2026-10-27T04:11:00Z EXIT race-attempt2 0
+2026-10-27T04:11:00Z PASS fixed-head validation after serialized full-race retry; all distinct checks passed

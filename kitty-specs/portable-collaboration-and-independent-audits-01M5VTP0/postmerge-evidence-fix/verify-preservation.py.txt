@@ -1,0 +1,18 @@
+import hashlib, json, pathlib, stat, sys
+repo = pathlib.Path(sys.argv[1]).resolve()
+manifest = json.loads((pathlib.Path(__file__).parent / "evidence-representation.json").read_text())
+mapping = {row["original_path"]: row["preserved_path"] for row in manifest["moves"]}
+for original, expected in manifest["protected_historical_files"].items():
+    current = repo / mapping.get(original, original)
+    assert current.is_file(), str(current)
+    assert hashlib.sha256(current.read_bytes()).hexdigest() == expected["sha256"], original
+    assert len(current.read_bytes()) == expected["size"], original
+    assert stat.S_IMODE(current.stat().st_mode) == expected["filesystem_mode"], original
+for original, preserved in mapping.items():
+    assert not (repo / original).exists(), original
+    print("Resolved historical overlay:", original, "->", preserved)
+wp12 = repo / "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8"
+for line in (wp12 / "SHA256SUMS").read_text().splitlines():
+    expected, name = line.split("  ", 1)
+    assert hashlib.sha256((wp12 / name).read_bytes()).hexdigest() == expected, name
+print("PASS preserved historical bytes/modes and all original literal WP12 SHA256SUMS entries")

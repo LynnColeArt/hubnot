@@ -1,0 +1,198 @@
+{
+  "schema": "wp12-independent-review/1",
+  "reviewer": "codex-integrated-independent-review",
+  "profile": "reviewer-renata",
+  "verdict": "approved",
+  "product_source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+  "product_source_tree": "7e39bfbb51c70dd588f849f1697e5c24d88e8907",
+  "combined_dependency_base": "c9a0092a81c65b3acb39685f36959a9b7ed5e022",
+  "checks": [
+    {
+      "command": "go test -race -count=1 -v -run '^Test(PortableCollaborationIntegratedPublicVariants|PortableCollaborationAzureBoardsProjectOnlyPublicApply|MigrationCLIGitLabToGitHubGuidedResumeAndOffline|AuditForeignAuthorityHistoryCannotPoisonCurrentHeads|MigrationMissingCheckpointNeverReplaysCreates)$' -timeout 6m .",
+      "working_directory": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k",
+      "result": "pass",
+      "actual_named_tests": [
+        "TestAuditForeignAuthorityHistoryCannotPoisonCurrentHeads",
+        "TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline",
+        "TestMigrationMissingCheckpointNeverReplaysCreates",
+        "TestPortableCollaborationIntegratedPublicVariants",
+        "TestPortableCollaborationAzureBoardsProjectOnlyPublicApply"
+      ],
+      "duration": "67.629s",
+      "live_log": "/tmp/wp12-independent-focused.log",
+      "log_sha256": "7c755dc6e9f55b115ec68689e87fc350fe3cae401c65b9bf57968c8aa2aafd30"
+    },
+    {
+      "command": "go test -race -count=1 -v -run '^Test(ForgejoMigrationEngineRecovery|GiteaMigrationEngineRecovery|V1MigrationRegistrationsOfflineAndDistinct|BitbucketRegisteredOfflineSnapshot|BitbucketUnsupportedAndMissingDifferFromEmpty|AzureMigrationServerPATReadsAndWrites|GitHubMigrationRegistryCoverageAndConstructorsAreInert|GitLabSnapshotExactRecordBlobAndAggregateBudgets)$' -timeout 3m .",
+      "working_directory": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k",
+      "result": "pass",
+      "actual_named_tests": [
+        "TestAzureMigrationServerPATReadsAndWrites",
+        "TestBitbucketRegisteredOfflineSnapshot",
+        "TestBitbucketUnsupportedAndMissingDifferFromEmpty",
+        "TestForgejoMigrationEngineRecovery",
+        "TestGiteaMigrationEngineRecovery",
+        "TestV1MigrationRegistrationsOfflineAndDistinct",
+        "TestGitHubMigrationRegistryCoverageAndConstructorsAreInert",
+        "TestGitLabSnapshotExactRecordBlobAndAggregateBudgets"
+      ],
+      "duration": "2.203s",
+      "live_log": "/tmp/wp12-independent-providers.log",
+      "log_sha256": "9aeaf0ad42b1e50e5fa5e2038cd376db1ce298bcf2ab41df1ca2cff66ac09de5"
+    },
+    {
+      "command": "go test -race -count=1 -v -run '^Test(ArchiveHostileMemberMatrix|ArchiveVerifiesBeforeWriting|SnapshotRefusesDependencyDigestAndBudgets|ProviderCoverageRejectsVacuousAndDishonestProfiles|PlanDestinationScopeKeepsProjectAndRepositorySeparate|PlanLossDecisionsAndDependencyBinding)$' -timeout 2m ./internal/migration",
+      "working_directory": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k",
+      "result": "pass",
+      "actual_named_tests": [
+        "TestSnapshotRefusesDependencyDigestAndBudgets",
+        "TestArchiveHostileMemberMatrix",
+        "TestArchiveVerifiesBeforeWriting",
+        "TestProviderCoverageRejectsVacuousAndDishonestProfiles",
+        "TestPlanLossDecisionsAndDependencyBinding",
+        "TestPlanDestinationScopeKeepsProjectAndRepositorySeparate"
+      ],
+      "duration": "1.049s",
+      "live_log": "/tmp/wp12-independent-migration.log",
+      "log_sha256": "ba5b62e29699b23207b2ac0fb1962c5545662a599b8764c2031bd3030cc24e2e"
+    },
+    {
+      "command": "go vet ./...",
+      "working_directory": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k",
+      "result": "pass",
+      "exit_code": 0,
+      "live_log": "/tmp/wp12-independent-vet.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "go build ./...",
+      "working_directory": "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k",
+      "result": "pass",
+      "exit_code": 0,
+      "live_log": "/tmp/wp12-independent-build.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "git diff --check c9a0092a81c65b3acb39685f36959a9b7ed5e022 c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "result": "pass",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check main...c4aaa4e840420b07d83617c6373d6f4088e2c077 -- . :!kitty-specs/**",
+      "result": "pass",
+      "exit_code": 0
+    },
+    {
+      "command": "gofmt -l portable_collaboration_acceptance_test.go",
+      "result": "pass",
+      "output": ""
+    }
+  ],
+  "evidence_payloads": {
+    "raw-proof.tar.gz": {
+      "sha256": "a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877",
+      "indexed_payload_count": 1008,
+      "safe_unique_regular_member_count": 1009,
+      "all_inner_hashes": "pass"
+    },
+    "negative-proof.tar.gz": {
+      "sha256": "400a16f391fb131c32a90c147381f9b0ee9a49c0f3c0820a62fa995c4bb86433",
+      "indexed_payload_count": 251,
+      "safe_unique_regular_member_count": 252,
+      "all_inner_hashes": "pass"
+    },
+    "canonical-records.tar.gz": {
+      "sha256": "1f779b3906779d425b9e1645fe834416272c151fc9cdc584f16190090e2dc7c8",
+      "indexed_payload_count": 55,
+      "safe_unique_regular_member_count": 56,
+      "all_inner_hashes": "pass"
+    }
+  },
+  "qualification_gaps": [
+    "macOS/Windows packager-host runtime",
+    "macOS CLI runtime",
+    "complete ARM Go suite",
+    "Windows CLI distribution not in scope",
+    "framework tests.architectural._gate_coverage unavailable/no_coverage"
+  ],
+  "outer_evidence_manifest": {
+    "path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/SHA256SUMS",
+    "sha256": "fc1cbaa7a2408116f3bf3fb915f541a06a02c1a39eff0e050c0a301a67c3f6f5",
+    "all_entries": "pass"
+  },
+  "criteria": {
+    "FR-001": "pass",
+    "FR-002": "pass",
+    "FR-003": "pass",
+    "FR-004": "pass",
+    "FR-005": "pass",
+    "FR-006": "pass",
+    "FR-007": "pass",
+    "FR-008": "pass",
+    "FR-009": "pass",
+    "FR-010": "pass",
+    "FR-011": "pass",
+    "FR-012": "pass",
+    "FR-013": "pass",
+    "FR-014": "pass",
+    "FR-015": "pass",
+    "FR-016": "pass",
+    "FR-017": "pass",
+    "FR-018": "pass",
+    "FR-019": "pass",
+    "FR-020": "pass",
+    "FR-021": "pass",
+    "FR-022": "pass",
+    "NFR-001": "pass",
+    "NFR-002": "pass",
+    "NFR-003": "pass",
+    "NFR-004": "pass"
+  },
+  "canonical_negatives": {
+    "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE": "confirmed_absent",
+    "NI-PLANNING-EOF-NO-BLIND-CREATE": "confirmed_absent",
+    "NI-ACTUAL-FORGE-COMPILE-EXCLUSION": "confirmed_absent"
+  },
+  "checklist": {
+    "dead_code": "N/A: no production additions; existing integration reachability verified",
+    "synthetic_fixture": "PASS",
+    "silent_empty_return": "N/A: no production additions",
+    "requirement_coverage": "PASS",
+    "frozen_surface": "PASS",
+    "locked_decisions": "PASS",
+    "shared_file_ownership": "PASS: unique WP12 lane-k ownership",
+    "production_fragility": "N/A: no production additions"
+  },
+  "packages": {
+    "inputs": [
+      "/tmp/wp12-artifacts-c4aaa4e8-one",
+      "/tmp/wp12-artifacts-c4aaa4e8-two"
+    ],
+    "verified_independently": [
+      "all 11 output byte comparisons",
+      "complete SHA256SUMS coverage",
+      "provenance/asset/executable digests",
+      "normalized tar/gzip metadata, order and modes",
+      "all eight ELF/Mach-O architectures",
+      "embedded BUILD equality with provenance",
+      "exact binary-archive maintained docs",
+      "generated INSTALL target/version/variant/runtime limits",
+      "all 671 committed source bytes and modes"
+    ],
+    "provenance_sha256": "cb711df23b68972adc045284643946bb1d2f0ddc376b878e5459f8ae8bc8da58",
+    "sha256sums_sha256": "87b33a2aace99ea01de4ac73d69528d8830003fbc95e6a95b6c2324917b8a40f",
+    "verification_result": "pass",
+    "reviewer_probe_correction": "INSTALL.md is generated; corrected initial checker expectation of a committed file; no product change"
+  },
+  "full_race_reuse": {
+    "actual_source": "8c88ede54ce98c176d0cec7211581de23140b923",
+    "command": "go test -race -timeout 20m ./...",
+    "root_package_duration": "744.090s",
+    "result": "pass",
+    "final_delta": [
+      "docs/threat-model.md prose paragraph"
+    ],
+    "unchanged_other_tracked_entries": 670,
+    "second_full_run_claimed": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "source": "20923906ba24c939309540626d525a75729fbabe",
+  "dependency": "6d687af50562e8d837915d39a97d82727e91fd71",
+  "implementation_archive_sha256": "ca48a75c7df891984782028da7606b3c535f8b970dc99107732dd918ec035ae9",
+  "owned_product_diff_sha256": "c25975d0e433a9ebf6eb20a3abce02a184b1d68ad5b478e436511829af8ae6e3",
+  "overlay": {
+    "Replace": {
+      "/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-b/zz_wp03_review_test.go": "/tmp/hn-wp03-independent-review/probes_test.go"
+    }
+  },
+  "focused_existing_exit": 0,
+  "independent_defect_reproduction_exit": 1,
+  "framework_gate": "no_coverage; missing tests.architectural; separate from Go test results"
+}

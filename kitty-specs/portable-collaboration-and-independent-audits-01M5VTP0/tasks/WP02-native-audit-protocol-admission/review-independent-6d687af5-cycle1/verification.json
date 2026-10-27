@@ -1,0 +1,22 @@
+{
+  "source": "6d687af50562e8d837915d39a97d82727e91fd71",
+  "tree": "c38c1bf8d5b2cd3534bd1c44fde2832e68c38409",
+  "recommendation": "approved",
+  "checks": [
+    {
+      "command": "go test -overlay=<original-review-overlay.json> -run '^(TestAudit|TestIndependentAudit)' -v .",
+      "exit": 0,
+      "elapsed_seconds": 22.367
+    },
+    {
+      "command": "GIT_DEFAULT_HASH=sha256 go test -run '^TestAuditNativeReplicationOldCodeKeylessAndNoAnchor$' -count=1 -v .",
+      "exit": 0,
+      "elapsed_seconds": 1.61
+    }
+  ],
+  "sha256": {
+    "wp02-rereview-6d687af5-focused.log": "8f8e311a8a7407962d3ab6d608cad2a0f49c7ee64edcd976d8ad34ab8c7c4c86",
+    "wp02-rereview-6d687af5-sha256-positive.log": "534273c208ceb0347e79da4e45be735fde28f689b4372d9e6aac8b53142097da",
+    "wp02-rereview-6d687af5-review.md": "d0f3f251cb80170896fa6ebd7abd3df1b5282ad3e9790a8048a144e72c43ddf7"
+  }
+}

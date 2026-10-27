@@ -1,0 +1,7 @@
+The coordinator authorized a genuinely safer non-deleting batch after the cleanup-command rejection. The rejected cleanup was not retried, and no alternate recursive-delete mechanism was used.
+
+Subsequent tagged builds both passed. The nogithub binary advertises GitLab issue capabilities; the noforge binary rejects GitLab as unavailable. Native CLI init/create/comment/show passed under both variants.
+
+An initial noforge CLI fixture reused the nogithub-initialized repository, so hn init correctly refused an existing identity. That log remains noforge-native-cli-initial.log and its failed fixture status is recorded. The final noforge native run used a fresh independent private repository/HOME and passed.
+
+Retained fixture repositories, private test HOMEs/keys and binaries are outside this evidence directory. retained-fixture-location.txt lists only their paths. Exclude those paths from evidence archives; archive only this validation directory's logs/hashes/notes if an archive is needed.

@@ -1,0 +1,5 @@
+# Source: 20923906ba24c939309540626d525a75729fbabe; Go overlay maps only a temporary review test into the test build.
+go test -race -overlay /tmp/hn-wp03-independent-review/overlay.json -run '^TestWP03Review' -count=1 -v .
+# public-probes-final.log: exit 1 is intentional reproduction assertion (mutation after deterministic refusal).
+go test -race -run '^TestAudit(PublicInvalidUnicodeRefusesBeforeMutation|PublicOperatorReferenceHookAndInertSources|RequestGuardClientTerminationReleasesPreparedLock|ExecutionRefusesTransportAndMidRunAuthorityWithdrawal|PublicFollowUpInterruptedCreateRecoveryAndEditedIssue)$' -count=1 -v .
+# focused-existing.log: exit 0.

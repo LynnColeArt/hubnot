@@ -1,0 +1,294 @@
+{
+  "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Preserve existing native commands, trust, defaults, signed facts, explicit execution, and required-check semantics. All new automation/transport is opt-in.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-001: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:04:55.255760+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Provide an inspectable portable project snapshot covering explicit selected code refs/history, native signed collaboration histories, attributed foreign resource records and retrieved attachments. Exclude Hubnot-managed private identities, ambient credentials, transfer journals, unrelated refs and working-tree junk. Intentionally selected committed history remains exact; this is not a secret-scrubbing promise.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-002: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:04:58.873332+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Native facts retain exact signed bytes and identities; archive import validates before visibility and never installs imported actors as local signing identities, silently adopts policy, or manufactures authority. Preserve historical policy objects for evidence verification; require an explicit decision before source governance is activated in a new destination checkout, and preserve existing destination governance.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-003: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:02.128429+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Preserve retrieved foreign issues/comments, PR/MR conversations/reviews, discussions, planning data and workflow source as attributed local records when native or destination equivalence is unavailable. Preserve retrieved attachment bytes with verified content digests.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-004: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:05.855433+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Support local repository, portable archive and hosted provider sources/destinations through the same migration engine; source observations and mapping/loss decisions are saved independently from secrets.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-005: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:08.916703+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Guided migration asks source, destination, scope and mapping decisions, then previews before explicit apply. Explicit arguments/saved plans expose equivalent noninteractive functionality.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-006: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:12.044861+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Report per-provider capabilities and per-plan mapped, preserved, requires-mapping, unsupported, missing-dependency and conflict findings before writes. Any loss or non-equivalent mapping requires an explicit decision; unread data is not preserved data.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-007: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:15.249978+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Keep current explicit transfer commands compatible and make adapter extension documented and testable through common interfaces/conformance cases rather than provider conditionals throughout native code.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-008: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:18.273890+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-009",
+      "description": "Cover GitHub and GitLab project snapshots and applicable imports/exports, including issue/comment read/write and GitLab self-hosted endpoints. Verify a genuine GitLab-to-GitHub flow with isolated provider fixtures.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-009: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:21.357689+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-010",
+      "description": "Cover Forgejo/Codeberg and Gitea through separate tested capability profiles, each including issue/comment read/write; shared transport does not imply untested API equivalence.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-010: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:24.230470+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-011",
+      "description": "Cover Bitbucket Cloud's available repository, PR-conversation and workflow-source interfaces. Explicitly report the removed issue tracker unavailable; do not silently substitute Jira or invent historical data.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-011: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:27.197090+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-012",
+      "description": "Cover Azure DevOps with explicit organization/project/repository selectors and work-item type/state mappings, including mapped work-item/comment read/write. Do not equate repositories, work items and planning projects. Document supported Services/Server API versions and supplied Entra-token/PAT authentication; do not depend on deprecated OAuth app registration.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-012: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:30.140133+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-013",
+      "description": "Persist guarded progress and support explicit resume. An uncertain write is reconciled by exact positive evidence or requires operator intervention; timeout/negative lookup never authorizes a blind duplicate create. Source deletion and background sync are outside migration.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-013: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:33.104671+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-014",
+      "description": "Foreign workflows remain inert source documents unless explicitly converted and separately authorized for native execution. Imported reviews, users, permissions and CI records never grant native approval, runner or maintainer authority.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-014: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:36.121479+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Provide an adapter-free build in addition to preserving the existing meaning of `nogithub`; native collaboration, local archives, audits and imported records work without network adapters.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-015: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:39.634166+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Add distinct signed audit requests/results for resolved code snapshots and identified rule revisions, independent of proposals. Audit facts are never eligible merge/acceptance evidence.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-016: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:43.146879+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Execute audit work only through explicit commands using the existing sandbox/unsafe-host boundary; no initialization, import, upgrade, proposal or merge starts audit work or a service.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-017: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:46.604955+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Record audit requester/executor, code/rules provenance, outcome, bounded evidence/logs and stable findings. Reads and replication validate the same relationships and permissions as local writes.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-018: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:49.944080+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Keep protected rule-change authority independent of audit scheduling and audited content. Current authority comes from an explicitly adopted local anchor; policy selectors can assert that choice but cannot substitute stale or candidate policies. Rules evolve through authorized revisions, including authorization by a sole designated owner; imported or collaboratively edited content never supplies its own authority.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-019: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:53.097274+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "Optionally create linked native follow-up issues from audit findings, with inspectable finding identity, bounded processing, actor-scoped retry/recovery and explicit concurrent-publisher limitations.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-020: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:56.434620+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "Replace Python archive packaging with Go/Git tooling portable to Linux/macOS/Windows, deterministic archive metadata, source/target/toolchain provenance, binary/source archives and SHA-256 checksums. Report actual host execution separately from cross-compilation; no unavailable host is claimed runtime-qualified.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-021: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:05:59.664549+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "FR-022",
+      "description": "Document command contracts, provider capability/mapping limits, offline use, audit independence, rule ownership, recovery, packaging requirements and platform verification in the same delivery.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion FR-022: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:06:02.878092+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "NFR-001",
+      "description": "Snapshot operations use explicit positive budgets. Initial defaults: at most 10,000 records, 1,024 attachment blobs, 16 MiB per attachment/manifest, and 256 MiB total attachment data; archive expansion and Git object traversal use separately bounded documented budgets. Exceeding a bound refuses incomplete success.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion NFR-001: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:06:06.052567+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "NFR-002",
+      "description": "Reject traversal/absolute paths, duplicate archive entries, symlinks, unexpected members, mismatched digests, oversized/decompression bombs and partial native histories before accepted visibility. Cross-origin credential forwarding and unbounded pagination are forbidden.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion NFR-002: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:06:09.310335+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "NFR-003",
+      "description": "Changes pass formatting, full Go race tests, vet, build, diff checks and meaningful public CLI acceptance in ordinary, `nogithub` and adapter-free builds. Recovery/hostile input tests assert visible state preservation.",
+      "proof_type": "automated_test",
+      "evidence": "Independent closure c4d13f80 mission-review-followup.md supersedes FAIL e5833894 for corrected61fa1c35 plus proof24a2fbf9. Fresh actualPRIMARY go test -race -count=1 -timeout20m ./... PASS627.964s/all11testedpackages/exit0; independent AFTER-proof unqualified vet/build/compile/discovery/format/diff PASS. All189Go+go.mod across ENTIRErepo includingmetadata exact,12realpackages/noevidencepackages;3historicaloverlays preservedbyte-identicallyastext,39frozenrecords unchanged. RawproofSHA9fc8dd1931857fa60f52605286c32b28352d7600d796e3f5393cc3f9f718b6b7. RISK1/DRIFT1closed, all26independentdispositionsPASS; host/framework/LOWhelpernotesremainexplicit.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-10-27T07:33:24.955326+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    },
+    {
+      "criterion_id": "NFR-004",
+      "description": "Rebuilding release archives twice with the same declared inputs produces identical digests; cross-compile the packager for Windows and macOS and test archive formats/contents independently of the host. Runtime qualification is reported only for platforms actually exercised. Where a host is unavailable, record the remaining qualification gap explicitly; cross-compilation cannot satisfy a host-runtime claim.",
+      "proof_type": "automated_test",
+      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion NFR-004: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
+      "pass_fail": "pass",
+      "verified_by": "codex/implementer-ivan",
+      "verified_at": "2026-10-27T06:06:15.295691+00:00",
+      "notes": "Latest independent mission follow-up c4d13f80 reports all26 PASS WITH NOTES. NFR-003 original failure e5833894/73b34581 remains preserved; corrected actualPRIMARY full627.964s and post-proof independent gates close RISK1/DRIFT1, official pass80df60a9. See mission-review-followup.md and postmerge-evidence-fix/validation.md; host/framework/LOW helper notes remain explicit."
+    }
+  ],
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE",
+      "description": "Native defaults remain disabled; failed audits neither qualify nor block merge, unsafe-host/no-anchor/imported authority refuses without accepted-state effects; hostile archive leaves destination unchanged, across actual public ordinary/nogithub/noforge commands.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestPortableCollaborationIntegratedPublicVariants TestAuditPolicyStrictAndDisabledDefault TestAuditFactsNeverSatisfyProposalEvidence TestAuditPublicCandidateStalePolicyAndRoleRefusals",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    },
+    {
+      "invariant_id": "NI-PLANNING-EOF-NO-BLIND-CREATE",
+      "description": "Public guided EOF/missing approval and stale/private/inexact recovery refuse without remote effects; exact saved parent receipts are preserved, missing progress never authorizes blind duplicate creates.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline TestMigrationCLIPublicRefusalsPreserveRemoteState TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries TestMigrationMissingCheckpointNeverReplaysCreates",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    },
+    {
+      "invariant_id": "NI-ACTUAL-FORGE-COMPILE-EXCLUSION",
+      "description": "Actual ordinary/nogithub/noforge binaries: nogithub excludes only GitHub and retains other network clients; noforge excludes all network client dependencies, compiled symbols and all six adapter files, with positive ordinary/other-provider controls.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-exclusion.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    }
+  ]
+}

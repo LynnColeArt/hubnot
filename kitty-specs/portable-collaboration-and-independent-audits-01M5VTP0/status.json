@@ -1,0 +1,398 @@
+{
+  "event_count": 126,
+  "last_event_id": "01M5Y15NFD4BBQMBT8RNBE2Q0C",
+  "materialized_at": "2026-10-27T06:36:11.629699+00:00",
+  "mission_number": "",
+  "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 12,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M5Y151TJBPRGMJAR1PACKSW1",
+      "last_transition_at": "2026-10-27T06:35:51.506831+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 86dc00678c42d495c6442addfcc8da8abd983ffa: Go-only packager, two identical 11-asset runs, independent archive/native CLI inspection, Windows/macOS cross-compilation, full race exit 0 plus vet/build/format/diff pass. Evidence /tmp/hn-wp01-evidence/EVIDENCE.md; host runtime qualified only Linux AMD64. Initial baseline is framework pytest/JUnit coverage failure, not a Go test failure.",
+        "Cycle 1 P1 corrected at 3e6b301b; full race exit 0 and independent release acceptance pass. Durable evidence 3e1f6a44 on planning branch; lane a382f928 has identical entire Git tree to validated source 3e6b301b.",
+        "Review passed: original P1 resolved by effective-config filter refusal before status, with independent marker/state-preservation recheck; package/CLI race and full archive/runtime inspections pass. Validated source 3e6b301bb2e3142eff40727edf57a462b3e63e02; lane a382f928 tree identical 2d88e80ba7db1fd22b3765fe1103bc160717a588; durable review 692c885b. Full source-bound Go race exit0/1186passes verified; framework coverage authority remains unavailable/no_coverage without bypass. Anti-pattern checks dead-code/synthetic/silent-return/FR/frozen/locked/fragility PASS; shared-file ownership N/A. Windows/macOS host runtime remains unqualified; final noforge integration belongs WP06/WP12."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP01-go-only-release-packager/review-cycle-2.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP01-go-only-release-packager/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M5Y153GJS47JXR0YSWQBB00G",
+      "last_transition_at": "2026-10-27T06:35:53.234366+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at d274d5c8298f1e3beff3999ed6e2ee7d741a9c05: strict signed observational audit family, explicit anchored authority, historical/fetched parity and bounded snapshot packs. Full go test -race ./... passed via detached supervision (1166 cases, exit 0); vet/build/nogithub build/gofmt/diff checks passed. Earlier tool-bound race invocations are incomplete evidence only.",
+        "Cycle 1 corrected at 6d687af50562e8d837915d39a97d82727e91fd71: isolated Git syntax validation and actual edge types reject malformed snapshots locally and through real remotes. Full race exit 0 at unchanged head; focused SHA1/SHA256 negatives, omitted-parent snapshot exchange, reviewer reproducer, vet/build/format/diff pass. Durable source-bound evidence primary commit 53666e9069c6f21c087059469a3895475c3db626 under tasks/WP02-native-audit-protocol-admission/corrective-cycle1-6d687af5/verification.md. All T004-T006 canonically done; independent review required.",
+        "Independent corrective review passed at 6d687af50562e8d837915d39a97d82727e91fd71: original malformed commit/tree P1 resolved; isolated fsck-objects plus actual edge types preserve snapshot-only history omission. Original overlay and all focused audit cases passed 22.367s; SHA256 missing-parent real replication passed 1.610s; exact-source full race evidence verified. Durable review: tasks/WP02-native-audit-protocol-admission/review-independent-6d687af5-cycle1/review.md (primary evidence commit 3d1bae24). Coordination: WP03 shares lane-b and docs/audits-v1.md; WP03/WP05/WP12 must consume corrected foundation/admission APIs without implicit authority adoption."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-cycle-2.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP02-native-audit-protocol-admission/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T004": "done",
+        "T005": "done",
+        "T006": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M5Y1559GWXW4PSV4N52R0NEZ",
+      "last_transition_at": "2026-10-27T06:35:55.056911+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: product20923906; explicit audits and durable linked follow-ups; final race524.365s and required Go checks passed; PRIMARY evidence5a4e5d9b tasks/validation-20923906, raw SHA256ca48a75c7df891984782028da7606b3c535f8b970dc99107732dd918ec035ae9",
+        "Correction cycle 1 complete: source 53c0ead2 preflights every selected normalized finding identity before private intent or issue writes. Local/imported collision refusals and positive dedup/retry pass; full race 550.843s and required Go checks pass. PRIMARY evidence commit 6df36f1b; raw SHA-256 3e44b3c8e009f67c022131583582bff49a4ad8c02b68ed246ee95832b70eb677.",
+        "Independent correction review passed at 53c0ead287307736e7db9a0e6c63a135a4a9d2a0; normalized collision preflight resolved, focused race checks and Unicode/selective/authenticated-link probes pass; fixed-source full evidence verified. Review evidence 1211eaa2, tasks/WP03-audit-execution-followup-issues/review-53c0ead2/review.md. Shared docs/audits-v1.md deliberately extends approved WP02 in sequential lane; frozen WP02 code unchanged."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-cycle-2.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP03-audit-execution-followup-issues/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T007": "done",
+        "T008": "done",
+        "T009": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15728BTJ370JPTGEBQDKT",
+      "last_transition_at": "2026-10-27T06:35:56.872513+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 41dc551c4d84624334b4d48bed994410129601bf: bounded canonical archive and full selected native object closure, keyless observation ref portability, strict shared issue/comment schemas. Full go test -race -count=1 -json ./... passed (hubnot 473.867s); vet/build/gofmt/diff and focused nogithub/no-provider-library checks passed. Evidence /tmp/hn-wp04-evidence/race.jsonl; raw Git object format documented. Audit-specific auxiliary snapshot admission remains dependent WP05 integration.",
+        "Independent review passed at 41dc551c4d84624334b4d48bed994410129601bf; exact selected signed/object history, keyless observations, inert foreign topology/blobs, bounded hostile archive/native admission and no-ref quarantine verified. Durable report/evidence committed in 4dfdb4ae: tasks/WP04-portable-project-snapshot-archive/independent-review/review.md. Owned product paths do not overlap; WP05 coordinates audit dependency closure and optional destination unions; WP11 owns CLI wiring. Full source-bound race exit 0 reused, independent focused race/SHA1+SHA256 hostile-object probes/vet/build/format/diff pass. Baseline Python architectural no_coverage remains infrastructure evidence; no skips or force."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP04-portable-project-snapshot-archive/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP04-portable-project-snapshot-archive/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "assignee": "Kat",
+      "force_count": 9,
+      "lane": "done",
+      "last_event_id": "01M5Y158SHS3ERMEMVRAMWYDCM",
+      "last_transition_at": "2026-10-27T06:35:58.641617+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at ecaffbfc; complete fixed-source validation preserved in PRIMARY validation-ecaffbfc by 4e626abf.",
+        "Administrative release of root coordinator claim for user-authorized Kat on external Hermes. Reuses the existing P1 review feedback; no new code review or product change. Kat has sole corrective implementation ownership; root retains status and independent-review coordination.",
+        "Explicit user-authorized ownership reassignment to Kat on external Hermes after root released its coordinator lease in event 01M5WJHXB0H3B3EHJ797E4GRZ0. Override only the retained prior codex assignment; no implementation/review/testing gate is being waived. Root does not own or execute the WP05 correction. Kat may land her rehearsed two-file fix in existing lane-d, then run all required fixed-source checks and return evidence for independent review.",
+        "Kat external Hermes correction landed at 9ab00d85; completed fixed-source validation and source hashes preserved in PRIMARY correction-9ab00d85 before handoff. Re-review the existing P1 destination-hook finding. Administrative ownership release was not a new implementation review.",
+        "Administrative release of review claim: claimed under codex by coordinator probe before reviewer dispatch; no review performed; re-claiming under the actual independent reviewer (claude).",
+        "Administrative release of review claim: claimed under claude by coordinator probe before reviewer dispatch; per explicit user direction the independent reviewer is codex (OpenAI-hosted); re-claiming under the actual reviewer. No review performed by claude.",
+        "Direct independent root review of Kat-authored 9ab00d85 requested by user. Reproduced stale linked-worktree backpointer accepting missing reciprocal .git: wrong-directory hooks run and observation ref is promoted. Evidence bc9c3e27. Administrative claim rewinds are not implementation review cycles.",
+        "Administrative implementation claim release at explicit user direction: user reported classifier tripped and is handing correction back to Kat/Hermes. Root made no product edits after claim. Existing P2 remains unchanged; this handoff is not an additional implementation review or rejection. Release runtime claim so Kat can take over.",
+        "Independent review bc6c8db5: production P2 verified fixed; test-only changes requested. Marker is truncated after ApplyMigration and control errors on absent object without running hook. Fault injection proves erased evidence still passes. Evidence 813316f0. Prior unrecorded review retained as context, not backfilled; administrative releases do not count as actual review rejections.",
+        "Administrative claim release after test-correction agent failed with classifier possible cybersecurity risk. Preserve uncommitted migration_native_test.go patch at bc6c8db5 for Kat. Required validation and independent review incomplete; no approval or additional implementation review. Runtime claim must not block external handoff.",
+        "Independent correction review passed at 247a4e1b: marker effects preserved, existing-object control proves destination hook execution, focused race passes and three negative overlay probes fail at intended assertions. Exact-head full validation verified; evidence and integration obligations committed 4fb06b17, tasks/WP05-migration-engine-local-archive/review-approved-247a4e1b.md. API reachability remains required in WP06/WP11 and WP12 acceptance; no dummy consumers or release acceptance implied."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP05-migration-engine-local-archive/review-cycle-7.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP05-migration-engine-local-archive/review-cycle-7.md",
+        "reviewer": "codex-root",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T013": "done",
+        "T014": "done",
+        "T015": "done"
+      }
+    },
+    "WP06": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15AQ6BFKKAGFK7P7PXFP3",
+      "last_transition_at": "2026-10-27T06:36:00.614917+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at dac3c4ab: bounded provider registry/GitHub snapshots, guarded issue-comment mapping/recovery, true noforge exclusion. Exact-head validation and interface notes: /tmp/hubnot-wp06-final-validation-l2O7D1",
+        "Independent Reviewer Renata approves fixed source dac3c4abbd4b5aaf40a5c31dd5395d64b8ef1116 against approved WP05 base247a4e1b26295459ae159674c109bcd91aa1a954; report commit939e878f tasks/WP06-provider-contract-github-snapshots/review-renata-dac3c4ab.md. All eight checklist items PASS; 28 source and54 raw evidence hashes independently verified; exact-head full race/vet/build reused plus independent focused race pass. Framework architectural no_coverage remains unverified. Coordination: root provider Open/Kind seams are WP11 integration surfaces per approved dependency-first plan; public migrate acceptance remains WP11/12."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP06-provider-contract-github-snapshots/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP06-provider-contract-github-snapshots/review-cycle-1.md",
+        "reviewer": "codex/reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T016": "done",
+        "T017": "done",
+        "T018": "done"
+      }
+    },
+    "WP07": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15CG55XXYJ98Q4XHJGGX0",
+      "last_transition_at": "2026-10-27T06:36:02.437070+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: source c5c131a2; complete race20m passed (root634.177s), vet/build/format/variant/CLI passed. Prior ownership precheck resolved by root da9d8d31 without source changes. Final evidence /tmp/hubnot-wp07-c5c131a2-validation-QRvvM8",
+        "Independent review passed at c5c131a2: eight checklist items PASS, fixed-head evidence hashes verified, independent race and full-projection recovery tests pass. Report commit 4060f895. Coordination: downstream WP11 consumes registered Source/Destination/Git-companion seams and WP12 owns integrated docs/acceptance; no shared source file changed. Architectural no_coverage remains unverified."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP07-gitlab-migration-adapter/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP07-gitlab-migration-adapter/review-cycle-1.md",
+        "reviewer": "codex-gitlab-independent-review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T019": "done",
+        "T020": "done",
+        "T021": "done"
+      }
+    },
+    "WP08": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15E5B51G2MFRQEYMM0Y5T",
+      "last_transition_at": "2026-10-27T06:36:04.139983+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: distinct Forgejo11/16 and Gitea1.24/1.27 profiles; real issue/comment read-create-update, raw PR/review/assets/workflow preservation, immutable guarded recovery and legacy transfer; fixed source b6677667; complete full race with finite20m retry after preserved600s unchanged memory-index timeout, plus vet/build/tagged/native/exclusion gates passed. Evidence /tmp/hubnot-wp08-validation-VC9IZH.",
+        "Independent review passed at b6677667: eight checklist items PASS, 12 source and 66 archive hashes verified, fresh focused race PASS; complete exact-head full race PASS644.228s with original timeout retained; no_coverage architectural authority disclosed. Report review-renata-b6677667.md."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP08-forgejo-gitea-migration-adapters/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP08-forgejo-gitea-migration-adapters/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T022": "done",
+        "T023": "done",
+        "T024": "done"
+      }
+    },
+    "WP09": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15FX246HTZ1R5NJWC5B7S",
+      "last_transition_at": "2026-10-27T06:36:05.922625+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: fixed91c580cd Bitbucket Cloud snapshots, explicit unsupported destination writes, complete source-bound validation",
+        "Independent review passed at source 91c580cda750a77493e933e086d0b535d4e7c724: all eight checklist items PASS; useful Cloud repository/PR/workflow preservation and truthful frozen-v1 write refusal; exact source hashes, safe canonical evidence, full race PASS 627.389s and independent focused race PASS verified. Report a9cd34ec; architectural gate remains explicitly unverified/no_coverage."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP09-bitbucket-cloud-migration-adapter/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP09-bitbucket-cloud-migration-adapter/review-cycle-1.md",
+        "reviewer": "codex-bitbucket-independent-review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T025": "done",
+        "T026": "done",
+        "T027": "done"
+      }
+    },
+    "WP10": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15HV6BEYPA6Z0CVV2XPG1",
+      "last_transition_at": "2026-10-27T06:36:07.910287+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 29771aed34e68503c6a4c3f660cbb56f2a335ab0: explicit Azure Work Item/comment migration and inert source preservation; all final-head checks pass including serialized full race 600.198s, original p95 failure retained. Shared plan.go/plan_test.go ownership exception authorized in 1dd7f7e0 shared-plan-scope-handoff.md; no schema change. Evidence: tasks/WP10-azure-devops-migration-adapter/validation-29771aed.",
+        "Independent review passed at fixed 29771aed34e68503c6a4c3f660cbb56f2a335ab0 against approved WP06 dac3c4ab. Report bc4b5736 records all eight checklist items PASS, verified 10 outer/10 source/81 inner hashes, focused race PASS, retained same-head unfiltered full-race PASS after recorded performance failure, architectural helper no_coverage UNVERIFIED, and explicit shared-plan ownership handoff 1dd7f7e0 for plan.go/plan_test.go. No force, skip or self-review fallback."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP10-azure-devops-migration-adapter/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP10-azure-devops-migration-adapter/review-cycle-1.md",
+        "reviewer": "codex-azure-independent-review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T028": "done",
+        "T029": "done",
+        "T030": "done"
+      }
+    },
+    "WP11": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15KSWS21EYX7ZJ16G27C2",
+      "last_transition_at": "2026-10-27T06:36:09.916908+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: source6393e122; compiled guided GitLab-to-GitHub code/issues/comments, exact resume, offline variants and fresh-credential guard; unfiltered race/vet/build/format/diff PASS; canonical validation-6393e122 evidence29ffe7f1+26958663.",
+        "Independent review passed at 6393e122 against 4210710f: six-file scope, all eight checklist items and requirement behavior PASS; compiled public migration/recovery/credential refusals and offline variants independently pass; verified source-bound full race/vet/build evidence; report review-renata-6393e122.md. Architectural helper remains unavailable/UNVERIFIED."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP11-guided-migration-public-acceptance/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP11-guided-migration-public-acceptance/review-cycle-1.md",
+        "reviewer": "codex-cli-independent-review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54",
+      "subtasks": {
+        "T031": "done",
+        "T032": "done",
+        "T033": "done"
+      }
+    },
+    "WP12": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M5Y15NFD4BBQMBT8RNBE2Q0C",
+      "last_transition_at": "2026-10-27T06:36:11.629699+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Integrated public acceptance complete at c4aaa4e8; identical Go/config/assets to single unfiltered full-race PASS8c88ede5 (744.090s), final packages reproducible twice, actual final LinuxAMD64/ARM64 standard/native-only smoke PASS; 26 canonical criteria and issue13 proof committed. Ready for independent review; framework architectural authority remains unverified, no force/skip.",
+        "Independent review passed at c4aaa4e8 against c9a0092a: all26 FR/NFR and eight checklist items assessed; 19 fresh focused race tests, vet/build/format, canonical26+3 negatives, exact artifact/source bytes and all evidence hashes verified. Full race744.090s at source-equivalent8c88 and final LinuxAMD64/ARM64 runtime qualification remain accurately bound; framework architectural helper and unavailable hosts stay UNVERIFIED. Report independent-review-c4aaa4e8.md commit52ea5a9328cd064d47f8d1b92186121d272c1024. No blocking findings, force or skip."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/review-cycle-1.md",
+        "reference": "review-cycle://portable-collaboration-and-independent-audits-01M5VTP0/WP12-integrated-docs-release-acceptance/review-cycle-1.md",
+        "reviewer": "codex-integrated-independent-review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 2006199,
+      "shell_pid_created_at": "1793082145.89",
+      "subtasks": {
+        "T034": "done",
+        "T035": "done",
+        "T036": "done"
+      }
+    }
+  }
+}

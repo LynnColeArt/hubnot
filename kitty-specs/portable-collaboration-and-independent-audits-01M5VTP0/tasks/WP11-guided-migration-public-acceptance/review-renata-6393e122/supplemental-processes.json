@@ -1,0 +1,195 @@
+[
+  {
+    "argv": [
+      "/usr/bin/git",
+      "init",
+      "--quiet",
+      "--initial-branch=main"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/usr/bin/git",
+      "-c",
+      "user.name=Independent review",
+      "-c",
+      "user.email=review@example.invalid",
+      "commit",
+      "--quiet",
+      "--allow-empty",
+      "-m",
+      "independent public fixture"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "plan",
+      "--source-kind",
+      "local",
+      "--source-repository",
+      "/tmp/wp11-review-journey-5pa0q_zr/repo",
+      "--ref",
+      "refs/heads/main",
+      "--destination-kind",
+      "archive",
+      "--destination-repository",
+      "/tmp/wp11-review-journey-5pa0q_zr/archive.hn",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session"
+    ],
+    "exit": 0,
+    "stdout": "Source capabilities (offline metadata; access not verified):\n[\n  {\n    \"kind\": \"project\",\n    \"read\": true,\n    \"preserve\": true,\n    \"create\": false,\n    \"update\": false,\n    \"limits\": [],\n    \"reason\": \"explicit selected native Git history; select imported foreign records separately with ImportedMigrationSource\"\n  }\n]\nDestination capabilities (offline metadata; access not verified):\n[\n  {\n    \"kind\": \"project\",\n    \"read\": true,\n    \"preserve\": true,\n    \"create\": true,\n    \"update\": false,\n    \"limits\": [\n      \"foreign records remain attributed inert content\",\n      \"source governance is preserved as historical evidence\"\n    ],\n    \"reason\": \"native observations and offline archive\"\n  }\n]\nPreview (read only; decisions apply to these findings):\n{\n  \"intents\": [\n    {\n      \"id\": \"preserve-archive\",\n      \"action\": \"preserve\",\n      \"kind\": \"project\",\n      \"sources\": [],\n      \"payload\": {\n        \"schema\": \"hn.migration.project-write/1\",\n        \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n        \"refs\": [],\n        \"governance\": \"preserve\",\n        \"baseline\": \"sha256:3ccf4100a4963291583c2d4c3515fbadef11b7b951b5c92eec1cb773f755adf9\"\n      },\n      \"expected_id\": \"\",\n      \"expected_revision\": \"\",\n      \"depends_on\": []\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"archive/preserved\",\n      \"status\": \"preserved\",\n      \"path\": \"project\",\n      \"message\": \"Retrieved content and exact native history preserved; no governance activated.\"\n    }\n  ]\n}\nSaved plan: /tmp/wp11-review-journey-5pa0q_zr/session\n{\n  \"schema\": \"hn.migration-plan/1\",\n  \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n  \"destination\": {\n    \"kind\": \"archive\",\n    \"endpoint\": \"\",\n    \"organization\": \"\",\n    \"project\": \"\",\n    \"repository\": \"/tmp/wp11-review-journey-5pa0q_zr/archive.hn\"\n  },\n  \"limits\": {\n    \"records\": 10000,\n    \"blobs\": 1024,\n    \"refs\": 1024,\n    \"git_objects\": 100000,\n    \"blob_bytes\": 16777216,\n    \"manifest_bytes\": 16777216,\n    \"attachment_bytes\": 268435456,\n    \"git_object_bytes\": 16777216,\n    \"git_total_bytes\": 536870912\n  },\n  \"decisions\": [],\n  \"intents\": [\n    {\n      \"id\": \"preserve-archive\",\n      \"action\": \"preserve\",\n      \"kind\": \"project\",\n      \"sources\": [],\n      \"payload\": {\n        \"schema\": \"hn.migration.project-write/1\",\n        \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n        \"refs\": [],\n        \"governance\": \"preserve\",\n        \"baseline\": \"sha256:3ccf4100a4963291583c2d4c3515fbadef11b7b951b5c92eec1cb773f755adf9\"\n      },\n      \"expected_id\": \"\",\n      \"expected_revision\": \"\",\n      \"depends_on\": []\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"archive/preserved\",\n      \"status\": \"preserved\",\n      \"path\": \"project\",\n      \"message\": \"Retrieved content and exact native history preserved; no governance activated.\"\n    }\n  ]\n}\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "inspect",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"schema\": \"hn.migration-inspect/1\",\n  \"plan\": {\n    \"schema\": \"hn.migration-plan/1\",\n    \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n    \"destination\": {\n      \"kind\": \"archive\",\n      \"endpoint\": \"\",\n      \"organization\": \"\",\n      \"project\": \"\",\n      \"repository\": \"/tmp/wp11-review-journey-5pa0q_zr/archive.hn\"\n    },\n    \"limits\": {\n      \"records\": 10000,\n      \"blobs\": 1024,\n      \"refs\": 1024,\n      \"git_objects\": 100000,\n      \"blob_bytes\": 16777216,\n      \"manifest_bytes\": 16777216,\n      \"attachment_bytes\": 268435456,\n      \"git_object_bytes\": 16777216,\n      \"git_total_bytes\": 536870912\n    },\n    \"decisions\": [],\n    \"intents\": [\n      {\n        \"id\": \"preserve-archive\",\n        \"action\": \"preserve\",\n        \"kind\": \"project\",\n        \"sources\": [],\n        \"payload\": {\n          \"schema\": \"hn.migration.project-write/1\",\n          \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n          \"refs\": [],\n          \"governance\": \"preserve\",\n          \"baseline\": \"sha256:3ccf4100a4963291583c2d4c3515fbadef11b7b951b5c92eec1cb773f755adf9\"\n        },\n        \"expected_id\": \"\",\n        \"expected_revision\": \"\",\n        \"depends_on\": []\n      }\n    ],\n    \"findings\": [\n      {\n        \"id\": \"archive/preserved\",\n        \"status\": \"preserved\",\n        \"path\": \"project\",\n        \"message\": \"Retrieved content and exact native history preserved; no governance activated.\"\n      }\n    ]\n  },\n  \"snapshot\": {\n    \"schema\": \"hn.project-snapshot/1\",\n    \"source\": {\n      \"kind\": \"local\",\n      \"endpoint\": \"\",\n      \"organization\": \"\",\n      \"project\": \"\",\n      \"repository\": \"\"\n    },\n    \"source_id\": \"sha256:50a1746652e7cd191671b95522d98e568e85525d20394724579743f775af5515\",\n    \"records\": [],\n    \"blobs\": [\n      {\n        \"digest\": \"sha256:75598d03e62ab3832df505f9040d15b5c2be5037b3c7bc711840670a4b9c4711\",\n        \"size\": 332,\n        \"media_type\": \"application/vnd.hn.git-objects\",\n        \"name\": \"selected Git object closure\"\n      }\n    ],\n    \"native_refs\": [\n      {\n        \"source_ref\": \"refs/heads/main\",\n        \"oid\": \"0c70f1270bc3aa608fe69d184437414552edf94d\",\n        \"kind\": \"code\"\n      }\n    ],\n    \"git_bundle\": \"sha256:75598d03e62ab3832df505f9040d15b5c2be5037b3c7bc711840670a4b9c4711\",\n    \"findings\": []\n  }\n}\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "apply",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--destination-repository",
+      "/tmp/wp11-review-journey-5pa0q_zr/other"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "hn: --destination-repository is not valid for migrate apply; saved-plan commands do not accept selection overrides\n"
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "apply",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--source-kind",
+      "local"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "hn: --source-kind is not valid for migrate apply; saved-plan commands do not accept selection overrides\n"
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "apply",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--map",
+      "refs/heads/main=refs/heads/other"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "hn: --map is not valid for migrate apply; saved-plan commands do not accept selection overrides\n"
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "apply",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--decision",
+      "all=preserve"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "hn: --decision is not valid for migrate apply; saved-plan commands do not accept selection overrides\n"
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "apply",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--yes"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "hn: flag provided but not defined: -yes\n"
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "apply",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--actor",
+      "reviewed-operator"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"schema\": \"hn.migration-plan/1\",\n  \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n  \"destination\": {\n    \"kind\": \"archive\",\n    \"endpoint\": \"\",\n    \"organization\": \"\",\n    \"project\": \"\",\n    \"repository\": \"/tmp/wp11-review-journey-5pa0q_zr/archive.hn\"\n  },\n  \"limits\": {\n    \"records\": 10000,\n    \"blobs\": 1024,\n    \"refs\": 1024,\n    \"git_objects\": 100000,\n    \"blob_bytes\": 16777216,\n    \"manifest_bytes\": 16777216,\n    \"attachment_bytes\": 268435456,\n    \"git_object_bytes\": 16777216,\n    \"git_total_bytes\": 536870912\n  },\n  \"decisions\": [],\n  \"intents\": [\n    {\n      \"id\": \"preserve-archive\",\n      \"action\": \"preserve\",\n      \"kind\": \"project\",\n      \"sources\": [],\n      \"payload\": {\n        \"schema\": \"hn.migration.project-write/1\",\n        \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n        \"refs\": [],\n        \"governance\": \"preserve\",\n        \"baseline\": \"sha256:3ccf4100a4963291583c2d4c3515fbadef11b7b951b5c92eec1cb773f755adf9\"\n      },\n      \"expected_id\": \"\",\n      \"expected_revision\": \"\",\n      \"depends_on\": []\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"archive/preserved\",\n      \"status\": \"preserved\",\n      \"path\": \"project\",\n      \"message\": \"Retrieved content and exact native history preserved; no governance activated.\"\n    }\n  ]\n}\nDestination capabilities (offline metadata; access not verified):\n[\n  {\n    \"kind\": \"project\",\n    \"read\": true,\n    \"preserve\": true,\n    \"create\": true,\n    \"update\": false,\n    \"limits\": [\n      \"foreign records remain attributed inert content\",\n      \"source governance is preserved as historical evidence\"\n    ],\n    \"reason\": \"native observations and offline archive\"\n  }\n]\nSaved migration intents confirmed: /tmp/wp11-review-journey-5pa0q_zr/session\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "resume",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--actor",
+      "changed-operator"
+    ],
+    "exit": 1,
+    "stdout": "{\n  \"schema\": \"hn.migration-plan/1\",\n  \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n  \"destination\": {\n    \"kind\": \"archive\",\n    \"endpoint\": \"\",\n    \"organization\": \"\",\n    \"project\": \"\",\n    \"repository\": \"/tmp/wp11-review-journey-5pa0q_zr/archive.hn\"\n  },\n  \"limits\": {\n    \"records\": 10000,\n    \"blobs\": 1024,\n    \"refs\": 1024,\n    \"git_objects\": 100000,\n    \"blob_bytes\": 16777216,\n    \"manifest_bytes\": 16777216,\n    \"attachment_bytes\": 268435456,\n    \"git_object_bytes\": 16777216,\n    \"git_total_bytes\": 536870912\n  },\n  \"decisions\": [],\n  \"intents\": [\n    {\n      \"id\": \"preserve-archive\",\n      \"action\": \"preserve\",\n      \"kind\": \"project\",\n      \"sources\": [],\n      \"payload\": {\n        \"schema\": \"hn.migration.project-write/1\",\n        \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n        \"refs\": [],\n        \"governance\": \"preserve\",\n        \"baseline\": \"sha256:3ccf4100a4963291583c2d4c3515fbadef11b7b951b5c92eec1cb773f755adf9\"\n      },\n      \"expected_id\": \"\",\n      \"expected_revision\": \"\",\n      \"depends_on\": []\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"archive/preserved\",\n      \"status\": \"preserved\",\n      \"path\": \"project\",\n      \"message\": \"Retrieved content and exact native history preserved; no governance activated.\"\n    }\n  ]\n}\nDestination capabilities (offline metadata; access not verified):\n[\n  {\n    \"kind\": \"project\",\n    \"read\": true,\n    \"preserve\": true,\n    \"create\": true,\n    \"update\": false,\n    \"limits\": [\n      \"foreign records remain attributed inert content\",\n      \"source governance is preserved as historical evidence\"\n    ],\n    \"reason\": \"native observations and offline archive\"\n  }\n]\n",
+    "stderr": "hn: migration actor changed\n"
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "resume",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session",
+      "--confirm-apply",
+      "--actor",
+      "reviewed-operator"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"schema\": \"hn.migration-plan/1\",\n  \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n  \"destination\": {\n    \"kind\": \"archive\",\n    \"endpoint\": \"\",\n    \"organization\": \"\",\n    \"project\": \"\",\n    \"repository\": \"/tmp/wp11-review-journey-5pa0q_zr/archive.hn\"\n  },\n  \"limits\": {\n    \"records\": 10000,\n    \"blobs\": 1024,\n    \"refs\": 1024,\n    \"git_objects\": 100000,\n    \"blob_bytes\": 16777216,\n    \"manifest_bytes\": 16777216,\n    \"attachment_bytes\": 268435456,\n    \"git_object_bytes\": 16777216,\n    \"git_total_bytes\": 536870912\n  },\n  \"decisions\": [],\n  \"intents\": [\n    {\n      \"id\": \"preserve-archive\",\n      \"action\": \"preserve\",\n      \"kind\": \"project\",\n      \"sources\": [],\n      \"payload\": {\n        \"schema\": \"hn.migration.project-write/1\",\n        \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n        \"refs\": [],\n        \"governance\": \"preserve\",\n        \"baseline\": \"sha256:3ccf4100a4963291583c2d4c3515fbadef11b7b951b5c92eec1cb773f755adf9\"\n      },\n      \"expected_id\": \"\",\n      \"expected_revision\": \"\",\n      \"depends_on\": []\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"archive/preserved\",\n      \"status\": \"preserved\",\n      \"path\": \"project\",\n      \"message\": \"Retrieved content and exact native history preserved; no governance activated.\"\n    }\n  ]\n}\nDestination capabilities (offline metadata; access not verified):\n[\n  {\n    \"kind\": \"project\",\n    \"read\": true,\n    \"preserve\": true,\n    \"create\": true,\n    \"update\": false,\n    \"limits\": [\n      \"foreign records remain attributed inert content\",\n      \"source governance is preserved as historical evidence\"\n    ],\n    \"reason\": \"native observations and offline archive\"\n  }\n]\nSaved migration intents confirmed: /tmp/wp11-review-journey-5pa0q_zr/session\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/wp11-independent-review-h44uvZ/hn-noforge",
+      "migrate",
+      "inspect",
+      "--session",
+      "/tmp/wp11-review-journey-5pa0q_zr/session"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"schema\": \"hn.migration-inspect/1\",\n  \"plan\": {\n    \"schema\": \"hn.migration-plan/1\",\n    \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n    \"destination\": {\n      \"kind\": \"archive\",\n      \"endpoint\": \"\",\n      \"organization\": \"\",\n      \"project\": \"\",\n      \"repository\": \"/tmp/wp11-review-journey-5pa0q_zr/archive.hn\"\n    },\n    \"limits\": {\n      \"records\": 10000,\n      \"blobs\": 1024,\n      \"refs\": 1024,\n      \"git_objects\": 100000,\n      \"blob_bytes\": 16777216,\n      \"manifest_bytes\": 16777216,\n      \"attachment_bytes\": 268435456,\n      \"git_object_bytes\": 16777216,\n      \"git_total_bytes\": 536870912\n    },\n    \"decisions\": [],\n    \"intents\": [\n      {\n        \"id\": \"preserve-archive\",\n        \"action\": \"preserve\",\n        \"kind\": \"project\",\n        \"sources\": [],\n        \"payload\": {\n          \"schema\": \"hn.migration.project-write/1\",\n          \"snapshot_digest\": \"sha256:9698594397480a18ac786cc3a42967e82bfd446b083e717eb6be29bdf7111db1\",\n          \"refs\": [],\n          \"governance\": \"preserve\",\n          \"baseline\": \"sha256:3ccf4100a4963291583c2d4c3515fbadef11b7b951b5c92eec1cb773f755adf9\"\n        },\n        \"expected_id\": \"\",\n        \"expected_revision\": \"\",\n        \"depends_on\": []\n      }\n    ],\n    \"findings\": [\n      {\n        \"id\": \"archive/preserved\",\n        \"status\": \"preserved\",\n        \"path\": \"project\",\n        \"message\": \"Retrieved content and exact native history preserved; no governance activated.\"\n      }\n    ]\n  },\n  \"snapshot\": {\n    \"schema\": \"hn.project-snapshot/1\",\n    \"source\": {\n      \"kind\": \"local\",\n      \"endpoint\": \"\",\n      \"organization\": \"\",\n      \"project\": \"\",\n      \"repository\": \"\"\n    },\n    \"source_id\": \"sha256:50a1746652e7cd191671b95522d98e568e85525d20394724579743f775af5515\",\n    \"records\": [],\n    \"blobs\": [\n      {\n        \"digest\": \"sha256:75598d03e62ab3832df505f9040d15b5c2be5037b3c7bc711840670a4b9c4711\",\n        \"size\": 332,\n        \"media_type\": \"application/vnd.hn.git-objects\",\n        \"name\": \"selected Git object closure\"\n      }\n    ],\n    \"native_refs\": [\n      {\n        \"source_ref\": \"refs/heads/main\",\n        \"oid\": \"0c70f1270bc3aa608fe69d184437414552edf94d\",\n        \"kind\": \"code\"\n      }\n    ],\n    \"git_bundle\": \"sha256:75598d03e62ab3832df505f9040d15b5c2be5037b3c7bc711840670a4b9c4711\",\n    \"findings\": []\n  }\n}\n",
+    "stderr": ""
+  }
+]

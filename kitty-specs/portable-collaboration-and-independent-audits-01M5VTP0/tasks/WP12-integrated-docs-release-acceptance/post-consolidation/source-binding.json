@@ -1,0 +1,16 @@
+{
+  "approved_source": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+  "consolidated_head": "20d3ceb6df3e97c2f0c58f57f2913f5a7f8ae684",
+  "public_main": "76446469b23d502a436c56cd7d704511d775b4d5",
+  "preserved_approved_commit_ancestry": true,
+  "compared_product_entries": 345,
+  "committed_product_changes": [],
+  "working_product_mismatches": [],
+  "metadata_exclusions": [
+    "kitty-specs/**",
+    ".kittify/**",
+    "kitty-ops/lifecycle.jsonl"
+  ],
+  "whole_pr_diff_check_exit": 0,
+  "scope": "Both committed tree and actual working bytes/modes equal approved source outside explicitly named governance/operation records. No second full suite is claimed or needed without changed product inputs."
+}

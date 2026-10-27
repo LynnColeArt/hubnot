@@ -1,0 +1,47 @@
+=== RUN   TestAuditAuthorityExplicitAnchorAndWithdrawal
+--- PASS: TestAuditAuthorityExplicitAnchorAndWithdrawal (0.53s)
+=== RUN   TestAuditAuthorityUnsafePrivatePaths
+--- PASS: TestAuditAuthorityUnsafePrivatePaths (0.03s)
+=== RUN   TestAuditPolicyStrictAndDisabledDefault
+--- PASS: TestAuditPolicyStrictAndDisabledDefault (0.02s)
+=== RUN   TestAuditNativeReplicationOldCodeKeylessAndNoAnchor
+    audit_protocol_test.go:94: snapshot request pack 896 bytes; 3 signed audit facts replicated and old target restored
+--- PASS: TestAuditNativeReplicationOldCodeKeylessAndNoAnchor (1.44s)
+=== RUN   TestAuditStrictSignedShapeAndBoundedFindings
+--- PASS: TestAuditStrictSignedShapeAndBoundedFindings (0.91s)
+=== RUN   TestAuditRevocationConflictAndReauthorization
+--- PASS: TestAuditRevocationConflictAndReauthorization (1.52s)
+=== RUN   TestAuditForeignAuthorityHistoryCannotPoisonCurrentHeads
+--- PASS: TestAuditForeignAuthorityHistoryCannotPoisonCurrentHeads (0.83s)
+=== RUN   TestAuditPackRejectsUnexpectedObjectsCorruptionAndMissingMembers
+--- PASS: TestAuditPackRejectsUnexpectedObjectsCorruptionAndMissingMembers (0.14s)
+=== RUN   TestAuditFactsNeverSatisfyProposalEvidence
+--- PASS: TestAuditFactsNeverSatisfyProposalEvidence (1.74s)
+=== RUN   TestAuditLocalAndFetchedForgedRelationshipParity
+--- PASS: TestAuditLocalAndFetchedForgedRelationshipParity (0.24s)
+=== RUN   TestAuditOldEventEncodingPreserved
+--- PASS: TestAuditOldEventEncodingPreserved (0.00s)
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/wrong-rule
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/missing-rule
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/missing-pack
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/corrupt-pack
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/extra-tree-member
+=== RUN   TestAuditFetchedHostileFactsStayQuarantined/expanded-budget
+--- PASS: TestAuditFetchedHostileFactsStayQuarantined (1.87s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/wrong-rule (0.40s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/missing-rule (0.39s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/missing-pack (0.29s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/corrupt-pack (0.26s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/extra-tree-member (0.29s)
+    --- PASS: TestAuditFetchedHostileFactsStayQuarantined/expanded-budget (0.24s)
+=== RUN   TestAuditWorkflowAuthorizationIsExplicitAndRevisionBound
+--- PASS: TestAuditWorkflowAuthorizationIsExplicitAndRevisionBound (1.16s)
+=== RUN   TestAuditSnapshotPackExcludesUnrelatedHistoryAndSourceContent
+--- PASS: TestAuditSnapshotPackExcludesUnrelatedHistoryAndSourceContent (0.40s)
+=== RUN   TestAuditSourceSymlinkAndUnauthorizedRolesRefuse
+--- PASS: TestAuditSourceSymlinkAndUnauthorizedRolesRefuse (0.59s)
+=== RUN   TestAuditSignedSchemasRejectPresentUnrelatedEmptyFields
+--- PASS: TestAuditSignedSchemasRejectPresentUnrelatedEmptyFields (0.10s)
+PASS
+ok  	hubnot	11.530s

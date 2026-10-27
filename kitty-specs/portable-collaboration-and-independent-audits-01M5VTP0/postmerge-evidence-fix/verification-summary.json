@@ -1,0 +1,59 @@
+{
+  "fixed_source_commit": "61fa1c35fbe147fcca4d50b6fce37f0ae4c238db",
+  "fixed_source_tree": "fe62e94dd68a69e9ebbca86c8e21f7f9770c5758",
+  "original_failure_source": "170b3254e7ca7422b90fd149c38b9cb6f7fe339d",
+  "original_failure_report_commit": "e5833894",
+  "initial_canonical_NFR_003_fail_commit": "73b34581e6cc93f322452780ee7125b33b991b3e",
+  "original_exits": {
+    "compile-all": 1,
+    "vet": 1,
+    "build": 0
+  },
+  "fresh_primary_checks": {
+    "discovery-v2": 0,
+    "vet": 0,
+    "build": 0,
+    "compile-discovery": 0,
+    "diff": 0,
+    "preservation": 0,
+    "guard-v2-controls": 0,
+    "package-one": 0,
+    "package-two": 0,
+    "package-independent": 0,
+    "full-primary-race": 0
+  },
+  "after_full_binding": {
+    "fixed_head": "61fa1c35fbe147fcca4d50b6fce37f0ae4c238db",
+    "head_after_full": "61fa1c35fbe147fcca4d50b6fce37f0ae4c238db",
+    "working_tree_after_full": "",
+    "all_189_tracked_Go_names_and_SHA256_unchanged_after_full": true,
+    "module_inputs_unchanged": true,
+    "fresh_full_command": "go test -race -count=1 -timeout 20m ./...",
+    "actual_cwd": "/home/lynn/projects/nichthub",
+    "full_main_duration_seconds": 627.964,
+    "full_exit": 0,
+    "tested_packages": 11,
+    "example_packages_without_tests": 1,
+    "test_cache_markers": false,
+    "canonical_NFR_003_at_evidence_creation": "fail; root waits for independent follow-up closure"
+  },
+  "source_Go_input_count": 189,
+  "source_module_input_count": 1,
+  "metadata_Go_input_count": 0,
+  "approved_package_graph_count": 12,
+  "no_product_Go_config_CI_default_or_assertion_changes": true,
+  "all_old_WP12_validation_files_byte_identical": true,
+  "new_package_source_files": 1097,
+  "all_eight_executable_sha256_match_approved_c4": {
+    "hubnot_0.0.0-wp12-proof_darwin_amd64.tar.gz": "79b16c8f066cae88c56bdb100b232a62af45cd5ee548830273cc61d72b32a404",
+    "hubnot_0.0.0-wp12-proof_darwin_amd64_native-only.tar.gz": "26a72d6c2e1950d30881684ea1f8f3d4089958b96352105a8329a37b40fb8a7f",
+    "hubnot_0.0.0-wp12-proof_darwin_arm64.tar.gz": "b4cb9d16001446a6cf62262bf2ac33cfb33bee4c81724c64511a8706cc125913",
+    "hubnot_0.0.0-wp12-proof_darwin_arm64_native-only.tar.gz": "2e25b91e1a274d2061c2fc0fe7218990ba712d03def2245db4979222c1c4064c",
+    "hubnot_0.0.0-wp12-proof_linux_amd64.tar.gz": "45fee18e5e04c04cbd01adae7908819674a07dc83164677b1fe71559776d4381",
+    "hubnot_0.0.0-wp12-proof_linux_amd64_native-only.tar.gz": "43fa8cfe96b6d965b38eae4cf1fe048928920f771ef7aba997e873483dc1e69c",
+    "hubnot_0.0.0-wp12-proof_linux_arm64.tar.gz": "adf07af5c04eec8b47c4aa7b83900e25661801d4e2e583b47a66211f72c40207",
+    "hubnot_0.0.0-wp12-proof_linux_arm64_native-only.tar.gz": "8daf3fc21244922cc0bcb5fde4a06644dac0295c31ec8c80b7fca157ce5b6d2b"
+  },
+  "scope": "Exactly three byte-identical historical overlays represented as .go.txt plus additive postmerge evidence guards/proof; no lifecycle/criterion updates by implementer.",
+  "independent_followup": "Pending; no self-approval and NFR-003 not restored by this evidence commit."
+}

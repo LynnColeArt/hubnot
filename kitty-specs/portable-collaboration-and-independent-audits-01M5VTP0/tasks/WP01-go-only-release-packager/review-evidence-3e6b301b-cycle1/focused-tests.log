@@ -1,0 +1,78 @@
+=== RUN   TestPackageReproducibleExactSourceAndProvenance
+--- PASS: TestPackageReproducibleExactSourceAndProvenance (3.54s)
+=== RUN   TestPackageRefusalsPreserveOutput
+=== RUN   TestPackageRefusalsPreserveOutput/version
+=== RUN   TestPackageRefusalsPreserveOutput/leading-v
+=== RUN   TestPackageRefusalsPreserveOutput/target
+=== RUN   TestPackageRefusalsPreserveOutput/duplicate-target
+=== RUN   TestPackageRefusalsPreserveOutput/variant
+=== RUN   TestPackageRefusalsPreserveOutput/duplicate-variant
+=== RUN   TestPackageRefusalsPreserveOutput/missing-rev
+=== RUN   TestPackageRefusalsPreserveOutput/option-rev
+=== RUN   TestPackageRefusalsPreserveOutput/no-version
+--- PASS: TestPackageRefusalsPreserveOutput (0.02s)
+    --- PASS: TestPackageRefusalsPreserveOutput/version (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/leading-v (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/target (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/duplicate-target (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/variant (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/duplicate-variant (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/missing-rev (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/option-rev (0.00s)
+    --- PASS: TestPackageRefusalsPreserveOutput/no-version (0.00s)
+=== RUN   TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution
+=== RUN   TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/Package/local/review.clean
+=== RUN   TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/Package/include/other.driver.process
+=== RUN   TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/Package/worktree/worktree.process
+=== RUN   TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/CLI/local/review.clean
+=== RUN   TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/CLI/include/other.driver.process
+=== RUN   TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/CLI/worktree/worktree.process
+--- PASS: TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution (0.35s)
+    --- PASS: TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/Package/local/review.clean (0.03s)
+    --- PASS: TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/Package/include/other.driver.process (0.03s)
+    --- PASS: TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/Package/worktree/worktree.process (0.03s)
+    --- PASS: TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/CLI/local/review.clean (0.03s)
+    --- PASS: TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/CLI/include/other.driver.process (0.03s)
+    --- PASS: TestPackageAndCLIRefuseConfiguredFiltersBeforeExecution/CLI/worktree/worktree.process (0.03s)
+=== RUN   TestPackageRefusesSourcesThatCouldStartNestedHelpers
+=== RUN   TestPackageRefusesSourcesThatCouldStartNestedHelpers/partial-clone
+=== RUN   TestPackageRefusesSourcesThatCouldStartNestedHelpers/promisor
+=== RUN   TestPackageRefusesSourcesThatCouldStartNestedHelpers/submodule
+--- PASS: TestPackageRefusesSourcesThatCouldStartNestedHelpers (0.07s)
+    --- PASS: TestPackageRefusesSourcesThatCouldStartNestedHelpers/partial-clone (0.02s)
+    --- PASS: TestPackageRefusesSourcesThatCouldStartNestedHelpers/promisor (0.02s)
+    --- PASS: TestPackageRefusesSourcesThatCouldStartNestedHelpers/submodule (0.02s)
+=== RUN   TestPackageDisablesFilesystemMonitor
+--- PASS: TestPackageDisablesFilesystemMonitor (0.84s)
+=== RUN   TestPackageRefusesStagedChanges
+--- PASS: TestPackageRefusesStagedChanges (0.02s)
+=== RUN   TestPackageRejectsNonportableCommittedTrees
+=== RUN   TestPackageRejectsNonportableCommittedTrees/back\slash
+=== RUN   TestPackageRejectsNonportableCommittedTrees/CON
+=== RUN   TestPackageRejectsNonportableCommittedTrees/trailing.
+=== RUN   TestPackageRejectsNonportableCommittedTrees/case
+=== RUN   TestPackageRejectsNonportableCommittedTrees/link
+--- PASS: TestPackageRejectsNonportableCommittedTrees (0.19s)
+    --- PASS: TestPackageRejectsNonportableCommittedTrees/back\slash (0.04s)
+    --- PASS: TestPackageRejectsNonportableCommittedTrees/CON (0.03s)
+    --- PASS: TestPackageRejectsNonportableCommittedTrees/trailing. (0.05s)
+    --- PASS: TestPackageRejectsNonportableCommittedTrees/case (0.04s)
+    --- PASS: TestPackageRejectsNonportableCommittedTrees/link (0.04s)
+=== RUN   TestPackagePinsRequestedCommitDespiteHEADAndReplaceRef
+--- PASS: TestPackagePinsRequestedCommitDespiteHEADAndReplaceRef (0.88s)
+=== RUN   TestPackageBuildFailureAndCancellationLeaveNoAssets
+--- PASS: TestPackageBuildFailureAndCancellationLeaveNoAssets (0.10s)
+=== RUN   TestPackageRefusesNonLinkerSettableVersion
+=== RUN   TestPackageRefusesNonLinkerSettableVersion/const_version_=_"old"
+=== RUN   TestPackageRefusesNonLinkerSettableVersion/var_version_=_func()_string_{_return_"old"_}()
+=== RUN   TestPackageRefusesNonLinkerSettableVersion/var_version_=_1
+--- PASS: TestPackageRefusesNonLinkerSettableVersion (0.20s)
+    --- PASS: TestPackageRefusesNonLinkerSettableVersion/const_version_=_"old" (0.06s)
+    --- PASS: TestPackageRefusesNonLinkerSettableVersion/var_version_=_func()_string_{_return_"old"_}() (0.08s)
+    --- PASS: TestPackageRefusesNonLinkerSettableVersion/var_version_=_1 (0.06s)
+PASS
+ok  	hubnot/internal/release	7.238s
+=== RUN   TestCommandUsageAndInvalidArguments
+--- PASS: TestCommandUsageAndInvalidArguments (0.00s)
+PASS
+ok  	hubnot/cmd/hn-release	1.011s

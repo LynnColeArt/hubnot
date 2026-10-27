@@ -1,0 +1,23 @@
+#!/bin/bash
+set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/negative-source-guard.sh.txt"
+negative_select_and_guard "$1" "$2"
+shift 2
+negative_names=("$@")
+negative_pattern='^('
+for negative_name in "${negative_names[@]}"; do
+  [[ "$negative_name" =~ ^Test[A-Za-z0-9_]+$ ]]
+  negative_pattern+="$negative_name|"
+done
+negative_pattern=${negative_pattern%|}')$'
+negative_public=$(mktemp -d /tmp/wp12-negative-public.XXXXXX)
+printf 'Source: %s\nPublic-only proof: %s\nTests: %s\n' "$negative_expected" "$negative_public" "${negative_names[*]}"
+mkdir "$negative_public/native" "$negative_public/migration"
+export HN_PORTABLE_TEST_TRANSCRIPTS="$negative_public/native"
+export HN_MIGRATION_TEST_TRANSCRIPTS="$negative_public/migration"
+go -C "$negative_repo" test -v -count=1 -run "$negative_pattern" -timeout 5m . 2>&1 | tee "$negative_public/go-test.log"
+for negative_name in "${negative_names[@]}"; do
+  grep -F -- "--- PASS: $negative_name (" "$negative_public/go-test.log" >/dev/null
+done
+negative_select_and_guard "$negative_repo" "$negative_expected"
+printf 'PASS all named real assertions executed at unchanged source %s\n' "$negative_expected"

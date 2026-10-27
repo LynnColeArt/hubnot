@@ -1,0 +1,3 @@
+The attempted variant-build/native-CLI batch was rejected before execution by tool automatic approval review:
+rm -f style commands are not permitted. Use a safer approach
+The batch included an agent-owned temporary-directory cleanup trap using rm -rf. No build, CLI, cleanup or fixture creation from that batch executed. The original batch was not retried or rephrased. Static dependency checks ran independently and passed; actual tagged builds/native-CLI checks remain pending until a safe follow-up is authorized.

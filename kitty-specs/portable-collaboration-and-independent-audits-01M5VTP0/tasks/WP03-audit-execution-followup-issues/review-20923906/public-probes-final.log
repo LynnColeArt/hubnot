@@ -1,0 +1,16 @@
+=== RUN   TestWP03ReviewAuthenticatedLinksAndConcurrentAssociations
+--- PASS: TestWP03ReviewAuthenticatedLinksAndConcurrentAssociations (1.36s)
+=== RUN   TestWP03ReviewNormalizedDuplicateAcceptedResult
+    zz_wp03_review_test.go:43: accepted refs before (1):
+        refs/hn/actors/46cfc2d41e1da3fb84d53582aee90c018b3c2cb8d80dda1b984085cfca8d53f8 e1914ae1180d5c7f7a96758f0414578f7aadf50d
+    zz_wp03_review_test.go:49: first public CLI exit error=exit status 1 response={"schema":"hn.audit/1","ok":false,"data":null,"error":{"code":"audit_refused","message":"follow-up interrupted; retry the same result, finding selection and operation: operation_conflict: operation key was already used for different content"}}
+        hn: follow-up interrupted; retry the same result, finding selection and operation: operation_conflict: operation key was already used for different content
+    zz_wp03_review_test.go:52: accepted refs after (1):
+        refs/hn/actors/46cfc2d41e1da3fb84d53582aee90c018b3c2cb8d80dda1b984085cfca8d53f8 31399d69f981107d858a24ea012838307624fe89
+    zz_wp03_review_test.go:54: retry response: {"associations":[{"finding":"X","identity":"sha256:04a5a99a4011799916e4067ffbdc4d92c0a36633bc24b6ee7b0722698c6ddc9f","issue_id":"sha256:c054286219ad0b7ec1adfe95b4a23bd64d32d9acdc3ed742886868548e1a6e79","result":"sha256:7c7b439321eff91991812a2299fc0b2c176c3eed374a04932d7dc52c43955980","existing":true},{"finding":"x","identity":"sha256:04a5a99a4011799916e4067ffbdc4d92c0a36633bc24b6ee7b0722698c6ddc9f","issue_id":"sha256:c054286219ad0b7ec1adfe95b4a23bd64d32d9acdc3ed742886868548e1a6e79","result":"sha256:7c7b439321eff91991812a2299fc0b2c176c3eed374a04932d7dc52c43955980","existing":true}],"multiple_associations":false}
+    zz_wp03_review_test.go:56: accepted signed normalized collision; issue count before=0 after=1
+    zz_wp03_review_test.go:57: follow-up refused an accepted result only AFTER publishing 1 issue(s)
+--- FAIL: TestWP03ReviewNormalizedDuplicateAcceptedResult (1.81s)
+FAIL
+FAIL	hubnot	3.183s
+FAIL

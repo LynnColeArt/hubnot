@@ -1,0 +1,65 @@
+{
+  "source": "86dc00678c42d495c6442addfcc8da8abd983ffa",
+  "race_go_exit": "0",
+  "race_actions": {
+    "start": 6,
+    "output": 3061,
+    "skip": 1,
+    "run": 1168,
+    "pass": 1173
+  },
+  "race_completed_packages": [
+    {
+      "Time": "2026-10-26T06:14:41.553638384-05:00",
+      "Action": "pass",
+      "Package": "hubnot/internal/forge",
+      "Elapsed": 1.017
+    },
+    {
+      "Time": "2026-10-26T06:14:41.554272661-05:00",
+      "Action": "pass",
+      "Package": "hubnot/cmd/hn-release",
+      "Elapsed": 1.018
+    },
+    {
+      "Time": "2026-10-26T06:14:47.777135148-05:00",
+      "Action": "pass",
+      "Package": "hubnot/internal/release",
+      "Elapsed": 7.24
+    },
+    {
+      "Time": "2026-10-26T06:14:53.081836422-05:00",
+      "Action": "pass",
+      "Package": "hubnot/internal/githubapi",
+      "Elapsed": 12.545
+    },
+    {
+      "Time": "2026-10-26T06:22:48.801109955-05:00",
+      "Action": "pass",
+      "Package": "hubnot",
+      "Elapsed": 488.265
+    }
+  ],
+  "race_skips": [
+    {
+      "Time": "2026-10-26T06:14:40.536600247-05:00",
+      "Action": "skip",
+      "Package": "hubnot/examples/issue-consumer",
+      "Elapsed": 0
+    }
+  ],
+  "asset_sha256": {
+    "PROVENANCE.json": "fc22cfc93d1dbd4d7b07032385ec1d2e67fc4b4d1b3f3684912319293ea64dfe",
+    "SHA256SUMS": "0547f98293570c66b33cbe6fb234f661a80bf7c7ec043d30888194fbd88c2ade",
+    "hubnot_0.0.2-dev_darwin_amd64.tar.gz": "3daa5fe16932e7b2be3af530664aa7810baa19b4b894180f88f484d59a04d60c",
+    "hubnot_0.0.2-dev_darwin_amd64_native-only.tar.gz": "16599c0090ed858bd699346ef64390b5d70f3d7246c856a7bcda8c94d28c30b1",
+    "hubnot_0.0.2-dev_darwin_arm64.tar.gz": "80663dcad6194091f9d74c05c32e40a88872147af9716a259085a5a84459b769",
+    "hubnot_0.0.2-dev_darwin_arm64_native-only.tar.gz": "40a85105c0651789fa9bf2a2bdb221935b308cdf43b68dd580e68af283ceb070",
+    "hubnot_0.0.2-dev_linux_amd64.tar.gz": "16a2262b71d74e778de5069996872b8c79b2dc7a03de3379c98ba49f3d379f5c",
+    "hubnot_0.0.2-dev_linux_amd64_native-only.tar.gz": "541463740b649f7482e16ba0b8415238d92b487d24277177471ba93a317329ca",
+    "hubnot_0.0.2-dev_linux_arm64.tar.gz": "e09f402a7c5d124eedd818f21fd9b46b9dfa2344479337dacdcc010593f2a356",
+    "hubnot_0.0.2-dev_linux_arm64_native-only.tar.gz": "2a92a4470b4a195967a533d05a89aa9a301f6c70dac12784605c78ab3134b1ff",
+    "hubnot_0.0.2-dev_source.tar.gz": "ec418e14c13a38e85138376b61d4764324da835bcd7f4739e6a6ca12be4e1580"
+  },
+  "packager_crosscompiled_files": "/tmp/hn-wp01-evidence/hn-release-windows-amd64.exe: PE32+ executable (console) x86-64, for MS Windows, 16 sections\n/tmp/hn-wp01-evidence/hn-release-darwin-amd64:      Mach-O 64-bit x86_64 executable, flags:<|DYLDLINK|PIE>\n/tmp/hn-wp01-evidence/hn-release-darwin-arm64:      Mach-O 64-bit arm64 executable, flags:<|DYLDLINK|PIE>\n"
+}

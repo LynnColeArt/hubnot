@@ -829,6 +829,11 @@ func measureQuarantinedSelectionUnderBudgets(quarantineGitDir, mainGitDir, kind,
 		}
 	}
 	if kind == replicationActor {
+		var err error
+		measurements, err = measureAuditSnapshotDependenciesAt(quarantineGitDir, mainGitDir, root, acceptedRoot, budgets, selectionID, measurements)
+		if err != nil {
+			return measurements, err
+		}
 		events, err := loadActorEventsAt(quarantineGitDir, root)
 		if err != nil {
 			return ReplicationMeasurements{}, err
@@ -904,6 +909,12 @@ func validateQuarantinedEventTree(gitDir string, event StoredEvent) error {
 		names[name] = true
 	}
 	want := map[string]bool{"event.json": true, "signature": true}
+	if isAuditKind(event.Event.Kind) {
+		want["audit.pack"] = true
+		if event.Event.Kind == "audit.result" {
+			want["log.txt"] = true
+		}
+	}
 	if event.Event.Kind == "run.result" {
 		want["log.txt"] = true
 	}
@@ -948,6 +959,14 @@ func acceptedProposalHeads() (map[string]string, map[string]string, error) {
 }
 
 func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent, byID map[string]StoredEvent, codeHeads, eventOwners, codeOwners map[string]string) (*replicationDependency, error) {
+	if isAuditKind(event.Event.Kind) {
+		for _, id := range auditReferences(event.Event) {
+			if _, exists := byID[id]; !exists {
+				return &replicationDependency{EventID: event.ID, EventKind: event.Event.Kind, Missing: id, Key: eventOwners[id], Recovery: "select the full actor history supplying " + id, Reason: "audit dependency is absent"}, nil
+			}
+		}
+		return nil, validateAuditRelationshipAt(gitDir, acceptedGitDir, event, byID)
+	}
 	require := func(id, description string, predicate func(StoredEvent) bool) (*replicationDependency, error) {
 		stored, exists := byID[id]
 		if !exists {
@@ -1058,6 +1077,7 @@ func replicationEventReferences(event Event) []string {
 	references := append([]string(nil), event.Evidence...)
 	references = append(references, issueReferences(event)...)
 	references = append(references, resourceReferences(event)...)
+	references = append(references, auditReferences(event)...)
 	switch event.Kind {
 	case "issue.comment", "proposal.revise", "review.submit", "run.request", "run.result", "proposal.decision", "proposal.merged", "identity.accept":
 		references = append(references, event.Subject)

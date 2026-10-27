@@ -1,0 +1,112 @@
+{
+  "fixed_source_commit": "c4aaa4e840420b07d83617c6373d6f4088e2c077",
+  "canonical_negative_invariants": [
+    {
+      "invariant_id": "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE",
+      "description": "Native defaults remain disabled; failed audits neither qualify nor block merge, unsafe-host/no-anchor/imported authority refuses without accepted-state effects; hostile archive leaves destination unchanged, across actual public ordinary/nogithub/noforge commands.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestPortableCollaborationIntegratedPublicVariants TestAuditPolicyStrictAndDisabledDefault TestAuditFactsNeverSatisfyProposalEvidence TestAuditPublicCandidateStalePolicyAndRoleRefusals",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    },
+    {
+      "invariant_id": "NI-PLANNING-EOF-NO-BLIND-CREATE",
+      "description": "Public guided EOF/missing approval and stale/private/inexact recovery refuse without remote effects; exact saved parent receipts are preserved, missing progress never authorizes blind duplicate creates.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline TestMigrationCLIPublicRefusalsPreserveRemoteState TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries TestMigrationMissingCheckpointNeverReplaysCreates",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    },
+    {
+      "invariant_id": "NI-ACTUAL-FORGE-COMPILE-EXCLUSION",
+      "description": "Actual ordinary/nogithub/noforge binaries: nogithub excludes only GitHub and retains other network clients; noforge excludes all network client dependencies, compiled symbols and all six adapter files, with positive ordinary/other-provider controls.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-exclusion.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    }
+  ],
+  "official_write_results": {
+    "NI-ACTUAL-FORGE-COMPILE-EXCLUSION": {
+      "success": true,
+      "mission": "portable-collaboration-and-independent-audits-01M5VTP0",
+      "negative_invariant": "NI-ACTUAL-FORGE-COMPILE-EXCLUSION",
+      "result": "confirmed_absent",
+      "overall_verdict": "pass",
+      "write_status": "committed",
+      "destination_surface": "feat/portable-collaboration",
+      "commit_hash": "ddf5bdf8dc9080365bbb2b9cb5a585a6ce21d974"
+    },
+    "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE": {
+      "success": true,
+      "mission": "portable-collaboration-and-independent-audits-01M5VTP0",
+      "negative_invariant": "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE",
+      "result": "confirmed_absent",
+      "overall_verdict": "pass",
+      "write_status": "committed",
+      "destination_surface": "feat/portable-collaboration",
+      "commit_hash": "75bb9a859e621c91f8b88e9815532ca7171c0e64"
+    },
+    "NI-PLANNING-EOF-NO-BLIND-CREATE": {
+      "success": true,
+      "mission": "portable-collaboration-and-independent-audits-01M5VTP0",
+      "negative_invariant": "NI-PLANNING-EOF-NO-BLIND-CREATE",
+      "result": "confirmed_absent",
+      "overall_verdict": "pass",
+      "write_status": "committed",
+      "destination_surface": "feat/portable-collaboration",
+      "commit_hash": "7c54eb1f16196632608f80393486128f7152c887"
+    }
+  },
+  "actual_named_test_runs": {
+    "integrated": {
+      "executed_named_tests": [
+        [
+          "TestAuditPolicyStrictAndDisabledDefault",
+          "0.03s"
+        ],
+        [
+          "TestAuditPublicCandidateStalePolicyAndRoleRefusals",
+          "3.71s"
+        ],
+        [
+          "TestAuditFactsNeverSatisfyProposalEvidence",
+          "1.86s"
+        ],
+        [
+          "TestPortableCollaborationIntegratedPublicVariants",
+          "69.65s"
+        ]
+      ],
+      "package_output": [
+        "75.259s"
+      ]
+    },
+    "planning-recovery": {
+      "executed_named_tests": [
+        [
+          "TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline",
+          "6.16s"
+        ],
+        [
+          "TestMigrationCLIPublicRefusalsPreserveRemoteState",
+          "3.31s"
+        ],
+        [
+          "TestMigrationPersistedCommentBindingAndNegativeLookupNeverRetries",
+          "0.04s"
+        ],
+        [
+          "TestMigrationMissingCheckpointNeverReplaysCreates",
+          "0.02s"
+        ]
+      ],
+      "package_output": [
+        "9.541s"
+      ]
+    }
+  },
+  "compiled_exclusion": "All three actual dependency/file/symbol projections freshly checked, including positive ordinary/retained-provider controls. Gitea uses the shared Forgejo transport; separate migration_gitea.go presence/exclusion is explicitly asserted.",
+  "replay": "Committed helpers source-pin executable Go/module/configuration/assets. Existing lane is used historically; if it is absent, helpers locate canonical checkout from committed evidence location and require matching executable inputs, even when metadata HEAD changes.",
+  "private_material": "Only public traces, named test output, commands, result metadata and symbol/dependency/file text. No binaries, HOME, repository or keys."
+}

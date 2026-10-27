@@ -1,0 +1,15 @@
+=== RUN   TestIndependentAuditMalformedTargetCommit
+    zz_independent_adversarial_test.go:20: git --git-dir=/tmp/hn-audit-objects-2524024487 index-pack --stdin --fsck-objects --max-input-size=67108864: error: object c8b99260b7e398272f84be27534f6369f1ebba4c: missingAuthor: invalid format - expected 'author' line
+        fatal: fsck error in packed object
+--- PASS: TestIndependentAuditMalformedTargetCommit (0.23s)
+=== RUN   TestIndependentAuditMalformedSnapshotReplication
+=== RUN   TestIndependentAuditMalformedSnapshotReplication/missing-identities
+    zz_independent_adversarial_test.go:42: local correctly refused missing-identities: git --git-dir=/tmp/hn-audit-objects-2930446405 index-pack --stdin --fsck-objects --max-input-size=67108864: error: object 822a2261a279d4fc7594ccc6ec3e69348532ec1c: missingAuthor: invalid format - expected 'author' line
+        fatal: fsck error in packed object
+=== RUN   TestIndependentAuditMalformedSnapshotReplication/tree-as-blob
+    zz_independent_adversarial_test.go:42: local correctly refused tree-as-blob: audit tree edge "wrong-type" requires blob, found tree
+--- PASS: TestIndependentAuditMalformedSnapshotReplication (0.49s)
+    --- PASS: TestIndependentAuditMalformedSnapshotReplication/missing-identities (0.23s)
+    --- PASS: TestIndependentAuditMalformedSnapshotReplication/tree-as-blob (0.26s)
+PASS
+ok  	hubnot	0.716s

@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+evidence_primary=$1
+evidence_expected_head=$2
+evidence_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+[ "$(git -C "$evidence_primary" rev-parse HEAD)" = "$evidence_expected_head" ]
+bash "$evidence_directory/check-go-discovery-v2.sh.txt" "$evidence_primary" c4aaa4e840420b07d83617c6373d6f4088e2c077
+cd "$evidence_primary"
+printf 'Actual PRIMARY full gate source HEAD=%s cwd=%s\n' "$(git rev-parse HEAD)" "$PWD"
+go test -race -count=1 -timeout 20m ./...
+[ "$(git rev-parse HEAD)" = "$evidence_expected_head" ]
+source "$evidence_directory/source-guard-v2.sh.txt"
+negative_select_and_guard "$evidence_primary" c4aaa4e840420b07d83617c6373d6f4088e2c077

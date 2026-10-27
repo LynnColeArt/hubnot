@@ -1,0 +1,22 @@
+=== RUN   TestIndependentAuditMalformedTargetCommit
+    zz_independent_adversarial_test.go:20: malformed commit without author/committer accepted by AuditRequest
+--- FAIL: TestIndependentAuditMalformedTargetCommit (0.34s)
+=== RUN   TestIndependentAuditMalformedSnapshotReplication
+=== RUN   TestIndependentAuditMalformedSnapshotReplication/missing-identities
+    zz_independent_adversarial_test.go:43: local accepted malformed missing-identities target f8bcf0fe5a7049378263fd7380a5b4243d71d9cf request sha256:35251d53b7312f08f86f7f942d1dd30ba669b237ba6601251a83dfc7c62d4856
+    zz_independent_adversarial_test.go:56: replication kind=actor status=promoted diagnostic="" accepted event count=2
+    zz_independent_adversarial_test.go:57: Git rejects admitted snapshot structure: git fsck --strict --no-reflogs f8bcf0fe5a7049378263fd7380a5b4243d71d9cf: error in commit f8bcf0fe5a7049378263fd7380a5b4243d71d9cf: missingAuthor: invalid format - expected 'author' line
+    zz_independent_adversarial_test.go:59: malformed missing-identities target promoted to accepted visibility
+=== RUN   TestIndependentAuditMalformedSnapshotReplication/tree-as-blob
+    zz_independent_adversarial_test.go:43: local accepted malformed tree-as-blob target 54822a4e704997e05c63a23e6bec57348dcf1c7e request sha256:1a205e96e1d9599a48ab59cad3fe63184fe1aba920bfbe7655fd7c908364e229
+    zz_independent_adversarial_test.go:56: replication kind=actor status=promoted diagnostic="" accepted event count=2
+    zz_independent_adversarial_test.go:57: Git rejects admitted snapshot structure: git fsck --strict --no-reflogs 54822a4e704997e05c63a23e6bec57348dcf1c7e: error: object 117b5bd73cffd2ac67366b57666ea18748dc2179 is a tree, not a blob
+        error in tree 2e7bea9debcd3b0eeadd270ff058e4a943ce210f: broken links
+        error: object 117b5bd73cffd2ac67366b57666ea18748dc2179 is a tree, not a blob
+    zz_independent_adversarial_test.go:59: malformed tree-as-blob target promoted to accepted visibility
+--- FAIL: TestIndependentAuditMalformedSnapshotReplication (1.40s)
+    --- FAIL: TestIndependentAuditMalformedSnapshotReplication/missing-identities (0.70s)
+    --- FAIL: TestIndependentAuditMalformedSnapshotReplication/tree-as-blob (0.70s)
+FAIL
+FAIL	hubnot	1.749s
+FAIL

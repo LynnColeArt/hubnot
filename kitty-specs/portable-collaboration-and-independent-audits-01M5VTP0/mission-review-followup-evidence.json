@@ -1,0 +1,422 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/mission_fidelity_review / codex / reviewer-renata",
+  "independent_from_implementation_and_fix": true,
+  "date": "2026-10-27",
+  "verdict": "PASS WITH NOTES",
+  "closed_findings": [
+    "RISK-1",
+    "DRIFT-1"
+  ],
+  "frozen_original_failure_report_commit": "e5833894",
+  "initial_canonical_failure_commit": "73b34581e6cc93f322452780ee7125b33b991b3e",
+  "public_baseline": "76446469b23d502a436c56cd7d704511d775b4d5",
+  "source_binding": {
+    "review_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+    "fixed_full_source": "61fa1c35fbe147fcca4d50b6fce37f0ae4c238db",
+    "all_tracked_go_module_workspace_entries": 190,
+    "tracked_go_count": 189,
+    "metadata_go_count": 0,
+    "fixed_to_proof_go_input_diffs": [],
+    "working_go_input_mismatches": [],
+    "inventory_sha256": "ce0dca0d5749cb052e04d51a0b3af4602b7efd76412ffb56b7b781348416e603",
+    "original_failure_artifacts": [
+      {
+        "path": "mission-review.md",
+        "sha256": "8ce6bab08144f2c72c9d209f5c06d5bde7fb168e3a92779fefa83dc404b010bc"
+      },
+      {
+        "path": "mission-review-evidence.json",
+        "sha256": "4d220b6f41ba79e222de8f86b370a4ee1809dd7edf2c873966b915b0b882439d"
+      }
+    ],
+    "format_exit": 0,
+    "format_output": ""
+  },
+  "actual_fresh_primary_full_run": {
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout",
+      "20m",
+      "./..."
+    ],
+    "cwd": "/home/lynn/projects/nichthub",
+    "source_commit": "61fa1c35fbe147fcca4d50b6fce37f0ae4c238db",
+    "source_tree": "fe62e94dd68a69e9ebbca86c8e21f7f9770c5758",
+    "exit_code": 0,
+    "main_seconds": 627.964,
+    "tested_packages": 11,
+    "example_packages_without_tests": 1,
+    "cached_results": false,
+    "before_and_after_head_source_guard_verified": true,
+    "raw_log_sha256": "61c6d16cab7c5e9099cf224b6d3717cc00231abceb47abc4ca0aac37101d7b98",
+    "reviewer_duplicate_full_run": false
+  },
+  "independent_post_proof_checks": {
+    "final-vet": {
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-vet.log"
+    },
+    "final-build": {
+      "argv": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-build.log"
+    },
+    "final-compile-discovery": {
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^$",
+        "./..."
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "29ec4ef7fd4e497a330941790ca22adecf1634fd3652550928fd81256971473d",
+      "log_bytes": 641,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-compile-discovery.log"
+    },
+    "final-discovery-v2": {
+      "argv": [
+        "bash",
+        "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/check-go-discovery-v2.sh.txt",
+        "/home/lynn/projects/nichthub",
+        "c4aaa4e840420b07d83617c6373d6f4088e2c077"
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "e3460fd8b25727f173f7d9e1832e08b11cc41531b6885f25e67fd5c868a50451",
+      "log_bytes": 804,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-discovery-v2.log"
+    },
+    "final-guard-controls": {
+      "argv": [
+        "bash",
+        "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/guard-v2-controls.sh.txt"
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "2b307a53c828ee67abeedc944a37850855ef863427a7d47c37f3ad59ebeded04",
+      "log_bytes": 1290,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-guard-controls.log"
+    },
+    "final-preservation": {
+      "argv": [
+        "python3",
+        "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/verify-preservation.py.txt",
+        "/home/lynn/projects/nichthub"
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "265affb0f9946bf36ae4ca8f78f58ef3a6d3ac238d333f475f3e3d338efe0ffc",
+      "log_bytes": 1099,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-preservation.log"
+    },
+    "final-diff": {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "76446469b23d502a436c56cd7d704511d775b4d5...HEAD"
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-diff.log"
+    },
+    "final-format": {
+      "argv": [
+        "gofmt",
+        "-l",
+        "<all 189 tracked Go paths>"
+      ],
+      "cwd": "/home/lynn/projects/nichthub",
+      "reviewed_head": "24a2fbf985fec8ad3063f473f8fc4414409911ed",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "live_log_path": "/tmp/hubnot-mission-followup-review-61fa1c35/final-format.log"
+    }
+  },
+  "independent_guard_controls_log": "PASS source guard v2: ALL tracked Go/module inputs and untracked Go discovery inputs match bf57b69d5b65c57f69891f97029dfa768f2fbf56; repo=/tmp/hubnot-go-guard-control.nXB2ng HEAD=bf57b69d5b65c57f69891f97029dfa768f2fbf56\nPASS source guard v2: ALL tracked Go/module inputs and untracked Go discovery inputs match bf57b69d5b65c57f69891f97029dfa768f2fbf56; repo=/tmp/hubnot-go-guard-control.nXB2ng HEAD=bf57b69d5b65c57f69891f97029dfa768f2fbf56\nPASS non-Go governance record may differ\nREFUSED v2: tracked Go/module input differs from bf57b69d5b65c57f69891f97029dfa768f2fbf56\nA\tkitty-specs/tracked/probe_test.go\nPASS tracked metadata Go is rejected\nguard.fixture/kitty-specs/ignored\nREFUSED v2: untracked Go/module discovery input: kitty-specs/ignored/overlay_test.go\nPASS Gitignored but Go-discoverable untracked metadata Go is rejected\nPASS source guard v2: ALL tracked Go/module inputs and untracked Go discovery inputs match bf57b69d5b65c57f69891f97029dfa768f2fbf56; repo=/tmp/hubnot-go-guard-control.nXB2ng HEAD=bf57b69d5b65c57f69891f97029dfa768f2fbf56\nPASS Go-inherent hidden-directory skip does not hide a discoverable package\nREFUSED v2: tracked Go/module input differs from bf57b69d5b65c57f69891f97029dfa768f2fbf56\nA\t.kittify/tracked.go\nPASS ALL tracked Go includes hidden metadata too\n",
+  "exact_package_graph": [
+    "hubnot",
+    "hubnot/cmd/hn-release",
+    "hubnot/examples/issue-consumer",
+    "hubnot/internal/azureapi",
+    "hubnot/internal/bitbucketapi",
+    "hubnot/internal/forge",
+    "hubnot/internal/forgejoapi",
+    "hubnot/internal/giteaapi",
+    "hubnot/internal/githubapi",
+    "hubnot/internal/gitlabapi",
+    "hubnot/internal/migration",
+    "hubnot/internal/release"
+  ],
+  "preserved_moves": [
+    {
+      "original_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go",
+      "preserved_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP02-native-audit-protocol-admission/review-independent-d274d5c8/independent_adversarial_test.go.txt",
+      "sha256": "26b4abc29f261e7fef10bc55a7c1563dec888b7b11d79595aad0db5f0d1a719e",
+      "size": 3136,
+      "filesystem_mode": "0o664",
+      "git_mode": "100644",
+      "original_git_blob": "d96d5b1adbab4743275f6eb36cc44323d82a0cd8",
+      "representation": "Byte-identical historical overlay input stored as text; no package-discovery Go source."
+    },
+    {
+      "original_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go",
+      "preserved_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-20923906/probes_test.go.txt",
+      "sha256": "ed5e2f4d45d37c6c7ab52c5953830711eb7cbeefd489476460332db3f9a7904d",
+      "size": 3955,
+      "filesystem_mode": "0o664",
+      "git_mode": "100644",
+      "original_git_blob": "50009add848d5295895617013a7d90efb31a10ad",
+      "representation": "Byte-identical historical overlay input stored as text; no package-discovery Go source."
+    },
+    {
+      "original_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go",
+      "preserved_path": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP03-audit-execution-followup-issues/review-53c0ead2/probes_test.go.txt",
+      "sha256": "af91829bba357baf27e0499441bbbe52079006098860e0b5d29ef69f81306275",
+      "size": 5022,
+      "filesystem_mode": "0o664",
+      "git_mode": "100644",
+      "original_git_blob": "0281a7ed7df038f2efaba027d0e22abb91b0483f",
+      "representation": "Byte-identical historical overlay input stored as text; no package-discovery Go source."
+    }
+  ],
+  "all_protected_historical_files_verified": 39,
+  "entire_old_WP12_validation_files_unchanged": 18,
+  "old_WP12_literal_SHA256SUMS_entries_verified": 17,
+  "new_archived_proof_verification": {
+    "archive_sha256": "9fc8dd1931857fa60f52605286c32b28352d7600d796e3f5393cc3f9f718b6b7",
+    "outer_entries_verified": 12,
+    "unique_safe_regular_payloads_verified": 336,
+    "all_indexed_payload_hashes_match": true,
+    "full_log_exactly_matches_observed_live_log": true
+  },
+  "independent_packages": {
+    "fixed_source": "61fa1c35fbe147fcca4d50b6fce37f0ae4c238db",
+    "tree": "fe62e94dd68a69e9ebbca86c8e21f7f9770c5758",
+    "all_outputs_twice_identical": 11,
+    "source_entries_git_blob_and_mode_exact": 1097,
+    "normalized_tar_gzip_all_archives": true,
+    "full_checksum_membership": true,
+    "embedded_BUILD_equals_provenance": true,
+    "all_eight_binary_bytes_equal_c4": {
+      "hubnot_0.0.0-wp12-proof_darwin_amd64.tar.gz": "79b16c8f066cae88c56bdb100b232a62af45cd5ee548830273cc61d72b32a404",
+      "hubnot_0.0.0-wp12-proof_darwin_amd64_native-only.tar.gz": "26a72d6c2e1950d30881684ea1f8f3d4089958b96352105a8329a37b40fb8a7f",
+      "hubnot_0.0.0-wp12-proof_darwin_arm64.tar.gz": "b4cb9d16001446a6cf62262bf2ac33cfb33bee4c81724c64511a8706cc125913",
+      "hubnot_0.0.0-wp12-proof_darwin_arm64_native-only.tar.gz": "2e25b91e1a274d2061c2fc0fe7218990ba712d03def2245db4979222c1c4064c",
+      "hubnot_0.0.0-wp12-proof_linux_amd64.tar.gz": "45fee18e5e04c04cbd01adae7908819674a07dc83164677b1fe71559776d4381",
+      "hubnot_0.0.0-wp12-proof_linux_amd64_native-only.tar.gz": "43fa8cfe96b6d965b38eae4cf1fe048928920f771ef7aba997e873483dc1e69c",
+      "hubnot_0.0.0-wp12-proof_linux_arm64.tar.gz": "adf07af5c04eec8b47c4aa7b83900e25661801d4e2e583b47a66211f72c40207",
+      "hubnot_0.0.0-wp12-proof_linux_arm64_native-only.tar.gz": "8daf3fc21244922cc0bcb5fde4a06644dac0295c31ec8c80b7fca157ce5b6d2b"
+    },
+    "new_host_execution_claimed": false,
+    "provenance_sha256": "0cd794e5e9229f0990eef2c3a6f8cfb43b05ec0e803e5fc6e234cfc1b7d13e24",
+    "checksums_sha256": "3adef2aa39457cd11b5806f74abd5234f24c39dad89da259b5896eb4e7e3d0c4"
+  },
+  "proof_commit_only_additive_inert_files": [
+    "A\tkitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/SHA256SUMS",
+    "A\tkitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/raw-inner-sha256.json",
+    "A\tkitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/raw-proof.tar.gz",
+    "A\tkitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/validation.md",
+    "A\tkitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/postmerge-evidence-fix/verification-summary.json"
+  ],
+  "all_26_independent_dispositions": [
+    {
+      "criterion_id": "FR-001",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-002",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-003",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-004",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-005",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-006",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-007",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-008",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-009",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-010",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-011",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-012",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-013",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-014",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-015",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-016",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-017",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-018",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-019",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-020",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-021",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "FR-022",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "NFR-001",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "NFR-002",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    },
+    {
+      "criterion_id": "NFR-003",
+      "independent_disposition": "pass",
+      "basis": "fresh primary full and post-proof gates"
+    },
+    {
+      "criterion_id": "NFR-004",
+      "independent_disposition": "pass",
+      "basis": "unchanged live implementation/assertion chain in original review plus fresh primary full"
+    }
+  ],
+  "issue_matrix": {
+    "rows": {
+      "#13": {
+        "evidence_ref": "Actual compiled integrated audit request/explicit execution/follow-up/dedup/edit-preservation/Git replication/keyless-inspection proof at c4aaa4e8; unchanged Go full-race PASS8c88ede5, three public variants, final Linux AMD64+ARM64 artifacts. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json FR-016 through FR-020 and raw-proof.tar.gz SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. External GitHub issue remains open until reviewed public PR merge; no self-approval.",
+        "fr": null,
+        "nfr": null,
+        "repo": null,
+        "sc": null,
+        "scope": null,
+        "source_file": null,
+        "title": null,
+        "verdict": "fixed",
+        "wp": "WP03"
+      }
+    },
+    "schema_version": 1
+  },
+  "canonical_matrix_at_review": {
+    "NFR-003": "fail",
+    "overall": "fail",
+    "pending_root_review_based_update": true,
+    "mutated_by_reviewer": false
+  },
+  "nonblocking_notes": [
+    "Unused DecodeReconciliation; typed CanonicalReconciliation is live; cleanup/justification must consider frozen contract.",
+    "macOS CLI and macOS/Windows packager-host runtime UNVERIFIED; no full ARM suite or Windows CLI distribution claim.",
+    "Framework tests.architectural._gate_coverage unavailable/no_coverage remains UNVERIFIED.",
+    "Historical forced administrative/rejection/dispatch and prior failed gate records preserved."
+  ],
+  "retrospective_verified": "kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/retrospective.yaml at20d3",
+  "reviewer_actions": {
+    "product_edits": false,
+    "spec_edits": false,
+    "lifecycle_or_acceptance_mutation": false,
+    "push_merge_tag_release": false
+  }
+}
