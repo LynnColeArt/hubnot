@@ -45,6 +45,13 @@ account.
 have been cross-compiled and inspected. Both Linux architectures passed runtime
 smoke checks in standard and native-only variants.
 
+Mac testing has since identified a migration limitation in these published
+packages: [issue #16](https://github.com/LynnColeArt/hubnot/issues/16) requires
+physical explicit paths and a physical TMPDIR in the CLI environment for the
+tested round trip. Source corrections and the permanent regression gates are
+documented in [filesystem portability](docs/filesystem-portability.md); these
+published binaries remain unchanged.
+
 | Platform | CPU | Standard | Native only |
 | --- | --- | --- | --- |
 | Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64_native-only.tar.gz) |

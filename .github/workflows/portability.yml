@@ -1,0 +1,57 @@
+name: Filesystem portability
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portability-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portability:
+    name: Portability (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.x'
+          cache: false
+      - name: Record native platform and normal temporary environment
+        shell: bash
+        run: |
+          uname -s -m
+          go version
+          git --version
+          printf 'TMPDIR=%s\n' "${TMPDIR-<unset>}"
+      - name: Filesystem and Go-only packager regressions
+        run: go test -race -count=1 -timeout 10m ./internal/safepath ./internal/release ./cmd/hn-release
+      - name: Migration boundary regressions
+        # Deliberately do not physicalize paths or forward TMPDIR to children.
+        run: go test -race -count=1 -timeout 10m -run '^(TestMigration.*|TestProjectSnapshot.*|TestPortableCollaborationAzure.*)$' .
+      - name: Package the exact candidate for the native runner
+        shell: bash
+        run: |
+          target="$(go env GOOS)/$(go env GOARCH)"
+          go run ./cmd/hn-release --source . --rev "$(git rev-parse HEAD)" --version 0.0.0-portability-proof --targets "$target" --out "$RUNNER_TEMP/portability-packages"
+          mkdir "$RUNNER_TEMP/portability-unpacked"
+          for archive in "$RUNNER_TEMP/portability-packages"/hubnot_0.0.0-portability-proof_"$(go env GOOS)"_"$(go env GOARCH)"*.tar.gz; do
+            tar -xzf "$archive" -C "$RUNNER_TEMP/portability-unpacked"
+          done
+      - name: Actual standard and native-only package public journeys
+        run: go test -race -count=1 -timeout 10m -v -run '^TestPortableCollaborationIntegratedPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/portability-unpacked"
+      - name: Static checks
+        run: go vet ./...

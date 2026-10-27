@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"hubnot/internal/migration"
+	"hubnot/internal/safepath"
 )
 
 type migrationEnvelope struct {
@@ -19,26 +20,7 @@ type migrationEnvelope struct {
 }
 
 func migrationPrivateDir(path string) error {
-	abs, e := filepath.Abs(path)
-	if e != nil {
-		return e
-	}
-	for p := abs; ; p = filepath.Dir(p) {
-		st, e := os.Lstat(p)
-		if e != nil {
-			return e
-		}
-		if !st.IsDir() || st.Mode()&os.ModeSymlink != 0 {
-			return fmt.Errorf("unsafe migration path")
-		}
-		if p == abs && st.Mode().Perm()&0077 != 0 {
-			return fmt.Errorf("migration directory must be private")
-		}
-		if filepath.Dir(p) == p {
-			break
-		}
-	}
-	return nil
+	return safepath.CheckDir(path, true)
 }
 func migrationKey(dir string) ([]byte, error) {
 	if e := migrationPrivateDir(dir); e != nil {
@@ -118,21 +100,5 @@ func migrationLock(dir string) (func(), error) {
 }
 
 func migrationNoLinks(path string) error {
-	abs, e := filepath.Abs(path)
-	if e != nil {
-		return e
-	}
-	for p := abs; ; p = filepath.Dir(p) {
-		st, e := os.Lstat(p)
-		if e != nil {
-			return e
-		}
-		if !st.IsDir() || st.Mode()&os.ModeSymlink != 0 {
-			return fmt.Errorf("symlink/unsafe migration path")
-		}
-		if filepath.Dir(p) == p {
-			break
-		}
-	}
-	return nil
+	return safepath.CheckDir(path, false)
 }

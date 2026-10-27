@@ -5,6 +5,23 @@ experimental; alpha releases do not promise stable compatibility.
 
 ## Unreleased
 
+### Fixed
+
+- Migration sessions and internal project/archive/imported-record spools share
+  a path policy that handles verified macOS system temporary-directory aliases
+  while retaining rejection of arbitrary symlinks and unsafe private paths.
+  macOS regressions exercise literal aliases and child environments without
+  TMPDIR. Published `0.0.2-dev` packages retain the limitation in [#16](https://github.com/LynnColeArt/hubnot/issues/16).
+- Packager refusal fixtures build hostile committed trees directly with Git
+  plumbing, including file and directory case collisions, so the same assertions
+  exercise real inputs on case-insensitive filesystems.
+
+### Development
+
+- Linux/macOS PR checks run the repository-local filesystem, migration and
+  packager regression gates with normal temporary-directory environments.
+  These optional hosted checks add no runtime or provider dependency to Hubnot.
+
 ## [0.0.2-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev) — 2026-10-27
 
 Portable-collaboration alpha prerelease, built from

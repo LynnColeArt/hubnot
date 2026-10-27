@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"hubnot/internal/migration"
+	"hubnot/internal/safepath"
 )
 
 const projectGitSchema = "hn.git-objects/1\n"
@@ -84,7 +85,7 @@ func ExportProjectSnapshot(ctx context.Context, gitDir string, refs []string, l 
 	if e != nil {
 		return nil, e
 	}
-	inspection, e := os.MkdirTemp("", "hn-project-inspection-")
+	inspection, e := safepath.MkdirTemp("hn-project-inspection-")
 	if e != nil {
 		return nil, e
 	}
@@ -114,7 +115,7 @@ func ExportProjectSnapshot(ctx context.Context, gitDir string, refs []string, l 
 	if e != nil {
 		return nil, e
 	}
-	root, e := os.MkdirTemp("", "hn-project-snapshot-")
+	root, e := safepath.MkdirTemp("hn-project-snapshot-")
 	if e != nil {
 		return nil, e
 	}
@@ -207,7 +208,7 @@ func StageProjectSnapshot(ctx context.Context, s migration.Snapshot, source migr
 		return nil, e
 	}
 	_ = json.Unmarshal(raw, &s)
-	dir, e := os.MkdirTemp("", "hn-project-quarantine-")
+	dir, e := safepath.MkdirTemp("hn-project-quarantine-")
 	if e != nil {
 		return nil, e
 	}

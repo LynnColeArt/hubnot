@@ -100,6 +100,12 @@ symlinks. An exclusive lock covers the whole apply/resume operation. A crashed
 process may leave `apply.lock`; inspect the owning process before manually
 removing that stale lock. Resume still reconciles every in-flight write.
 
+The shared [filesystem policy](filesystem-portability.md) distinguishes macOS's
+verified root-owned `/var` and `/tmp` aliases from untrusted user links. Session
+create/reopen and internal spools use the same normalization, including in child
+environments without TMPDIR; every remaining symlink and unsafe private leaf
+continues to refuse.
+
 Each immutable intent moves through `prepared`, `inflight`, `confirmed`. Before
 in-flight state, the engine resolves typed references only from confirmed
 predecessor receipts. It persists canonical actual payload bytes and digest;
