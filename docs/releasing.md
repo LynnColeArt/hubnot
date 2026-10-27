@@ -108,6 +108,14 @@ output collisions, compiler failures and cancellation.
 
 ## Platform evidence and publication boundary
 
+Before packaging a migration change, run the [filesystem portability
+gates](filesystem-portability.md) on Linux and macOS with their normal temporary
+environments. The hosted PR workflow runs those same Go commands. Do not add
+physical-path or TMPDIR workarounds to make acceptance pass. Case-collision
+fixtures must construct committed Git trees rather than assume the checkout's
+filesystem is case-sensitive. Published binary runtime qualification remains a
+separate check for each target and variant; a source test is not a substitute.
+
 | Platform | WP01 verification scope |
 | --- | --- |
 | Linux AMD64 packager host | Executed packaging and archive/refusal tests with Go 1.26.4. |

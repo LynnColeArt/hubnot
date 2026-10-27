@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"hubnot/internal/migration"
+	"hubnot/internal/safepath"
 )
 
 func migrationObservationRef(sourceID string, r migration.NativeRef) (string, error) {
@@ -266,7 +267,7 @@ func migrationRemoteRefs(ctx context.Context, remote string, refs []migration.Re
 	}
 	// Isolate client configuration: only public HTTPS is supported here. No
 	// ambient repository credential helper or URL rewrite is consulted.
-	client, e := os.MkdirTemp("", "hn-git-transport-")
+	client, e := safepath.MkdirTemp("hn-git-transport-")
 	if e != nil {
 		return nil, e
 	}
@@ -540,7 +541,7 @@ func migrationTransportGit(ctx context.Context, dir, remote string, credentials 
 	for i := 0; i < len(pairs); i += 2 {
 		env = append(env, fmt.Sprintf("GIT_CONFIG_KEY_%d=%s", i/2, pairs[i]), fmt.Sprintf("GIT_CONFIG_VALUE_%d=%s", i/2, pairs[i+1]))
 	}
-	privateHome, e := os.MkdirTemp("", "hn-git-client-home-")
+	privateHome, e := safepath.MkdirTemp("hn-git-client-home-")
 	if e != nil {
 		return nil, e
 	}

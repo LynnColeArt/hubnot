@@ -4,20 +4,74 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"flag"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"hubnot/internal/migration"
+	"hubnot/internal/release"
 )
+
+var portablePackageDirectory = flag.String("hn-package-dir", "", "explicit extracted release packages for the public portability journey")
+var portablePackageVersion = flag.String("hn-package-version", "0.0.0-portability-proof", "expected version for --hn-package-dir")
+
+func portableJourneyBinary(t *testing.T, tags string) string {
+	t.Helper()
+	if *portablePackageDirectory == "" {
+		return buildMigrationCLIBinary(t, tags)
+	}
+	if tags == "nogithub" {
+		t.Skip("release matrix has no separate GitHub-only-excluded package")
+	}
+	target, variant := runtime.GOOS+"/"+runtime.GOARCH, "standard"
+	name := "hubnot_" + *portablePackageVersion + "_" + runtime.GOOS + "_" + runtime.GOARCH
+	if tags == "noforge" {
+		variant = "native-only"
+		name += "_native-only"
+	} else if tags != "" {
+		t.Fatal("unsupported packaged variant", tags)
+	}
+	packageDirectory, err := filepath.Abs(*portablePackageDirectory)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(packageDirectory, name)
+	raw, err := os.ReadFile(filepath.Join(dir, "BUILD.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var build release.BuildProvenance
+	if err := json.Unmarshal(raw, &build); err != nil {
+		t.Fatal(err)
+	}
+	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	binary := filepath.Join(dir, "hn")
+	data, err := os.ReadFile(binary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest := fmt.Sprintf("%x", sha256.Sum256(data))
+	if build.Schema != "hn.release-build/1" || build.SourceCommit != strings.TrimSpace(string(commit)) || build.Target != target || build.Variant != variant || build.Version != *portablePackageVersion || build.ExecutableSHA256 != digest {
+		t.Fatal("packaged executable does not match the selected commit/target/variant/version/digest")
+	}
+	t.Logf("actual packaged executable: commit=%s target=%s variant=%s version=%s sha256=%s", build.SourceCommit, target, variant, build.Version, digest)
+	return binary
+}
 
 // One compiled public journey combines native governance, independent audits,
 // preserved foreign bytes, saved plans, archives and ordinary Git replication.
@@ -25,7 +79,7 @@ import (
 func TestPortableCollaborationIntegratedPublicVariants(t *testing.T) {
 	for _, tags := range []string{"", "nogithub", "noforge"} {
 		t.Run("tags="+tags, func(t *testing.T) {
-			binary := buildMigrationCLIBinary(t, tags)
+			binary := portableJourneyBinary(t, tags)
 			git, err := exec.LookPath("git")
 			if err != nil {
 				t.Fatal(err)

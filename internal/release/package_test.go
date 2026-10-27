@@ -24,8 +24,14 @@ import (
 
 func git(t *testing.T, dir string, args ...string) string {
 	t.Helper()
+	return gitInput(t, dir, "", args...)
+}
+
+func gitInput(t *testing.T, dir, input string, args ...string) string {
+	t.Helper()
 	c := exec.Command("git", args...)
 	c.Dir = dir
+	c.Stdin = strings.NewReader(input)
 	c.Env = append(os.Environ(), "GIT_AUTHOR_DATE=2026-01-02T03:04:05Z", "GIT_COMMITTER_DATE=2026-01-02T03:04:05Z")
 	b, err := c.CombinedOutput()
 	if err != nil {
@@ -468,31 +474,47 @@ func TestPackageRefusesStagedChanges(t *testing.T) {
 }
 
 func TestPackageRejectsNonportableCommittedTrees(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("fixture names require a Unix host; packager refusal is platform independent")
-	}
-	for _, name := range []string{"back\\slash", "CON", "trailing.", "case", "link"} {
+	for _, name := range []string{"back\\slash", "CON", "trailing.", "case", "case-directories", "link"} {
 		t.Run(name, func(t *testing.T) {
 			d, _ := fixture(t)
+			// Construct the selected Git tree without materializing nonportable
+			// names. Case-insensitive filesystems cannot create case + CASE as
+			// two files. The clean checkout/index stay at the ordinary fixture.
+			git(t, d, "config", "core.ignorecase", "true")
+			blob := gitInput(t, d, "hostile\n", "hash-object", "-w", "--stdin")
+			entries := git(t, d, "ls-tree", "-z", "HEAD")
+			mode, kind := "100644", "blob"
 			if name == "link" {
-				if err := os.Symlink("README.md", filepath.Join(d, name)); err != nil {
-					t.Fatal(err)
-				}
-			} else {
-				if err := os.WriteFile(filepath.Join(d, name), []byte("hostile"), 0644); err != nil {
-					t.Fatal(err)
-				}
-				if name == "case" {
-					if err := os.WriteFile(filepath.Join(d, "CASE"), []byte("collision"), 0644); err != nil {
-						t.Fatal(err)
-					}
+				mode = "120000"
+				blob = gitInput(t, d, "README.md", "hash-object", "-w", "--stdin")
+			}
+			if name == "case-directories" {
+				mode, kind = "040000", "tree"
+				blob = gitInput(t, d, "100644 blob "+blob+"\tfile\x00", "mktree", "-z")
+				entries += mode + " " + kind + " " + blob + "\tCASE\x00"
+				name = "case"
+			} else if name == "case" {
+				entries += mode + " " + kind + " " + blob + "\tCASE\x00"
+			}
+			entries += mode + " " + kind + " " + blob + "\t" + name + "\x00"
+			tree := gitInput(t, d, entries, "mktree", "-z")
+			rev := git(t, d, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit-tree", tree, "-p", "HEAD", "-m", "nonportable")
+			if name == "case" {
+				listing := "\x00" + git(t, d, "ls-tree", "-z", "--name-only", rev)
+				if !strings.Contains(listing, "\x00case\x00") || !strings.Contains(listing, "\x00CASE\x00") {
+					t.Fatal("fixture did not contain both case-colliding entries")
 				}
 			}
-			git(t, d, "add", ".")
-			git(t, d, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "nonportable")
-			o := release.Options{Repository: d, Revision: "HEAD", Version: "1.2.3", Output: filepath.Join(t.TempDir(), "release"), Targets: []string{"linux/amd64"}}
-			if err := release.Package(context.Background(), o); err == nil {
+			if git(t, d, "status", "--porcelain") != "" {
+				t.Fatal("object-only fixture dirtied the checkout")
+			}
+			o := release.Options{Repository: d, Revision: rev, Version: "1.2.3", Output: filepath.Join(t.TempDir(), "release"), Targets: []string{"linux/amd64"}}
+			err := release.Package(context.Background(), o)
+			if err == nil {
 				t.Fatal("accepted nonportable committed tree")
+			}
+			if name == "case" && !strings.Contains(err.Error(), "case-colliding source paths") {
+				t.Fatalf("refused for a different reason, not the actual collision: %v", err)
 			}
 			if _, err := os.Lstat(o.Output); !os.IsNotExist(err) {
 				t.Fatal("tree refusal left output")

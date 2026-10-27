@@ -12,6 +12,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"hubnot/internal/safepath"
 )
 
 const ArchiveSchema = "hn.project-archive/1"
@@ -112,7 +114,7 @@ func WriteArchive(ctx context.Context, w io.Writer, s Snapshot, source BlobSourc
 	return tw.Close()
 }
 func newArchive(s Snapshot) (*Archive, error) {
-	root, e := os.MkdirTemp("", "hn-project-archive-")
+	root, e := safepath.MkdirTemp("hn-project-archive-")
 	if e != nil {
 		return nil, e
 	}

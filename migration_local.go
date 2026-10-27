@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"hubnot/internal/migration"
+	"hubnot/internal/safepath"
 )
 
 // LocalMigrationSource reads explicit committed refs only; no credential access.
@@ -226,6 +227,10 @@ func migrationLocalArchivePath(dir, digest string, create bool) (string, error) 
 	return filepath.Join(dir, digest[7:]+".tar"), nil
 }
 func migrationPublishArchive(ctx context.Context, path string, s migration.Snapshot, source migration.BlobSource, l migration.Limits) error {
+	path, e := safepath.Canonical(path)
+	if e != nil {
+		return e
+	}
 	if e := migrationNoLinks(filepath.Dir(path)); e != nil {
 		return e
 	}
@@ -395,7 +400,7 @@ func (s ImportedMigrationSource) Snapshot(ctx context.Context, _ migration.Selec
 			return result, nil, fmt.Errorf("invalid/duplicate imported snapshot selection")
 		}
 	}
-	root, e := os.MkdirTemp("", "hn-imported-records-")
+	root, e := safepath.MkdirTemp("hn-imported-records-")
 	if e != nil {
 		return result, nil, e
 	}

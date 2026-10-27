@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"hubnot/internal/migration"
+	"hubnot/internal/safepath"
 )
 
 // MigrationSession owns a saved immutable observation and bounded blob spool.
@@ -24,7 +25,7 @@ type MigrationSession struct {
 }
 
 func PrepareMigration(ctx context.Context, dir string, s migration.Snapshot, source migration.BlobSource, sel migration.Selection, d migration.Destination, l migration.Limits, decisions []migration.Decision) (session *MigrationSession, err error) {
-	dir, err = filepath.Abs(dir)
+	dir, err = safepath.Canonical(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +122,10 @@ func PrepareMigration(ctx context.Context, dir string, s migration.Snapshot, sou
 }
 func OpenMigrationSession(ctx context.Context, dir string) (*MigrationSession, error) {
 	if e := ctx.Err(); e != nil {
+		return nil, e
+	}
+	dir, e := safepath.Canonical(dir)
+	if e != nil {
 		return nil, e
 	}
 	raw, e := migrationUnseal(dir, "plan.json", 64<<20)

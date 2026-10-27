@@ -58,6 +58,37 @@ func TestMigrationJournalTamperLockAndUnsafePaths(t *testing.T) {
 }
 
 func (d *migrationReceiptDestination) Locator() migration.Locator { return d.locator }
+
+func TestMigrationSessionReplacementRefusesBeforeEffects(t *testing.T) {
+	ctx := context.Background()
+	snap, blobs := migrationForeignSnapshot()
+	d := &migrationReceiptDestination{locator: migration.Locator{Kind: "fixture", Repository: "destination"}}
+	session, err := PrepareMigration(ctx, filepath.Join(t.TempDir(), "session"), snap, blobs, migration.Selection{Destination: d.locator}, d, migration.DefaultLimits(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	moved := session.Directory + "-original"
+	if err := os.Rename(session.Directory, moved); err != nil {
+		t.Fatal(err)
+	}
+	// Even a link back to the same valid authenticated session is untrusted.
+	if err := os.Symlink(moved, session.Directory); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := OpenMigrationSession(ctx, session.Directory); err == nil {
+		t.Fatal("replaced session opened through a symlink")
+	}
+	if err := ApplyMigration(ctx, session, d, ""); err == nil {
+		t.Fatal("replaced session applied through a symlink")
+	}
+	if d.creates != 0 || d.comments != 0 {
+		t.Fatal("session replacement reached destination effects")
+	}
+	if _, err := os.Lstat(filepath.Join(moved, "apply.lock")); !os.IsNotExist(err) {
+		t.Fatal("session replacement created a lock through the link", err)
+	}
+}
+
 func TestMigrationMissingCheckpointNeverReplaysCreates(t *testing.T) {
 	ctx := context.Background()
 	snap, blobs := migrationForeignSnapshot()
