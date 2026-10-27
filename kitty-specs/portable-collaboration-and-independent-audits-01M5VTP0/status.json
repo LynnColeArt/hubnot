@@ -345,7 +345,8 @@
       "last_transition_at": "2026-10-27T05:23:46.918731+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: source6393e122; compiled guided GitLab-to-GitHub code/issues/comments, exact resume, offline variants and fresh-credential guard; unfiltered race/vet/build/format/diff PASS; canonical validation-6393e122 evidence29ffe7f1+26958663."
+        "Ready for independent review: source6393e122; compiled guided GitLab-to-GitHub code/issues/comments, exact resume, offline variants and fresh-credential guard; unfiltered race/vet/build/format/diff PASS; canonical validation-6393e122 evidence29ffe7f1+26958663.",
+        "Independent review passed at 6393e122 against 4210710f: six-file scope, all eight checklist items and requirement behavior PASS; compiled public migration/recovery/credential refusals and offline variants independently pass; verified source-bound full race/vet/build evidence; report review-renata-6393e122.md. Architectural helper remains unavailable/UNVERIFIED."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
