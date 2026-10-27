@@ -161,6 +161,9 @@ func (c *Client) request(ctx context.Context, method, raw, media string, body []
 		return nil, nil, errors.New("invalid Azure request")
 	}
 	req.Header.Set("Accept", "application/json")
+	if media == "" {
+		req.Header.Set("Accept", "application/octet-stream")
+	}
 	if media != "" {
 		req.Header.Set("Content-Type", media)
 	}

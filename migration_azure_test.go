@@ -72,7 +72,11 @@ func newAzureFixture(t *testing.T) *azureFixture {
 		project := azureapi.Project{ID: f.projectID, Name: "P", State: "wellFormed", Capabilities: map[string]map[string]string{"processTemplate": {"templateTypeId": f.processID}}}
 		switch {
 		case strings.HasPrefix(r.URL.Path, "/org/_apis/projects/"):
-			write(project)
+			original := map[string]json.RawMessage{}
+			_ = json.Unmarshal(azureJSON(project), &original)
+			original["description"] = azureJSON("full planning description")
+			original["visibility"] = azureJSON("private")
+			write(original)
 		case strings.HasPrefix(r.URL.Path, "/org/"+f.projectID+"/_apis/git/repositories/") && strings.Count(r.URL.Path, "/") == 6:
 			rid := f.repoID
 			if strings.HasSuffix(r.URL.Path, "/R2") {
@@ -188,7 +192,11 @@ func newAzureFixture(t *testing.T) *azureFixture {
 			if r.URL.Query().Get("versionDescriptor.versionType") != "commit" {
 				t.Error("unbound YAML")
 			}
-			_, _ = w.Write([]byte("steps:\n- script: never-execute\n"))
+			if r.Header.Get("Accept") != "application/octet-stream" {
+				write(map[string]string{"path": "/azure-pipelines.yml", "objectId": strings.Repeat("b", 40)})
+			} else {
+				_, _ = w.Write([]byte("steps:\n- script: never-execute\n"))
+			}
 		case strings.Contains(r.URL.Path, "/build/definitions/"):
 			write(map[string]any{"id": 4, "revision": 2, "process": map[string]any{"type": 1, "phases": []any{map[string]string{"name": "inert classic"}}}, "variables": map[string]any{"secret": map[string]any{"isSecret": true, "value": "must-not-persist"}, "ordinary": map[string]any{"value": "retained"}}})
 		default:
@@ -780,5 +788,31 @@ func TestAzureMigrationAttachmentAuthorizationAndUnknownKindAreHonest(t *testing
 	}
 	if !missing || !unsupported || len(s.Blobs) != 1 {
 		t.Fatal("unread attachment or kind called preserved", s.Findings, s.Blobs)
+	}
+}
+
+func TestAzureMigrationSelectedProjectPreservesCompleteRetrievedMetadata(t *testing.T) {
+	f := newAzureFixture(t)
+	config := f.config()
+	config.Locator.Repository = ""
+	src, e := OpenMigrationSource(config)
+	if e != nil {
+		t.Fatal(e)
+	}
+	s, blobs, e := src.Snapshot(context.Background(), migration.Selection{Source: config.Locator, Kinds: []string{"project"}}, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(s.Records) != 1 || len(s.Records[0].Blobs) != 1 {
+		t.Fatal("selected project missing")
+	}
+	r, e := blobs.Open(context.Background(), s.Records[0].Blobs[0])
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer r.Close()
+	raw, _ := io.ReadAll(r)
+	if !strings.Contains(string(raw), "full planning description") || !strings.Contains(string(raw), `"visibility":"private"`) {
+		t.Fatal("retrieved project fields lost", string(raw))
 	}
 }

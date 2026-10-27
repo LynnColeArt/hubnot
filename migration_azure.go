@@ -180,7 +180,7 @@ func (a *azureMigration) Snapshot(ctx context.Context, sel migration.Selection, 
 		}
 	}
 	if want("project") {
-		b.preserve("project", p.ID, "Retrieved Azure planning project/process metadata; inert observation", azureJSON(p), nil)
+		b.preserve("project", p.ID, "Retrieved Azure planning project/process metadata; inert observation", p.Raw, nil)
 		finding("project", "preserved", "Project metadata retrieved; no planning/permission authority adopted")
 	}
 	if want("work_item") || want("comment") {

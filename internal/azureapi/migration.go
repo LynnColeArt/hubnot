@@ -16,6 +16,7 @@ import (
 )
 
 type Project struct {
+	Raw          json.RawMessage              `json:"-"`
 	ID           string                       `json:"id"`
 	Name         string                       `json:"name"`
 	State        string                       `json:"state"`
@@ -99,8 +100,13 @@ type WorkItemType struct {
 }
 
 func (c *Client) GetProject(ctx context.Context, org, project string) (Project, error) {
+	var raw json.RawMessage
+	_, e := c.json(ctx, "GET", []string{org, "_apis", "projects", project}, url.Values{"includeCapabilities": {"true"}}, false, nil, &raw, false)
 	var p Project
-	_, e := c.json(ctx, "GET", []string{org, "_apis", "projects", project}, url.Values{"includeCapabilities": {"true"}}, false, nil, &p, false)
+	if e == nil {
+		e = json.Unmarshal(raw, &p)
+		p.Raw = raw
+	}
 	if e == nil && (!ValidGUID(p.ID) || p.Name == "" || p.State != "" && p.State != "wellFormed") {
 		e = errors.New("invalid/unavailable Azure project identity")
 	}
