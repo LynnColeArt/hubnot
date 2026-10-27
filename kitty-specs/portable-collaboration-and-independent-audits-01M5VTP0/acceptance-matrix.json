@@ -265,5 +265,14 @@
       "notes": "Pending combined WP12 verification and independent review; no completed acceptance verdict is implied."
     }
   ],
-  "negative_invariants": []
+  "negative_invariants": [
+    {
+      "invariant_id": "NI-INTEGRATED-DEFAULTS-AUDIT-IMPORT-HOSTILE",
+      "description": "Native defaults remain disabled; failed audits neither qualify nor block merge, unsafe-host/no-anchor/imported authority refuses without accepted-state effects; hostile archive leaves destination unchanged, across actual public ordinary/nogithub/noforge commands.",
+      "verification_method": "custom_command",
+      "verification_command": "bash /home/lynn/projects/nichthub/kitty-specs/portable-collaboration-and-independent-audits-01M5VTP0/tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/negative-go-check.sh.txt /home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01M5VTP0-lane-k c4aaa4e840420b07d83617c6373d6f4088e2c077 TestPortableCollaborationIntegratedPublicVariants TestAuditPolicyStrictAndDisabledDefault TestAuditFactsNeverSatisfyProposalEvidence TestAuditPublicCandidateStalePolicyAndRoleRefusals",
+      "result": "confirmed_absent",
+      "evidence": "Command exited 0: Verified unchanged Go/module/configuration/assets against c4aaa4e840420b07d83617c6373d6f4088e2c077; actual repo=/home/lynn/projects/nichthub/.worktrees/portable-collaboration-and-independent-audits-01"
+    }
+  ]
 }
