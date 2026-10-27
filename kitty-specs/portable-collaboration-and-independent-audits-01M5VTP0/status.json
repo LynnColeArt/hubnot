@@ -1,7 +1,7 @@
 {
-  "event_count": 79,
-  "last_event_id": "01M5XGCMZ70YD5MSTG71423504",
-  "materialized_at": "2026-10-27T01:42:54.696001+00:00",
+  "event_count": 81,
+  "last_event_id": "01M5XGEHT8115YEMBNFB9XKKMT",
+  "materialized_at": "2026-10-27T01:43:56.999536+00:00",
   "mission_number": "",
   "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 7
+    "planned": 6
   },
   "work_packages": {
     "WP01": {
@@ -185,11 +185,14 @@
       }
     },
     "WP06": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M5VWZATDA23BQQXYQCBWV2B3",
-      "last_transition_at": "2026-10-26T10:44:20.941706+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M5XGEHT8115YEMBNFB9XKKMT",
+      "last_transition_at": "2026-10-27T01:43:56.999536+00:00",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54"
     },
     "WP07": {
       "actor": "finalize-tasks",
