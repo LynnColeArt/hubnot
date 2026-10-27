@@ -140,3 +140,56 @@ func TestPaginationRefusesCyclesForeignOriginsDuplicateIDsAndPageExhaustion(t *t
 		})
 	}
 }
+
+func TestOldV4PrivateWriteResponseIsUnconfirmed(t *testing.T) {
+	for _, method := range []string{"create", "update"} {
+		t.Run(method, func(t *testing.T) {
+			writes := 0
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				writes++
+				if r.Method == "POST" {
+					w.WriteHeader(201)
+				}
+				fmt.Fprint(w, `{"id":9001,"body":"intended","noteable_id":7001,"confidential":true}`)
+			}))
+			defer srv.Close()
+			c, _ := NewClient(srv.URL+"/api/v4", "token")
+			var e error
+			if method == "create" {
+				_, e = c.CreateNote(context.Background(), "42", 7, "intended")
+			} else {
+				_, e = c.UpdateNote(context.Background(), "42", 7, 9001, "intended")
+			}
+			if e == nil || writes != 1 {
+				t.Fatal("private response confirmed/repeated", e, writes)
+			}
+		})
+	}
+}
+
+func TestQuickActionTextNeverReachesIssueOrNoteEffects(t *testing.T) {
+	writes := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { writes++; w.WriteHeader(500) }))
+	defer srv.Close()
+	c, _ := NewClient(srv.URL+"/api/v4", "token")
+	for _, body := range []string{"/close", "ordinary\n\t /assign @victim", "ordinary\r /confidential", "ordinary\r\n /move other/project", "\u00a0/future_self_hosted_command", "ordinary\u2028 /label injected"} {
+		for _, operation := range []string{"issue-create", "issue-update", "note-create", "note-update"} {
+			t.Run(operation+body, func(t *testing.T) {
+				var e error
+				switch operation {
+				case "issue-create":
+					_, e = c.CreateIssue(context.Background(), "42", IssueInput{Title: "title", Body: body, State: "opened", Type: "issue"})
+				case "issue-update":
+					_, e = c.UpdateIssue(context.Background(), "42", 7, IssueInput{Title: "title", Body: body, State: "opened", Type: "issue"})
+				case "note-create":
+					_, e = c.CreateNote(context.Background(), "42", 7, body)
+				case "note-update":
+					_, e = c.UpdateNote(context.Background(), "42", 7, 9001, body)
+				}
+				if e == nil || writes != 0 {
+					t.Fatal("quick-action text produced a hosted effect", e, writes)
+				}
+			})
+		}
+	}
+}

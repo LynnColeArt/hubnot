@@ -58,7 +58,7 @@ func newGitLabMigration(c migration.ProviderConfig) (*gitlabMigration, error) {
 }
 func (g *gitlabMigration) Locator() migration.Locator { return g.config.Locator }
 func (g *gitlabMigration) Capabilities(context.Context) ([]migration.Capability, error) {
-	out := []migration.Capability{{Kind: "issue", Read: true, Preserve: true, Create: true, Update: true, Limits: []string{"REST v4; opened ordinary issue creates only, opened/closed ordinary issue updates", "source state/type retained; explicit destination mappings; assignees require numeric IDs", "255 byte titles; 1,000,000 byte body including recovery marker; no confidential issue recreation", "100 pages/collection; 4 MiB response; 64 MiB shared wire ceiling and positive selected snapshot budgets", "authors/times/permissions remain descriptive; no impersonation or hosted authority transfer"}}, {Kind: "comment", Read: true, Preserve: true, Create: true, Update: true, Limits: []string{"ordinary issue notes only; immutable parent identity checked against confirmed engine receipt", "system/internal/thread notes retained as inert foreign records"}}}
+	out := []migration.Capability{{Kind: "issue", Read: true, Preserve: true, Create: true, Update: true, Limits: []string{"REST v4; opened ordinary issue creates only, opened/closed ordinary issue updates", "source state/type retained; explicit destination mappings; assignees require numeric IDs", "255 byte titles; 1,000,000 byte body including recovery marker; no confidential issue recreation", "slash-command lines (including whitespace/fenced examples) refuse destination recreation; exact source bytes remain preserved", "100 pages/collection; 4 MiB response; 64 MiB shared wire ceiling and positive selected snapshot budgets", "authors/times/permissions remain descriptive; no impersonation or hosted authority transfer"}}, {Kind: "comment", Read: true, Preserve: true, Create: true, Update: true, Limits: []string{"ordinary issue notes only; immutable parent identity checked against confirmed engine receipt", "system/internal/confidential/thread notes retained as inert foreign records"}}}
 	for _, kind := range []string{"change_request", "review", "discussion", "reply", "inline_comment", "project", "project_item", "workflow", "attachment"} {
 		out = append(out, migration.Capability{Kind: kind, Read: true, Preserve: true, Limits: []string{"preservation only; retrieved API JSON/selected bytes remain inert; no native destination recreation", "boards require separate ID selections; CI preserves pinned .gitlab-ci.yml only, includes/external CI config not fetched", "explicit same-origin uploads only; API version/tier/permission unavailability reported distinctly from empty results"}})
 	}
@@ -229,7 +229,7 @@ func (g *gitlabMigration) Snapshot(ctx context.Context, sel migration.Selection,
 							nc := gitlabJSON(migration.CommentContent{Schema: "hn.migration.comment/1", Body: n.Body})
 							_, err := migration.CanonicalContent("comment", nc)
 							nk := b.key("comment", gitlabID(n.ID))
-							if representable && !n.System && !n.Internal && n.Type == "" && err == nil {
+							if representable && n.Ordinary() && err == nil {
 								d := b.blob(n.Raw, "note-"+gitlabID(n.ID), "application/json")
 								b.add(migration.Record{Key: nk, Selector: strconv.FormatInt(n.ID, 10), Revision: migration.Digest(n.Raw), SourceURL: gitlabNoteURL(v.WebURL, n.ID), Author: n.Author.Username, CreatedAt: n.CreatedAt, UpdatedAt: n.UpdatedAt, Schema: "hn.migration.comment/1", Content: nc, Links: []migration.Link{parent}, Blobs: []string{d}})
 							} else {
@@ -238,7 +238,7 @@ func (g *gitlabMigration) Snapshot(ctx context.Context, sel migration.Selection,
 									kind = "inline_comment"
 								}
 								nk = b.preserve(kind, gitlabID(n.ID), strconv.FormatInt(n.ID, 10), gitlabNoteURL(v.WebURL, n.ID), n.Author.Username, n.CreatedAt, n.UpdatedAt, n.Raw, []migration.Link{parent})
-								b.finding("note:"+gitlabID(n.ID), "preserved", "System/internal/thread/oversized note retained as source evidence, never ordinary user-authored destination comment")
+								b.finding("note:"+gitlabID(n.ID), "preserved", "System/internal/confidential/thread/oversized note retained as source evidence, never ordinary user-authored destination comment")
 							}
 							noteKeys[n.ID] = nk
 						}
@@ -264,7 +264,7 @@ func (g *gitlabMigration) Snapshot(ctx context.Context, sel migration.Selection,
 										if b.s.Records[i].Key == nk {
 											// Thread topology is authoritative even if an older
 											// notes endpoint omitted the descriptive note type.
-											if nk.Kind == "comment" && (!d.Individual || n.System || n.Internal || n.Type != "") {
+											if nk.Kind == "comment" && (!d.Individual || !n.Ordinary()) {
 												nk.Kind = "reply"
 												if n.Type == "DiffNote" {
 													nk.Kind = "inline_comment"
@@ -660,6 +660,10 @@ func (g *gitlabMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 		}
 		var v migration.CommentContent
 		_ = json.Unmarshal(r.Content, &v)
+		if err := gitlabapi.ValidateBody(v.Body); err != nil {
+			finding(r, "unsupported", err.Error())
+			continue
+		}
 		w := migration.CommentWrite{Schema: "hn.migration.comment-write/1", Parent: migration.RemoteRef{Receipt: &migration.ReceiptRef{IntentID: parent.ID, Field: "remote_key"}}, Body: v.Body}
 		in := migration.Intent{ID: g.intentID(p, r.Key), Kind: "comment", Action: "create", Sources: []migration.Key{r.Key}, DependsOn: []string{parent.ID}, Payload: gitlabJSON(w)}
 		if target := sel.Mappings["target:"+r.Key.String()]; target != "" {
@@ -682,8 +686,8 @@ func (g *gitlabMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 				return nil, nil, err
 			}
 			parentID, _ := strconv.ParseInt(strings.TrimPrefix(parent.ExpectedID, "id:"), 10, 64)
-			if current.System || current.Internal || current.Type != "" || current.NoteableID != parentID {
-				finding(r, "unsupported", "Existing note is system/internal/threaded or belongs to another issue")
+			if !current.Ordinary() || current.NoteableID != parentID {
+				finding(r, "unsupported", "Existing note is system/internal/confidential/threaded or belongs to another issue")
 				continue
 			}
 			w.Target = &migration.RemoteRef{ID: target}
@@ -701,6 +705,9 @@ func (g *gitlabMigration) Plan(ctx context.Context, s migration.Snapshot, sel mi
 	return out, findings, nil
 }
 func gitlabIssueProjection(w migration.IssueWrite, marker string) (gitlabapi.IssueInput, error) {
+	if e := gitlabapi.ValidateBody(w.Body); e != nil {
+		return gitlabapi.IssueInput{}, e
+	}
 	if w.Type != "issue" || w.State != "opened" && w.State != "closed" || len(w.Title) > 255 || len(w.Body+marker) > 1000000 {
 		return gitlabapi.IssueInput{}, errors.New("GitLab ordinary issue type/state/title/body capacity unsupported; source remains preserved without truncation")
 	}
@@ -848,7 +855,7 @@ func (g *gitlabMigration) Apply(ctx context.Context, in migration.Intent, ac mig
 		if err != nil {
 			return migration.Receipt{}, err
 		}
-		if in.ExpectedID == "" || in.ExpectedRevision == "" || gitlabID(current.ID) != in.ExpectedID || migration.Digest(current.Raw) != in.ExpectedRevision || current.System || current.Internal || current.Type != "" || current.NoteableID != gitlabParentID(ac, in, w.Parent.ID) {
+		if in.ExpectedID == "" || in.ExpectedRevision == "" || gitlabID(current.ID) != in.ExpectedID || migration.Digest(current.Raw) != in.ExpectedRevision || !current.Ordinary() || current.NoteableID != gitlabParentID(ac, in, w.Parent.ID) {
 			return migration.Receipt{}, errors.New("GitLab note baseline changed")
 		}
 		v, e = g.client.UpdateNote(ctx, project, iid, int64(noteID), body)
@@ -858,7 +865,7 @@ func (g *gitlabMigration) Apply(ctx context.Context, in migration.Intent, ac mig
 	if e != nil {
 		return migration.Receipt{}, e
 	}
-	if in.ExpectedID != "" && gitlabID(v.ID) != in.ExpectedID || v.Body != body || v.System || v.Internal || v.Type != "" || v.NoteableID != 0 && v.NoteableID != gitlabParentID(ac, in, w.Parent.ID) {
+	if in.ExpectedID != "" && gitlabID(v.ID) != in.ExpectedID || v.Body != body || !v.Ordinary() || v.NoteableID != 0 && v.NoteableID != gitlabParentID(ac, in, w.Parent.ID) {
 		return migration.Receipt{}, errors.New("GitLab returned different note projection; recovery required")
 	}
 	return g.receipt(in, ac, gitlabID(v.ID), strconv.FormatInt(v.ID, 10), migration.Digest(v.Raw)), nil
@@ -938,7 +945,7 @@ func (g *gitlabMigration) Reconcile(ctx context.Context, in migration.Intent, ac
 			}
 		}
 		for _, v := range rows {
-			if (in.ExpectedID == "" || gitlabID(v.ID) == in.ExpectedID) && v.Body == w.Body+gitlabMarker(ac) && !v.System && !v.Internal && v.Type == "" && (v.NoteableID == 0 || v.NoteableID == gitlabParentID(ac, in, w.Parent.ID)) {
+			if (in.ExpectedID == "" || gitlabID(v.ID) == in.ExpectedID) && v.Body == w.Body+gitlabMarker(ac) && v.Ordinary() && (v.NoteableID == 0 || v.NoteableID == gitlabParentID(ac, in, w.Parent.ID)) {
 				matches = append(matches, g.receipt(in, ac, gitlabID(v.ID), strconv.FormatInt(v.ID, 10), migration.Digest(v.Raw)))
 			}
 		}

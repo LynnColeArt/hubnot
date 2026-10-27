@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -30,6 +31,7 @@ type gitlabMigrationFixture struct {
 	IssueWrites, NoteWrites                                         int
 	LoseIssue, LoseNote, HideIssue, HideNotes, Duplicate, DropLabel bool
 	PrivateNotes, MissingReviews, MissingBoards                     bool
+	LegacyPrivateNote                                               bool
 }
 
 func newGitLabMigrationFixture(t *testing.T) *gitlabMigrationFixture {
@@ -151,12 +153,22 @@ func newGitLabMigrationFixture(t *testing.T) *gitlabMigrationFixture {
 					return
 				}
 			}
+			if f.LegacyPrivateNote {
+				write(map[string]any{"id": 9001, "body": f.Notes[0].Body, "noteable_id": 7001, "confidential": true})
+				return
+			}
 			write(f.Notes[0])
 		case r.URL.Path == "/gitlab/api/v4/projects/42/issues/7/notes":
 			if f.PrivateNotes {
 				w.WriteHeader(403)
 			} else if f.HideNotes {
 				write([]gitlabapi.Note{})
+			} else if f.LegacyPrivateNote {
+				body := "legacy private note"
+				if len(f.Notes) > 0 {
+					body = f.Notes[0].Body
+				}
+				write([]any{map[string]any{"id": 9001, "body": body, "noteable_id": 7001, "confidential": true, "author": map[string]any{"id": 3, "username": "source-author"}}})
 			} else {
 				write(f.Notes)
 			}
@@ -734,5 +746,158 @@ func TestGitLabConfidentialAndOversizedSourceBytesRemainInspectable(t *testing.T
 				t.Fatal("original bytes or unavailable mapping finding missing")
 			}
 		})
+	}
+}
+
+func TestGitLabOldV4ConfidentialNotePreservationAndTargetRefusal(t *testing.T) {
+	f := newGitLabMigrationFixture(t)
+	f.LegacyPrivateNote = true
+	f.Issue = gitlabapi.Issue{ID: 7001, IID: 7, ProjectID: 42, Title: "source", Body: "source", Type: "issue", State: "opened", Labels: []string{}, Assignees: []gitlabapi.User{}}
+	f.Notes = []gitlabapi.Note{{ID: 9001, Body: "private body", NoteableID: 7001}}
+	c := f.Config()
+	src, _ := OpenMigrationSource(c)
+	snap, blobs, e := src.Snapshot(context.Background(), migration.Selection{Source: c.Locator, Kinds: []string{"issue", "comment"}}, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	found := false
+	for _, r := range snap.Records {
+		if r.Key.Kind == "comment" {
+			t.Fatal("deprecated confidential flag became public ordinary comment")
+		}
+		if r.Key.Kind == "reply" {
+			for _, d := range r.Blobs {
+				rc, err := blobs.Open(context.Background(), d)
+				if err != nil {
+					t.Fatal(err)
+				}
+				raw, _ := io.ReadAll(rc)
+				_ = rc.Close()
+				found = found || strings.Contains(string(raw), `"confidential":true`) && strings.Contains(string(raw), `private body`)
+			}
+		}
+	}
+	if !found || len(snap.Findings) == 0 {
+		t.Fatal("private original bytes/finding missing")
+	}
+	legacy, _ := forgeProviders["gitlab"].New(c.Locator.Endpoint, c.Token)
+	if _, e = legacy.ListComments(context.Background(), "42", "7"); e == nil {
+		t.Fatal("legacy flattened confidential note")
+	}
+	s, _ := gitlabMigrationSourceFixture()
+	d, _ := OpenMigrationDestination(c)
+	ins, fs, e := d.Plan(context.Background(), s, migration.Selection{Destination: d.Locator(), Mappings: map[string]string{"target:" + s.Records[0].Key.String(): "7", "target:" + s.Records[1].Key.String(): "9001"}}, migration.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(ins) != 1 || ins[0].Kind != "issue" {
+		t.Fatal("private note target planned", ins)
+	}
+	unsupported := false
+	for _, finding := range fs {
+		unsupported = unsupported || finding.Status == "unsupported"
+	}
+	if !unsupported || f.NoteWrites != 0 || f.IssueWrites != 0 {
+		t.Fatal(fs)
+	}
+}
+func TestGitLabOldV4PrivateNoteCannotProveLostCreate(t *testing.T) {
+	f := newGitLabMigrationFixture(t)
+	f.LoseNote = true
+	s, blobs := gitlabMigrationSourceFixture()
+	d, _ := OpenMigrationDestination(f.Config())
+	session, e := PrepareMigration(context.Background(), filepath.Join(t.TempDir(), "s"), s, blobs, migration.Selection{Destination: d.Locator()}, d, migration.DefaultLimits(), nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = ApplyMigration(context.Background(), session, d, ""); e == nil {
+		t.Fatal("lost response accepted")
+	}
+	f.LegacyPrivateNote = true
+	fresh, _ := OpenMigrationDestination(f.Config())
+	restarted, e := OpenMigrationSession(context.Background(), session.Directory)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = ApplyMigration(context.Background(), restarted, fresh, ""); e == nil || !strings.Contains(e.Error(), "manual recovery") {
+		t.Fatal("private response confirmed an ordinary note", e)
+	}
+	if f.NoteWrites != 1 || f.IssueWrites != 1 {
+		t.Fatal("private uncertainty repeated effects")
+	}
+}
+
+func TestGitLabPlanRefusesQuickActionsAndRetainsExactSource(t *testing.T) {
+	for _, kind := range []string{"issue", "comment"} {
+		for _, update := range []bool{false, true} {
+			t.Run(kind+fmt.Sprint(update), func(t *testing.T) {
+				f := newGitLabMigrationFixture(t)
+				f.Issue = gitlabapi.Issue{ID: 7001, IID: 7, ProjectID: 42, Title: "source", Body: "safe source", State: "opened", Type: "issue", Labels: []string{}, Assignees: []gitlabapi.User{}}
+				f.Notes = []gitlabapi.Note{{ID: 9001, Body: "safe note", NoteableID: 7001}}
+				body := "Exact source\n \t/confidential\n/move other/project"
+				if kind == "issue" {
+					f.Issue.Body = body
+				} else {
+					f.Notes[0].Body = body
+				}
+				src, _ := OpenMigrationSource(f.Config())
+				snap, blobs, e := src.Snapshot(context.Background(), migration.Selection{Source: f.Config().Locator, Kinds: []string{"issue", "comment"}}, migration.DefaultLimits())
+				if e != nil {
+					t.Fatal(e)
+				}
+				preserved := false
+				for _, r := range snap.Records {
+					for _, d := range r.Blobs {
+						rc, err := blobs.Open(context.Background(), d)
+						if err != nil {
+							t.Fatal(err)
+						}
+						raw, _ := io.ReadAll(rc)
+						_ = rc.Close()
+						var v map[string]json.RawMessage
+						if json.Unmarshal(raw, &v) == nil {
+							var actual string
+							field := "description"
+							if kind == "comment" {
+								field = "body"
+							}
+							_ = json.Unmarshal(v[field], &actual)
+							preserved = preserved || actual == body
+						}
+					}
+				}
+				if !preserved {
+					t.Fatal("source slash-command bytes changed")
+				}
+				d, _ := OpenMigrationDestination(f.Config())
+				mappings := map[string]string{}
+				if update {
+					for _, r := range snap.Records {
+						if r.Key.Kind == "issue" {
+							mappings["target:"+r.Key.String()] = "7"
+						}
+						if r.Key.Kind == "comment" {
+							mappings["target:"+r.Key.String()] = "9001"
+						}
+					}
+				}
+				ins, fs, e := d.Plan(context.Background(), snap, migration.Selection{Destination: d.Locator(), Mappings: mappings}, migration.DefaultLimits())
+				if e != nil {
+					t.Fatal(e)
+				}
+				for _, in := range ins {
+					if in.Kind == kind {
+						t.Fatal("dangerous text planned", in)
+					}
+				}
+				found := false
+				for _, finding := range fs {
+					found = found || finding.Status == "unsupported" && strings.Contains(finding.Message, "slash-command")
+				}
+				if !found || f.IssueWrites != 0 || f.NoteWrites != 0 {
+					t.Fatal(fs)
+				}
+			})
+		}
 	}
 }

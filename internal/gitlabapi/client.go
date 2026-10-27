@@ -370,17 +370,22 @@ func (v *Issue) UnmarshalJSON(b []byte) error {
 }
 
 type Note struct {
-	ID         int64           `json:"id"`
-	Body       string          `json:"body"`
-	Author     User            `json:"author"`
-	CreatedAt  string          `json:"created_at"`
-	UpdatedAt  string          `json:"updated_at"`
-	System     bool            `json:"system"`
-	Internal   bool            `json:"internal"`
-	Type       string          `json:"type"`
-	NoteableID int64           `json:"noteable_id"`
-	Raw        json.RawMessage `json:"-"`
+	ID           int64           `json:"id"`
+	Body         string          `json:"body"`
+	Author       User            `json:"author"`
+	CreatedAt    string          `json:"created_at"`
+	UpdatedAt    string          `json:"updated_at"`
+	System       bool            `json:"system"`
+	Internal     bool            `json:"internal"`
+	Confidential bool            `json:"confidential"`
+	Type         string          `json:"type"`
+	NoteableID   int64           `json:"noteable_id"`
+	Raw          json.RawMessage `json:"-"`
 }
+
+// Ordinary excludes both current and legacy private-note flags. Older v4
+// instances may omit internal while still returning confidential:true.
+func (v Note) Ordinary() bool { return !v.System && !v.Internal && !v.Confidential && v.Type == "" }
 
 func (v *Note) UnmarshalJSON(b []byte) error {
 	type dto Note
@@ -440,6 +445,9 @@ func (c *Client) ListNotes(ctx context.Context, p string, iid int) ([]Note, erro
 	return list(ctx, c, u, func(v Note) bool { return v.ID > 0 }, func(v Note) string { return strconv.FormatInt(v.ID, 10) })
 }
 func issuePayload(in IssueInput, create bool) (map[string]any, error) {
+	if e := ValidateBody(in.Body); e != nil {
+		return nil, e
+	}
 	if in.Title == "" || len(in.Title) > 255 || !utf8.ValidString(in.Title) || len(in.Body) > 1000000 || !utf8.ValidString(in.Body) || (in.Type != "" && in.Type != "issue") || (in.State != "opened" && in.State != "closed") || create && in.State != "opened" {
 		return nil, errors.New("GitLab supports bounded ordinary issues; creates require opened state")
 	}
@@ -506,6 +514,9 @@ func (c *Client) UpdateIssue(ctx context.Context, p string, iid int, in IssueInp
 	return c.writeIssue(ctx, p, iid, in)
 }
 func (c *Client) CreateNote(ctx context.Context, p string, iid int, body string) (Note, error) {
+	if e := ValidateBody(body); e != nil {
+		return Note{}, e
+	}
 	if iid <= 0 || body == "" || len(body) > 1000000 || !utf8.ValidString(body) {
 		return Note{}, errors.New("invalid GitLab note")
 	}
@@ -518,7 +529,7 @@ func (c *Client) CreateNote(ctx context.Context, p string, iid int, body string)
 		return Note{}, e
 	}
 	var v Note
-	if e = decode(b, &v); e != nil || v.ID <= 0 {
+	if e = decode(b, &v); e != nil || v.ID <= 0 || !v.Ordinary() {
 		return Note{}, errors.New("invalid written GitLab note; recovery required")
 	}
 	return v, nil
@@ -543,6 +554,9 @@ func (c *Client) GetNote(ctx context.Context, p string, iid int, noteID int64) (
 	return v, nil
 }
 func (c *Client) UpdateNote(ctx context.Context, p string, iid int, noteID int64, body string) (Note, error) {
+	if e := ValidateBody(body); e != nil {
+		return Note{}, e
+	}
 	if iid <= 0 || noteID <= 0 || body == "" || len(body) > 1000000 || !utf8.ValidString(body) {
 		return Note{}, errors.New("invalid GitLab note update")
 	}
@@ -555,8 +569,21 @@ func (c *Client) UpdateNote(ctx context.Context, p string, iid int, noteID int64
 		return Note{}, e
 	}
 	var v Note
-	if e = decode(b, &v); e != nil || v.ID != noteID {
+	if e = decode(b, &v); e != nil || v.ID != noteID || !v.Ordinary() {
 		return Note{}, errors.New("invalid written GitLab note identity; recovery required")
 	}
 	return v, nil
+}
+
+// ValidateBody refuses potential quick actions rather than escaping source
+// bytes. GitLab executes slash-command lines in descriptions and notes under
+// the supplied token. A conservative refusal includes future server commands
+// and fenced examples; the original text remains in the migration snapshot.
+func ValidateBody(body string) error {
+	for _, line := range strings.FieldsFunc(body, func(r rune) bool { return r == '\n' || r == '\r' || r == '\u0085' || r == '\u2028' || r == '\u2029' }) {
+		if strings.HasPrefix(strings.TrimSpace(line), "/") {
+			return errors.New("GitLab slash-command lines are refused; preserve the original source text without hosted execution")
+		}
+	}
+	return nil
 }

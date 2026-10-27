@@ -20,7 +20,7 @@ func init() {
 			return nil, e
 		}
 		return &gitlabForge{c}, nil
-	}, TokenEnv: "HN_GITLAB_TOKEN", Capabilities: []forge.Capability{{Resource: forge.ResourceIssue, Import: true, Export: true, MappedFields: []string{"title", "description", "opened/closed state", "labels", "explicit numeric assignee IDs", "ordinary issue notes", "source attribution"}, Unsupported: []string{"closed creates need a separate state change and are refused", "confidential/nonordinary issues", "system/internal/thread notes are migration preservation records", "merge requests/reviews/boards/CI/uploads use migration snapshot rather than issue transfer"}}}}
+	}, TokenEnv: "HN_GITLAB_TOKEN", Capabilities: []forge.Capability{{Resource: forge.ResourceIssue, Import: true, Export: true, MappedFields: []string{"title", "description", "opened/closed state", "labels", "explicit numeric assignee IDs", "ordinary issue notes", "source attribution"}, Unsupported: []string{"closed creates need a separate state change and are refused", "confidential/nonordinary issues", "system/internal/confidential/thread notes are migration preservation records", "slash-command lines refuse destination writes; source text remains unchanged", "merge requests/reviews/boards/CI/uploads use migration snapshot rather than issue transfer"}}}}
 }
 func (g *gitlabForge) Kind() string     { return "gitlab" }
 func (g *gitlabForge) Endpoint() string { return g.client.BaseURL() }
@@ -90,7 +90,7 @@ func (g *gitlabForge) ListComments(ctx context.Context, p, key string) ([]forge.
 	}
 	out := []forge.Comment{}
 	for _, v := range rows {
-		if v.System || v.Internal || v.Type != "" {
+		if !v.Ordinary() {
 			return nil, errors.New("legacy GitLab transfer cannot flatten system/internal/thread notes; use migration snapshot")
 		}
 		if v.NoteableID != 0 && v.NoteableID != parent.ID {

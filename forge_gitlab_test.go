@@ -95,3 +95,23 @@ func TestGitLabLegacyTransferPublicCLIAndNativeContinuation(t *testing.T) {
 		t.Fatal("native continuation mutated GitLab", view)
 	}
 }
+
+func TestGitLabLegacyQuickActionRefusalsHaveNoRemoteEffects(t *testing.T) {
+	f := newGitLabMigrationFixture(t)
+	f.Issue = gitlabapi.Issue{ID: 7001, IID: 7, ProjectID: 42, Title: "existing", Body: "existing", State: "opened", Type: "issue", Labels: []string{}, Assignees: []gitlabapi.User{}}
+	p, _ := forgeProviders["gitlab"].New(f.Config().Locator.Endpoint, f.Config().Token)
+	ctx := context.Background()
+	body := "source\n \t/close"
+	if _, e := p.CreateIssue(ctx, "42", forge.IssueInput{Title: "issue", Body: body, State: "open"}); e == nil {
+		t.Fatal("legacy create accepted quick action")
+	}
+	if _, e := p.UpdateIssue(ctx, "42", "7", forge.IssueInput{Title: "issue", Body: body, State: "open"}); e == nil {
+		t.Fatal("legacy update accepted quick action")
+	}
+	if _, e := p.CreateComment(ctx, "42", "7", body); e == nil {
+		t.Fatal("legacy note accepted quick action")
+	}
+	if f.IssueWrites != 0 || f.NoteWrites != 0 {
+		t.Fatal("refused text changed hosted state", f.IssueWrites, f.NoteWrites)
+	}
+}
