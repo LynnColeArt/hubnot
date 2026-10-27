@@ -2,7 +2,7 @@
   "mission_slug": "portable-collaboration-and-independent-audits-01M5VTP0",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pass",
+  "overall_verdict": "fail",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -248,10 +248,10 @@
       "criterion_id": "NFR-003",
       "description": "Changes pass formatting, full Go race tests, vet, build, diff checks and meaningful public CLI acceptance in ordinary, `nogithub` and adapter-free builds. Recovery/hostile input tests assert visible state preservation.",
       "proof_type": "automated_test",
-      "evidence": "Final source c4aaa4e840420b07d83617c6373d6f4088e2c077; identical Go/config/assets to full-race PASS 8c88ede5 (744.090s), final packages/actual LinuxAMD64+ARM64 verified. tasks/WP12-integrated-docs-release-acceptance/validation-c4aaa4e8/acceptance-evidence.json criterion NFR-003: exact source test boundaries, negative state invariants, raw artifacts and host/framework qualifications. Raw archive SHA256 a6fc0e35f9cf712be0e9c0dd82cd0d37f71de2eeff92c02c84489921d90ac877. Independent WP review pending.",
-      "pass_fail": "pass",
-      "verified_by": "codex/implementer-ivan",
-      "verified_at": "2026-10-27T06:06:12.245145+00:00",
+      "evidence": "Post-consolidation independent mission review e5833894 at170b3254: unqualified go vet ./... and go test -run ^$ ./... exit1 because three historical overlay .go evidence files are discovered as uncompilable packages. See mission-review.md RISK-1/DRIFT-1 and mission-review-evidence.json. Original successful8c88/c4 lane gates remain historical; current PRIMARY NFR003 is FAIL until inert byte-preserving representation correction and fresh whole-repository verification.",
+      "pass_fail": "fail",
+      "verified_by": "codex",
+      "verified_at": "2026-10-27T06:53:50.465763+00:00",
       "notes": "Combined source verification completed; independent WP12 review approved in report52ea5a9328cd064d47f8d1b92186121d272c1024 and canonical review_result01M5Y0ZEQHEAWTZ3JR9WTXPTYW. Historical implementer proof retains its original pending-review wording. Platform/framework boundaries are recorded in independent-review-c4aaa4e8.md."
     },
     {
