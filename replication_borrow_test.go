@@ -297,3 +297,12 @@ func TestGitObjectsPresentIgnoresReplacementRefs(t *testing.T) {
 		t.Fatalf("empty input = %v, %v", got, err)
 	}
 }
+
+func mustGitTextAtDir(t *testing.T, gitDir string, args ...string) string {
+	t.Helper()
+	value, err := gitTextAt(gitDir, args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return value
+}
