@@ -99,41 +99,6 @@
       "parallel_group": 3
     },
     {
-      "lane_id": "lane-f",
-      "wp_ids": [
-        "WP06"
-      ],
-      "write_scope": [
-        "docs/platform-qualification.md"
-      ],
-      "predicted_surfaces": [
-        "api",
-        "tracker-integration"
-      ],
-      "depends_on_lanes": [
-        "lane-c"
-      ],
-      "parallel_group": 3
-    },
-    {
-      "lane_id": "lane-g",
-      "wp_ids": [
-        "WP07"
-      ],
-      "write_scope": [
-        "beta_scale_test.go",
-        "docs/operating-limits.md"
-      ],
-      "predicted_surfaces": [
-        "api",
-        "tracker-integration"
-      ],
-      "depends_on_lanes": [
-        "lane-c"
-      ],
-      "parallel_group": 3
-    },
-    {
       "lane_id": "lane-j",
       "wp_ids": [
         "WP10"
@@ -229,6 +194,43 @@
       "parallel_group": 7
     },
     {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "docs/platform-qualification.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-m"
+      ],
+      "parallel_group": 8
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "beta_scale_test.go",
+        "docs/operating-limits.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-m"
+      ],
+      "parallel_group": 8
+    },
+    {
       "lane_id": "lane-h",
       "wp_ids": [
         "WP08"
@@ -246,7 +248,7 @@
         "lane-g",
         "lane-m"
       ],
-      "parallel_group": 8
+      "parallel_group": 9
     },
     {
       "lane_id": "lane-i",
@@ -268,11 +270,11 @@
         "lane-h",
         "lane-m"
       ],
-      "parallel_group": 9
+      "parallel_group": 10
     }
   ],
-  "computed_at": "2026-10-28T09:55:08.298252+00:00",
+  "computed_at": "2026-10-28T09:57:31.046189+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "33e22815ca37ef9b96a9dc33f2d395ba6c6e643f"
+  "planning_commit_sha": "fe12b019285be889b71dacb7389721cff526a813"
 }
