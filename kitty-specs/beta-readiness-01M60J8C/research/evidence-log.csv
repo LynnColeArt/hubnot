@@ -1,0 +1,8 @@
+finding_id,source_id,finding,consequence
+E01,S01,No stable compatibility currently promised,Author prospective explicit contract
+E02,S02,Signatures bind exact payload bytes,Preserve historical bytes and IDs
+E03,S03,Keys and local state are not cloned,Separate public recovery and private disaster restore
+E04,S04,Public snapshots intentionally exclude private authority,Do not call migration a full backup
+E05,S05,Provider API and custom-ref transport differ,Qualify independently
+E06,S07,Existing gates exercise actual native packages,Extend existing gates instead of duplicating
+E07,S09,Exact Mac release-byte execution remains pending,Keep qualification incomplete until observed
