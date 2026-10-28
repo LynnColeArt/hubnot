@@ -150,21 +150,31 @@
         "WP12"
       ],
       "write_scope": [
+        "audit_protocol.go",
         "commands.go",
         "contribution_commands.go",
         "contribution_integration_test.go",
         "contribution_moderation.go",
         "contribution_records.go",
+        "discussion_commands.go",
         "event.go",
+        "github_discussions.go",
+        "github_projects.go",
+        "github_workflows.go",
+        "governance.go",
         "issue_commands.go",
         "issue_projection.go",
         "issue_read.go",
         "main.go",
         "policy.go",
         "policy_commands.go",
+        "project_commands.go",
         "proposal.go",
+        "quarantine.go",
         "replication.go",
-        "resource_engine.go"
+        "resource_engine.go",
+        "resource_transfer.go",
+        "workflow_commands.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -275,8 +285,8 @@
       "parallel_group": 10
     }
   ],
-  "computed_at": "2026-10-28T10:53:37.024253+00:00",
+  "computed_at": "2026-10-28T11:02:28.205080+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "3e39c1991ca0682ad1671088c620de43613caecd"
+  "planning_commit_sha": "e2dcf529a0522e03a4e6094a2be09316b2005bed"
 }
