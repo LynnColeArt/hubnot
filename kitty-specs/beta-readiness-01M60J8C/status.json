@@ -88,6 +88,9 @@
       "last_event_id": "01M6131NVFDPMEWJM8TZNV3AA4",
       "last_transition_at": "2026-10-28T11:06:41.391869+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at ae620477: public/private recovery, pure same-actor and memory signing-root guards. Contract-first red; focused recovery/memory/reader tests pass; full go test -race -count=1 -timeout 20m ./... passed (hubnot 648.252s); go vet/build, gofmt and range diff checks pass. Existing audit-read pack import and disconnected-writer/fork limits documented."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
