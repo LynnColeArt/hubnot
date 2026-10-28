@@ -49,7 +49,8 @@
       ],
       "write_scope": [
         "beta_recovery_test.go",
-        "docs/recovery.md"
+        "docs/recovery.md",
+        "store.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -171,8 +172,8 @@
       "parallel_group": 5
     }
   ],
-  "computed_at": "2026-10-28T06:23:40.938094+00:00",
+  "computed_at": "2026-10-28T06:35:46.099367+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "cbcbc8220fba7301425c572a6fa7b8549491ad4b"
+  "planning_commit_sha": "0be289d2f8d7d2936bdcf203f379a1ea96ebfd3f"
 }

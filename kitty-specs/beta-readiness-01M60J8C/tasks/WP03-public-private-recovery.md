@@ -31,6 +31,7 @@ execution_mode: code_change
 owned_files:
 - beta_recovery_test.go
 - docs/recovery.md
+- store.go
 role: implementer
 tags: []
 task_type: implement
@@ -51,7 +52,7 @@ Add a keyless fresh-clone/public-backup rehearsal retaining selected collaborati
 
 ### T010
 
-Add private disaster-restore and fresh-actor journeys: fence prior writer, recover latest chain, continue without history rewrite; reject unsafe private inputs and document stale-backup limits.
+Add private disaster-restore and fresh-actor journeys: fence prior writer, recover latest chain, continue without history rewrite; refuse common actor appends from a stale/divergent signing head when newer accepted history is already known, with zero side effects before reconciliation.
 
 ### T011
 
@@ -67,7 +68,17 @@ Use existing Git and hn commands if they satisfy the contract; no new backup com
 
 ## Ownership and delivery
 
-Owned surfaces: `beta_recovery_test.go`, `docs/recovery.md`.
+Owned surfaces: `beta_recovery_test.go`, `docs/recovery.md`, `store.go`.
+
+Concrete production obligation: `nextEvent` currently derives its predecessor
+only from the local actor ref, and common append validates only that chain.
+Sync can leave it stale after accepting a newer same-actor history. Guard the
+common actor append path before effects against locally accepted newer or
+divergent same-actor histories. Cover missing and stale local roots, no ref/event
+changes on refusal, and successful continuation after explicit verified CAS
+restoration. Do not silently advance the actor root, grant roles, treat invalid
+or pending data as accepted, or claim to detect unknown disconnected writers.
+Inspect existing verified-reader facilities before adding another verifier.
 Stay within this WP. If an actual defect requires an additional production
 surface, report the failing contract so root can amend ownership or author a
 repair WP. Do not edit sibling status or frozen past-mission evidence.

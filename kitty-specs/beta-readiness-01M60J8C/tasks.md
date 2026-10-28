@@ -52,7 +52,7 @@ Depends on: WP01
 
 T008 Write executable recovery procedures in docs/recovery.md separating public code/custom refs, private keys/local state and uncertain external journals.
 T009 Add a keyless fresh-clone/public-backup rehearsal retaining selected collaboration and memory history and comparing exact historical objects/ref targets.
-T010 Add private disaster-restore and fresh-actor journeys: fence prior writer, recover latest chain, continue without history rewrite; reject unsafe private inputs and document stale-backup limits.
+T010 Add private disaster-restore and fresh-actor journeys: fence prior writer, recover latest chain, continue without history rewrite; refuse common actor appends from a stale/divergent signing head when newer accepted history is already known, with zero side effects before reconciliation.
 T011 Verify lost sole authority, separate policy-role amendment, deliberate audit authority adoption, worktree limitations and backup exclusions; run charter gates.
 
 ### Dependencies
