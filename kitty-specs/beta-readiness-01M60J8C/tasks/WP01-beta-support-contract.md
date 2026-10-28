@@ -3,12 +3,14 @@ work_package_id: WP01
 title: Beta support contract and current release status
 dependencies: []
 requirement_refs:
-- FR-001
-- FR-002
-- FR-014
 - C-001
 - C-002
 - C-004
+- C-005
+- C-006
+- FR-001
+- FR-002
+- FR-014
 planning_base_branch: feature/beta-readiness
 merge_target_branch: feature/beta-readiness
 branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.

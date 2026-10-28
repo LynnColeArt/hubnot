@@ -4,12 +4,14 @@ title: Public backup and exclusive private recovery
 dependencies:
 - WP02
 requirement_refs:
+- C-003
 - FR-005
 - FR-006
 - FR-007
 - NFR-001
 - NFR-002
 - NFR-003
+- NFR-005
 planning_base_branch: feature/beta-readiness
 merge_target_branch: feature/beta-readiness
 branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
