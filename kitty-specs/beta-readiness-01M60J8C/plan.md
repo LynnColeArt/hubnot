@@ -8,6 +8,8 @@ Establish a prospective beta contract, then prove released-data compatibility
 and public/private recovery before qualifying providers, packages, scale and
 external adoption. Keep signed facts and existing wire versions unchanged unless
 a concrete compatibility defect requires an explicitly reviewed change.
+The 2026-10-28 owner amendment adds unified native contribution/moderation after
+the initial recovery work and before boundary review and the beta verdict.
 
 ## Technical Context
 
@@ -65,6 +67,54 @@ verification; migration/transfer journals must not be moved and replayed against
 a different destination by assumption. If keys and all policy authority are
 lost, the guide must explain the existing unrecoverable boundary.
 
+## Unified contribution and moderation architecture
+
+Use a provider-free shared contribution model for issues, discussion content,
+code proposals and applicable native project/workflow operations. Define native
+signed submission/decision records, project identity, exact payload/revision
+bindings, and optional operation permissions. Reuse existing identity, signature,
+Git storage, quarantine and governance mechanisms where they fit. Introducing
+another mandatory service, account, authoritative database or code-review system
+is outside scope.
+
+One policy evaluation distinguishes submission, project admission and existing
+merge/execution authorization. Permissive issue/reply rules can automatically
+admit ordinary contributions; a manual moderator review is not mandatory for
+every message. A contributor can never self-enable policy, manufacture another
+author's edit, or convert admission into review, CI or acceptance evidence.
+Policy enabling and amendments use deliberately selected legitimate project
+authority; source-provided policy and imported roles cannot adopt themselves.
+
+Support a bounded contribution artifact/reference handoff and a native pending
+queue that can be listed and inspected locally. Wire size, decoded object/event
+sizes, count/depth and aggregate pending retention have positive finite limits;
+streaming reads and cancellation stop at the declared bounds before admission.
+Define an intake operation/window and charge automatic admission to its budget
+and to aggregate retained pending/admitted content. Draining queues, hiding data,
+or creating actor keys must not silently reset accounting or free retained
+history; exhausted budgets refuse intake until deliberate authorized action.
+Select limits before contacting a source and account across different actor
+keys. Existing Git pack quarantine alone cannot supply hard transfer quotas.
+No implicit compatibility-all fetch, arbitrary ref update, workflow execution,
+provider discovery or ingress server is introduced. An optional hosted relay
+can be added later; the first complete native journey works with local exchange.
+
+Keep original signed payloads intact. Admission/moderation creates signed scoped
+facts targeting an exact content revision or actor and evaluated authority. Implement admit/reject,
+hide/restore and author block/unblock, deterministic conflict/revocation rules,
+and explicit raw inspection distinct from the moderated shared view. Project
+admission is distinct from cryptographic transport verification and from signed
+proposal acceptance. Moderation cannot guarantee deletion from other replicas.
+
+New pure model/policy/record functionality belongs in `internal/contribution/`
+(WP10); bounded staging/exchange in `contribution_exchange.go` (WP11); live CLI,
+native permission/view and moderation integration in WP12; public acceptance
+and product guide in WP13. WP10 records concrete CLI/wire examples and real
+integration seams before downstream implementation. Update ownership through a
+reviewed planning amendment if a necessary shared file is not declared; do not
+edit WP03's `store.go` or silently broaden a glob. A foundational library is not
+claimed as the completed workflow: WP12 wiring and WP13 public proof are required.
+
 ## Implementation Concern Map
 
 | Concern | Owner | Requirements |
@@ -78,6 +128,10 @@ lost, the guide must explain the existing unrecoverable boundary.
 | IC-07 Practical workload limits | WP07 | FR-011 |
 | IC-08 Boundary review and fixes | WP08 | FR-012 |
 | IC-09 External pilots/final verdict | WP09 | FR-013, FR-014 |
+| IC-10 Native contribution model, policy and signed record foundation | WP10 | FR-015, FR-018, FR-019, FR-020 |
+| IC-11 Bounded exchange and pending intake | WP11 | FR-016, FR-017, FR-020, NFR-006 |
+| IC-12 Live authorization, admission and moderation views | WP12 | FR-015, FR-018, FR-019, FR-020, C-007 |
+| IC-13 Public contribution and abuse-resistance proof | WP13 | FR-021, NFR-006, NFR-007 |
 
 ## Delivery sequence
 
@@ -85,8 +139,11 @@ lost, the guide must explain the existing unrecoverable boundary.
 WP01 support contract → WP02 compatibility → WP03 recovery → WP04 interruptions
                                                      ├→ WP05 providers
                                                      ├→ WP06 platforms
-                                                     └→ WP07 limits → WP08 boundary review
-WP04 + WP05 + WP06 + WP07 + WP08 → WP09 external pilots / beta verdict
+                                                     └→ WP07 limits
+WP04 → WP10 native foundation → WP11 bounded exchange → WP12 live moderation
+                                                     → WP13 public proof
+WP04 + WP07 + WP13 → WP08 boundary review
+WP04 + WP05 + WP06 + WP07 + WP08 + WP13 → WP09 external pilots / beta verdict
 ```
 
 External evidence dependencies remain recorded. Complete independently
@@ -118,6 +175,14 @@ initial documentation/implementation authorization.
    full runs; targeted iterations precede one final full run per reviewed change.
 6. WP05–09: explicit observation records for real provider/platform/user work,
    practical measurements and independently reviewed disposition of findings.
+7. WP10–13: test common operation policy, signed decision integrity and old
+   behavior when disabled; use hostile valid signatures, many-key/aggregate
+   saturation, oversize/truncation/dependency cases, canceled/replayed intake,
+   stale or revoked moderators and conflicting decisions. Exercise an unknown
+   contributor denied upstream push, automatic issue/reply admission under
+   explicit rules, moderation and independent existing proposal merge gates.
+   Run standard/native-only public CLI journeys and observer reconstruction
+   with no credentials, external network, daemon or copied signing keys.
 
 ## Risks and decisions
 
@@ -135,3 +200,12 @@ initial documentation/implementation authorization.
   current generated output or a ratchet against legitimate feature additions.
 - Hosted Spec Kitty sync currently reports a locked/unavailable store; local
   canonical mission artifacts and event logs remain the execution record.
+- Admission policy is about what the project accepts into its scoped view, not
+  proof of a unique person or permission to change trusted branches. Signed spam
+  and Sybil actors must not evade aggregate intake limits.
+- Default-off behavior must preserve old views and operations. Enabling a new
+  moderated view must explicitly account for the historical baseline, explain
+  pending versus admitted content, and never reinterpret old signed bytes.
+- Current selected replication receipts and post-download budgets remain valid
+  for their existing purpose; never advertise them as a full public ingress DoS
+  boundary. Supported contribution ingress requires independent early bounds.

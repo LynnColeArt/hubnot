@@ -3,7 +3,9 @@
 **Inputs**: `spec.md`, `plan.md`, `research.md`, `data-model.md`.
 
 Each WP has a separate owned surface and independent review. Initial delivery is
-WP01 → WP02 → WP03 → WP04. Later qualification cannot fabricate external evidence.
+WP01 → WP02 → WP03 → WP04, then WP10 → WP11 → WP12 → WP13 delivers optional
+unified contribution/moderation before WP08 and the final beta verdict.
+Later qualification cannot fabricate external evidence.
 Subtask completion is recorded by the framework event log using `mark-status`.
 
 ## Work Package WP01: Beta support contract and current release status (Priority: P1)
@@ -136,13 +138,13 @@ Depends on: WP03
 
 ### Included Subtasks
 
-T024 Independently review credential/key handling, imports, filesystem boundaries, authority and runner isolation against the prospective beta contract.
+T024 Independently review credential/key handling, imports, filesystem boundaries, contribution intake/moderation, authority and runner isolation against the prospective beta contract.
 T025 Record actionable findings and nonfindings with evidence in docs/beta-boundary-review.md; identify required repair WPs.
 T026 Recheck disposition of release-blocking findings against reviewed fixes without claiming hardened multi-tenant isolation.
 
 ### Dependencies
 
-Depends on: WP04, WP07
+Depends on: WP04, WP07, WP13
 
 ## Work Package WP09: External pilot and beta readiness verdict (Priority: P2)
 
@@ -153,12 +155,90 @@ Depends on: WP04, WP07
 
 ### Included Subtasks
 
-T027 Prepare independent-adopter install/collaborate/migrate/upgrade/restore tasks and collect actual pilot outcomes.
+T027 Prepare independent-adopter install/collaborate/migrate/upgrade/restore and stranger-contribution/moderation tasks and collect actual pilot outcomes.
 T028 Trace each support promise and success criterion to qualification evidence and defect disposition in docs/beta-readiness.md.
 T029 Record the truthful beta verdict and remaining blockers; prepare release recommendation without publishing or silently changing the support contract.
 
 ### Dependencies
 
-Depends on: WP04, WP05, WP06, WP07, WP08
+Depends on: WP04, WP05, WP06, WP07, WP08, WP13
 
+
+
+## Optional unified contribution and moderation work
+
+The owner added this work on 2026-10-28. Existing defaults stay unchanged;
+WP10–WP13 must pass before the boundary review and final beta verdict.
+
+## Work Package WP10: Native contribution policy and signed record foundation (Priority: P1)
+
+**Goal**: Native contribution policy and signed record foundation.
+**Independent Test**: Exercise exported Go boundaries for strict signed formats, altered revision/signature/scope, invalid or stale authority, conflicting decisions, operation rules and absent configuration. Run charter Go gates at a committed head; foundation review must identify downstream consumers and must not count tests-only wiring as a working public workflow.
+**Prompt**: `tasks/WP10-native-contribution-foundation.md`
+**Requirement Refs**: FR-015, FR-018, FR-019, FR-020, NFR-007, C-001, C-002, C-003, C-007
+
+### Included Subtasks
+
+T030 Specify the native contribution/decision contract, authority source, concrete CLI/wire examples and existing integration seams in docs/contribution-contract.md.
+T031 Implement shared typed submission identity, exact original-content/revision bindings, scoped signed decision records and strict bounded format validation in internal/contribution/.
+T032 Implement one optional operation-permission evaluator distinguishing transport verification, submission admission, author edits/replies, moderation and existing code acceptance/merge.
+T033 Define deterministic replay, concurrent moderation, revocation, historical-baseline and disable/re-enable semantics without rewriting original facts or granting authority.
+T034 Verify model/policy/signature contracts, disabled configuration and invalid authority with independent tests; identify any additional live integration file ownership before downstream implementation.
+
+### Dependencies
+
+Depends on: WP04
+
+## Work Package WP11: Bounded submission exchange and pending intake (Priority: P1)
+
+**Goal**: Bounded submission exchange and pending intake.
+**Independent Test**: Use controlled streams/local repositories and fault/cancellation seams to assert exact byte/count/disk budgets and no accepted-ref/branch/private-authority changes on refusal. Aggregate limits must survive many tiny submissions from different keys. Tests must fail for actual excess reads/retention, not only inspect configuration. Run formatting, full race, vet, build and diff checks at a fixed head.
+**Prompt**: `tasks/WP11-bounded-contribution-exchange.md`
+**Requirement Refs**: FR-016, FR-017, FR-020, NFR-006, NFR-007, C-001, C-007
+
+### Included Subtasks
+
+T035 Implement a provider-free bounded artifact/reference exchange using the WP10 contract and existing safe archive/object primitives where applicable.
+T036 Isolate and validate submitted content before project admission, enforcing positive finite per-request and defined operation/window limits plus aggregate pending/admitted retention accounting that automatic admission, drained/hidden queues and new actor keys cannot reset.
+T037 Implement inspectable pending state, exact-intent deduplication and interrupted/replayed intake recovery with no branch, policy, signer or workflow side effects.
+T038 Prove early limit/cancellation behavior for signed spam, huge/truncated inputs, many-key aggregate saturation and unselected refs; record supported transport guarantees and exclusions.
+
+### Dependencies
+
+Depends on: WP10
+
+## Work Package WP12: Native contribution commands authorization and moderation (Priority: P1)
+
+**Goal**: Native contribution commands authorization and moderation.
+**Independent Test**: Through actual public CLI paths, prove unknown-signer submission without upstream push, configured automatic and manual admission, denied foreign edits, invalid/revoked/conflicting moderation, raw-history preservation, observer reconstruction and retries. Exercise absence of configuration and independence from protected checks/automerge/audits. Imported metadata or direct native commands must not bypass enabled operation rules. Run all charter Go gates and report no_coverage honestly if the framework's Python gate is unavailable.
+**Prompt**: `tasks/WP12-native-admission-and-moderation.md`
+**Requirement Refs**: FR-015, FR-016, FR-018, FR-019, FR-020, NFR-002, NFR-007, C-001, C-002, C-003, C-007
+
+### Included Subtasks
+
+T039 Wire the shared contribution model/exchange into real native CLI submission, pending-list/inspection and explicit opt-in policy paths without changing absent-configuration behavior.
+T040 Enforce operation-specific admission across code proposals and communications: automatic allowed issue/reply intake, protected edits and moderation, and unchanged native merge/execution authority.
+T041 Implement signed scoped admit/reject, hide/restore and author block/unblock commands and moderated shared views, preserving raw signed inspection and visible conflicts/revocations.
+T042 Exchange and reconstruct contribution/decision state using native Git-backed storage with exact targets and safe retries; validate direct command bypasses, disabled behavior and no implicit execution.
+
+### Dependencies
+
+Depends on: WP11
+
+## Work Package WP13: Unified contribution public acceptance and operator guide (Priority: P1)
+
+**Goal**: Unified contribution public acceptance and operator guide.
+**Independent Test**: Run actual public black-box cases with unchanged environment boundaries; verify selected historical payload/signature/ref preservation, no unexpected keys/authority/optional activation, resource refusal before shared visibility and safe retries. Then formatting, full race, vet, build and diff gates. Validate documentation examples against actual CLI and the WP10 contract.
+**Prompt**: `tasks/WP13-contribution-public-acceptance.md`
+**Requirement Refs**: FR-021, FR-015, FR-016, FR-017, FR-018, FR-019, FR-020, NFR-001, NFR-003, NFR-006, NFR-007, C-007
+
+### Included Subtasks
+
+T043 Add standard/native-only provider-free contributor/maintainer/observer public CLI journeys for issues, discussion replies and code proposals with upstream push explicitly denied.
+T044 Exercise enabled/disabled behavior, signed spam and transfer/retention bounds including automatic-admission accounting across drained queues and many keys, replay/interruption, scoped moderation/revocation/conflicts and unchanged existing merge/CI/execution gates.
+T045 Write docs/contributions.md with submission/admission/moderation commands, optional policy examples, raw-view/history limits, recovery and actual resource-safety guarantees; supply pilot and boundary-review evidence.
+
+### Dependencies
+
+Depends on: WP12
 
