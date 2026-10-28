@@ -11,7 +11,7 @@ Subtask completion is recorded by the framework event log using `mark-status`.
 **Goal**: Beta support contract and current release status.
 **Independent Test**: Documentation-only: verify each new download URL against the published asset list, check all changed local Markdown links, inspect commands against help/implementation, git diff --check. Do not run the full expensive Go suite for prose-only edits. No external writes, issue comments or release publication.
 **Prompt**: `tasks/WP01-beta-support-contract.md`
-**Requirement Refs**: FR-001, FR-002, FR-014, C-001, C-002, C-004
+**Requirement Refs**: FR-001, FR-002, FR-014, C-001, C-002, C-004, C-005, C-006
 
 ### Included Subtasks
 
@@ -28,7 +28,7 @@ None.
 **Goal**: Released-writer compatibility and refusal coverage.
 **Independent Test**: Test-first contract fixtures and public CLI scenarios with a credential-free environment. Focused iterations, then gofmt, go test -race -count=1 -timeout 20m ./..., go vet ./..., go build ./..., git diff --check at the final committed head. No simultaneous expensive full suites; tell root before the final run.
 **Prompt**: `tasks/WP02-released-writer-compatibility.md`
-**Requirement Refs**: FR-002, FR-003, FR-004, NFR-001, NFR-003
+**Requirement Refs**: FR-002, FR-003, FR-004, NFR-001, NFR-003, NFR-005
 
 ### Included Subtasks
 
@@ -46,7 +46,7 @@ Depends on: WP01
 **Goal**: Public backup and exclusive private recovery.
 **Independent Test**: Public subprocess tests in standard/native-only modes; compare all selected preexisting history and assert absent unwanted keys/authority/optional activation. Test stale public chain recovery, lost signer/fresh actor, unsafe modes and unchanged history. Then gofmt, full race, vet, build, diff check at a committed head. Coordinate full-suite resource use with root.
 **Prompt**: `tasks/WP03-public-private-recovery.md`
-**Requirement Refs**: FR-005, FR-006, FR-007, NFR-001, NFR-002, NFR-003
+**Requirement Refs**: FR-005, FR-006, FR-007, NFR-001, NFR-002, NFR-003, NFR-005, C-003
 
 ### Included Subtasks
 
@@ -64,7 +64,7 @@ Depends on: WP02
 **Goal**: Journal compatibility and interrupted-operation recovery.
 **Independent Test**: Run targeted tests for actual gaps, then applicable full charter gates for any Go change. Documentation-only inventory must not masquerade as executed recovery evidence.
 **Prompt**: `tasks/WP04-interrupted-operation-recovery.md`
-**Requirement Refs**: FR-002, FR-008, NFR-001, NFR-002
+**Requirement Refs**: FR-002, FR-008, NFR-001, NFR-002, NFR-005
 
 ### Included Subtasks
 
@@ -115,7 +115,7 @@ Depends on: WP03
 **Goal**: Practical workload and recovery limits.
 **Independent Test**: Report source, hardware, fixture dimensions, commands and measured results. Keep normal tests reasonably bounded; expensive workloads require explicit benchmark/scenario invocation. Go changes receive charter gates.
 **Prompt**: `tasks/WP07-practical-operating-limits.md`
-**Requirement Refs**: FR-011, NFR-004
+**Requirement Refs**: FR-011, NFR-004, NFR-005
 
 ### Included Subtasks
 
