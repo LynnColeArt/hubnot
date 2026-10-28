@@ -105,6 +105,12 @@ initial documentation/implementation authorization.
 3. WP03: run executable public/private recovery recipes through Git and the CLI;
    compare public history before/after, keyless absence, exclusive signer
    continuation, new-actor nonauthority and unsafe/stale recovery boundaries.
+   Recovery inspection found that `store.go` can append from a stale local
+   actor ref despite a newer accepted same-actor history. WP03 owns a common
+   append refusal guard for known newer/divergent accepted history, with a
+   public no-side-effect regression and successful continuation after explicit
+   verified expected-old ownership restoration. This is not detection of unknown
+   disconnected writers and does not automatically adopt a remote signing head.
 4. WP04: reuse existing interruption fault seams and add only missing public
    assertions for supported recovery. Confirm retries never infer remote absence.
 5. Every Go WP: formatting, `go test -race -count=1 -timeout 20m ./...`, vet,
