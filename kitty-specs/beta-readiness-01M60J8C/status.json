@@ -1,7 +1,7 @@
 {
-  "event_count": 2,
-  "last_event_id": "01M60JTZPXTY4Y62F9F0S5N01T",
-  "materialized_at": "2026-10-28T06:23:24.893768+00:00",
+  "event_count": 3,
+  "last_event_id": "01M60JV1W5RQP1NTKWTDMMXZSP",
+  "materialized_at": "2026-10-28T06:23:27.109050+00:00",
   "mission_number": "",
   "mission_slug": "beta-readiness-01M60J8C",
   "mission_type": "",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 2
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -30,6 +30,13 @@
       "lane": "planned",
       "last_event_id": "01M60JTZPXTY4Y62F9F0S5N01T",
       "last_transition_at": "2026-10-28T06:23:24.893768+00:00"
+    },
+    "WP03": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M60JV1W5RQP1NTKWTDMMXZSP",
+      "last_transition_at": "2026-10-28T06:23:27.109050+00:00"
     }
   }
 }
