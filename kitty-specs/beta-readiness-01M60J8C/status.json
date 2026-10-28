@@ -142,6 +142,9 @@
       "last_event_id": "01M614QHYAH85GM0013VMZ5VF7",
       "last_transition_at": "2026-10-28T11:36:06.858129+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 9ccbf303 (qualification doc unchanged from 71cc66b6). Actual bounded public/private GitHub CLI journeys, mapping/loss limits and retained evidence; 162 digest/link/ledger checks passed. CLI-prescribed inherited base metadata cleanup only, no product changes. Prior scoped gate no_coverage; doc-only, no Go suite rerun."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
