@@ -1,7 +1,7 @@
 {
-  "event_count": 33,
-  "last_event_id": "01M614KQ1AF4JXYW2WTA2EWKZE",
-  "materialized_at": "2026-10-28T11:34:01.002222+00:00",
+  "event_count": 34,
+  "last_event_id": "01M614NAHNMGX524Q8R1PSWERS",
+  "materialized_at": "2026-10-28T11:34:53.749062+00:00",
   "mission_number": "",
   "mission_slug": "beta-readiness-01M60J8C",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 1,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 8
   },
   "work_packages": {
@@ -112,18 +112,18 @@
     "WP04": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M614KQ1AF4JXYW2WTA2EWKZE",
-      "last_transition_at": "2026-10-28T11:34:01.002222+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M614NAHNMGX524Q8R1PSWERS",
+      "last_transition_at": "2026-10-28T11:34:53.749062+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: source-tested 829d8ca1 (full race 634.233s, vet/build/noforge-build/gofmt/diff passed), docs-only 4a737e29 corrects --key syntax and actual CLI check passed. Lane metadata cleanup removes only inherited base_branch/base_commit/created_at per CLI guard, product/docs byte-identical. Future journal/authentication and public rotation prevalidation tests pass; cold audit object-materialization limitation explicit."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 5024,
       "shell_pid_created_at": "1792851034.54",
       "subtasks": {
