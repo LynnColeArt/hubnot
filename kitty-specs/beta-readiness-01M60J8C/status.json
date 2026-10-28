@@ -57,6 +57,9 @@
       "last_event_id": "01M6110X1DY5Y2BD8F3VT5XH22",
       "last_transition_at": "2026-10-28T10:31:18.829478+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review at 65b3202dc5819914cbe661f3df4b8b1933fa6a5e. Implementation/code/corpus unchanged from full-race-tested 922a3bc8 (633.010s); final commit follows CLI-only inherited planning-event cleanup after preserving authority. Exact released-writer corpus and archive repair, standard/native-only history/new actor/future refusal tests; focused/vet/build/gofmt/range-diff pass. Raw evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/beta-readiness-WP02/evidence. Framework no_coverage is not a Go run; no skip or force used."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
