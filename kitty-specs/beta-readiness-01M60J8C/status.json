@@ -1,7 +1,7 @@
 {
-  "event_count": 13,
-  "last_event_id": "01M60XKAEP359P8AXH7THGQQM3",
-  "materialized_at": "2026-10-28T09:31:28.086745+00:00",
+  "event_count": 14,
+  "last_event_id": "01M60XKCDD7HZY26CWCFN5E5C1",
+  "materialized_at": "2026-10-28T09:31:30.093957+00:00",
   "mission_number": "",
   "mission_slug": "beta-readiness-01M60J8C",
   "mission_type": "software-dev",
@@ -14,7 +14,7 @@
     "for_review": 1,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 9
+    "planned": 10
   },
   "work_packages": {
     "WP01": {
@@ -102,6 +102,13 @@
       "lane": "planned",
       "last_event_id": "01M60XKAEP359P8AXH7THGQQM3",
       "last_transition_at": "2026-10-28T09:31:28.086745+00:00"
+    },
+    "WP11": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M60XKCDD7HZY26CWCFN5E5C1",
+      "last_transition_at": "2026-10-28T09:31:30.093957+00:00"
     }
   }
 }
