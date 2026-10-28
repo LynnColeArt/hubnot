@@ -85,6 +85,20 @@ func TestContributionExchangeRegularFilePendingReplayAndKeylessRestore(t *testin
 	if _, e = store.Receive(ctx, artifact, c.Digest([]byte("different")), "receive-one", refs); e == nil {
 		t.Fatal("changed intent accepted")
 	}
+	lower := p
+	lower.Limits.WireBytes = 1
+	lower.Limits.DecodedBytes = 1
+	lower.Limits.Objects = 1
+	lower.Limits.Events = 1
+	lower.Limits.Depth = 1
+	lower.Limits.Milliseconds = 1
+	lowerStore, e := OpenContributionExchange(store.root, lower, "unchanged")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if got, e := lowerStore.Receive(ctx, "/not-opened", digest, "receive-one", refs); e != nil || !got.Replayed || got.Status != "pending" {
+		t.Fatal("lower policy lost exact completed receipt", e)
+	}
 	backup := filepath.Join(t.TempDir(), "backup.hnc")
 	if e = store.Export(ctx, "receive-one", backup); e != nil {
 		t.Fatal(e)
@@ -615,8 +629,8 @@ func TestContributionExchangeSignedIntentConflictsAndExactArtifactDedup(t *testi
 		t.Fatal("conflict not inspectable", e)
 	}
 	replay, e := x.Receive(ctx, "/source-must-not-open", first.Artifact, "another-delivery-operation", refs)
-	if e != nil || !replay.Replayed || replay.Intent != "first" {
-		t.Fatal("exact artifact not deduplicated", e)
+	if e == nil || !replay.Replayed || replay.Intent != "first" || replay.Status != "conflict" {
+		t.Fatal("exact conflicted artifact lost its durable refusal", e)
 	}
 	after, _, e := x.Accounting()
 	if e != nil || after.RetainedUsed != before.RetainedUsed {
@@ -633,8 +647,8 @@ func TestContributionExchangeSignedIntentConflictsAndExactArtifactDedup(t *testi
 	if e != nil {
 		t.Fatal(e)
 	}
-	if got, e := reopened.Receive(ctx, "/absent", first.Artifact, "first", refs); e != nil || !got.Replayed {
-		t.Fatal("lower policy lost prior exact receipt", e)
+	if got, e := reopened.Receive(ctx, "/absent", first.Artifact, "first", refs); e == nil || !got.Replayed || got.Status != "conflict" {
+		t.Fatal("lower policy lost prior exact conflict receipt", e)
 	}
 }
 func TestContributionExchangeForeignReceiptDoesNotSpendReceiverCapacity(t *testing.T) {
@@ -829,5 +843,112 @@ func TestContributionExchangePreJournalManifestRetryHasNoNewImmutableObjects(t *
 	head, e := x.RetainActor(ctx, dir, "objects-before-plan", actor, "absent")
 	if e != nil || head != first {
 		t.Fatal("positive deterministic recovery failed", e)
+	}
+}
+
+func TestContributionExchangeInterruptedConflictRemainsRawAndPortable(t *testing.T) {
+	repo := inReplicationTestRepository(t)
+	identity := testIdentity(t, "Conflicting actor")
+	p := exchangePolicy()
+	ctx := context.Background()
+	dir := filepath.Join(repo, ".git")
+	refs := []string{actorRef(identity.Actor)}
+	x := exchangeOpen(t, p)
+	artifact := func(label string) (string, string) {
+		t.Helper()
+		fact := appendIdentityTestEvent(t, identity, "issue.open", func(e *Event) { e.Title = label })
+		env := exchangeEnvelope(t, p, identity, c.IssueCreate, c.Content{Root: fact.ID, Revision: fact.ID, Author: identity.Actor, Parents: []string{}, References: []c.Reference{}}, "immutable-conflicting-intent")
+		path := filepath.Join(t.TempDir(), "artifact")
+		digest, e := ExportContributionArtifact(ctx, dir, p.Project, refs, []c.Envelope{env}, path, p.Limits)
+		if e != nil {
+			t.Fatal(e)
+		}
+		return path, digest
+	}
+	first, digest1 := artifact("first exact payload")
+	x.fault = func(step string) error {
+		if step == "artifact-durable" {
+			return errors.New("intake interrupted")
+		}
+		return nil
+	}
+	if got, e := x.Receive(ctx, first, digest1, "first", refs); e == nil || got.Status != "uncertain" {
+		t.Fatal("interruption control failed", got, e)
+	}
+	x.fault = nil
+	second, digest2 := artifact("changed exact payload")
+	if got, e := x.Receive(ctx, second, digest2, "second", refs); e == nil || got.Status != "conflict" {
+		t.Fatal("interrupted input was omitted from signed-intent conflict checks", got, e)
+	}
+	if got, e := x.Recover(ctx, "first"); e == nil || got.Status != "conflict" {
+		t.Fatal("recovery turned a known conflict into eligible intake", got, e)
+	}
+	pending, e := x.Pending()
+	if e != nil || len(pending) != 2 || pending[0].Status != "conflict" || pending[1].Status != "conflict" {
+		t.Fatal("both raw conflict sides are not inspectable", pending, e)
+	}
+	before, _, e := x.Accounting()
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, intent := range []string{"first", "second"} {
+		a, e := x.Inspect(ctx, intent)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if a.Intake == nil || a.Intake.Status != "conflict" {
+			t.Fatal("inspected conflict lost local provenance")
+		}
+		if len(a.Records) != 1 {
+			t.Fatal("original conflict envelope lost")
+		}
+		a.Close()
+	}
+	// Raw manifests carry both immutable signatures for canonical projection to
+	// diagnose. Raw retention is not an eligible admission/portable receipt.
+	h1, e := x.RetainActor(ctx, dir, "first", identity.Actor, "absent")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = x.RetainActor(ctx, dir, "second", identity.Actor, h1); e != nil {
+		t.Fatal(e)
+	}
+	records, _, e := ReadContributionManifest(ctx, dir, p.Project, identity.Actor, p.Limits)
+	if e != nil || len(records) != 2 || records[0].Record().Intent != records[1].Record().Intent || records[0].ID() == records[1].ID() {
+		t.Fatal("raw conflict graph was lost", e)
+	}
+	backup := filepath.Join(t.TempDir(), "conflict-backup")
+	digest, e := ExportContributionRefs(ctx, dir, p.Project, refs, []string{identity.Actor}, backup, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	observer := exchangeOpen(t, p)
+	if got, e := observer.Receive(ctx, backup, digest, "restore", refs); e == nil || got.Status != "conflict" {
+		t.Fatal("backup selected an arrival-order winner", got, e)
+	}
+	a, e := observer.Inspect(ctx, "restore")
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer a.Close()
+	if len(a.Records) != 2 {
+		t.Fatal("portable conflict evidence incomplete")
+	}
+	// A conflict on another actor/intent cannot poison unrelated pending input.
+	other := testIdentity(t, "Unrelated author")
+	fact := appendIdentityTestEvent(t, other, "issue.open", func(e *Event) { e.Title = "Unrelated valid pending" })
+	env := exchangeEnvelope(t, p, other, c.IssueCreate, c.Content{Root: fact.ID, Revision: fact.ID, Author: other.Actor, Parents: []string{}, References: []c.Reference{}}, "different-intent")
+	path := filepath.Join(t.TempDir(), "unrelated")
+	selected := []string{actorRef(other.Actor)}
+	digest, e = ExportContributionArtifact(ctx, dir, p.Project, selected, []c.Envelope{env}, path, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if got, e := observer.Receive(ctx, path, digest, "unrelated", selected); e != nil || got.Status != "pending" {
+		t.Fatal("unrelated pending poisoned by another intent conflict", got, e)
+	}
+	after, _, e := x.Accounting()
+	if e != nil || after.RetainedUsed != before.RetainedUsed {
+		t.Fatal("raw conflict retention/recovery bypassed its existing charge", e)
 	}
 }

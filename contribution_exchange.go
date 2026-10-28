@@ -70,6 +70,10 @@ func (s ContributionNativeSource) Fact(id string) (c.Fact, error) {
 // ContributionArtifact owns a disposable, verified bare quarantine. Close it
 // after the caller finishes raw inspection or independently authorized promotion.
 type ContributionArtifact struct {
+	// Intake is receiver-local provenance when inspected from a durable inbox.
+	// Only pending is eligible for a future authorized intake attestation;
+	// conflict/uncertain/failed never supply admission provenance.
+	Intake       *ContributionIntake
 	Project      string
 	Refs         []migration.NativeRef
 	Records      []c.Verified
@@ -187,7 +191,6 @@ func contributionManifestBytes(project string, refs []string, envelopes []c.Enve
 	prior := ""
 	sorted := append([]c.Envelope{}, envelopes...)
 	sort.Slice(sorted, func(i, j int) bool { return c.Digest(sorted[i].Payload) < c.Digest(sorted[j].Payload) })
-	intents := map[string]string{}
 	for _, env := range sorted {
 		v, e := c.Verify(env.Payload, env.Signature)
 		if e != nil {
@@ -197,11 +200,6 @@ func contributionManifestBytes(project string, refs []string, envelopes []c.Enve
 		if r.Project != project || v.ID() == prior {
 			return nil, fmt.Errorf("wrong project/duplicate envelope")
 		}
-		k := r.Actor + ":" + r.Intent
-		if old, ok := intents[k]; ok && old != v.ID() {
-			return nil, fmt.Errorf("conflicting signed intent")
-		}
-		intents[k] = v.ID()
 		prior = v.ID()
 	}
 	wire := make([]contributionWireEnvelope, 0, len(sorted))
@@ -1128,7 +1126,7 @@ func (x *ContributionExchange) load() (contributionJournal, error) {
 		}
 		seenActors := map[string]bool{}
 		for _, plan := range a.ManifestWrites {
-			if !validActorFingerprint(plan.Actor) || seenActors[plan.Actor] || !migration.ValidOID(plan.Head) || (plan.Expected != "absent" && !migration.ValidOID(plan.Expected)) || j.GitDir == "" || a.Status != "pending" {
+			if !validActorFingerprint(plan.Actor) || seenActors[plan.Actor] || !migration.ValidOID(plan.Head) || (plan.Expected != "absent" && !migration.ValidOID(plan.Expected)) || j.GitDir == "" || a.Status != "pending" && a.Status != "conflict" {
 				return j, fmt.Errorf("corrupt raw retention intent")
 			}
 			seenActors[plan.Actor] = true
@@ -1137,7 +1135,7 @@ func (x *ContributionExchange) load() (contributionJournal, error) {
 			return j, fmt.Errorf("intake metadata exceeds reservation")
 		}
 		switch a.Status {
-		case "reserved", "uncertain", "failed", "pending":
+		case "reserved", "uncertain", "failed", "pending", "conflict":
 		default:
 			return j, fmt.Errorf("unsupported intake status")
 		}
@@ -1183,12 +1181,18 @@ func (x *ContributionExchange) Receive(ctx context.Context, path, digest, intent
 				return result, fmt.Errorf("conflicting operation intent")
 			}
 			a.Replayed = true
+			if a.Status == "conflict" {
+				return a, fmt.Errorf("conflicting signed actor/project intent")
+			}
 			return a, nil
 		}
 	}
 	for _, a := range j.Attempts {
-		if a.Status == "pending" && a.Artifact == digest && contributionSameRefs(a.Refs, selected) {
+		if (a.Status == "pending" || a.Status == "conflict") && a.Artifact == digest && contributionSameRefs(a.Refs, selected) {
 			a.Replayed = true
+			if a.Status == "conflict" {
+				return a, fmt.Errorf("conflicting signed actor/project intent")
+			}
 			return a, nil
 		}
 	}
@@ -1219,7 +1223,7 @@ func (x *ContributionExchange) Receive(ctx context.Context, path, digest, intent
 	defer func() {
 		result.Milliseconds = time.Since(started).Milliseconds()
 		if err != nil {
-			if result.Status != "uncertain" {
+			if result.Status != "uncertain" && result.Status != "conflict" {
 				result.Status = "failed"
 			}
 			result.Failure = strings.ToValidUTF8(err.Error(), "?")
@@ -1271,21 +1275,11 @@ func (x *ContributionExchange) Receive(ctx context.Context, path, digest, intent
 	result.Objects = a.Objects
 	result.Events = a.EventCount
 	result.Depth = a.Depth
-	// Signed-intent conflicts across different local operation names are refused.
-	// Every retained artifact remains charged even if it repeats native content.
-	for _, old := range j.Attempts[:index] {
-		if old.Status != "pending" {
-			continue
-		}
-		prior, e := x.inspectAttempt(ctx, old)
-		if e != nil {
-			return result, e
-		}
-		conflict := contributionIntentConflict(prior.Records, a.Records)
-		_ = prior.Close()
-		if conflict {
-			return result, fmt.Errorf("conflicting signed actor/project intent")
-		}
+	// Conflicts are authenticated raw material. Retain both sides and mark
+	// every receiver-known affected attempt, including interrupted durable input.
+	conflicted, e := x.markConflicts(ctx, &j, index, a.Records)
+	if e != nil {
+		return result, e
 	}
 	if e = ctx.Err(); e != nil {
 		return result, e
@@ -1311,6 +1305,10 @@ func (x *ContributionExchange) Receive(ctx context.Context, path, digest, intent
 		return result, e
 	}
 	result.Status = "pending"
+	if conflicted {
+		result.Status = "conflict"
+		return result, fmt.Errorf("conflicting signed actor/project intent")
+	}
 	return result, nil
 }
 
@@ -1353,20 +1351,67 @@ func contributionOpenRegular(path string, private bool) (*os.File, error) {
 	}
 	return f, nil
 }
-func contributionIntentConflict(a, b []c.Verified) bool {
+func contributionIntentConflict(groups ...[]c.Verified) bool {
 	intents := map[string]string{}
-	for _, v := range a {
-		r := v.Record()
-		intents[r.Actor+":"+r.Intent] = v.ID()
-	}
-	for _, v := range b {
-		r := v.Record()
-		if id, ok := intents[r.Actor+":"+r.Intent]; ok && id != v.ID() {
-			return true
+	for _, group := range groups {
+		for _, v := range group {
+			r := v.Record()
+			key := r.Actor + ":" + r.Intent
+			if old, ok := intents[key]; ok && old != v.ID() {
+				return true
+			}
+			intents[key] = v.ID()
 		}
 	}
 	return false
 }
+func contributionCrossConflict(a, b []c.Verified) bool {
+	intents := map[string]map[string]bool{}
+	for _, v := range a {
+		r := v.Record()
+		key := r.Actor + ":" + r.Intent
+		if intents[key] == nil {
+			intents[key] = map[string]bool{}
+		}
+		intents[key][v.ID()] = true
+	}
+	for _, v := range b {
+		r := v.Record()
+		for id := range intents[r.Actor+":"+r.Intent] {
+			if id != v.ID() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (x *ContributionExchange) markConflicts(ctx context.Context, j *contributionJournal, index int, records []c.Verified) (bool, error) {
+	conflicted := j.Attempts[index].Status == "conflict" || contributionIntentConflict(records)
+	for i, old := range j.Attempts {
+		if i == index {
+			continue
+		}
+		if _, e := os.Lstat(x.artifactPath(old.Artifact)); errors.Is(e, os.ErrNotExist) {
+			continue
+		} else if e != nil {
+			return false, e
+		}
+		prior, e := x.inspectAttempt(ctx, old)
+		if e != nil {
+			return false, e
+		}
+		conflict := contributionCrossConflict(prior.Records, records)
+		_ = prior.Close()
+		if conflict {
+			conflicted = true
+			j.Attempts[i].Status = "conflict"
+			j.Attempts[i].Failure = "conflicting signed actor/project intent"
+		}
+	}
+	return conflicted, nil
+}
+
 func (x *ContributionExchange) Pending() ([]ContributionIntake, error) {
 	unlock, e := x.lock()
 	if e != nil {
@@ -1379,7 +1424,7 @@ func (x *ContributionExchange) Pending() ([]ContributionIntake, error) {
 	}
 	out := []ContributionIntake{}
 	for _, a := range j.Attempts {
-		if a.Status == "pending" {
+		if a.Status == "pending" || a.Status == "conflict" {
 			out = append(out, a)
 		}
 	}
@@ -1417,7 +1462,12 @@ func (x *ContributionExchange) inspectAttempt(ctx context.Context, a Contributio
 	l.Events = a.Reserved.Events
 	l.Depth = a.Reserved.Depth
 	l.Milliseconds = a.Reserved.Milliseconds
-	return readContributionArtifact(ctx, bytes.NewReader(raw), x.policy.Project, a.Refs, l)
+	verified, e := readContributionArtifact(ctx, bytes.NewReader(raw), x.policy.Project, a.Refs, l)
+	if e != nil {
+		return nil, e
+	}
+	verified.Intake = &a
+	return verified, nil
 }
 func (x *ContributionExchange) Inspect(ctx context.Context, intent string) (*ContributionArtifact, error) {
 	unlock, e := x.lock()
@@ -1461,7 +1511,16 @@ func (x *ContributionExchange) Recover(ctx context.Context, intent string) (Cont
 		if e != nil {
 			return a, fmt.Errorf("intake remains uncertain: %w", e)
 		}
+		conflicted, e := x.markConflicts(ctx, &j, i, v.Records)
+		if e != nil {
+			_ = v.Close()
+			return a, e
+		}
 		a.Status = "pending"
+		if conflicted {
+			a.Status = "conflict"
+			a.Failure = "conflicting signed actor/project intent"
+		}
 		a.WireBytes = v.WireBytes
 		a.DecodedBytes = v.DecodedBytes
 		a.Objects = v.Objects
@@ -1469,7 +1528,13 @@ func (x *ContributionExchange) Recover(ctx context.Context, intent string) (Cont
 		a.Depth = v.Depth
 		_ = v.Close()
 		j.Attempts[i] = a
-		return a, x.save(j)
+		if e = x.save(j); e != nil {
+			return a, e
+		}
+		if conflicted {
+			return a, fmt.Errorf("conflicting signed actor/project intent")
+		}
+		return a, nil
 	}
 	return ContributionIntake{}, fmt.Errorf("unknown intake intent")
 }
@@ -1710,7 +1775,6 @@ func ReadContributionManifest(ctx context.Context, gitDir, project, actor string
 		return nil, "", fmt.Errorf("unselected manifest material")
 	}
 	previous := ""
-	intents := map[string]string{}
 	for _, id := range m.Records {
 		if !migration.ValidDigest(id) || id <= previous {
 			return nil, "", fmt.Errorf("invalid sorted record selection")
@@ -1737,10 +1801,6 @@ func ReadContributionManifest(ctx context.Context, gitDir, project, actor string
 		if v.ID() != id || r.Actor != actor || r.Project != project {
 			return nil, "", fmt.Errorf("contribution namespace/record mismatch")
 		}
-		if old, ok := intents[r.Intent]; ok && old != id {
-			return nil, "", fmt.Errorf("conflicting contribution intent")
-		}
-		intents[r.Intent] = id
 		records = append(records, v)
 	}
 	return records, head, nil
@@ -1797,14 +1857,8 @@ func prepareContributionManifest(ctx context.Context, gitDir, project, actor, ex
 		return "", fmt.Errorf("contribution manifest count limit")
 	}
 	ids := []string{}
-	intents := map[string]string{}
 	var total int64
 	for id, v := range all {
-		r := v.Record()
-		if old, ok := intents[r.Intent]; ok && old != id {
-			return "", fmt.Errorf("conflicting contribution intent")
-		}
-		intents[r.Intent] = id
 		ids = append(ids, id)
 		total += int64(len(v.Payload()) + len(v.Signature()))
 	}
@@ -1916,7 +1970,8 @@ type ContributionManifestWrite struct {
 }
 
 // RetainActor explicitly installs authenticated raw envelope blobs from a
-// completed local intake. It is separate from Receive and grants no admission.
+// completed raw local intake, including inspectable signed conflicts. It is
+// separate from Receive and grants no admission or eligible receipt on conflicts.
 // It reserves no free storage: native/envelope/manifest maxima were charged by
 // the original attempt. Each attempt may write each actor at most once. The
 // destination Git dir is bound once for the receiver-local project ledger.
@@ -1951,7 +2006,7 @@ func (x *ContributionExchange) RetainActor(ctx context.Context, gitDir, intent, 
 		if a.Intent != intent {
 			continue
 		}
-		if a.Status != "pending" {
+		if a.Status != "pending" && a.Status != "conflict" {
 			return "", fmt.Errorf("completed bounded local intake required")
 		}
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(a.Reserved.Milliseconds)*time.Millisecond)
