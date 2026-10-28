@@ -138,10 +138,9 @@ claimed as the completed workflow: WP12 wiring and WP13 public proof are require
 ```text
 WP01 support contract → WP02 compatibility → WP03 recovery → WP04 interruptions
                                                      ├→ WP05 providers
-                                                     ├→ WP06 platforms
-                                                     └→ WP07 limits
 WP04 → WP10 native foundation → WP11 bounded exchange → WP12 live moderation
                                                      → WP13 public proof
+WP13 → WP06 integrated candidate platforms + WP07 integrated runtime limits
 WP04 + WP07 + WP13 → WP08 boundary review
 WP04 + WP05 + WP06 + WP07 + WP08 + WP13 → WP09 external pilots / beta verdict
 ```
@@ -183,6 +182,8 @@ initial documentation/implementation authorization.
    full runs; targeted iterations precede one final full run per reviewed change.
 6. WP05–09: explicit observation records for real provider/platform/user work,
    practical measurements and independently reviewed disposition of findings.
+   WP06/WP07 wait for WP13 so candidate packages and operating-limit measurements
+   include the complete runtime rather than a pre-contribution build.
 7. WP10–13: test common operation policy, signed decision integrity and old
    behavior when disabled; use hostile valid signatures, many-key/aggregate
    saturation, oversize/truncation/dependency cases, canceled/replayed intake,

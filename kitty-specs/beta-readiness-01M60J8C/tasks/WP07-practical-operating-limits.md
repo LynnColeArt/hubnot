@@ -3,6 +3,7 @@ work_package_id: WP07
 title: Practical workload and recovery limits
 dependencies:
 - WP03
+- WP13
 requirement_refs:
 - FR-011
 - NFR-004
@@ -48,6 +49,10 @@ Add reproducible benchmark/scenario coverage in beta_scale_test.go and record re
 Publish measured supported envelopes and budget exhaustion behavior in docs/operating-limits.md without promising unmeasured universal thresholds.
 
 ## Context & Constraints
+
+Measure the integrated runtime after WP13, including enabled contribution
+intake/retention accounting as well as ordinary core workloads. Do not use an
+older pre-feature benchmark as proof of the final candidate's operating limits.
 
 Read the mission spec, plan, research and active charter before work. Load the
 frontmatter profile through the canonical profiles API/CLI. The mission is

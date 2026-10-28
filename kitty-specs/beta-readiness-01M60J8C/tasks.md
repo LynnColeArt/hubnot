@@ -110,7 +110,7 @@ T020 Record outstanding Intel/Mac exact-byte work and a signing/notarization rec
 
 ### Dependencies
 
-Depends on: WP03
+Depends on: WP03, WP13
 
 ## Work Package WP07: Practical workload and recovery limits (Priority: P2)
 
@@ -127,7 +127,7 @@ T023 Publish measured supported envelopes and budget exhaustion behavior in docs
 
 ### Dependencies
 
-Depends on: WP03
+Depends on: WP03, WP13
 
 ## Work Package WP08: Independent beta boundary review (Priority: P2)
 

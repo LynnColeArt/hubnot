@@ -3,6 +3,7 @@ work_package_id: WP06
 title: Candidate package and distribution qualification
 dependencies:
 - WP03
+- WP13
 requirement_refs:
 - FR-010
 - NFR-004
@@ -45,6 +46,11 @@ Run available candidate package cases using existing Go-only packaging and publi
 Record outstanding Intel/Mac exact-byte work and a signing/notarization recommendation with owner decision prerequisites.
 
 ## Context & Constraints
+
+Qualify the integrated candidate containing the contribution workflow, not a
+pre-feature package. WP13 is a dependency so the lane includes all runtime
+changes before packaging. Earlier alpha/package observations remain narrow
+historical evidence, not automatic qualification of the final beta candidate.
 
 Read the mission spec, plan, research and active charter before work. Load the
 frontmatter profile through the canonical profiles API/CLI. The mission is
