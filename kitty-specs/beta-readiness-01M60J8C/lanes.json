@@ -17,6 +17,7 @@
       ],
       "predicted_surfaces": [
         "api",
+        "tests",
         "tracker-integration"
       ],
       "depends_on_lanes": [],
@@ -132,6 +133,101 @@
       "parallel_group": 3
     },
     {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "docs/contribution-contract.md",
+        "internal/contribution/model.go",
+        "internal/contribution/model_test.go",
+        "internal/contribution/policy.go",
+        "internal/contribution/policy_test.go",
+        "internal/contribution/record.go",
+        "internal/contribution/record_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "contribution_exchange.go",
+        "contribution_exchange_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "commands.go",
+        "contribution_commands.go",
+        "contribution_integration_test.go",
+        "contribution_moderation.go",
+        "contribution_records.go",
+        "event.go",
+        "issue_commands.go",
+        "issue_projection.go",
+        "issue_read.go",
+        "main.go",
+        "policy.go",
+        "policy_commands.go",
+        "proposal.go",
+        "replication.go",
+        "resource_engine.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-k"
+      ],
+      "parallel_group": 6
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "beta_contribution_acceptance_test.go",
+        "docs/contributions.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-l"
+      ],
+      "parallel_group": 7
+    },
+    {
       "lane_id": "lane-h",
       "wp_ids": [
         "WP08"
@@ -146,9 +242,10 @@
       ],
       "depends_on_lanes": [
         "lane-d",
-        "lane-g"
+        "lane-g",
+        "lane-m"
       ],
-      "parallel_group": 4
+      "parallel_group": 8
     },
     {
       "lane_id": "lane-i",
@@ -167,13 +264,14 @@
         "lane-e",
         "lane-f",
         "lane-g",
-        "lane-h"
+        "lane-h",
+        "lane-m"
       ],
-      "parallel_group": 5
+      "parallel_group": 9
     }
   ],
-  "computed_at": "2026-10-28T06:35:46.099367+00:00",
+  "computed_at": "2026-10-28T09:31:34.988302+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "0be289d2f8d7d2936bdcf203f379a1ea96ebfd3f"
+  "planning_commit_sha": "802a1f9ddc68713db9d9d0077d2b1f7325ef4b1e"
 }

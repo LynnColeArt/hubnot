@@ -1,19 +1,39 @@
 ---
-work_package_id: "WP11"
-subtasks: ["T035","T036","T037","T038"]
-title: "Bounded submission exchange and pending intake"
-task_type: "implement"
-phase: "Optional unified contributions"
-execution_mode: "code_change"
-owned_files: ["contribution_exchange.go","contribution_exchange_test.go"]
-authoritative_surface: "contribution_exchange"
-create_intent: ["contribution_exchange.go","contribution_exchange_test.go"]
-dependencies: ["WP10"]
-requirement_refs: ["FR-016","FR-017","FR-020","NFR-006","NFR-007","C-001","C-007"]
-agent_profile: "implementer-ivan"
-role: "implementer"
-agent: "codex"
-assignee: ""
+work_package_id: WP11
+title: Bounded submission exchange and pending intake
+dependencies:
+- WP10
+requirement_refs:
+- FR-016
+- FR-017
+- FR-020
+- NFR-006
+- NFR-007
+- C-001
+- C-007
+planning_base_branch: feature/beta-readiness
+merge_target_branch: feature/beta-readiness
+branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
+subtasks:
+- T035
+- T036
+- T037
+- T038
+phase: Optional unified contributions
+history: []
+agent_profile: implementer-ivan
+authoritative_surface: contribution_exchange
+create_intent:
+- contribution_exchange.go
+- contribution_exchange_test.go
+execution_mode: code_change
+owned_files:
+- contribution_exchange.go
+- contribution_exchange_test.go
+role: implementer
+tags: []
+task_type: implement
+tracker_refs: []
 ---
 
 # WP11 — Bounded submission exchange and pending intake

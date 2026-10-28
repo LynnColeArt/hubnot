@@ -1,19 +1,52 @@
 ---
-work_package_id: "WP10"
-subtasks: ["T030","T031","T032","T033","T034"]
-title: "Native contribution policy and signed record foundation"
-task_type: "implement"
-phase: "Optional unified contributions"
-execution_mode: "code_change"
-owned_files: ["internal/contribution/model.go","internal/contribution/policy.go","internal/contribution/record.go","internal/contribution/model_test.go","internal/contribution/policy_test.go","internal/contribution/record_test.go","docs/contribution-contract.md"]
-authoritative_surface: "internal/contribution/"
-create_intent: ["internal/contribution/model.go","internal/contribution/policy.go","internal/contribution/record.go","internal/contribution/model_test.go","internal/contribution/policy_test.go","internal/contribution/record_test.go","docs/contribution-contract.md"]
-dependencies: ["WP04"]
-requirement_refs: ["FR-015","FR-018","FR-019","FR-020","NFR-007","C-001","C-002","C-003","C-007"]
-agent_profile: "implementer-ivan"
-role: "implementer"
-agent: "codex"
-assignee: ""
+work_package_id: WP10
+title: Native contribution policy and signed record foundation
+dependencies:
+- WP04
+requirement_refs:
+- FR-015
+- FR-018
+- FR-019
+- FR-020
+- NFR-007
+- C-001
+- C-002
+- C-003
+- C-007
+planning_base_branch: feature/beta-readiness
+merge_target_branch: feature/beta-readiness
+branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
+subtasks:
+- T030
+- T031
+- T032
+- T033
+- T034
+phase: Optional unified contributions
+history: []
+agent_profile: implementer-ivan
+authoritative_surface: internal/contribution/
+create_intent:
+- internal/contribution/model.go
+- internal/contribution/policy.go
+- internal/contribution/record.go
+- internal/contribution/model_test.go
+- internal/contribution/policy_test.go
+- internal/contribution/record_test.go
+- docs/contribution-contract.md
+execution_mode: code_change
+owned_files:
+- internal/contribution/model.go
+- internal/contribution/policy.go
+- internal/contribution/record.go
+- internal/contribution/model_test.go
+- internal/contribution/policy_test.go
+- internal/contribution/record_test.go
+- docs/contribution-contract.md
+role: implementer
+tags: []
+task_type: implement
+tracker_refs: []
 ---
 
 # WP10 — Native contribution policy and signed record foundation

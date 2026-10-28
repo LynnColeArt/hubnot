@@ -1,19 +1,58 @@
 ---
-work_package_id: "WP12"
-subtasks: ["T039","T040","T041","T042"]
-title: "Native contribution commands authorization and moderation"
-task_type: "implement"
-phase: "Optional unified contributions"
-execution_mode: "code_change"
-owned_files: ["contribution_commands.go","contribution_moderation.go","contribution_records.go","contribution_integration_test.go","policy.go","policy_commands.go","event.go","issue_commands.go","issue_read.go","issue_projection.go","resource_engine.go","proposal.go","commands.go","main.go","replication.go"]
-authoritative_surface: "contribution_"
-create_intent: ["contribution_commands.go","contribution_moderation.go","contribution_records.go","contribution_integration_test.go"]
-dependencies: ["WP11"]
-requirement_refs: ["FR-015","FR-016","FR-018","FR-019","FR-020","NFR-002","NFR-007","C-001","C-002","C-003","C-007"]
-agent_profile: "implementer-ivan"
-role: "implementer"
-agent: "codex"
-assignee: ""
+work_package_id: WP12
+title: Native contribution commands authorization and moderation
+dependencies:
+- WP11
+requirement_refs:
+- FR-015
+- FR-016
+- FR-018
+- FR-019
+- FR-020
+- NFR-002
+- NFR-007
+- C-001
+- C-002
+- C-003
+- C-007
+planning_base_branch: feature/beta-readiness
+merge_target_branch: feature/beta-readiness
+branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
+subtasks:
+- T039
+- T040
+- T041
+- T042
+phase: Optional unified contributions
+history: []
+agent_profile: implementer-ivan
+authoritative_surface: contribution_
+create_intent:
+- contribution_commands.go
+- contribution_moderation.go
+- contribution_records.go
+- contribution_integration_test.go
+execution_mode: code_change
+owned_files:
+- contribution_commands.go
+- contribution_moderation.go
+- contribution_records.go
+- contribution_integration_test.go
+- policy.go
+- policy_commands.go
+- event.go
+- issue_commands.go
+- issue_read.go
+- issue_projection.go
+- resource_engine.go
+- proposal.go
+- commands.go
+- main.go
+- replication.go
+role: implementer
+tags: []
+task_type: implement
+tracker_refs: []
 ---
 
 # WP12 — Native contribution commands authorization and moderation

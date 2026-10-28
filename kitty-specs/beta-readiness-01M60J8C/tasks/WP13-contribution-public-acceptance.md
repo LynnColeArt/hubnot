@@ -1,19 +1,43 @@
 ---
-work_package_id: "WP13"
-subtasks: ["T043","T044","T045"]
-title: "Unified contribution public acceptance and operator guide"
-task_type: "implement"
-phase: "Optional unified contributions"
-execution_mode: "code_change"
-owned_files: ["beta_contribution_acceptance_test.go","docs/contributions.md"]
-authoritative_surface: "docs/"
-create_intent: ["beta_contribution_acceptance_test.go","docs/contributions.md"]
-dependencies: ["WP12"]
-requirement_refs: ["FR-021","FR-015","FR-016","FR-017","FR-018","FR-019","FR-020","NFR-001","NFR-003","NFR-006","NFR-007","C-007"]
-agent_profile: "implementer-ivan"
-role: "implementer"
-agent: "codex"
-assignee: ""
+work_package_id: WP13
+title: Unified contribution public acceptance and operator guide
+dependencies:
+- WP12
+requirement_refs:
+- FR-021
+- FR-015
+- FR-016
+- FR-017
+- FR-018
+- FR-019
+- FR-020
+- NFR-001
+- NFR-003
+- NFR-006
+- NFR-007
+- C-007
+planning_base_branch: feature/beta-readiness
+merge_target_branch: feature/beta-readiness
+branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
+subtasks:
+- T043
+- T044
+- T045
+phase: Optional unified contributions
+history: []
+agent_profile: implementer-ivan
+authoritative_surface: docs/
+create_intent:
+- beta_contribution_acceptance_test.go
+- docs/contributions.md
+execution_mode: code_change
+owned_files:
+- beta_contribution_acceptance_test.go
+- docs/contributions.md
+role: implementer
+tags: []
+task_type: implement
+tracker_refs: []
 ---
 
 # WP13 — Unified contribution public acceptance and operator guide
