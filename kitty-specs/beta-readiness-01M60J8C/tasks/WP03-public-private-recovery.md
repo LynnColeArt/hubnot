@@ -32,6 +32,7 @@ owned_files:
 - beta_recovery_test.go
 - docs/recovery.md
 - store.go
+- memory_store.go
 role: implementer
 tags: []
 task_type: implement
@@ -52,7 +53,11 @@ Add a keyless fresh-clone/public-backup rehearsal retaining selected collaborati
 
 ### T010
 
-Add private disaster-restore and fresh-actor journeys: fence prior writer, recover latest chain, continue without history rewrite; refuse common actor appends from a stale/divergent signing head when newer accepted history is already known, with zero side effects before reconciliation.
+Add private disaster-restore and fresh-actor journeys: fence prior writer,
+recover latest actor/memory chains, continue without history rewrite; refuse
+common actor and same-actor/same-stream memory appends from missing/stale/
+divergent roots when conflicting accepted history is known, with zero effects
+before explicit verified reconciliation.
 
 ### T011
 
@@ -68,7 +73,8 @@ Use existing Git and hn commands if they satisfy the contract; no new backup com
 
 ## Ownership and delivery
 
-Owned surfaces: `beta_recovery_test.go`, `docs/recovery.md`, `store.go`.
+Owned surfaces: `beta_recovery_test.go`, `docs/recovery.md`, `store.go`,
+`memory_store.go`.
 
 Concrete production obligation: `nextEvent` currently derives its predecessor
 only from the local actor ref, and common append validates only that chain.
@@ -79,6 +85,29 @@ changes on refusal, and successful continuation after explicit verified CAS
 restoration. Do not silently advance the actor root, grant roles, treat invalid
 or pending data as accepted, or claim to detect unknown disconnected writers.
 Inspect existing verified-reader facilities before adding another verifier.
+
+The analogous memory risk is confirmed in `nextMemoryCommandPosition` and
+`appendMemoryAtHead`, which currently consider only the local stream root.
+Guard the common appendMemoryAtHead path before writes against known newer or
+divergent accepted history for that same actor and stream. Compare signed
+sequence/ID continuity, not just maximum sequence; other streams and accepted
+older prefixes must not block valid work. No changes to memory publication,
+wire formats or projection are authorized by this narrow recovery fix.
+
+Use read-only verification primitives. `collectEvents`/`loadStoredEventAt` can
+import audit packs and mutate the object database; they cannot be treated as
+side-effect-free preflight. `collectIssueEvents` has a bounded batched verified
+reader, but applying all of its issue-catalog limits to every actor write would
+be an unrelated compatibility change: assess scope and request another narrow
+ownership amendment if necessary, rather than copying a second verifier.
+Memory readers validate each source but may union same-stream signed forks;
+the writer guard must explicitly detect conflicting signed positions.
+
+Public recovery tests must inspect accepted refs even if a stale memory sync
+returns a publication error after successful import. Do not broaden this WP to
+change publication. Prove refusal before object/ref/private-state changes, then
+successful continuation after explicit verified expected-old restoration for
+both actor and memory roots, preserving every prior payload/signature.
 Stay within this WP. If an actual defect requires an additional production
 surface, report the failing contract so root can amend ownership or author a
 repair WP. Do not edit sibling status or frozen past-mission evidence.
@@ -110,4 +139,3 @@ do not kill/retry an in-flight gate or claim a skipped/no-coverage gate ran test
 ## Activity Log
 
 - 2026-10-28T06:21:00Z – codex – Work package authored from the approved mission intent.
-

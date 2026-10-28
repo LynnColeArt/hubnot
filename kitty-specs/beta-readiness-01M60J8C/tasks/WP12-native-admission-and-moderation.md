@@ -116,4 +116,3 @@ Commit only expected files and record commands/exits/evidence. Mark only this
 WP's truly completed subtasks with the framework. Move to `for_review` and poll
 the synchronous gate to completion; never skip/kill it or label no_coverage as a
 successful Go run. No external comments, messages or release publication.
-

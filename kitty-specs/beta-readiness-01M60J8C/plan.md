@@ -138,10 +138,9 @@ claimed as the completed workflow: WP12 wiring and WP13 public proof are require
 ```text
 WP01 support contract → WP02 compatibility → WP03 recovery → WP04 interruptions
                                                      ├→ WP05 providers
-                                                     ├→ WP06 platforms
-                                                     └→ WP07 limits
 WP04 → WP10 native foundation → WP11 bounded exchange → WP12 live moderation
                                                      → WP13 public proof
+WP13 → WP06 integrated candidate platforms + WP07 integrated runtime limits
 WP04 + WP07 + WP13 → WP08 boundary review
 WP04 + WP05 + WP06 + WP07 + WP08 + WP13 → WP09 external pilots / beta verdict
 ```
@@ -168,6 +167,14 @@ initial documentation/implementation authorization.
    public no-side-effect regression and successful continuation after explicit
    verified expected-old ownership restoration. This is not detection of unknown
    disconnected writers and does not automatically adopt a remote signing head.
+   Read-only inspection confirmed the same defect in `appendMemoryAtHead`:
+   WP03 also owns `memory_store.go` for a same-actor/same-stream guard before
+   writes. Compare signed sequence/ID continuity, including known divergence,
+   rather than only the greatest sequence. An accepted older prefix or another
+   stream must remain independent. Reuse validated read primitives without
+   importing audit packs as a read side effect or silently imposing unrelated
+   issue-catalog restrictions. Preserve existing publication behavior; a stale
+   memory sync can fail its push after successfully importing a newer head.
 4. WP04: reuse existing interruption fault seams and add only missing public
    assertions for supported recovery. Confirm retries never infer remote absence.
 5. Every Go WP: formatting, `go test -race -count=1 -timeout 20m ./...`, vet,
@@ -175,6 +182,8 @@ initial documentation/implementation authorization.
    full runs; targeted iterations precede one final full run per reviewed change.
 6. WP05–09: explicit observation records for real provider/platform/user work,
    practical measurements and independently reviewed disposition of findings.
+   WP06/WP07 wait for WP13 so candidate packages and operating-limit measurements
+   include the complete runtime rather than a pre-contribution build.
 7. WP10–13: test common operation policy, signed decision integrity and old
    behavior when disabled; use hostile valid signatures, many-key/aggregate
    saturation, oversize/truncation/dependency cases, canceled/replayed intake,

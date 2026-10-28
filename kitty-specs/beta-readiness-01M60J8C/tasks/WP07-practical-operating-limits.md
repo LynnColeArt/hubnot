@@ -3,6 +3,7 @@ work_package_id: WP07
 title: Practical workload and recovery limits
 dependencies:
 - WP03
+- WP13
 requirement_refs:
 - FR-011
 - NFR-004
@@ -49,6 +50,10 @@ Publish measured supported envelopes and budget exhaustion behavior in docs/oper
 
 ## Context & Constraints
 
+Measure the integrated runtime after WP13, including enabled contribution
+intake/retention accounting as well as ordinary core workloads. Do not use an
+older pre-feature benchmark as proof of the final candidate's operating limits.
+
 Read the mission spec, plan, research and active charter before work. Load the
 frontmatter profile through the canonical profiles API/CLI. The mission is
 `beta-readiness-01M60J8C`; always pass that selector to framework commands.
@@ -89,4 +94,3 @@ do not kill/retry an in-flight gate or claim a skipped/no-coverage gate ran test
 ## Activity Log
 
 - 2026-10-28T06:21:00Z – codex – Work package authored from the approved mission intent.
-

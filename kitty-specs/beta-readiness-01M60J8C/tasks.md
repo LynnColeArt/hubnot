@@ -54,7 +54,7 @@ Depends on: WP01
 
 T008 Write executable recovery procedures in docs/recovery.md separating public code/custom refs, private keys/local state and uncertain external journals.
 T009 Add a keyless fresh-clone/public-backup rehearsal retaining selected collaboration and memory history and comparing exact historical objects/ref targets.
-T010 Add private disaster-restore and fresh-actor journeys: fence prior writer, recover latest chain, continue without history rewrite; refuse common actor appends from a stale/divergent signing head when newer accepted history is already known, with zero side effects before reconciliation.
+T010 Add private disaster-restore and fresh-actor journeys: fence prior writer, recover latest actor/memory chains, continue without history rewrite; refuse common actor and same-actor/same-stream memory appends from missing/stale/divergent roots when conflicting accepted history is known, with zero effects before explicit verified reconciliation.
 T011 Verify lost sole authority, separate policy-role amendment, deliberate audit authority adoption, worktree limitations and backup exclusions; run charter gates.
 
 ### Dependencies
@@ -110,7 +110,7 @@ T020 Record outstanding Intel/Mac exact-byte work and a signing/notarization rec
 
 ### Dependencies
 
-Depends on: WP03
+Depends on: WP03, WP13
 
 ## Work Package WP07: Practical workload and recovery limits (Priority: P2)
 
@@ -127,7 +127,7 @@ T023 Publish measured supported envelopes and budget exhaustion behavior in docs
 
 ### Dependencies
 
-Depends on: WP03
+Depends on: WP03, WP13
 
 ## Work Package WP08: Independent beta boundary review (Priority: P2)
 
@@ -241,4 +241,3 @@ T045 Write docs/contributions.md with submission/admission/moderation commands, 
 ### Dependencies
 
 Depends on: WP12
-

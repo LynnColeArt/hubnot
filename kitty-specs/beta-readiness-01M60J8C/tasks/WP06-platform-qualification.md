@@ -3,6 +3,7 @@ work_package_id: WP06
 title: Candidate package and distribution qualification
 dependencies:
 - WP03
+- WP13
 requirement_refs:
 - FR-010
 - NFR-004
@@ -46,6 +47,11 @@ Record outstanding Intel/Mac exact-byte work and a signing/notarization recommen
 
 ## Context & Constraints
 
+Qualify the integrated candidate containing the contribution workflow, not a
+pre-feature package. WP13 is a dependency so the lane includes all runtime
+changes before packaging. Earlier alpha/package observations remain narrow
+historical evidence, not automatic qualification of the final beta candidate.
+
 Read the mission spec, plan, research and active charter before work. Load the
 frontmatter profile through the canonical profiles API/CLI. The mission is
 `beta-readiness-01M60J8C`; always pass that selector to framework commands.
@@ -86,4 +92,3 @@ do not kill/retry an in-flight gate or claim a skipped/no-coverage gate ran test
 ## Activity Log
 
 - 2026-10-28T06:21:00Z – codex – Work package authored from the approved mission intent.
-
