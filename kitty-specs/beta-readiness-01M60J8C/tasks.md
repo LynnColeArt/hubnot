@@ -199,7 +199,7 @@ Depends on: WP04
 ### Included Subtasks
 
 T035 Implement a provider-free bounded artifact/reference exchange using the WP10 contract and existing safe archive/object primitives where applicable.
-T036 Isolate and validate submitted content before project admission, enforcing positive finite per-request bytes/object/event/count/depth/time and aggregate pending-retention limits.
+T036 Isolate and validate submitted content before project admission, enforcing positive finite per-request and defined operation/window limits plus aggregate pending/admitted retention accounting that automatic admission, drained/hidden queues and new actor keys cannot reset.
 T037 Implement inspectable pending state, exact-intent deduplication and interrupted/replayed intake recovery with no branch, policy, signer or workflow side effects.
 T038 Prove early limit/cancellation behavior for signed spam, huge/truncated inputs, many-key aggregate saturation and unselected refs; record supported transport guarantees and exclusions.
 
@@ -235,7 +235,7 @@ Depends on: WP11
 ### Included Subtasks
 
 T043 Add standard/native-only provider-free contributor/maintainer/observer public CLI journeys for issues, discussion replies and code proposals with upstream push explicitly denied.
-T044 Exercise enabled/disabled behavior, signed spam and transfer/retention bounds, replay/interruption, scoped moderation/revocation/conflicts and unchanged existing merge/CI/execution gates.
+T044 Exercise enabled/disabled behavior, signed spam and transfer/retention bounds including automatic-admission accounting across drained queues and many keys, replay/interruption, scoped moderation/revocation/conflicts and unchanged existing merge/CI/execution gates.
 T045 Write docs/contributions.md with submission/admission/moderation commands, optional policy examples, raw-view/history limits, recovery and actual resource-safety guarantees; supply pilot and boundary-review evidence.
 
 ### Dependencies

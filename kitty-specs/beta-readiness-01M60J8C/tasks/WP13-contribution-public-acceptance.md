@@ -50,7 +50,10 @@ Add standard/native-only provider-free contributor/maintainer/observer public CL
 
 ### T044
 
-Exercise enabled/disabled behavior, signed spam and transfer/retention bounds, replay/interruption, scoped moderation/revocation/conflicts and unchanged existing merge/CI/execution gates.
+Exercise enabled/disabled behavior, signed spam and transfer/retention bounds,
+automatic-admission accounting across drained queues and many keys,
+replay/interruption, scoped moderation/revocation/conflicts and unchanged
+existing merge/CI/execution gates.
 
 ### T045
 

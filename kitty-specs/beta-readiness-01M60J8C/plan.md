@@ -89,6 +89,10 @@ Support a bounded contribution artifact/reference handoff and a native pending
 queue that can be listed and inspected locally. Wire size, decoded object/event
 sizes, count/depth and aggregate pending retention have positive finite limits;
 streaming reads and cancellation stop at the declared bounds before admission.
+Define an intake operation/window and charge automatic admission to its budget
+and to aggregate retained pending/admitted content. Draining queues, hiding data,
+or creating actor keys must not silently reset accounting or free retained
+history; exhausted budgets refuse intake until deliberate authorized action.
 Select limits before contacting a source and account across different actor
 keys. Existing Git pack quarantine alone cannot supply hard transfer quotas.
 No implicit compatibility-all fetch, arbitrary ref update, workflow execution,
@@ -96,7 +100,7 @@ provider discovery or ingress server is introduced. An optional hosted relay
 can be added later; the first complete native journey works with local exchange.
 
 Keep original signed payloads intact. Admission/moderation creates signed scoped
-facts targeting exact content and evaluated authority. Implement admit/reject,
+facts targeting an exact content revision or actor and evaluated authority. Implement admit/reject,
 hide/restore and author block/unblock, deterministic conflict/revocation rules,
 and explicit raw inspection distinct from the moderated shared view. Project
 admission is distinct from cryptographic transport verification and from signed

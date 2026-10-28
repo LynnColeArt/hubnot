@@ -46,7 +46,11 @@ Implement a provider-free bounded artifact/reference exchange using the WP10 con
 
 ### T036
 
-Isolate and validate submitted content before project admission, enforcing positive finite per-request bytes/object/event/count/depth/time and aggregate pending-retention limits.
+Isolate and validate submitted content before project admission, enforcing
+positive finite per-request and defined operation/window bytes/object/event/count/
+depth/time limits and aggregate pending/admitted retention budgets. Automatic
+admission remains charged; draining or hiding pending work and changing keys
+cannot reset accounting. Exhaustion refuses intake until authorized action.
 
 ### T037
 

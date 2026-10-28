@@ -129,6 +129,9 @@ operations and reconstruct the resulting shared view from signed records.
    visibility, original facts remain unchanged, retries deduplicate exact intent,
    and unrelated valid pending work remains inspectable. A valid signature is
    attribution, not anti-spam proof or a scarce identity.
+   Automatic admission remains charged to intake and retained-state budgets;
+   draining pending state, hiding content or changing actor keys cannot reset
+   accounting. Budget exhaustion refuses further intake until authorized action.
 5. Given a moderator decision, when an authorized actor admits/rejects, hides/
    restores content or blocks/unblocks an author, then a signed project-scoped
    decision records its target and evaluated policy. Unauthorized or conflicting
@@ -199,8 +202,8 @@ operations and reconstruct the resulting shared view from signed records.
 | NFR-003 | Offline local gates | Compatibility and local recovery run without credentials/services and exercise standard and native-only builds. | Portability | High | Open |
 | NFR-004 | Reproducibility | Every qualification observation records source/version, environment, scenario, outcome and evidence; no unexecuted pass. | Reliability | High | Open |
 | NFR-005 | Quality gates | Go changes pass formatting, full race, vet, build and whitespace checks before review; docs receive applicable consistency checks. | Quality | High | Open |
-| NFR-006 | Finite public intake | Every enabled ingress and pending store has positive finite byte, object/event/count, time/cancellation and aggregate retention limits. Oversized input is stopped within those declared bounds; a post-fetch Git budget cannot be claimed as a download cap. | Resource safety | High | Open |
-| NFR-007 | Moderation integrity | All decisions bind exact content/project/policy identities, validate authority and preserve original signed bytes. Replay or changed-payload tests prove zero unintended shared visibility, role grants or execution. | Security | High | Open |
+| NFR-006 | Finite public intake | Every enabled ingress has positive finite per-request and defined operation/window byte, object/event/count and time/cancellation limits plus aggregate pending/admitted retention budgets. Automatic admission, drained queues, hidden content and new actor keys cannot bypass accounting or silently reset exhausted budgets; further intake refuses until authorized action. A post-fetch Git budget cannot be claimed as a download cap. | Resource safety | High | Open |
+| NFR-007 | Moderation integrity | All decisions bind an exact typed target (content revision or actor), project and evaluated policy identity, validate authority and preserve original signed bytes. Replay or changed-payload tests prove zero unintended shared visibility, role grants or execution. | Security | High | Open |
 
 ### Constraints
 
