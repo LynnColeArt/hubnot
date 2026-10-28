@@ -45,6 +45,36 @@ evidence must remain visible rather than being inferred from local tests.
 - Recovery recipes may use existing Git/Hubnot operations; introduce new product
   commands only when inspection establishes a necessary gap.
 
+## Authorized contribution-workflow amendment
+
+The owner explicitly added unified native contribution and moderation to this
+beta mission after discussing public OSS contribution without upstream push
+rights. Code and communications share safe intake and operation-specific
+authorization. New behavior remains independently optional and disabled.
+
+Current `commands.go` publishes local facts using ordinary Git push; receiving
+a contributor's data cannot therefore imply they have upstream push rights.
+`docs/replication-v0.md` describes selected quarantine verification and accepted
+refs, per-selection budgets and the pre-download quota limitation. No saved
+selection means compatibility-all; do not reuse it as a public-inbox default.
+`docs/threat-model.md` separates signed attribution from native authority and
+records that moderation/global redaction are not existing alpha guarantees.
+
+The new workflow must supply bounded artifact/reference exchange and explicit
+pending/admitted states, with policy-governed automatic or manual admission and
+signed scoped moderation. It must not advertise existing post-fetch validation
+as hard transfer protection. Prefer a bounded supported contribution artifact
+over fetching arbitrary untrusted Git packs. A hosted inbox/relay is optional
+future convenience; it is neither required for the native acceptance journey nor
+implicitly installed by enabling policy.
+
+Implementation details and exact new CLI/wire examples will be specified by the
+new foundation WP before downstream integration. Its design must identify the
+real reader/writer/replication seams and refresh ownership through the framework
+if additional shared surfaces are necessary. This is implementation research,
+not permission to defer required behavior or claim unused library code is a
+working contribution workflow.
+
 ## Open evidence obligations
 
 Real-provider disposable project access, supported Intel Mac execution, download

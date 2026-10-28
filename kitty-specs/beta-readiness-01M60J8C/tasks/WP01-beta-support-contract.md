@@ -96,4 +96,4 @@ do not kill/retry an in-flight gate or claim a skipped/no-coverage gate ran test
 ## Activity Log
 
 - 2026-10-28T06:21:00Z – codex – Work package authored from the approved mission intent.
-
+- 2026-10-28T06:43:47Z – codex – shell_pid=5024 – Implemented at 72bede54: prospective beta support/evolution contract and 0.0.3-dev release docs. Documentation checks passed: 11 current asset URLs per README/changelog matched live published release metadata and saved receipt; 57 local links/anchors; previous 0.0.2-dev and 0.0.1-dev changelog sections byte-identical; current released version/migration help/native-only capabilities and source format/packager gates inspected; git diff --check exit 0. Prose only: no Go test suite run and no Python requirement added. Exact downloadable Mac binaries and Intel runtime remain pending.

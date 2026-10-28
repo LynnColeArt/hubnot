@@ -6,3 +6,6 @@ E04,S04,Public snapshots intentionally exclude private authority,Do not call mig
 E05,S05,Provider API and custom-ref transport differ,Qualify independently
 E06,S07,Existing gates exercise actual native packages,Extend existing gates instead of duplicating
 E07,S09,Exact Mac release-byte execution remains pending,Keep qualification incomplete until observed
+E08,S10,Compatibility-all and post-fetch budgets are not safe public-inbox defaults,Require explicit bounded contribution ingress and aggregate retention
+E09,S11,Publishing local facts uses ordinary upstream Git pushes,Support a separate native contribution handoff without upstream write rights
+E10,S12,Signatures do not prevent signed spam or grant project roles,Use common admission with operation-specific authorization and scoped moderation
