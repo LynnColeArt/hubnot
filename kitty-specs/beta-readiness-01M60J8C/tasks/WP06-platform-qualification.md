@@ -16,14 +16,20 @@ subtasks:
 - T020
 phase: Beta readiness
 history: []
-agent_profile: scribe-sally
+agent_profile: implementer-ivan
 authoritative_surface: docs/
 create_intent:
 - docs/platform-qualification.md
+- beta_platform_package_test.go
 execution_mode: code_change
 owned_files:
 - docs/platform-qualification.md
-role: documentarian
+- migration_commands_test.go
+- portable_collaboration_acceptance_test.go
+- beta_platform_package_test.go
+- .github/workflows/portability.yml
+- docs/filesystem-portability.md
+role: implementer
 tags: []
 task_type: implement
 tracker_refs: []
@@ -60,7 +66,54 @@ Do not relabel Go 1.26.6 native Mac rebuilds as execution of Go 1.26.4 published
 
 ## Ownership and delivery
 
-Owned surfaces: `docs/platform-qualification.md`.
+Owned surfaces: `docs/platform-qualification.md`,
+`migration_commands_test.go`, `portable_collaboration_acceptance_test.go`,
+`beta_platform_package_test.go`, `.github/workflows/portability.yml`, and
+`docs/filesystem-portability.md`.
+
+Concrete package-evidence obligation: the existing package-dir/version flags
+in `portableJourneyBinary` already consume extracted real packages and refuse
+invalid/missing assets without rebuilding. Extend `buildMigrationCLIBinary`
+only when package flags are explicitly supplied to reuse this same verifier;
+preserve normal source-build behavior otherwise and avoid recursive fallback.
+This makes historical compatibility, recovery and public journal subprocess
+journeys reusable against actual binaries. Add bounded public installation/PATH
+and native Mac literal-/tmp, /var/tmp and absent-child-TMPDIR cases through the
+same package-aware helpers. Keep internal-only journal tests labelled source
+proof, and preserve the intentional package-mode exclusion of the unshipped
+nogithub-only variant. Inspect source tree/version/compiler/input and executable
+hash observations without treating embedded Go VCS metadata as a source oracle.
+
+Extend the existing optional portability workflow, retaining its source PR
+checks and dispatch entry. Build one immutable candidate bundle from committed
+source H with explicit version V and compiler G, then transport those same eight
+standard/native-only binary tarballs, source tarball, PROVENANCE and checksums
+to four native runtime jobs. Independently check archive, BUILD and executable
+digests and run package-mode integrated, released-writer, recovery, journal,
+platform and WP13 contribution journeys without rebuilding the tested app.
+Use explicit available native labels, verified against current official docs;
+research on 2026-10-28 found ubuntu-24.04, ubuntu-24.04-arm, macos-15 and
+macos-15-intel. A latest label is not evidence for both architectures. CI remains
+optional project infrastructure, not a Hubnot runtime dependency.
+
+Record actual source H, source tree, compiler, target/variant, version, digests,
+OS/Git/filesystem/temp environment, architecture/native-versus-Rosetta and
+commands/exits. A PR synthetic merge SHA qualifies only that candidate; do not
+silently transfer proof to another revision or separately rebuilt assets.
+Documentation-only follow-up may describe the immutable tested candidate after
+its source commit, provided exact product/source equivalence and provenance are
+explicit; do not create an endless rebuild cycle solely to include test logs.
+Runtime changes after qualification require a new candidate and appropriate
+requalification. Golden Goddess can run a centrally cross-compiled test harness
+if Go is unavailable, with non-race instrumentation labelled honestly.
+
+Mac CI artifact execution does not prove browser quarantine/Gatekeeper download
+experience or outside adopter feedback. Record unsigned/unnotarized status and
+actual observation limits; make signing/notarization recommendations separately
+from current support promises. Do not disable host protection globally or add
+unpromised signing gates. Root's current Pink Menace name lookup succeeded but
+SSH port 22 refused; do not claim remote Mac access or scan unrelated hosts.
+Windows remains the owner's lower-priority future track, not this matrix.
 Stay within this WP. If an actual defect requires an additional production
 surface, report the failing contract so root can amend ownership or author a
 repair WP. Do not edit sibling status or frozen past-mission evidence.

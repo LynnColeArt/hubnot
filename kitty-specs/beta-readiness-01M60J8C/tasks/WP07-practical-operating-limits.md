@@ -70,6 +70,15 @@ repair WP. Do not edit sibling status or frozen past-mission evidence.
 Use the runtime-provided lane worktree and prompt. Planning/merge target is
 `feature/beta-readiness`; the eventual PR targets `main`.
 
+## Package-aware evidence
+
+Use `buildMigrationCLIBinary` or `portableJourneyBinary` for public CLI binaries,
+rather than introducing an unconditional source-build helper. Preserve their
+closed child environments and explicit package flags so WP06 can exercise these
+same journeys against unchanged extracted candidate assets. Distinguish source/
+in-process measurements from actual package runtime evidence; no silent fallback
+or newly invented release variant may count as a package pass.
+
 ## Verification
 
 Report source, hardware, fixture dimensions, commands and measured results. Keep normal tests reasonably bounded; expensive workloads require explicit benchmark/scenario invocation. Go changes receive charter gates.
