@@ -111,6 +111,9 @@ func appendMemoryAtHead(envelope MemoryEnvelope, identity *Identity, expectedHea
 	if err != nil {
 		return nil, err
 	}
+	if err := ensureMemorySigningRoot(envelope.Actor, envelope.Stream, expectedHead); err != nil {
+		return nil, err
+	}
 	payload, signature, err := encodeAndSignMemory(envelope, identity)
 	if err != nil {
 		return nil, err
@@ -174,6 +177,59 @@ func appendMemoryAtHead(envelope MemoryEnvelope, identity *Identity, expectedHea
 		return nil, fmt.Errorf("append memory stream %s: compare-and-swap failed; reload and retry with a newly signed envelope", safeDiagnostic(ref))
 	}
 	return &StoredMemory{ID: id, Commit: commitID, Envelope: envelope, Payload: payload, Signature: signature}, nil
+}
+
+// ensureMemorySigningRoot leaves unrelated actors and streams independent.
+// loadMemoryStreamAt verifies owner, sequence, signed/Git predecessors and
+// pending admission without importing objects or changing private state.
+func ensureMemorySigningRoot(actor, stream, head string) error {
+	refs, err := gitText("for-each-ref", "--format=%(refname) %(objectname)", acceptedMemoryRefPrefix)
+	if err != nil {
+		return err
+	}
+	var sources []memoryStreamSource
+	fields := strings.Fields(refs)
+	for i := 0; i+1 < len(fields); i += 2 {
+		remote, owner, id, ok := parseAcceptedMemoryRef(fields[i])
+		if ok && owner == actor && id == stream {
+			sources = append(sources, memoryStreamSource{Ref: fields[i], Remote: remote, Actor: actor, Stream: stream, Head: fields[i+1], Accepted: true})
+		}
+	}
+	if len(sources) == 0 {
+		return nil
+	}
+	ids := func(source memoryStreamSource) ([]string, error) {
+		memories, err := loadMemoryStreamAt("", source)
+		if err != nil {
+			return nil, err
+		}
+		result := make([]string, len(memories))
+		for i, memory := range memories {
+			result[i] = memory.ID
+		}
+		return result, nil
+	}
+	var local []string
+	if head != "" {
+		ref, err := memoryRef(actor, stream)
+		if err != nil {
+			return err
+		}
+		local, err = ids(memoryStreamSource{Ref: ref, Actor: actor, Stream: stream, Head: head})
+		if err != nil {
+			return fmt.Errorf("verify memory signing root: %w", err)
+		}
+	}
+	for _, source := range sources {
+		accepted, err := ids(source)
+		if err != nil {
+			return fmt.Errorf("verify accepted memory history: %w", err)
+		}
+		if err := requireSigningPrefix(local, accepted, "memory"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func loadStoredMemory(commit string) (*StoredMemory, error) {
