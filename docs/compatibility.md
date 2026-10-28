@@ -38,6 +38,15 @@ signatures and historical ref heads stay exact after reading, fresh-actor work
 and historical archive import. A fresh actor can create an issue, record memory
 and comment on the historical issue without changing the historical signer.
 
+Archive imports derive memory observation refs through the same validated
+encoding as ordinary accepted memory refs: stream IDs retain `sha256:` in
+signed data, while the Git ref path contains the hexadecimal stream component.
+This corrects import planning's former `invalid observation ref` refusal for
+released archives containing memory, without changing those archives or their
+signed bytes. Imported observations are read again through the public CLI.
+Import leaves destination HEAD unchanged; the test explicitly selects the
+archived code before comparing memory applicability at that historical commit.
+
 Public reconstruction requires no private signer or adopted audit authority.
 Recall may create its disposable local lexical index. It does not install
 policy or enable protected checks, automerge, workflows or audits. Possessing

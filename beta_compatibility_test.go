@@ -217,14 +217,15 @@ func TestBetaReleasedWriterCompatibility(t *testing.T) {
 					portablePublic(t, git, parent, env, true, "clone", "-q", filepath.Join(dir, "public.bundle"), repo)
 					portablePublic(t, git, repo, env, true, "fetch", "--no-write-fetch-head", filepath.Join(dir, "public.bundle"), "+refs/hn/*:refs/hn/*")
 					call := func(ok bool, args ...string) string { return portablePublic(t, binary, repo, env, ok, args...) }
-					observe := func(family string, args ...string) {
+					observeAt := func(reader, family string, args ...string) {
 						t.Helper()
 						var got any
-						if err := json.Unmarshal([]byte(call(true, args...)), &got); err != nil {
+						if err := json.Unmarshal([]byte(portablePublic(t, binary, reader, env, true, args...)), &got); err != nil {
 							t.Fatal(err)
 						}
 						betaSemanticSubset(t, "", expected[family], got)
 					}
+					observe := func(family string, args ...string) { t.Helper(); observeAt(repo, family, args...) }
 					beforeObjects := betaHistoricalObjects(t, repo, env, corpus.Refs)
 					observeHistorical := func() {
 						t.Helper()
@@ -337,8 +338,9 @@ func TestBetaReleasedWriterCompatibility(t *testing.T) {
 					observe("archive", "migrate", "inspect", "--archive", archive)
 					// Import the actual historical archive, preserving every selected ref/OID.
 					destination := migrationCLIRepository(t)
+					destinationHead := portablePublic(t, git, destination, env, true, "rev-parse", "HEAD")
 					session := filepath.Join(parent, "historical-import")
-					portablePublic(t, binary, repo, env, true, "migrate", "plan", "--source-kind", "archive", "--source-repository", archive, "--destination-kind", "local", "--destination-repository", destination, "--session", session)
+					portablePublic(t, binary, repo, env, true, "migrate", "plan", "--source-kind", "archive", "--source-repository", archive, "--destination-kind", "local", "--destination-repository", destination, "--session", session, "--decision", "local/governance=preserve")
 					portablePublic(t, binary, repo, env, true, "migrate", "apply", "--session", session, "--confirm-apply")
 					importedRefs := portablePublic(t, git, destination, env, true, "for-each-ref", "--format=%(objectname)")
 					for _, oid := range corpus.Refs {
@@ -349,6 +351,17 @@ func TestBetaReleasedWriterCompatibility(t *testing.T) {
 					if !bytes.Equal(beforeObjects, betaHistoricalObjects(t, destination, env, corpus.Refs)) {
 						t.Fatal("archive import changed selected historical object closure")
 					}
+					if destinationHead != portablePublic(t, git, destination, env, true, "rev-parse", "HEAD") {
+						t.Fatal("archive import switched destination code implicitly")
+					}
+					// Memory applicability is relative to selected code. Deliberately
+					// inspect the historical code after proving import left HEAD alone.
+					portablePublic(t, git, destination, env, true, "switch", "--detach", "-q", corpus.Refs["refs/heads/main"])
+					for _, family := range []string{"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"} {
+						observeAt(destination, family, family, "show", corpus.IDs[family], "--json")
+					}
+					observeAt(destination, "memory", "memory", "show", corpus.IDs["memory"], "--json")
+					observeAt(destination, "recall", "memory", "recall", "--at", corpus.Refs["refs/heads/main"], "--include-untrusted", "--lifecycle", "all", "--json")
 					for _, schema := range []struct{ from, to, message string }{{"hn.project-archive/1", "hn.project-archive/999", "unsupported archive schema"}, {"hn.project-snapshot/1", "hn.project-snapshot/999", "invalid snapshot source/schema"}} {
 						t.Run(schema.to, func(t *testing.T) {
 							future := filepath.Join(t.TempDir(), "future.hn")
