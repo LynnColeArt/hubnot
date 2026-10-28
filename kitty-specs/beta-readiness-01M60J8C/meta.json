@@ -1,0 +1,16 @@
+{
+  "coordination_branch": "kitty/mission-beta-readiness-01M60J8C",
+  "created_at": "2026-10-28T06:13:16.637712+00:00",
+  "flattened": false,
+  "friendly_name": "Hubnot beta readiness",
+  "mission_id": "01M60J8C1YY99KKYEPZSZ71WAG",
+  "mission_number": null,
+  "mission_slug": "beta-readiness-01M60J8C",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Keep Hubnot native, Git-only at runtime and independent of providers. Start with the beta support contract, then implement tested compatibility and recovery; retain the remaining provider, platform, reliability and user qualification work as explicit mission work packages.",
+  "purpose_tldr": "Establish a dependable beta support contract, compatibility and recovery before provider and release qualification.",
+  "slug": "beta-readiness-01M60J8C",
+  "target_branch": "feature/beta-readiness",
+  "topology": "lanes_with_coord"
+}
