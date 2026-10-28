@@ -71,7 +71,8 @@
       ],
       "write_scope": [
         "beta_journal_recovery_test.go",
-        "docs/operation-recovery.md"
+        "docs/operation-recovery.md",
+        "identity_continuity.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -274,8 +275,8 @@
       "parallel_group": 10
     }
   ],
-  "computed_at": "2026-10-28T10:14:53.511310+00:00",
+  "computed_at": "2026-10-28T10:53:37.024253+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "4289fda57a32e7bf831485509f870a13859f7a90"
+  "planning_commit_sha": "3e39c1991ca0682ad1671088c620de43613caecd"
 }
