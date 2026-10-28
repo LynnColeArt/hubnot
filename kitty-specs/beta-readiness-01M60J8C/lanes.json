@@ -51,6 +51,7 @@
       "write_scope": [
         "beta_recovery_test.go",
         "docs/recovery.md",
+        "memory_store.go",
         "store.go"
       ],
       "predicted_surfaces": [
@@ -270,8 +271,8 @@
       "parallel_group": 9
     }
   ],
-  "computed_at": "2026-10-28T09:34:39.239385+00:00",
+  "computed_at": "2026-10-28T09:55:08.298252+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "0c530552a95af55c6989feb7b09acc4888855b28"
+  "planning_commit_sha": "33e22815ca37ef9b96a9dc33f2d395ba6c6e643f"
 }
