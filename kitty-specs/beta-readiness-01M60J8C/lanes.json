@@ -211,10 +211,16 @@
         "WP06"
       ],
       "write_scope": [
-        "docs/platform-qualification.md"
+        ".github/workflows/portability.yml",
+        "beta_platform_package_test.go",
+        "docs/filesystem-portability.md",
+        "docs/platform-qualification.md",
+        "migration_commands_test.go",
+        "portable_collaboration_acceptance_test.go"
       ],
       "predicted_surfaces": [
         "api",
+        "artifact-rendering",
         "tracker-integration"
       ],
       "depends_on_lanes": [
@@ -285,8 +291,8 @@
       "parallel_group": 10
     }
   ],
-  "computed_at": "2026-10-28T11:02:28.205080+00:00",
+  "computed_at": "2026-10-28T12:28:50.466280+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "e2dcf529a0522e03a4e6094a2be09316b2005bed"
+  "planning_commit_sha": "b6ede4e7444870a8f0decafacd03414cc3364713"
 }
