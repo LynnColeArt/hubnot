@@ -143,6 +143,76 @@
       "verified_by": null,
       "verified_at": null,
       "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-015",
+      "description": "Optional unified workflow: As an operator, I can explicitly enable one native contribution/moderation workflow without enabling it by default or coupling it to other opt-ins.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Owner-authorized contribution amendment; WP10-WP13 public and boundary verification required. Pending implementation and evidence."
+    },
+    {
+      "criterion_id": "FR-016",
+      "description": "Open submission: As an unknown contributor, I can submit signed code or communications without upstream write access, a provider account or prior project role.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Owner-authorized contribution amendment; WP10-WP13 public and boundary verification required. Pending implementation and evidence."
+    },
+    {
+      "criterion_id": "FR-017",
+      "description": "Bounded intake: As a maintainer, I can inspect pending submissions through isolated validation with finite per-request and aggregate resource limits before shared visibility.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Owner-authorized contribution amendment; WP10-WP13 public and boundary verification required. Pending implementation and evidence."
+    },
+    {
+      "criterion_id": "FR-018",
+      "description": "Operation authority: As a project, I apply common admission machinery with distinct permissions for creation, replies, edits, moderation, proposal admission and existing merge/execution.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Owner-authorized contribution amendment; WP10-WP13 public and boundary verification required. Pending implementation and evidence."
+    },
+    {
+      "criterion_id": "FR-019",
+      "description": "Native moderation: As a moderator, I can record authorized scoped admit/reject, hide/restore and author block/unblock decisions with exact targets and visible conflicts.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Owner-authorized contribution amendment; WP10-WP13 public and boundary verification required. Pending implementation and evidence."
+    },
+    {
+      "criterion_id": "FR-020",
+      "description": "Portable contribution lifecycle: As an observer, I can reconstruct pending/admitted state and moderation from immutable signed Git-backed records, preserving deduplication and interrupted recovery.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Owner-authorized contribution amendment; WP10-WP13 public and boundary verification required. Pending implementation and evidence."
+    },
+    {
+      "criterion_id": "FR-021",
+      "description": "Public-contribution proof: As an adopter, I can reproduce a provider-free stranger-to-project journey and hostile-input refusals in standard/native-only builds.",
+      "proof_type": "automated_test",
+      "evidence": null,
+      "pass_fail": "pending",
+      "verified_by": null,
+      "verified_at": null,
+      "notes": "Owner-authorized contribution amendment; WP10-WP13 public and boundary verification required. Pending implementation and evidence."
     }
   ],
   "negative_invariants": []
