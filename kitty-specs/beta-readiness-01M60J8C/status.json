@@ -27,6 +27,9 @@
       "last_event_id": "01M60M2WDNHRJ3QB11DY05S7S5",
       "last_transition_at": "2026-10-28T06:45:12.245325+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review; docs implementation 72bede54, canonical inherited-planning cleanup 4d827baa. Links/assets/history consistency verified; no Go-source change or Go-test claim."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 5024,
