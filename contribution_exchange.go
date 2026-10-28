@@ -1844,11 +1844,15 @@ func prepareContributionManifest(ctx context.Context, gitDir, project, actor, ex
 	if e != nil {
 		return "", e
 	}
-	args := []string{"-c", "core.hooksPath=" + os.DevNull, "-c", "commit.gpgsign=false", "-c", "user.name=Hubnot contribution retention", "-c", "user.email=retention@hn.invalid", "commit-tree", strings.TrimSpace(string(tree))}
+	// The raw retention commit is deterministic, including its metadata. A
+	// journal failure before the ref plan is durable must not let a retry retain
+	// another timestamp-distinct immutable object against the same reservation.
+	commitBytes := "tree " + strings.TrimSpace(string(tree)) + "\n"
 	if expected != "absent" {
-		args = append(args, "-p", expected)
+		commitBytes += "parent " + expected + "\n"
 	}
-	commit, e := projectGit(ctx, gitDir, []byte("Raw signed contribution retention\n"), 256, args...)
+	commitBytes += "author Hubnot contribution retention <retention@hn.invalid> 0 +0000\ncommitter Hubnot contribution retention <retention@hn.invalid> 0 +0000\n\nRaw signed contribution retention\n"
+	commit, e := projectGit(ctx, gitDir, []byte(commitBytes), 256, "hash-object", "-w", "-t", "commit", "--stdin")
 	if e != nil {
 		return "", e
 	}
@@ -2029,6 +2033,9 @@ func (x *ContributionExchange) RetainActor(ctx context.Context, gitDir, intent, 
 		l.Milliseconds = a.Reserved.Milliseconds
 		head, e := prepareContributionManifest(ctx, dir, x.policy.Project, actor, expected, envelopes, l)
 		if e != nil {
+			return "", e
+		}
+		if e = x.failpoint("manifest-objects-durable"); e != nil {
 			return "", e
 		}
 		plan := ContributionManifestWrite{Actor: actor, Expected: expected, Head: head}

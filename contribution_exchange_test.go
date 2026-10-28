@@ -771,3 +771,63 @@ func TestContributionExchangeRetainedDiskBoundLockAndPrivatePaths(t *testing.T) 
 		t.Fatal("corrupted counter granted fresh capacity")
 	}
 }
+
+func TestContributionExchangePreJournalManifestRetryHasNoNewImmutableObjects(t *testing.T) {
+	repo, _, env, p, refs := exchangeFixture(t)
+	ctx := context.Background()
+	dir := filepath.Join(repo, ".git")
+	v, e := c.Verify(env.Payload, env.Signature)
+	if e != nil {
+		t.Fatal(e)
+	}
+	actor := v.Record().Actor
+	path := filepath.Join(t.TempDir(), "artifact")
+	digest, e := ExportContributionArtifact(ctx, dir, p.Project, refs, []c.Envelope{env}, path, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	x := exchangeOpen(t, p)
+	if _, e = x.Receive(ctx, path, digest, "objects-before-plan", refs); e != nil {
+		t.Fatal(e)
+	}
+	x.fault = func(step string) error {
+		if step == "manifest-objects-durable" {
+			return errors.New("journal intent not yet durable")
+		}
+		return nil
+	}
+	if _, e = x.RetainActor(ctx, dir, "objects-before-plan", actor, "absent"); e == nil {
+		t.Fatal("fault not reached")
+	}
+	ref, e := contributionRef(p.Project, actor)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = gitOutput("show-ref", "--verify", ref); e == nil {
+		t.Fatal("ref changed before durable plan")
+	}
+	before, e := gitOutput("count-objects", "-v")
+	if e != nil {
+		t.Fatal(e)
+	}
+	// Repeat the same fault: immutable blobs/tree/commit must remain exact. A
+	// timestamp-based commit would create another retained object across a second.
+	first, e := prepareContributionManifest(ctx, dir, p.Project, actor, "absent", []c.Envelope{env}, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	time.Sleep(1100 * time.Millisecond) // Cross a Git commit timestamp tick.
+	second, e := prepareContributionManifest(ctx, dir, p.Project, actor, "absent", []c.Envelope{env}, p.Limits)
+	if e != nil || first != second {
+		t.Fatal("raw retention commit is nondeterministic", e)
+	}
+	after, e := gitOutput("count-objects", "-v")
+	if e != nil || !bytes.Equal(before, after) {
+		t.Fatalf("retry accumulated immutable objects: before=%s after=%s err=%v", before, after, e)
+	}
+	x.fault = nil
+	head, e := x.RetainActor(ctx, dir, "objects-before-plan", actor, "absent")
+	if e != nil || head != first {
+		t.Fatal("positive deterministic recovery failed", e)
+	}
+}
