@@ -32,6 +32,7 @@ type Diagnostic struct {
 	Reason string
 }
 type View struct {
+	Roots         map[string]string
 	Project       string
 	Authority     AuthorityRef
 	BlockedActors map[string]bool
@@ -54,7 +55,18 @@ type graphRecord struct {
 
 func targetKey(t Target) string { return string(t.Kind) + ":" + t.ID }
 func sameContent(a, b Content) bool {
-	return a.Root == b.Root && a.Revision == b.Revision && a.Author == b.Author && equalIDs(a.Parents, b.Parents) && equalIDs(a.References, b.References)
+	return a.Root == b.Root && a.Revision == b.Revision && a.Author == b.Author && equalIDs(a.Parents, b.Parents) && equalReferences(a.References, b.References)
+}
+func equalReferences(a, b []Reference) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
 func equalIDs(a, b []string) bool {
 	if len(a) != len(b) {
@@ -73,7 +85,7 @@ func equalIDs(a, b []string) bool {
 // Invalid untrusted graph nodes are isolated with diagnostics, never promoted;
 // unrelated valid content remains inspectable. Baseline errors fail the policy.
 func Reduce(current Authority, input []Verified, native NativeSource, sources AuthoritySource) (View, error) {
-	out := View{Project: "", Authority: current.Ref, BlockedActors: map[string]bool{}, Admitted: map[string]bool{}, Visible: map[string]bool{}, Heads: map[string][]string{}, DecisionHeads: map[Target][]string{}}
+	out := View{Roots: map[string]string{}, Project: "", Authority: current.Ref, BlockedActors: map[string]bool{}, Admitted: map[string]bool{}, Visible: map[string]bool{}, Heads: map[string][]string{}, DecisionHeads: map[Target][]string{}}
 	if err := current.validate(); err != nil {
 		return out, err
 	}
@@ -183,15 +195,19 @@ func Reduce(current Authority, input []Verified, native NativeSource, sources Au
 			}
 		}
 		for _, ref := range f.Content.References {
-			if _, e := getFact(ref, depth+1); e != nil {
+			target, e := getFact(ref.ID, depth+1)
+			if e != nil {
 				return fail(e)
+			}
+			if ref.Kind == RootReference && target.Content.Root != ref.ID {
+				return fail(fmt.Errorf("root reference names a non-root revision"))
 			}
 		}
 		if (f.Operation == IssueReply || f.Operation == DiscussionReply) && len(f.Content.References) == 0 {
 			return fail(fmt.Errorf("reply lacks exact target reference"))
 		}
 		maxDepth := 0
-		dependencies := append(append([]string{}, f.Content.Parents...), f.Content.References...)
+		dependencies := append(append([]string{}, f.Content.Parents...), referenceIDs(f.Content.References)...)
 		if f.Content.Root != id {
 			dependencies = append(dependencies, f.Content.Root)
 		}
@@ -218,7 +234,7 @@ func Reduce(current Authority, input []Verified, native NativeSource, sources Au
 	}
 	for _, id := range current.Policy.Baseline {
 		f := facts[id]
-		for _, dep := range append(append([]string{}, f.Content.Parents...), f.Content.References...) {
+		for _, dep := range append(append([]string{}, f.Content.Parents...), referenceIDs(f.Content.References)...) {
 			if !baselineSet[dep] {
 				return out, fmt.Errorf("baseline lacks exact structural dependency closure")
 			}
@@ -362,7 +378,20 @@ func Reduce(current Authority, input []Verified, native NativeSource, sources Au
 			}
 			evaluatedTargets[d.Target] = true
 			subject := s.record.Submission.Content
-			relevant := d.Target.Kind == ActorTarget && (d.Target.ID == s.record.Actor || d.Target.ID == subject.Author) || d.Target.Kind == RevisionTarget && (listed(d.Target.ID, subject.Parents) || listed(d.Target.ID, subject.References))
+			relevant := d.Target.Kind == ActorTarget && (d.Target.ID == s.record.Actor || d.Target.ID == subject.Author)
+			if d.Target.Kind == RevisionTarget {
+				target := facts[d.Target.ID]
+				for _, parent := range subject.Parents {
+					if d.Target.ID == parent || target.Content.Root == facts[parent].Content.Root {
+						relevant = true
+					}
+				}
+				for _, ref := range subject.References {
+					if d.Target.ID == ref.ID || ref.Kind == RootReference && target.Content.Root == ref.ID {
+						relevant = true
+					}
+				}
+			}
 			if !relevant {
 				invalid(n, "irrelevant evaluated moderation evidence")
 				break
@@ -486,7 +515,7 @@ func Reduce(current Authority, input []Verified, native NativeSource, sources Au
 		f, ok := facts[id]
 		allowed := ok && !actorBlocked(f.Actor) && !actorBlocked(f.Content.Author)
 		if allowed {
-			for _, dep := range append(append([]string{}, f.Content.Parents...), f.Content.References...) {
+			for _, dep := range append(append([]string{}, f.Content.Parents...), referenceIDs(f.Content.References)...) {
 				if !admit(dep, depth+1) {
 					allowed = false
 				}
@@ -507,37 +536,6 @@ func Reduce(current Authority, input []Verified, native NativeSource, sources Au
 		admit(id, 0)
 	}
 
-	visibleState := map[string]uint8{}
-	var visible func(string, int) bool
-	visible = func(id string, depth int) bool {
-		if visibleState[id] == 2 {
-			return out.Visible[id]
-		}
-		if visibleState[id] == 1 || depth > int(current.Policy.Limits.Depth) || !out.Admitted[id] {
-			return false
-		}
-		visibleState[id] = 1
-		t := Target{RevisionTarget, id}
-		n := chosen[t]
-		yes := !conflicted[t] && (n == nil || n.record.Decision.Action != Hide)
-		if yes {
-			for _, ref := range facts[id].Content.References {
-				if !visible(ref, depth+1) {
-					yes = false
-				}
-			}
-		}
-		visibleState[id] = 2
-		if yes {
-			out.Visible[id] = true
-		}
-		return yes
-	}
-	for _, id := range candidateIDs {
-		if out.Admitted[id] {
-			visible(id, 0)
-		}
-	}
 	// Heads include hidden admitted facts as tombstones; visible-body selection is
 	// separate. Raw unadmitted successors never enter this native lineage input.
 	heads := map[string]map[string]bool{}
@@ -563,6 +561,65 @@ func Reduce(current Authority, input []Verified, native NativeSource, sources Au
 		}
 		sort.Strings(out.Heads[root])
 	}
+	for id, f := range facts {
+		out.Roots[id] = f.Content.Root
+	}
+	// Native exact references form a DAG, but root references resolve to current
+	// heads and may create derived cycles (accepted answer -> reply -> thread).
+	// Compute the greatest visibility fixed point by propagating false through
+	// reverse dependencies. A shared root gate avoids a quadratic heads fanout.
+	visible := map[string]bool{}
+	reverse := map[string][]string{}
+	queue := []string{}
+	for _, id := range candidateIDs {
+		if out.Admitted[id] {
+			t := Target{RevisionTarget, id}
+			n := chosen[t]
+			visible[id] = !conflicted[t] && (n == nil || n.record.Decision.Action != Hide)
+			if !visible[id] {
+				queue = append(queue, id)
+			}
+		}
+	}
+	for root, headIDs := range out.Heads {
+		gate := "root:" + root
+		visible[gate] = len(headIDs) > 0
+		for _, head := range headIDs {
+			reverse[head] = append(reverse[head], gate)
+		}
+	}
+	for _, id := range candidateIDs {
+		if !out.Admitted[id] {
+			continue
+		}
+		for _, ref := range facts[id].Content.References {
+			if ref.Kind == RevisionReference {
+				reverse[ref.ID] = append(reverse[ref.ID], id)
+			}
+			if ref.Kind == RootReference {
+				gate := "root:" + ref.ID
+				reverse[gate] = append(reverse[gate], id)
+				if _, ok := visible[gate]; !ok {
+					visible[gate] = false
+					queue = append(queue, gate)
+				}
+			}
+		}
+	}
+	for cursor := 0; cursor < len(queue); cursor++ {
+		for _, dependent := range reverse[queue[cursor]] {
+			if visible[dependent] {
+				visible[dependent] = false
+				queue = append(queue, dependent)
+			}
+		}
+	}
+	for _, id := range candidateIDs {
+		if out.Admitted[id] && visible[id] {
+			out.Visible[id] = true
+		}
+	}
+
 	for _, id := range ids {
 		n := nodes[id]
 		if n.valid && n.record.Submission != nil && !out.Admitted[n.record.Submission.Content.Revision] && !listed(id, out.Pending) {
@@ -618,12 +675,46 @@ func IntakeEvidence(view View, submission Verified) ([]string, error) {
 	}
 	add(Target{ActorTarget, r.Actor})
 	add(Target{ActorTarget, body.Author})
-	for _, dep := range append(append([]string{}, body.Parents...), body.References...) {
-		if !view.Admitted[dep] || !view.Visible[dep] {
-			return nil, fmt.Errorf("dependency is not admitted and visible")
+	requireExact := func(id string) error {
+		if !view.Admitted[id] || !view.Visible[id] {
+			return fmt.Errorf("dependency is not admitted and visible")
 		}
-		add(Target{RevisionTarget, dep})
+		add(Target{RevisionTarget, id})
+		return nil
 	}
+	requireRoot := func(root string) error {
+		heads := view.Heads[root]
+		if len(heads) == 0 {
+			return fmt.Errorf("resource lacks admitted state heads")
+		}
+		for _, head := range heads {
+			if err := requireExact(head); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for _, parent := range body.Parents {
+		if err := requireExact(parent); err != nil {
+			return nil, err
+		}
+		if err := requireRoot(view.Roots[parent]); err != nil {
+			return nil, err
+		}
+	}
+	for _, ref := range body.References {
+		if !view.Admitted[ref.ID] {
+			return nil, fmt.Errorf("reference identity is not admitted")
+		}
+		if ref.Kind == RootReference {
+			if err := requireRoot(ref.ID); err != nil {
+				return nil, err
+			}
+		} else if err := requireExact(ref.ID); err != nil {
+			return nil, err
+		}
+	}
+
 	result := []string{}
 	for id := range heads {
 		result = append(result, id)

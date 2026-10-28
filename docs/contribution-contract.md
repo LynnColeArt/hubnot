@@ -205,7 +205,7 @@ policy snapshots through `AuthoritySource`. These are trusted host adapters,
 not values supplied by a contribution file. They reuse `verifyEvent`, native
 issue/resource relationship validation, proposal lineage and existing exact
 policy source verification. Host adapters must classify operations and author,
-root, parents and exact references from signed native facts; the envelope must
+root, parents and typed references from signed native facts; the envelope must
 match them exactly. Raw fact storage is policy-neutral. Shared `Reduce` computes
 admitted revisions before native catalogs/lineage are built. It returns both
 admission and visibility plus decision conflicts/revocations; hidden revisions
@@ -214,6 +214,34 @@ Rejected/unadmitted revisions never become operative heads. A hidden parent is
 an explicit tombstone in the governed view, never a dangling body leak. Replies
 with a hidden required reference are suppressed until that reference is restored.
 Restoring a hidden predecessor does not resurrect an inadmissible successor.
+
+`Content.References` is a sorted set of `{kind:"root"|"revision",id:ID}`,
+classified from the actual signed native field. Root identity references require
+all governed current state heads to be visible; they do not pin the opening
+body. Exact revision references require that particular revision to be visible,
+including when it is the original opening ID. In `issue_projection.go`, comments
+are separate from the state-revision heads: classify an immutable `issue.comment`
+as its own `Content.Root == Revision`, `issue.reply` operation and a **root**
+reference to `Subject`, rather than blindly using `issueRootID`. Issue revisions
+consume their explicit state parents; comments never consume a state head.
+`resource_engine.go` similarly gives each discussion-reply.open its own root.
+DiscussionID, ReplyTo, ProjectID and issue relation targets are root references;
+AcceptedReplyRevision and ProjectRevision are exact revision pins. Revision
+Subject/self-root and Parents remain lineage dependencies, not dynamic visibility
+references to the resource's own current head. A proposal reference preserves the
+exact proposal revision named by the native field. The host classifier reuses
+native relationship verification before emitting these typed facts.
+
+`View.Roots` and `View.Heads` describe authenticated revision lineages after
+admission; `IntakeEvidence` checks an edit's exact parents and current resource
+heads, and a root-reference reply's current target heads. This prevents an old
+visible opening from authorizing a reply to a hidden newer state. Hide of a
+comment alone cannot hide its issue. Visibility uses a greatest fixed point with
+shared root gates: an accepted discussion answer can refer to a reply that
+references the discussion root without inventing a native dependency cycle.
+A hidden exact reference propagates through that derived visibility cycle; valid
+unhidden cycles remain visible. Raw authentication/dependency depth still follows
+the actual native DAG and is independent of these derived root aliases.
 
 Decision graphs are per exact typed target and project. Parent IDs must name
 same-target, historically authorized decisions; every available current head
@@ -265,7 +293,7 @@ It makes no claim to provide on-disk intake in WP10.
 | Existing consumer | Required downstream behavior |
 | --- | --- |
 | `verifyEvent`, `StageProjectSnapshot`, `ReadArchive`, quarantine verification | Authenticate exact raw content/closure first; no mutable contribution authority in crypto or `store.go`. Retain raw actor ancestors and extract exact submission/decision/policy dependencies in `quarantine.go`. |
-| `applyIssueMutation`, `executeIssueMutation`, legacy `github.go`/`gh` issue dispatch | One current operation authorization and admitted expected-head check; do not let compatibility aliases bypass it. |
+| `applyIssueMutation`, `executeIssueMutation`, legacy `gh_compat.go` issue dispatch and `github_import.go` import | One current operation authorization and admitted expected-head check; do not let compatibility aliases bypass it. |
 | `applyResourceMutation`, `queryResource`, `executeIssueQuery` | Build issue/resource catalogs from admitted revisions, then apply tombstone visibility; retain exact references. |
 | `cmdProposalOpen`, `cmdProposalRevise`, `cmdReview`, list/show/status, proposal lineage | Authorize live operation and derive terminal heads/lineage from admissible facts. Admission adds no review or decision evidence. |
 | `discussion_commands.go`, `project_commands.go`, `workflow_commands.go` | Specialized queries/mutations use the same governed input; hidden discussion answers, project references and workflow definitions cannot leak through convenience readers. |

@@ -23,7 +23,7 @@ func key(s byte) ed25519.PrivateKey {
 func signer(s byte) string { return c.Actor(key(s).Public().(ed25519.PublicKey)) }
 func content(s string) c.Content {
 	id := digest(s)
-	return c.Content{Root: id, Revision: id, Author: signer(1), Parents: []string{}, References: []string{}}
+	return c.Content{Root: id, Revision: id, Author: signer(1), Parents: []string{}, References: []c.Reference{}}
 }
 func policy() *c.Policy {
 	return &c.Policy{Project: digest("project"), Moderators: []string{signer(2)}, Rules: []c.Rule{{Operation: c.IssueCreate, Automatic: true}, {Operation: c.IssueReply, Automatic: true}, {Operation: c.IssueEdit, Automatic: true}, {Operation: c.ProposalCreate}}, Baseline: []string{}, Limits: c.DefaultLimits()}
@@ -254,7 +254,7 @@ func TestAuthorBlockAndHiddenReplyDependencyAreReversible(t *testing.T) {
 	b := content("discussion")
 	s := submission(t, "discussion", b, c.IssueCreate)
 	reply := content("reply")
-	reply.References = []string{b.Revision}
+	reply.References = []c.Reference{{Kind: c.RootReference, ID: b.Revision}}
 	rs := submission(t, "reply", reply, c.IssueReply)
 	facts := native{b.Revision: {Actor: signer(1), Operation: c.IssueCreate, Content: b}, reply.Revision: {Actor: signer(1), Operation: c.IssueReply, Content: reply}}
 	base := []c.Verified{s, receipt(t, s, true), rs, receipt(t, rs, true)}
@@ -379,7 +379,7 @@ func TestBlockedBaselineReferenceDoesNotRejectUnrelatedProjection(t *testing.T) 
 	b := content("old")
 	other := content("other")
 	other.Author = signer(3)
-	other.References = []string{b.Revision}
+	other.References = []c.Reference{{Kind: c.RootReference, ID: b.Revision}}
 	facts := native{b.Revision: {Actor: signer(1), Operation: c.IssueCreate, Content: b}, other.Revision: {Actor: signer(3), Operation: c.IssueCreate, Content: other}}
 	a := authority()
 	a.Policy.Baseline = []string{b.Revision, other.Revision}
@@ -443,5 +443,80 @@ func TestRevocationCannotResurrectReceiptThatEvaluatedHiddenParent(t *testing.T)
 	v, err := c.Reduce(now, []c.Verified{s, r, hide}, facts, source)
 	if err != nil || !v.Visible[b.Revision] || v.Admitted[edit.Revision] || len(v.Invalid) == 0 {
 		t.Fatalf("current revocation resurrected forbidden historical intake: %v %#v", err, v)
+	}
+}
+
+func TestRootReferenceUsesCurrentStateHeadWithoutMakingCommentsHeads(t *testing.T) {
+	b := content("root")
+	edit := b
+	edit.Revision = digest("edit")
+	edit.Parents = []string{b.Revision}
+	reply := content("comment")
+	reply.References = []c.Reference{{Kind: c.RootReference, ID: b.Revision}}
+	s := submission(t, "root", b, c.IssueCreate)
+	e := submission(t, "edit", edit, c.IssueEdit)
+	r := submission(t, "comment", reply, c.IssueReply)
+	facts := native{b.Revision: {Actor: signer(1), Operation: c.IssueCreate, Content: b}, edit.Revision: {Actor: signer(1), Operation: c.IssueEdit, Content: edit}, reply.Revision: {Actor: signer(1), Operation: c.IssueReply, Content: reply}}
+	base := []c.Verified{s, receipt(t, s, true), e, receipt(t, e, true), r, receipt(t, r, true)}
+	hideComment := decision(t, c.Hide, c.Target{Kind: c.RevisionTarget, ID: reply.Revision}, nil, "hide-comment")
+	v := reduce(t, append(base, hideComment), facts)
+	if !v.Visible[edit.Revision] || v.Visible[reply.Revision] || len(v.Heads[b.Root]) != 1 || v.Heads[b.Root][0] != edit.Revision {
+		t.Fatal("comment became a state head or hid its issue")
+	}
+
+	hideOld := decision(t, c.Hide, c.Target{Kind: c.RevisionTarget, ID: b.Revision}, nil, "hide-old-body")
+	v = reduce(t, append(base, hideOld), facts)
+	if !v.Visible[edit.Revision] || !v.Visible[reply.Revision] || v.Visible[b.Revision] {
+		t.Fatal("root identity incorrectly pinned hidden historical body")
+	}
+	if _, err := c.IntakeEvidence(v, r); err != nil {
+		t.Fatal("current visible state denied root-reference intake")
+	}
+	hideHead := decision(t, c.Hide, c.Target{Kind: c.RevisionTarget, ID: edit.Revision}, nil, "hide-current-head")
+	v = reduce(t, append(base, hideHead), facts)
+	if v.Visible[reply.Revision] || !v.Visible[b.Revision] {
+		t.Fatal("legacy root reference bypassed hidden current head")
+	}
+	if _, err := c.IntakeEvidence(v, r); err == nil {
+		t.Fatal("visible open root authorized reply to hidden current state")
+	}
+	rr := receipt(t, r, true).Record()
+	rr.Receipt.Evaluated = []string{hideHead.ID()}
+	badReceipt := signed(t, rr, 2)
+	v = reduce(t, []c.Verified{s, receipt(t, s, true), e, receipt(t, e, true), r, badReceipt, hideHead}, facts)
+	if v.Admitted[reply.Revision] || len(v.Invalid) == 0 {
+		t.Fatal("exact current-head hide was not relevant root-reference evidence")
+	}
+}
+func TestExactRevisionReferenceAndAcceptedAnswerCycle(t *testing.T) {
+	a := authority()
+	a.Policy.Rules = []c.Rule{{Operation: c.DiscussionCreate, Automatic: true}, {Operation: c.DiscussionReply, Automatic: true}, {Operation: c.DiscussionEdit, Automatic: true}}
+	d := content("discussion")
+	r := content("reply")
+	r.References = []c.Reference{{Kind: c.RootReference, ID: d.Revision}}
+	answer := d
+	answer.Revision = digest("accepted-answer")
+	answer.Parents = []string{d.Revision}
+	answer.References = []c.Reference{{Kind: c.RevisionReference, ID: r.Revision}}
+	rs := r
+	rs.Revision = digest("reply-edited")
+	rs.Parents = []string{r.Revision}
+	facts := native{d.Revision: {Actor: signer(1), Operation: c.DiscussionCreate, Content: d}, r.Revision: {Actor: signer(1), Operation: c.DiscussionReply, Content: r}, answer.Revision: {Actor: signer(1), Operation: c.DiscussionEdit, Content: answer}, rs.Revision: {Actor: signer(1), Operation: c.DiscussionEdit, Content: rs}}
+	// Baseline is an explicit finite portable admission, so native references remain exact.
+	a.Policy.Baseline = []string{d.Revision, r.Revision, answer.Revision, rs.Revision}
+	c.SortIDs(a.Policy.Baseline)
+	v, err := c.Reduce(a, nil, facts, auths{a.Ref.Digest: a})
+	if err != nil || !v.Visible[answer.Revision] || !v.Visible[r.Revision] {
+		t.Fatal("synthetic current-head cycle hid valid accepted answer")
+	}
+	hideLatestReply := decision(t, c.Hide, c.Target{Kind: c.RevisionTarget, ID: rs.Revision}, nil, "hide-reply-revision")
+	v, err = c.Reduce(a, []c.Verified{hideLatestReply}, facts, auths{a.Ref.Digest: a})
+	if err != nil || !v.Visible[answer.Revision] || !v.Visible[r.Revision] || v.Visible[rs.Revision] {
+		t.Fatal("exact accepted reply pin incorrectly followed latest reply head")
+	}
+	hidePinned := decision(t, c.Hide, c.Target{Kind: c.RevisionTarget, ID: r.Revision}, nil, "hide-pinned-reply")
+	v, err = c.Reduce(a, []c.Verified{hidePinned}, facts, auths{a.Ref.Digest: a})
+	if err != nil || v.Visible[answer.Revision] || v.Visible[r.Revision] {
+		t.Fatal("hidden exact answer did not propagate through synthetic alias cycle")
 	}
 }

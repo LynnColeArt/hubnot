@@ -57,12 +57,49 @@ type AuthorityRef struct {
 	Commit string `json:"commit"`
 	Digest string `json:"digest"`
 }
+type ReferenceKind string
+
+const (
+	RootReference     ReferenceKind = "root"
+	RevisionReference ReferenceKind = "revision"
+)
+
+type Reference struct {
+	Kind ReferenceKind `json:"kind"`
+	ID   string        `json:"id"`
+}
+
+func SortReferences(refs []Reference) {
+	sort.Slice(refs, func(i, j int) bool { return string(refs[i].Kind)+":"+refs[i].ID < string(refs[j].Kind)+":"+refs[j].ID })
+}
+func referenceIDs(refs []Reference) []string {
+	ids := make([]string, 0, len(refs))
+	for _, r := range refs {
+		ids = append(ids, r.ID)
+	}
+	return ids
+}
+func validReferences(refs []Reference) bool {
+	if len(refs) > MaxLinks {
+		return false
+	}
+	prior := ""
+	for _, r := range refs {
+		key := string(r.Kind) + ":" + r.ID
+		if (r.Kind != RootReference && r.Kind != RevisionReference) || !validID(r.ID) || key <= prior {
+			return false
+		}
+		prior = key
+	}
+	return true
+}
+
 type Content struct {
-	Root       string   `json:"root"`
-	Revision   string   `json:"revision"`
-	Author     string   `json:"author"`
-	Parents    []string `json:"parents"`
-	References []string `json:"references"`
+	Root       string      `json:"root"`
+	Revision   string      `json:"revision"`
+	Author     string      `json:"author"`
+	Parents    []string    `json:"parents"`
+	References []Reference `json:"references"`
 }
 type Submission struct {
 	Operation Operation `json:"operation"`
@@ -178,10 +215,10 @@ func (r AuthorityRef) validate() error {
 	return nil
 }
 func (c Content) validate() error {
-	if !validID(c.Root) || !validID(c.Revision) || !validActor(c.Author) || !validIDs(c.Parents, MaxLinks) || !validIDs(c.References, MaxLinks) {
+	if !validID(c.Root) || !validID(c.Revision) || !validActor(c.Author) || !validIDs(c.Parents, MaxLinks) || !validReferences(c.References) {
 		return fmt.Errorf("invalid exact content binding")
 	}
-	for _, id := range append(append([]string{}, c.Parents...), c.References...) {
+	for _, id := range append(append([]string{}, c.Parents...), referenceIDs(c.References)...) {
 		if id == c.Revision {
 			return fmt.Errorf("self-referencing content")
 		}
