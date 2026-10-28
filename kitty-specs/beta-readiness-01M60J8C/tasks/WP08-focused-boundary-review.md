@@ -4,6 +4,7 @@ title: Independent beta boundary review
 dependencies:
 - WP04
 - WP07
+- WP13
 requirement_refs:
 - FR-012
 - NFR-002
@@ -35,7 +36,11 @@ tracker_refs: []
 
 ### T024
 
-Independently review credential/key handling, imports, filesystem boundaries, authority and runner isolation against the prospective beta contract.
+Independently review credential/key handling, imports, filesystem boundaries,
+contribution intake/moderation, authority and runner isolation against the
+prospective beta contract. Include signed spam, many-key aggregate budget
+exhaustion, bounded transport before admission, direct-write bypass attempts,
+revoked/conflicting moderation and preservation of original facts.
 
 ### T025
 

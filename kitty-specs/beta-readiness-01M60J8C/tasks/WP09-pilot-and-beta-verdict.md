@@ -7,6 +7,7 @@ dependencies:
 - WP06
 - WP07
 - WP08
+- WP13
 requirement_refs:
 - FR-013
 - FR-014
@@ -39,7 +40,11 @@ tracker_refs: []
 
 ### T027
 
-Prepare independent-adopter install/collaborate/migrate/upgrade/restore tasks and collect actual pilot outcomes.
+Prepare independent-adopter install/collaborate/migrate/upgrade/restore and
+stranger-contribution/moderation tasks and collect actual pilot outcomes. A
+stranger needs no upstream push right or provider account; ordinary issue/reply
+admission may be automatic under explicit project rules. Native-only/offline
+exchange, scoped moderation and remaining code merge authority must be visible.
 
 ### T028
 
