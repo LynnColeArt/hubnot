@@ -1,7 +1,7 @@
 {
-  "event_count": 43,
-  "last_event_id": "01M618JDAAHJ4QK1M3NRQJD8V6",
-  "materialized_at": "2026-10-28T12:43:12.586621+00:00",
+  "event_count": 45,
+  "last_event_id": "01M618Q9C7BXB803ETT3F185FF",
+  "materialized_at": "2026-10-28T12:45:52.390876+00:00",
   "mission_number": "",
   "mission_slug": "beta-readiness-01M60J8C",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 7
+    "planned": 6
   },
   "work_packages": {
     "WP01": {
@@ -230,11 +230,19 @@
       }
     },
     "WP11": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M60XKCDD7HZY26CWCFN5E5C1",
-      "last_transition_at": "2026-10-28T09:31:30.093957+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M618Q9C7BXB803ETT3F185FF",
+      "last_transition_at": "2026-10-28T12:45:52.390876+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 5024,
+      "shell_pid_created_at": "1792851034.54"
     },
     "WP12": {
       "actor": "finalize-tasks",
