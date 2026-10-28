@@ -32,32 +32,34 @@ CI services.
 implemented and exercised. It does not mean production-ready: compatibility is
 not yet stable, the security boundary is intentionally narrow, and the
 deferred work in [Completed alpha boundary](#completed-alpha-boundary) is the
-post-alpha roadmap.
+post-alpha roadmap. The [prospective beta support contract](docs/beta-support.md)
+defines the compatibility, recovery and qualification work required before a beta.
 
 ## Download and install
 
-[Hubnot 0.0.2-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev)
-is the current portable-collaboration alpha prerelease. Prebuilt executables require
-**Git 2.x** on your PATH. Running them requires no Python, Go, Docker, or forge
-account.
+[Hubnot 0.0.3-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev)
+is the current alpha prerelease, including the macOS migration portability fixes.
+Prebuilt executables require **Git 2.x** on your PATH. Running them requires no
+Python, Go, Docker, or forge account.
 
-**Mac runtime testing is still pending for 0.0.2-dev.** Both macOS architectures
-have been cross-compiled and inspected. Both Linux architectures passed runtime
-smoke checks in standard and native-only variants.
+Both Linux architectures passed runtime smoke checks in standard and native-only
+variants. Both Apple Silicon variants rebuilt from this release's source on a
+Mac passed the full integration journey without path or TMPDIR workarounds.
+**Testing of the exact downloadable Mac binaries is still pending for both
+Apple Silicon and Intel.** The native Mac rebuild used Go 1.26.6; these published
+packages use Go 1.26.4.
 
-Mac testing has since identified a migration limitation in these published
-packages: [issue #16](https://github.com/LynnColeArt/hubnot/issues/16) requires
-physical explicit paths and a physical TMPDIR in the CLI environment for the
-tested round trip. Source corrections and the permanent regression gates are
-documented in [filesystem portability](docs/filesystem-portability.md); these
-published binaries remain unchanged.
+The path failures recorded in [issue #16](https://github.com/LynnColeArt/hubnot/issues/16)
+are fixed in this release, with permanent Linux/macOS regression gates described
+in [filesystem portability](docs/filesystem-portability.md). The earlier
+0.0.2-dev packages remain unchanged and retain their documented workaround.
 
 | Platform | CPU | Standard | Native only |
 | --- | --- | --- | --- |
-| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_amd64_native-only.tar.gz) |
-| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_linux_arm64_native-only.tar.gz) |
-| macOS | Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_amd64_native-only.tar.gz) |
-| macOS | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_darwin_arm64_native-only.tar.gz) |
+| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_amd64_native-only.tar.gz) |
+| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_arm64_native-only.tar.gz) |
+| macOS | Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_amd64_native-only.tar.gz) |
+| macOS | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_arm64_native-only.tar.gz) |
 
 Standard builds include the optional GitHub, GitLab, Forgejo/Codeberg, Gitea,
 Bitbucket Cloud and Azure DevOps adapters. Native-only builds omit every network
@@ -66,12 +68,12 @@ independent audits and local `hn gh issue` commands. Both variants install as
 `hn`; choose one. Protected checks, automerge and audits remain independently
 disabled by default.
 
-Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/SHA256SUMS)
+Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/SHA256SUMS)
 alongside your archive and verify it before extraction. On Linux, use
 `sha256sum --ignore-missing -c SHA256SUMS`. On macOS, use
 `shasum -a 256 <archive.tar.gz>` and compare the matching checksum entry.
-The [source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/hubnot_0.0.2-dev_source.tar.gz)
-and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.2-dev/PROVENANCE.json)
+The [source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_source.tar.gz)
+and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/PROVENANCE.json)
 are also available.
 Extract your archive, enter its directory, then install:
 
@@ -89,12 +91,13 @@ contain the MIT license, build provenance, and product documentation. See the
 All eleven release assets reproduced byte-for-byte with Go 1.26.4, and published
 downloads match the verified local bundle. Linux AMD64 and ARM64 runtime smoke
 checks covered signed native issues, saved archive migration, exact imported
-actor history and local continuation. Mac runtime testing remains pending for
-both Intel and Apple Silicon; testing of the previous release does not qualify
-these new binaries.
+actor history and local continuation. Linux AMD64 packages also passed the
+integrated public acceptance journey. Native Mac verification passed from the
+same source, as described above; execution of the exact Go 1.26.4 Mac release
+binaries remains pending for both Intel and Apple Silicon.
 macOS downloads have no Apple Developer ID signature or notarization, so a
 quarantined download may require approval in Privacy & Security. The
-[release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev)
+[release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev)
 include the detailed platform evidence and distribution limits.
 
 ## Build and verify
@@ -111,14 +114,14 @@ go build -trimpath -tags nogithub -o hn-local .
 go build -trimpath -tags noforge -o hn-native .
 ```
 
-Packaging 0.0.2-dev uses Go and Git alone, with no Python requirement. The
+Packaging 0.0.3-dev uses Go and Git alone, with no Python requirement. The
 published archives were built with Go 1.26.4 from commit
-`e80880abc792e2c386182e06027fc251b134c0d2`. Build the Go-only packager and
+`01a152cfbb822a7be9ccbc51dac34e3caa0cf925`. Build the Go-only packager and
 select that exact revision to reproduce them:
 
 ```sh
 go build -trimpath -o hn-release ./cmd/hn-release
-./hn-release --rev e80880abc792e2c386182e06027fc251b134c0d2 --version 0.0.2-dev --out NEW_DIRECTORY
+./hn-release --rev 01a152cfbb822a7be9ccbc51dac34e3caa0cf925 --version 0.0.3-dev --out NEW_DIRECTORY
 ```
 
 The output directory must not exist. Optional `--source DIRECTORY`,
@@ -130,8 +133,9 @@ module network, and writes normalized binary/source archives, `BUILD.json`,
 native-only packages exclude all network adapters with `nogithub,noforge`;
 the published first release's native-only assets excluded GitHub only.
 
-The packager cross-compiles for macOS and Windows; execution on those packager
-hosts remains unverified for this delivery. CLI target cross-compilation also
+The complete release matrix was packaged on Linux. Native Apple Silicon
+packager execution was separately demonstrated for its native target pair;
+Windows packager-host execution remains unverified. CLI target cross-compilation
 requires separate runtime evidence, as qualified above. The immutable first
 release's `build-release.py` still requires Python 3.12+, Git and Go 1.26.4 to
 reproduce its historical archives; its tags and assets stay unchanged.
