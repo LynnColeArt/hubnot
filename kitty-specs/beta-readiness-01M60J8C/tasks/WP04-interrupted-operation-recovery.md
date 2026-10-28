@@ -27,6 +27,7 @@ execution_mode: code_change
 owned_files:
 - beta_journal_recovery_test.go
 - docs/operation-recovery.md
+- identity_continuity.go
 role: implementer
 tags: []
 task_type: implement
@@ -59,7 +60,23 @@ Do not duplicate the existing comprehensive fault suites or force every historic
 
 ## Ownership and delivery
 
-Owned surfaces: `beta_journal_recovery_test.go`, `docs/operation-recovery.md`.
+Owned surfaces: `beta_journal_recovery_test.go`, `docs/operation-recovery.md`,
+`identity_continuity.go`.
+
+Concrete recovery obligation from read-only inspection: `prepareIdentityRotation`
+can write reconciled progress to `rotation-command.json` before the caller
+validates the referenced signed events, and can recreate a missing target record
+before rejecting an unsafe or unsupported `rotation.json`. First reproduce
+through the public rotate command with a valid empty-progress command journal
+and matching rotation state that names a well-formed nonexistent event. Compare
+complete private state, refs and objects on refusal. Also combine missing target
+material with unsupported/unsafe saved rotation state. A test seeding identical
+bad progress in both journals does not cover reconciliation-before-validation.
+Repair only after a meaningful red result, validate saved state and signed
+progress before recovery writes, and preserve the existing successful crash
+recovery, exact-target material and active-pointer guarantees. The new ownership
+is sequential and disjoint from other declared production surfaces; it does not
+authorize format changes, fabricated progress or resetting uncertain journals.
 Stay within this WP. If an actual defect requires an additional production
 surface, report the failing contract so root can amend ownership or author a
 repair WP. Do not edit sibling status or frozen past-mission evidence.

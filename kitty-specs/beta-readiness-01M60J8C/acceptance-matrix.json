@@ -6,143 +6,143 @@
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "Verify FR-001 is satisfied",
-      "proof_type": "automated_test",
+      "description": "Support contract: As an adopter, I can see supported platforms, Git configurations, interfaces, limits and qualification status.",
+      "proof_type": "code_review",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP01 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "Evolution rules: As an integrator, I know compatibility rules for facts, memory, policy, archives, journals and CLI JSON, including refusal/rollback limits.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP01/WP02/WP04 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-003",
-      "description": "Verify FR-003 is satisfied",
+      "description": "Historical compatibility: As an existing user, I can read released-writer data and continue without rewriting it.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP02 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-004",
-      "description": "Verify FR-004 is satisfied",
+      "description": "Incompatible-input refusal: As an operator, unsupported-format errors leave accepted history and private state unchanged.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP02/WP04 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-005",
-      "description": "Verify FR-005 is satisfied",
+      "description": "Public recovery: As an operator, I can retain and restore code and collaboration/memory refs that ordinary clone omits.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP03 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-006",
-      "description": "Verify FR-006 is satisfied",
+      "description": "Private recovery: As an operator, I have a tested private backup/restore procedure with freshness, fencing and exclusion rules.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP03/WP04 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-007",
-      "description": "Verify FR-007 is satisfied",
+      "description": "Lost-device continuity: As an operator, I can use a distinct replacement actor without inferred roles and understand sole-authority loss.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP03 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-008",
-      "description": "Verify FR-008 is satisfied",
+      "description": "Interrupted recovery: As an operator, I distinguish confirmed progress from uncertainty requiring reconciliation.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP04 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-009",
-      "description": "Verify FR-009 is satisfied",
-      "proof_type": "automated_test",
+      "description": "Provider qualification: As a migrator, I can inspect live-account observations by provider/profile/resource/direction and explicit loss.",
+      "proof_type": "manual_qa",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP05 evidence and independent assessment; package approval alone is not a criterion pass. Real provider/platform/adopter observations are required; absent access or a brief alone cannot count as passing proof."
     },
     {
       "criterion_id": "FR-010",
-      "description": "Verify FR-010 is satisfied",
-      "proof_type": "automated_test",
+      "description": "Package qualification: As an installer, I can inspect exact package results by platform/variant and distribution limitations.",
+      "proof_type": "manual_qa",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP06 evidence and independent assessment; package approval alone is not a criterion pass. Real provider/platform/adopter observations are required; absent access or a brief alone cannot count as passing proof."
     },
     {
       "criterion_id": "FR-011",
-      "description": "Verify FR-011 is satisfied",
+      "description": "Practical limits: As an adopter, I have measured repository/history limits and recovery costs.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP07 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-012",
-      "description": "Verify FR-012 is satisfied",
-      "proof_type": "automated_test",
+      "description": "Boundary review: As an adopter, I can inspect credential, key, import, filesystem, authority and runner findings and disposition.",
+      "proof_type": "code_review",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP08 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-013",
-      "description": "Verify FR-013 is satisfied",
-      "proof_type": "automated_test",
+      "description": "Adoption proof: As an adopter, I can inspect independent installation, collaboration, migration, upgrade and restore findings.",
+      "proof_type": "manual_qa",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP09 evidence and independent assessment; package approval alone is not a criterion pass. Real provider/platform/adopter observations are required; absent access or a brief alone cannot count as passing proof."
     },
     {
       "criterion_id": "FR-014",
-      "description": "Verify FR-014 is satisfied",
-      "proof_type": "automated_test",
+      "description": "Truthful verdict: As an adopter, I can find current release docs and a beta verdict listing all unmet gates.",
+      "proof_type": "code_review",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Final integrated acceptance pending WP01/WP09 evidence and independent assessment; package approval alone is not a criterion pass."
     },
     {
       "criterion_id": "FR-015",

@@ -49,6 +49,16 @@ owned_files:
 - commands.go
 - main.go
 - replication.go
+- quarantine.go
+- discussion_commands.go
+- project_commands.go
+- workflow_commands.go
+- governance.go
+- resource_transfer.go
+- github_workflows.go
+- github_discussions.go
+- github_projects.go
+- audit_protocol.go
 role: implementer
 tags: []
 task_type: implement
@@ -83,6 +93,34 @@ optional unified-contribution amendment. Initial support/compatibility/recovery
 work remains first. Load the declared profile through the canonical CLI/API.
 
 Read the WP10 concrete contract and the WP11 bounded exchange before editing existing entrypoints. Implement common permission evaluation and projection; avoid separate ad-hoc policy engines for code, issues and discussions. Include applicable native project/workflow operations or explicitly reject unsupported operations rather than silently bypassing the enabled contribution policy. Initialization/import/upgrade/sync/merge must not enable the workflow, start a listener/worker, fetch unselected content or adopt authority. A new optional policy section must be governed by legitimate existing project authority, with explicit historical-baseline and disable behavior. Native content remains originally signed; an admission receipt or moderator action cannot invent another author's edit, approval, CI result, acceptance, maintainer role or merge. Human review of every ordinary message is not required when explicit rules automatically admit it. The shared view respects authenticated policy/moderation; raw historical inspection remains explicit and immutable. Moderator powers are project-scoped and decisions need exact target/policy provenance and conflict handling, not last-arrival wins. Arbitrary host/Git writers remain outside Hubnot's policy enforcement; do not claim storage ACLs against an authorized host writer. Reuse existing validated readers. Files are a bounded integration ownership allowance: change only entrypoints required by the WP10 design; obtain a planning amendment before editing any undeclared shared surface, especially WP03 store.go. No duplicate source verifier or implicit SHA freezing of mutable project rules.
+
+## Shared integration boundaries
+
+Raw storage authenticates immutable facts; it need not apply mutable project
+admission policy. Reuse one contribution graph validator/reducer after raw
+signature, actor-chain and native dependency validation. Its operative resource
+heads, expected revisions and proposal lineage must derive from admissible
+revisions, retaining a separate exact raw-dependency index. Building a raw
+catalog and merely hiding rows afterward is insufficient. A permissive rule
+never admits arbitrary raw imports during reads: automatic admission must pass
+the bounded intake/accounting transaction and retain exact-target evidence.
+
+Route the actual issue/resource/proposal/workflow command seams through the
+shared operation evaluator. Cover specialized discussion/project/workflow
+readers and classify transfer/provider export and audit workflow-selection
+consumers explicitly. Ordinary governed consumers must not bypass moderation;
+raw historical inspection/export must be explicit about retaining signed
+history. Admission cannot supply CI, reviews, acceptance, roles or execution
+permission. An unadmitted proposal needs an explicit live merge precondition if
+required by the WP10 contract, preserving all existing merge evidence checks.
+
+The added consumer files are a bounded ownership allowance for these concrete
+callers, not an instruction to edit every file. `store.go` remains outside this
+WP: policy-neutral raw collection plus shared command authorization/governed
+projection is a legitimate design. Do not couple cryptographic encoding to
+mutable repository policy or duplicate native source verification. If a real
+contract defect requires a shared-store edit, report it before editing and
+obtain a canonical planning/allocation resolution; do not force lane checks.
 
 ## Ownership and delivery
 
