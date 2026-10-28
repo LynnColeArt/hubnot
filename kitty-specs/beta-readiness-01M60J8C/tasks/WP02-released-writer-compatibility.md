@@ -31,6 +31,7 @@ owned_files:
 - beta_compatibility_test.go
 - testdata/compatibility/**
 - docs/compatibility.md
+- migration_native.go
 role: implementer
 tags: []
 task_type: implement
@@ -67,7 +68,16 @@ Read docs/beta-support.md first. Use actual local 0.0.2-dev and 0.0.3-dev packag
 
 ## Ownership and delivery
 
-Owned surfaces: `beta_compatibility_test.go`, `testdata/compatibility/**`, `docs/compatibility.md`.
+Owned surfaces: `beta_compatibility_test.go`, `testdata/compatibility/**`,
+`docs/compatibility.md`, `migration_native.go`.
+
+Confirmed repair scope: actual 0.0.2-dev/0.0.3-dev writer archives containing
+signed memory fail public import planning with `invalid observation ref`.
+`migrationObservationRef` appends the typed `sha256:` stream ID into a Git ref,
+where the colon is illegal. Use the existing validated memory-ref helper to
+derive the canonical observation name. Preserve original stream IDs, signed
+history and frozen archives; keep the real released-archive failure as the
+public regression. No other production surface is assigned by this amendment.
 Stay within this WP. If an actual defect requires an additional production
 surface, report the failing contract so root can amend ownership or author a
 repair WP. Do not edit sibling status or frozen past-mission evidence.
