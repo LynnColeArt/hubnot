@@ -77,6 +77,15 @@ release assets or broaden product defaults. Additional integration ownership
 requires a canonical planning amendment before edits. Keep original signed
 facts and frozen prior-mission evidence byte-exact.
 
+## Package-aware evidence
+
+Use `buildMigrationCLIBinary` or `portableJourneyBinary` for public CLI binaries,
+rather than introducing an unconditional source-build helper. Preserve their
+closed child environments and explicit package flags so WP06 can exercise these
+same journeys against unchanged extracted candidate assets. Distinguish source/
+in-process measurements from actual package runtime evidence; no silent fallback
+or newly invented release variant may count as a package pass.
+
 ## Verification
 
 Run actual public black-box cases with unchanged environment boundaries; verify selected historical payload/signature/ref preservation, no unexpected keys/authority/optional activation, resource refusal before shared visibility and safe retries. Then formatting, full race, vet, build and diff gates. Validate documentation examples against actual CLI and the WP10 contract.
