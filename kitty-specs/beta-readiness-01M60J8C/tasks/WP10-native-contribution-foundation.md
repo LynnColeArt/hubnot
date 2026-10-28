@@ -82,6 +82,23 @@ work remains first. Load the declared profile through the canonical CLI/API.
 
 Use existing native identities, Git content addressing and legitimate project governance. Decide the exact format/CLI surface from the existing code and record examples before downstream implementation; do not invent a second mandatory service or separate identity/account system. Model ordinary issue/reply automatic admission as an explicit permissible rule, not a compulsory approval queue. A valid signature identifies a key, not one person or spam-free content. Moderation targets exact original resource revisions, actors and project scope; decisions retain evaluated authority provenance without permanently pinning ordinary rules. Imported/source policy must never self-adopt, and changing the opt-in requires legitimate project authority. New format fields must be omitted when disabled and existing historical readers/bytes must retain the declared compatibility behavior. This WP delivers the common foundation, not a claim that the end-to-end workflow already works. Map the actual public read/write/proposal/replication callers before WP12, and obtain a canonical planning amendment for any undeclared shared source file; do not touch WP03 store.go without that assignment.
 
+## Integration design obligation
+
+Concretize the separation between authenticated raw facts, operation authority,
+and governed admission/visibility. A shared reducer can validate contribution
+relationships and authority after native raw authentication without changing
+`store.go`; choose layers for correctness, not file-allocation convenience.
+Derive operative heads, expected revisions and lineage from admitted revisions,
+while retaining exact raw dependencies. Do not merely hide rows in an already
+computed raw catalog, or automatically admit arbitrary raw imports during
+reads. Automatic admission uses the same durable bounded intake accounting.
+Map specialized readers, transfer/provider exports, audit workflow selection
+and native proposal acceptance/merge as well as generic command handlers.
+Classify explicit raw inspection/export so immutable history is not mistaken
+for moderated views. Keep cryptographic encoding independent of current policy.
+The downstream ownership allowance covers identified disjoint consumer files;
+any actual shared-store need requires a further canonical amendment before edits.
+
 ## Ownership and delivery
 
 Own only the declared files and this WP's evidence/status. Planning and merge
