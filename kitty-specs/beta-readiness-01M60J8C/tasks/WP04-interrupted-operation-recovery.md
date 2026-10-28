@@ -12,6 +12,9 @@ requirement_refs:
 planning_base_branch: feature/beta-readiness
 merge_target_branch: feature/beta-readiness
 branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-beta-readiness-01M60J8C
+base_commit: 56a00d88f0095f37554a8828ce3ebca2ba141ac2
+created_at: '2026-10-28T11:10:21.049312+00:00'
 subtasks:
 - T012
 - T013
@@ -108,3 +111,5 @@ do not kill/retry an in-flight gate or claim a skipped/no-coverage gate ran test
 ## Activity Log
 
 - 2026-10-28T06:21:00Z – codex – Work package authored from the approved mission intent.
+- 2026-10-28T11:32:00Z – codex – shell_pid=5024 – Implementation 829d8ca1: public red reproduced six mutation failures; focused recovery race tests passed 17.510s; full go test -race -count=1 -timeout 20m ./... passed (hubnot 634.233s). go vet ./..., go build ./..., go build -tags noforge ./..., gofmt and ranged git diff --check passed. Final docs-only syntax correction 6e7b28e0 verified through actual isolated CLI; Go/module/testdata unchanged from tested head. Future-session fixtures authenticate real HMAC/signatures. Cold audit-reader object materialization explicitly documented, no universal zero-object claim; no real keys, provider writes or external publication.
+- 2026-10-28T11:32:11Z – codex – shell_pid=5024 – Correction to preceding evidence note: final docs-only syntax commit is 4a737e29 (not the mistyped 6e7b28e0); source-tested implementation remains 829d8ca1. Only docs/operation-recovery.md differs, one command syntax correction verified via actual isolated CLI.
