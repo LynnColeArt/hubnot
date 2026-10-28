@@ -82,3 +82,33 @@ experience/signing policy, practical size baselines, and external pilot results
 must be established in later WPs. They do not block authoring the initial
 contract or testing compatibility and local recovery. No beta publication is
 authorized merely by completing those initial WPs.
+
+
+## Deferred product requirement: native Windows support
+
+Recorded from the owner on 2026-10-28: Hubnot must also work on Windows, with
+lower priority than the current beta recovery work. Investigate broad Windows
+compatibility, including the owner's suggestion to evaluate Windows XP. This
+is a future implementation/qualification track, not a claim that Windows is
+supported today or a new gate on the current Linux/macOS beta mission.
+
+The current module requires Go 1.26. Official Go support for XP ended at
+Go 1.10.8; current Go supports Windows 10/Server 2016 or later
+([Go Windows support matrix](https://go.dev/wiki/Windows)). Git for Windows
+currently requires Windows 10 or later for x64 and Windows 11 for ARM64;
+v2.10.0 was its final XP-supporting release
+([Git for Windows prerequisites](https://gitforwindows.org/requirements.html)).
+Consequently, XP is a separate legacy-port feasibility question, not an
+executable baseline for the existing toolchain. Do not silently downgrade
+Go/Git or promise XP compatibility. The initial recommended qualification
+matrix is Windows 10 x64 and Windows 11; the exact minimum version and
+architectures remain an explicit future support decision.
+
+Future work must cover native binaries/Go-only packaging, real Windows runtime
+journeys and CI, private-key protection using Windows permissions, filesystem
+and path semantics, atomic updates and locks, Git discovery, subprocesses,
+terminal/JSON behavior, backup/restore and independently disabled optional
+features. Cross-compilation alone is not runtime qualification. Preserve
+Git-only native operation and identify platform-specific runner capabilities
+truthfully. XP investigation must remain separate from promises for modern
+Windows; no Windows execution or packaging has been performed by this note.
