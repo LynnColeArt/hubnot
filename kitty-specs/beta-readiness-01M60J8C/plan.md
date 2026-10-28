@@ -168,6 +168,14 @@ initial documentation/implementation authorization.
    public no-side-effect regression and successful continuation after explicit
    verified expected-old ownership restoration. This is not detection of unknown
    disconnected writers and does not automatically adopt a remote signing head.
+   Read-only inspection confirmed the same defect in `appendMemoryAtHead`:
+   WP03 also owns `memory_store.go` for a same-actor/same-stream guard before
+   writes. Compare signed sequence/ID continuity, including known divergence,
+   rather than only the greatest sequence. An accepted older prefix or another
+   stream must remain independent. Reuse validated read primitives without
+   importing audit packs as a read side effect or silently imposing unrelated
+   issue-catalog restrictions. Preserve existing publication behavior; a stale
+   memory sync can fail its push after successfully importing a newer head.
 4. WP04: reuse existing interruption fault seams and add only missing public
    assertions for supported recovery. Confirm retries never infer remote absence.
 5. Every Go WP: formatting, `go test -race -count=1 -timeout 20m ./...`, vet,

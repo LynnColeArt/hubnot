@@ -1,8 +1,8 @@
 # Mission Specification: Hubnot beta readiness
 
-**Mission Branch**: `feature/beta-readiness`  
-**Created**: 2026-10-28  
-**Status**: Specified; beta qualification pending  
+**Mission Branch**: `feature/beta-readiness`
+**Created**: 2026-10-28
+**Status**: Specified; beta qualification pending
 **Input**: Package the agreed beta-readiness work as a mission and work through
 it, starting with the beta support contract, then compatibility and recovery.
 **Scope amendment (2026-10-28):** Add a unified native contribution and
@@ -74,6 +74,12 @@ repositories and public CLI subprocesses, including unsafe/incomplete inputs.
    unrecoverable case is explained.
 4. Given an interrupted remote write, when recovery runs, then uncertainty
    never authorizes a blind duplicate create.
+5. Given locally known newer or divergent accepted actor history or a
+   same-actor memory stream, when a restored signer tries to append from a
+   missing/stale/conflicting local root, then the common writer refuses before
+   object/ref/private-state effects. Explicit verified expected-old restoration
+   permits continuation; an accepted older prefix and unrelated streams do not
+   block valid work. Unknown disconnected writers remain outside this guarantee.
 
 ### User Story 4 — Adopt a qualified beta (Priority: P2)
 
