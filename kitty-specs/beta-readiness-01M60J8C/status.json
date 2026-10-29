@@ -1,7 +1,7 @@
 {
-  "event_count": 57,
-  "last_event_id": "01M63W8WKC2W9ZQ4CM7S78FQRN",
-  "materialized_at": "2026-10-29T13:06:00.940502+00:00",
+  "event_count": 63,
+  "last_event_id": "01M63XWFZ3FKQKAG5GSSH9425F",
+  "materialized_at": "2026-10-29T13:34:11.929623+00:00",
   "mission_number": "",
   "mission_slug": "beta-readiness-01M60J8C",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
-    "in_review": 1,
-    "planned": 5
+    "in_progress": 2,
+    "in_review": 0,
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
@@ -266,33 +266,50 @@
     "WP12": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
-      "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M63W8WKC2W9ZQ4CM7S78FQRN",
-      "last_transition_at": "2026-10-29T13:06:00.940502+00:00",
+      "force_count": 1,
+      "lane": "in_progress",
+      "last_event_id": "01M63XWFZ3FKQKAG5GSSH9425F",
+      "last_transition_at": "2026-10-29T13:34:11.929623+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for review: native admission/moderation and governed readers; full uncached race at403668ec, production-identical test-only745b7c6c, exact actual combined-native public journeys and statics passed; source-bound evidence in work/beta-readiness-WP12/evidence."
+        "Ready for review: native admission/moderation and governed readers; full uncached race at403668ec, production-identical test-only745b7c6c, exact actual combined-native public journeys and statics passed; source-bound evidence in work/beta-readiness-WP12/evidence.",
+        "Independent Renata review passed: native admission/moderation and receiver-local accounting meet T039-T042; full403 product-equivalent final745, actual combined-native eight journeys and statics verified; all8 anti-pattern checks pass. Shared consumer files use explicit WP12 ownership allowance; reviewed memory integration preserves both hooks;146 coordination forward is lifecycle-only. Prospective guide clarifications and complete workflow acceptance remain WP13 scope. Report work/beta-readiness-WP12/final-review-cycle-1.md.",
+        "Reopened P2 from WP13 public interruption acceptance: valid receiver-retained durable artifact remains uncertain forever through selected CLI retry; wire existing Recover into exact receive/restore and generated-control retry without extra input charge, mutable source reopening or authority changes. Preserve prior approval as historical. Upstream repair required before dependent WP13 final acceptance/full gate; committed feedback f2e64ef0."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "reviewer",
-      "shell_pid": 1363422,
-      "shell_pid_created_at": "1793259073.57",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/beta-readiness-01M60J8C/tasks/WP12-native-admission-and-moderation/review-cycle-2.md",
+        "reference": "review-cycle://beta-readiness-01M60J8C/WP12-native-admission-and-moderation/review-cycle-2.md",
+        "reviewer": "codex",
+        "verdict": "changes_requested"
+      },
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T039": "done",
-        "T040": "done",
-        "T041": "done",
-        "T042": "done"
+        "T039": "planned",
+        "T040": "planned",
+        "T041": "planned",
+        "T042": "planned"
       }
     },
     "WP13": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M60XKFZAMC3DKH8BSNF4JYW9",
-      "last_transition_at": "2026-10-28T09:31:33.739016+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M63WPBY2BCGRPGEF08C5NZYB",
+      "last_transition_at": "2026-10-29T13:13:22.626184+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 1363422,
+      "shell_pid_created_at": "1793259073.57"
     }
   }
 }
