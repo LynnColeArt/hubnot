@@ -26,6 +26,20 @@ remain as historical evidence but provide no authority to this protocol.
 }
 ```
 
+A pipeline may also list `requesters`: 1–64 actors, besides maintainers,
+whose run requests count for that pipeline. Omit the field to keep run
+requests maintainer-only. Requesting a run grants nothing else: results still
+count only from `trustedRunners`, and requesters gain no review, decision or
+merge authority. Older clients reject policies that contain the field.
+
+```json
+"test": {
+  "requiredResults": 1,
+  "trustedRunners": ["<runner-actor>"],
+  "requesters": ["<orchestrator-actor>"]
+}
+```
+
 Actor values are complete lowercase SHA-256 fingerprints of Ed25519 public
 keys. Unknown JSON fields, duplicate or malformed actors, an empty maintainer
 list, unsatisfiable thresholds, invalid pipeline names, and unsupported policy
@@ -130,8 +144,9 @@ accepted repository data:
 2. the configured number of distinct trusted reviewers currently approve;
 3. author approval counts only when the base policy permits it;
 4. every required pipeline has enough distinct passing trusted runners;
-5. each run request was signed by a base-policy maintainer and binds the exact
-   candidate, head, pipeline name, and pipeline-definition digest.
+5. each run request was signed by a base-policy maintainer, or by an actor in
+   that pipeline's optional `requesters` list, and binds the exact candidate,
+   head, pipeline name, and pipeline-definition digest.
 
 A reviewer's latest review is current. Change requests are displayed but are
 not a protocol-level veto. A runner's latest exact result is current for a

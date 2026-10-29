@@ -1162,7 +1162,7 @@ func validateReplicationDecisionAt(gitDir, acceptedGitDir string, decision, prop
 		case "run.result":
 			request, exists := byID[evidence.Event.Subject]
 			if !exists || request.Event.Kind != "run.request" || request.Event.Subject != proposal.ID ||
-				!actorListed(request.Event.Actor, policy.Maintainers) || evidence.Event.Outcome != "passed" {
+				!mayRequestRun(policy, request.Event.Pipeline, request.Event.Actor) || evidence.Event.Outcome != "passed" {
 				continue
 			}
 			pipelinePolicy, exists := policy.Pipelines[request.Event.Pipeline]
