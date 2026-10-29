@@ -274,7 +274,8 @@
       "last_transition_at": "2026-10-29T13:12:12.386511+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for review: native admission/moderation and governed readers; full uncached race at403668ec, production-identical test-only745b7c6c, exact actual combined-native public journeys and statics passed; source-bound evidence in work/beta-readiness-WP12/evidence."
+        "Ready for review: native admission/moderation and governed readers; full uncached race at403668ec, production-identical test-only745b7c6c, exact actual combined-native public journeys and statics passed; source-bound evidence in work/beta-readiness-WP12/evidence.",
+        "Independent Renata review passed: native admission/moderation and receiver-local accounting meet T039-T042; full403 product-equivalent final745, actual combined-native eight journeys and statics verified; all8 anti-pattern checks pass. Shared consumer files use explicit WP12 ownership allowance; reviewed memory integration preserves both hooks;146 coordination forward is lifecycle-only. Prospective guide clarifications and complete workflow acceptance remain WP13 scope. Report work/beta-readiness-WP12/final-review-cycle-1.md."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
