@@ -32,12 +32,15 @@ func cmdDecide(args []string) error {
 	if err := guardShallowEventClosure("proposal decision"); err != nil {
 		return err
 	}
-	events, err := collectEvents()
+	events, err := collectGovernedEvents()
 	if err != nil {
 		return err
 	}
 	proposal, err := resolveEventDependency("proposal decision", query, shallowCandidateEvent, events)
 	if err != nil {
+		return err
+	}
+	if err := contributionRequireProposal(proposal.ID); err != nil {
 		return err
 	}
 	if err := guardProposalEvaluationDependencies("proposal decision", proposal, events); err != nil {
@@ -66,7 +69,7 @@ func cmdDecide(args []string) error {
 		return fmt.Errorf("proposal is not ready; run 'hn proposal status %s' for missing evidence", proposal.ID)
 	}
 	if *accept {
-		currentEvents, err := collectEvents()
+		currentEvents, err := collectGovernedEvents()
 		if err != nil {
 			return err
 		}
@@ -136,7 +139,7 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 	if err := guardShallowEventClosure("proposal merge"); err != nil {
 		return err
 	}
-	events, err := collectEvents()
+	events, err := collectGovernedEvents()
 	if err != nil {
 		return err
 	}
@@ -149,6 +152,9 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 	}
 	evaluation, err := evaluateProposal(proposal, events)
 	if err != nil {
+		return err
+	}
+	if err := contributionRequireProposal(proposal.ID); err != nil {
 		return err
 	}
 	if err := requireLineageTerminalEligibility("merge", proposal.ID, evaluation.Lineage); err != nil {
@@ -208,7 +214,7 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 		return fmt.Errorf("proposal head is already in target; use 'hn merge %s' for manual merge-event repair", proposal.ID)
 	}
 	if contained {
-		currentEvents, err := collectEvents()
+		currentEvents, err := collectGovernedEvents()
 		if err != nil {
 			return err
 		}
@@ -255,7 +261,7 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 		return err
 	}
 	if evaluation.Policy.ProtectedChecks != nil || guard != nil {
-		currentEvents, err := collectEvents()
+		currentEvents, err := collectGovernedEvents()
 		if err != nil {
 			return err
 		}

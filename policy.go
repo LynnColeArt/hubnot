@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	c "hubnot/internal/contribution"
+	"reflect"
 	"sort"
 	"strings"
 )
@@ -13,15 +15,22 @@ const (
 	maxPolicySize = 1 << 20
 )
 
+type ContributionCheckpoint struct {
+	ID        string         `json:"id"`
+	Authority c.AuthorityRef `json:"authority"`
+}
+
 type PolicyDocument struct {
-	Version         string                    `json:"version"`
-	Maintainers     []string                  `json:"maintainers"`
-	Proposals       ProposalPolicy            `json:"proposals"`
-	Pipelines       map[string]PipelinePolicy `json:"pipelines"`
-	Memory          *MemoryPolicy             `json:"memory,omitempty"`
-	ProtectedChecks *ProtectedChecksPolicy    `json:"protectedChecks,omitempty"`
-	Automerge       *AutomergePolicy          `json:"automerge,omitempty"`
-	Audits          *AuditPolicy              `json:"audits,omitempty"`
+	Contributions           *c.Policy                 `json:"contributions,omitempty"`
+	ContributionCheckpoints []ContributionCheckpoint  `json:"contributionCheckpoints,omitempty"`
+	Version                 string                    `json:"version"`
+	Maintainers             []string                  `json:"maintainers"`
+	Proposals               ProposalPolicy            `json:"proposals"`
+	Pipelines               map[string]PipelinePolicy `json:"pipelines"`
+	Memory                  *MemoryPolicy             `json:"memory,omitempty"`
+	ProtectedChecks         *ProtectedChecksPolicy    `json:"protectedChecks,omitempty"`
+	Automerge               *AutomergePolicy          `json:"automerge,omitempty"`
+	Audits                  *AuditPolicy              `json:"audits,omitempty"`
 }
 
 // MemoryPolicy is deliberately optional so repositories with an hn.policy/0
@@ -116,6 +125,19 @@ func parsePolicyBytes(encoded []byte) (PolicyDocument, string, error) {
 	if err := ensureJSONEnd(decoder); err != nil {
 		return PolicyDocument{}, "", fmt.Errorf("parse policy: %w", err)
 	}
+	var policyFields map[string]json.RawMessage
+	_ = json.Unmarshal(encoded, &policyFields)
+	hasContributionFields := false
+	for name := range policyFields {
+		if strings.EqualFold(name, "contributions") || strings.EqualFold(name, "contributionCheckpoints") {
+			hasContributionFields = true
+		}
+	}
+	if hasContributionFields {
+		if err := contributionPolicyJSONShape(encoded); err != nil {
+			return PolicyDocument{}, "", fmt.Errorf("parse contribution policy: %w", err)
+		}
+	}
 	if err := validatePolicy(policy); err != nil {
 		return PolicyDocument{}, "", err
 	}
@@ -123,6 +145,21 @@ func parsePolicyBytes(encoded []byte) (PolicyDocument, string, error) {
 }
 
 func validatePolicy(policy PolicyDocument) error {
+	if policy.Contributions != nil {
+		if err := policy.Contributions.Validate(); err != nil {
+			return err
+		}
+	}
+	if len(policy.ContributionCheckpoints) > c.MaxGraphRecords {
+		return fmt.Errorf("contribution checkpoint limit")
+	}
+	prior := ""
+	for _, cp := range policy.ContributionCheckpoints {
+		if !validEventID(cp.ID) || cp.ID <= prior || !validEventID(cp.Authority.Digest) || !validGitOID(cp.Authority.Commit) {
+			return fmt.Errorf("invalid sorted exact contribution checkpoint")
+		}
+		prior = cp.ID
+	}
 	if err := validateAuditPolicy(policy.Audits); err != nil {
 		return err
 	}
@@ -272,6 +309,16 @@ func actorListed(actor string, actors []string) bool {
 }
 
 func evaluateProposal(proposal *StoredEvent, events []StoredEvent) (*ProposalEvaluation, error) {
+	view, _, err := contributionView(events)
+	if err != nil {
+		return nil, err
+	}
+	if view != nil {
+		if !view.Admitted[proposal.ID] || !view.Visible[proposal.ID] {
+			return nil, fmt.Errorf("proposal is not admitted and visible under current contribution authority")
+		}
+		events = contributionOperativeEvidence(events, view)
+	}
 	if !isProposalKind(proposal.Event.Kind) {
 		return nil, fmt.Errorf("%s is not a proposal", shortID(proposal.ID))
 	}
@@ -531,12 +578,15 @@ func cmdProposalStatus(query string) error {
 	if err := guardProposalQuery("proposal status", query); err != nil {
 		return err
 	}
-	events, err := collectEvents()
+	events, err := collectGovernedEvents()
 	if err != nil {
 		return err
 	}
 	proposal, err := resolveEvent(events, query)
 	if err != nil {
+		return err
+	}
+	if err := contributionRequireProposal(proposal.ID); err != nil {
 		return err
 	}
 	evaluation, err := evaluateProposal(proposal, events)
@@ -603,4 +653,126 @@ func policySummary(policy PolicyDocument) string {
 	}
 	sort.Strings(pipelines)
 	return strings.Join(pipelines, ",")
+}
+
+// The opt-in policy uses exact field spelling and unique members while keeping
+// legacy optional/null role lists valid. Native policy bytes remain unmodified.
+func contributionPolicyJSONShape(raw []byte) error {
+	if err := validateIssueJSONUnicode(raw); err != nil {
+		return err
+	}
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.UseNumber()
+	var parse func(int) (any, error)
+	parse = func(depth int) (any, error) {
+		if depth > 32 {
+			return nil, fmt.Errorf("policy JSON depth limit")
+		}
+		token, e := d.Token()
+		if e != nil {
+			return nil, e
+		}
+		delim, container := token.(json.Delim)
+		if !container {
+			return token, nil
+		}
+		switch delim {
+		case '{':
+			object := map[string]any{}
+			for d.More() {
+				key, e := d.Token()
+				if e != nil {
+					return nil, e
+				}
+				name, ok := key.(string)
+				if !ok {
+					return nil, fmt.Errorf("invalid policy key")
+				}
+				if _, ok := object[name]; ok {
+					return nil, fmt.Errorf("duplicate policy field %q", name)
+				}
+				value, e := parse(depth + 1)
+				if e != nil {
+					return nil, e
+				}
+				object[name] = value
+			}
+			_, e = d.Token()
+			return object, e
+		case '[':
+			array := []any{}
+			for d.More() {
+				value, e := parse(depth + 1)
+				if e != nil {
+					return nil, e
+				}
+				array = append(array, value)
+			}
+			_, e = d.Token()
+			return array, e
+		}
+		return nil, fmt.Errorf("invalid policy JSON")
+	}
+	value, e := parse(0)
+	if e != nil {
+		return e
+	}
+	if e = ensureJSONEnd(d); e != nil {
+		return e
+	}
+	var check func(any, reflect.Type) error
+	check = func(value any, t reflect.Type) error {
+		if value == nil {
+			return nil
+		}
+		for t.Kind() == reflect.Pointer {
+			t = t.Elem()
+		}
+		switch t.Kind() {
+		case reflect.Struct:
+			object, ok := value.(map[string]any)
+			if !ok {
+				return fmt.Errorf("typed policy value must be object")
+			}
+			fields := map[string]reflect.Type{}
+			for i := 0; i < t.NumField(); i++ {
+				f := t.Field(i)
+				name := strings.Split(f.Tag.Get("json"), ",")[0]
+				if name != "" && name != "-" {
+					fields[name] = f.Type
+				}
+			}
+			for name, value := range object {
+				typ, ok := fields[name]
+				if !ok {
+					return fmt.Errorf("unknown policy field %q", name)
+				}
+				if e := check(value, typ); e != nil {
+					return e
+				}
+			}
+		case reflect.Map:
+			object, ok := value.(map[string]any)
+			if !ok {
+				return fmt.Errorf("typed policy value must be map")
+			}
+			for _, value := range object {
+				if e := check(value, t.Elem()); e != nil {
+					return e
+				}
+			}
+		case reflect.Slice:
+			array, ok := value.([]any)
+			if !ok {
+				return fmt.Errorf("typed policy value must be array")
+			}
+			for _, value := range array {
+				if e := check(value, t.Elem()); e != nil {
+					return e
+				}
+			}
+		}
+		return nil
+	}
+	return check(value, reflect.TypeOf(PolicyDocument{}))
 }
