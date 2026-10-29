@@ -273,6 +273,9 @@
       "last_event_id": "01M63W5VM3K94HW8YTNY98QJMW",
       "last_transition_at": "2026-10-29T13:04:21.635464+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: native admission/moderation and governed readers; full uncached race at403668ec, production-identical test-only745b7c6c, exact actual combined-native public journeys and statics passed; source-bound evidence in work/beta-readiness-WP12/evidence."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 1363422,
