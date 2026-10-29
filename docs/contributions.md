@@ -206,13 +206,14 @@ inspection. Enabling contributions does not enable a worker.
 
 ## Moderate without rewriting history
 
-Only a currently evaluated project moderator can sign these decisions. Inspect
-the exact target and all current decision heads first:
+Only a currently evaluated project moderator can sign these decisions.
 
 Initial writable authority setup requires a native maintainer. Being listed as
 a moderator alone does not bootstrap a new writable worktree. After activation,
 native maintenance and project moderation permissions remain independently
 evaluated.
+
+Inspect the exact target and all current decision heads first:
 
 ```sh
 hn contribution decide reject --submission SUBMISSION_ID --expect-heads absent --operation reject-001 --json
@@ -320,6 +321,9 @@ Keep code plus the **exact selected** native actor/proposal/code and contributio
 refs and referenced objects. Ordinary clone omits custom refs. Ordinary
 `hn sync` authenticates selected native transport; it does not copy contribution
 refs or adopt authority merely because Git could transfer them.
+This is the contribution recovery set, including its required native governance
+history. It does not automatically include unselected memory refs, other optional
+project protocols, private identities or local configuration.
 
 For eligible outer histories, an explicit artifact is convenient:
 
@@ -350,7 +354,9 @@ operator-reviewed exact list of code, native and `refs/hn/contributions/...`
 refs, followed by explicit same-ref fetches on recovery. Retain their OIDs and
 compare them after restoration. Do not label an outer artifact a universal
 backup of mixed histories or copy private identity directories into it. See
-[recovery.md](recovery.md) for the separate public/private recovery tracks.
+[recovery.md](recovery.md) for the separate public/private recovery tracks,
+[replication-v0.md](replication-v0.md) for selected native refs, and
+[memory-v0.md](memory-v0.md) for the separate `hn-memory/0` protocol and memory refs.
 
 If direct Git additions arrive after adoption, governed reads refuse unregistered
 coverage instead of silently spending capacity or selecting authority:
