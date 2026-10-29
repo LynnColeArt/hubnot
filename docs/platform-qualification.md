@@ -2,9 +2,11 @@
 
 Status: qualification in progress, 2026-10-29. The published `0.0.3-dev` is an
 alpha. `0.1.0-beta.1` is an **unpublished qualification candidate**, not a beta
-release or tag. A confirmed context-propagation gap in contribution promotion
-requires a runtime repair and a new candidate before final beta qualification.
-The H3 results below remain observations of that earlier exact candidate. The version was selected before freezing source because the
+release or tag. The contribution promotion context gap was repaired at `5bedb38c`;
+a freshly built candidate passed both Linux rows. Mac qualification is still
+incomplete: the Intel WP13 group reached the unchanged per-command deadline,
+and remaining Mac groups are still running. Earlier H3 results remain historical
+observations of different executable bytes. The version was selected before freezing source because the
 remote tag lookup and release inventory contained no such version; qualifying
 these assets can support a later publication decision without rebuilding them.
 Nothing in this document publishes or adopts the prospective
@@ -21,7 +23,21 @@ provenance digest, source commit/tree, BUILD record, executable digest, compiler
 target, variant and version before running. The actual Go build information must
 agree with BUILD; native-only means combined `nogithub,noforge` build tags.
 
-The observed H3 source is `9a950e8fbd3acb06f1aaee26fc11021f2a0dbb02`, tree
+The current repaired source is `5bedb38c2bf8f59938515114297aeedeb959e53f`, tree
+`66416a0b8b7b79e663099bc808289533626fe96b`.
+[Build and native runtime run 40935607370](https://github.com/LynnColeArt/hubnot/actions/runs/40935607370)
+produced [candidate artifact 12925340544](https://github.com/LynnColeArt/hubnot/actions/runs/40935607370/artifacts/12925340544).
+Its ZIP SHA-256 is `e40d154999cf500d4bb3aa043a9ee72b111942aac58eb4452ec3b83607bd2dac`;
+`PROVENANCE.json` SHA-256 is `a1e4ca916aa26fdc875fa5a7ee7467db8351ab2b717d9c9c109efe865c155578`.
+The uncached source race suite passed at this exact source in 1,023.759 driver
+seconds, with all 218 Go/module inputs unchanged; vet, standard/native-only
+builds, formatting and diff checks also passed. Source-assisted deadline fault
+controls remain separate from native package observations. All eight repaired
+executables differ from H3, so no previous runtime result transfers to them.
+The current documentation/workflow forward retains all 218 Go/module inputs and
+`docs/contributions.md` byte-for-byte from this candidate.
+
+The historical H3 source is `9a950e8fbd3acb06f1aaee26fc11021f2a0dbb02`, tree
 `bdec63a0e25b72431658e4985d08c0fb87be0aed`.
 [Build and native runtime run 40926302591](https://github.com/LynnColeArt/hubnot/actions/runs/40926302591)
 produced [candidate artifact 12920397242](https://github.com/LynnColeArt/hubnot/actions/runs/40926302591/artifacts/12920397242).
@@ -48,10 +64,10 @@ its exact bytes and observed environment.
 
 | Native package target | Explicit runner pool | Candidate runtime status |
 | --- | --- | --- |
-| Linux AMD64 | `ubuntu-24.04` | H3 standard/native-only passed; repaired candidate pending |
-| Linux ARM64 | `ubuntu-24.04-arm` | H3 standard/native-only passed; repaired candidate pending |
-| macOS Apple Silicon | `macos-15` | H3 preflight/compatibility/WP13 passed; aggregate timeout left remaining groups unqualified |
-| macOS Intel | `macos-15-intel` | H3 preflight/compatibility passed; per-command and aggregate timeouts; unqualified |
+| Linux AMD64 | `ubuntu-24.04` | Repaired `5bedb38c` standard/native-only: all required groups passed |
+| Linux ARM64 | `ubuntu-24.04-arm` | Repaired `5bedb38c` standard/native-only: all required groups passed |
+| macOS Apple Silicon | `macos-15` | Repaired candidate preflight and both WP13 variants passed; remaining groups pending |
+| macOS Intel | `macos-15-intel` | Repaired candidate preflight passed; WP13 failed at the per-command deadline; unqualified |
 
 These mappings were rechecked on 2026-10-29 against the
 [official GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
@@ -204,6 +220,52 @@ compatibility repetitions, nine one-pass journey cases, ten standard WP12
 cases and nine native-only WP12 cases. All exits were zero and source inputs
 were unchanged. The only skipped subcases were the two deliberately unshipped
 `nogithub`-only selections; standard and shipped native-only both ran.
+
+## Repaired candidate observations and bounded diagnostics
+
+Both complete `5bedb38c` Linux rows retain 4,018 process transcripts each and all
+218 source inputs remained unchanged. Each ran two preflight cases, three full
+compatibility repetitions, one WP13 group, eight other integrated journey groups,
+ten standard WP12 cases and nine native-only WP12 cases. All required exits were
+zero; only the two deliberate unshipped `nogithub` subcases were skipped.
+An independent supplemental Linux AMD64 operating-envelope recheck used these
+same standard/native-only packages with an explicitly bound external WP07
+harness overlay. Both 24-unit, four-scenario checks passed in 68.940 and 67.520
+seconds respectively. These are observed operating-envelope scenarios, not a
+cross-platform latency guarantee.
+
+The repaired Intel WP13 step failed in 1,506.68 seconds. Preliminary live step
+logs identify a killed standard `proposal-intake` receive and a killed native-only
+`block-author` moderation command at the existing 45-second subprocess context.
+Other WP13 groups completed successfully in both variants. Final job artifacts
+must corroborate those live observations before closeout. The internal failing
+phase, last durable state and cause remain unknown. The finite request/stage
+contexts added by the repair do not constitute one cumulative whole-CLI timer.
+Apple Silicon's repaired WP13 group passed; its remaining required groups and
+both Mac final job outcomes are still pending.
+
+An explicit `diagnostic_mode=intel-standard-45` path is prepared for one standard
+happy-journey observation using only this exact source, origin run, artifact and
+provenance. It requires reuse mode and cannot build a replacement application.
+It checks out the original candidate harness and applies an external observation
+overlay; every semantic assertion and the 45-second subprocess context remain.
+The independent native qualification jobs are skipped in this mode. Diagnostic
+records and artifact names explicitly say `qualification_eligible=false`, so a
+diagnostic success never qualifies the platform. No diagnostic dispatch has yet
+been authorized or executed.
+
+The overlay records per-process UTC timing, monotonic elapsed duration, PID,
+arguments, executable digest, exit/context and output length/hash. Only the
+target `proposal-intake` receives before/after observations of the known fixture
+journal. Reads refuse unsafe/nonregular paths and inputs over 1 MiB; typed
+filtering excludes descriptors, checksums/HMAC material, private paths, arbitrary
+failure text and manifest material. A filtered snapshot is capped at 60 KiB,
+each output record at 64 KiB and all records at 4 MiB. Raw application/test logs
+remain ephemeral and are neither echoed nor uploaded. No additional Hubnot
+observer command, Git trace, policy change or longer capture mode is enabled.
+File observations and metadata writes can affect timing; their durations are
+recorded separately. A durable journal status identifies the last recorded phase,
+not an exact internal function or the cause of a historical failure.
 
 ## Download experience and signing decision
 
