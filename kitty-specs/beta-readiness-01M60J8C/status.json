@@ -308,6 +308,9 @@
       "last_event_id": "01M641XH85XY88QDA3TK63B5A2",
       "last_transition_at": "2026-10-29T14:44:40.325383+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: actual standard and combined-native public journeys, immutable retry recovery, scoped moderation, conservative accounting and operator guide; full uncached race at 3c95c0e2 passed 962.961s with unchanged 216 Go/module hashes; vet/build/format/diff clear."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 1363422,
