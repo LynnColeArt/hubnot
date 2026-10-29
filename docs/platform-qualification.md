@@ -50,11 +50,17 @@ its exact bytes and observed environment.
 | --- | --- | --- |
 | Linux AMD64 | `ubuntu-24.04` | H3 standard/native-only passed; repaired candidate pending |
 | Linux ARM64 | `ubuntu-24.04-arm` | H3 standard/native-only passed; repaired candidate pending |
-| macOS Apple Silicon | `macos-15` | H3 positive package preflight passed; remaining runtime groups pending |
-| macOS Intel | `macos-15-intel` | H3 positive package preflight passed; remaining runtime groups pending |
+| macOS Apple Silicon | `macos-15` | H3 preflight/compatibility/WP13 passed; aggregate timeout left remaining groups unqualified |
+| macOS Intel | `macos-15-intel` | H3 preflight/compatibility passed; per-command and aggregate timeouts; unqualified |
 
 These mappings were rechecked on 2026-10-29 against the
 [official GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
+The observed H3 Linux hosts ran Ubuntu 24.04 with Git 2.56.0; their filesystem
+reported `ext2/ext3` and outer TMPDIR was unset. Both Mac hosts ran macOS 15.7.9
+(build 24G830), Git 2.55.0 and APFS, with their normal `/var/folders/.../T/`
+outer temporary directories. Apple Silicon reported `sysctl.proc_translated=0`;
+the Intel translation flag was unavailable and its native target/uname agreed.
+Child package journeys used their declared closed environments.
 The pool name is not an OS/Git/filesystem version guarantee. Runtime observations
 record `uname`, OS release, Go/Git versions, filesystem, temporary environment,
 source inputs and the macOS translation flag; a translated process refuses the
@@ -176,17 +182,21 @@ remain unchanged. Independent groups run only after successful package
 preflight; a failed required group still fails the job and is never hidden by
 later successful evidence collection.
 
-H0's Mac ARM run completed WP13 in 1,410.25 seconds before the combined
-30-minute invocation exhausted its budget in a later portable journey. H0
-Intel additionally hit the 45-second subprocess deadline for proposal intake
-in both variants. That observation is separate from the aggregate budget;
-its phase and cause remain unproven. The later contribution deadline-contract
-review confirmed missing context propagation in public-file promotion seams,
-but did not attribute the Intel result to those seams. No larger job budget
-or reused artifact establishes that the Intel case passed. A runtime repair
-requires new package bytes and fresh qualification; this reuse path cannot
-substitute H3 evidence for that future candidate. No supplemental reuse run
-has been claimed here.
+H3's Mac ARM run passed compatibility in 113.51 seconds and both WP13 variants
+in 1,471.23 seconds, then exhausted the combined 30-minute invocation in a later
+portable journey. No individual command or completed semantic case failed in
+that run, but unfinished portable work and WP12 remain unqualified. Intel passed
+compatibility in 359.28 seconds, then hit the 45-second subprocess deadline for
+standard proposal intake and native-only issue restoration before the global
+30-minute alarm interrupted its remaining WP13 cases. These per-command
+observations are separate from the aggregate budget; their internal phase and
+cause remain unproven. The contribution deadline-contract review confirmed
+missing context propagation in public-file promotion seams, but did not
+attribute the Intel results to those seams. No larger job budget or reused
+artifact establishes that those Intel cases passed. A runtime repair requires
+new package bytes and fresh qualification; this reuse path cannot substitute
+H3 evidence for that future candidate. No supplemental reuse run has been
+claimed here.
 
 The two complete H3 Linux runs each retain 4,018 process transcripts. Exact
 required top-level names/counts were checked: two preflight cases, three full
