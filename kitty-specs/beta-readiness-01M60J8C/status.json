@@ -1,7 +1,7 @@
 {
-  "event_count": 67,
-  "last_event_id": "01M641XH85XY88QDA3TK63B5A2",
-  "materialized_at": "2026-10-29T14:44:40.325383+00:00",
+  "event_count": 68,
+  "last_event_id": "01M6426G93615WVB7Z36X9W37Y",
+  "materialized_at": "2026-10-29T14:49:34.243739+00:00",
   "mission_number": "",
   "mission_slug": "beta-readiness-01M60J8C",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 4
   },
   "work_packages": {
@@ -301,18 +301,18 @@
     "WP13": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M641XH85XY88QDA3TK63B5A2",
-      "last_transition_at": "2026-10-29T14:44:40.325383+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M6426G93615WVB7Z36X9W37Y",
+      "last_transition_at": "2026-10-29T14:49:34.243739+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: actual standard and combined-native public journeys, immutable retry recovery, scoped moderation, conservative accounting and operator guide; full uncached race at 3c95c0e2 passed 962.961s with unchanged 216 Go/module hashes; vet/build/format/diff clear."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 1363422,
       "shell_pid_created_at": "1793259073.57",
       "subtasks": {
