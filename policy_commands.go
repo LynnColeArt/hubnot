@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -385,6 +386,14 @@ func optionalScalarChange(base int, inBase bool, proposed int, inProposed bool) 
 }
 
 func printOptionalPolicy(policy PolicyDocument) {
+	if policy.Contributions != nil {
+		raw, _ := json.Marshal(policy.Contributions)
+		fmt.Printf("Contributions (explicit local authority selection required): %s\n", raw)
+	}
+	if len(policy.ContributionCheckpoints) > 0 {
+		raw, _ := json.Marshal(policy.ContributionCheckpoints)
+		fmt.Printf("Exact contribution checkpoints (native governance required): %s\n", raw)
+	}
 	if p := policy.Audits; p != nil {
 		fmt.Printf("Audits: enabled (scope %s; observational)\n", p.Scope)
 		printActors("Audit rule owners:", p.RuleOwners)
@@ -424,6 +433,16 @@ func printOptionalPolicy(policy PolicyDocument) {
 func compareOptionalPolicies(base, proposed PolicyDocument) []policyChange {
 	changes := []policyChange{{Label: "protected checks enabled", Value: boolChange(base.ProtectedChecks != nil, proposed.ProtectedChecks != nil)}, {Label: "automerge enabled", Value: boolChange(base.Automerge != nil, proposed.Automerge != nil)}}
 	changes = append(changes, policyChange{Label: "audits enabled", Value: boolChange(base.Audits != nil, proposed.Audits != nil)})
+	if base.Contributions != nil || proposed.Contributions != nil {
+		old, _ := json.Marshal(base.Contributions)
+		next, _ := json.Marshal(proposed.Contributions)
+		changes = append(changes, policyChange{Label: "contributions policy", Value: fmt.Sprintf("%s -> %s", old, next)})
+	}
+	if len(base.ContributionCheckpoints) > 0 || len(proposed.ContributionCheckpoints) > 0 {
+		old, _ := json.Marshal(base.ContributionCheckpoints)
+		next, _ := json.Marshal(proposed.ContributionCheckpoints)
+		changes = append(changes, policyChange{Label: "exact contribution checkpoints", Value: fmt.Sprintf("%s -> %s", old, next)})
+	}
 	var oldAudit, newAudit AuditPolicy
 	if base.Audits != nil {
 		oldAudit = *base.Audits

@@ -42,6 +42,7 @@ type ResourceMutation struct {
 	Operation string
 }
 type ResourceMutationResult struct {
+	Admission  string `json:"admission,omitempty"`
 	ResourceID string `json:"resource_id"`
 	EventID    string `json:"event_id"`
 	Replayed   bool   `json:"replayed"`
@@ -49,6 +50,7 @@ type ResourceMutationResult struct {
 	HeadCount  int    `json:"head_count"`
 }
 type ResourceOperationResult struct {
+	Admission  string          `json:"admission,omitempty"`
 	ResourceID string          `json:"resource_id"`
 	EventID    string          `json:"event_id"`
 	Actor      string          `json:"actor"`
@@ -374,7 +376,7 @@ func ObserveResourceOperation(events []StoredEvent, actor, key, family string) (
 		return nil, issueFailure("operation_conflict", errors.New("operation belongs to another resource kind"))
 	}
 	e := prior.Event
-	return &ResourceOperationResult{resourceRootID(*prior), prior.ID, e.Actor, e.Operation, e.Kind, e.Intent, append([]string{}, e.Parents...), e.Request, json.RawMessage(e.Body)}, nil
+	return &ResourceOperationResult{ResourceID: resourceRootID(*prior), EventID: prior.ID, Actor: e.Actor, Operation: e.Operation, Kind: e.Kind, Intent: e.Intent, Parents: append([]string{}, e.Parents...), Request: e.Request, State: json.RawMessage(e.Body)}, nil
 }
 func MutateResource(input ResourceMutation) (*ResourceMutationResult, error) {
 	if !validResourceFamily(input.Family) {
@@ -425,7 +427,7 @@ func applyResourceMutation(input ResourceMutation, identity *Identity, captured 
 	if err = validateResourceEvent(event); err != nil {
 		return nil, issueFailure("invalid_input", err)
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return nil, issueFailure("invalid_history", err)
 	}
@@ -442,11 +444,20 @@ func applyResourceMutation(input ResourceMutation, identity *Identity, captured 
 			if err != nil || recorded != prior.Event.Request {
 				return nil, issueFailure("invalid_history", errors.New("stored resource operation digest mismatch"))
 			}
-			view := cat.Resources[resourceRootID(*prior)]
-			if view == nil {
-				return nil, issueFailure("invalid_history", errors.New("stored operation has no aggregate"))
+			if err := contributionRetryNative(prior); err != nil {
+				return nil, issueFailure("admission_pending", err)
 			}
-			return &ResourceMutationResult{view.ID, prior.ID, true, view.Conflict, len(view.Heads)}, nil
+			view := cat.Resources[resourceRootID(*prior)]
+			admission, err := contributionAdmission(events, prior.ID)
+			if err != nil {
+				return nil, err
+			}
+			result := &ResourceMutationResult{ResourceID: resourceRootID(*prior), EventID: prior.ID, Replayed: true, Admission: admission}
+			if view != nil {
+				result.Conflict = view.Conflict
+				result.HeadCount = len(view.Heads)
+			}
+			return result, nil
 		}
 	}
 	if input.Intent != "open" {
@@ -474,6 +485,13 @@ func applyResourceMutation(input ResourceMutation, identity *Identity, captured 
 	if err != nil {
 		return nil, issueFailure("invalid_input", err)
 	}
+	if err := contributionAuthorizeCandidate(event, events); err != nil {
+		return nil, issueFailure("permission_denied", err)
+	}
+	localPlan, err := contributionBeforeNative(event, identity, events)
+	if err != nil {
+		return nil, issueFailure("admission_refused", err)
+	}
 	stored, err := appendEvent(event, identity)
 	if err != nil {
 		next, nextErr := nextEvent(identity, event.Kind)
@@ -482,8 +500,27 @@ func applyResourceMutation(input ResourceMutation, identity *Identity, captured 
 		}
 		return nil, issueFailure("repository_error", err)
 	}
+	if err := contributionFinishNative(stored, localPlan); err != nil {
+		return nil, issueFailure("admission_pending", err)
+	}
+	afterEvents := append(append([]StoredEvent{}, events...), *stored)
+	if localPlan != nil {
+		after, err = buildGovernedResourceCatalog(afterEvents)
+		if err != nil {
+			return nil, err
+		}
+	}
 	view := after.Resources[resourceRootID(*stored)]
-	return &ResourceMutationResult{view.ID, stored.ID, false, view.Conflict, len(view.Heads)}, nil
+	admission, err := contributionAdmission(afterEvents, stored.ID)
+	if err != nil {
+		return nil, err
+	}
+	result := &ResourceMutationResult{ResourceID: resourceRootID(*stored), EventID: stored.ID, Admission: admission}
+	if view != nil && (admission == "" || admission == "admitted") {
+		result.Conflict = view.Conflict
+		result.HeadCount = len(view.Heads)
+	}
+	return result, nil
 }
 
 // NativeResourceCommands is looked up when dispatching, avoiding init-order
@@ -624,9 +661,21 @@ func queryResource(family, command, id, actor, key string, limit int, cursor str
 		if id != "" || !validActorFingerprint(actor) || key == "" || cursor != "" {
 			return nil, usageError("operation requires explicit full actor and operation key")
 		}
-		return ObserveResourceOperation(events, actor, key, family)
+		result, err := ObserveResourceOperation(events, actor, key, family)
+		if err != nil {
+			return nil, err
+		}
+		admission, err := contributionAdmission(events, result.EventID)
+		if err != nil {
+			return nil, err
+		}
+		result.Admission = admission
+		if admission != "" && admission != "admitted" {
+			result.State = nil
+		}
+		return result, nil
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return nil, err
 	}

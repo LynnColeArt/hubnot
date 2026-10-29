@@ -215,7 +215,7 @@ func selectNativeWorkflow(id, expected string) (*workflowSelection, error) {
 	if err != nil {
 		return nil, err
 	}
-	catalog, err := BuildResourceCatalog(events)
+	catalog, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return nil, err
 	}
@@ -445,6 +445,9 @@ func requestNativeWorkflow(options workflowAction) (*workflowRunRequest, error) 
 		return nil, err
 	}
 	if err = guardShallowEventClosure("run request"); err != nil {
+		return nil, err
+	}
+	if err := contributionRequireProposal(options.proposal); err != nil {
 		return nil, err
 	}
 	proposal, err := resolveEventDependency("run request", options.proposal, shallowCandidateEvent, selected.Events)

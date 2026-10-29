@@ -43,7 +43,12 @@ func defaultIssueReadLimits() issueReadLimits {
 // the selected ref names and OIDs observed before and after loading, not a lock
 // or a promise that another actor cannot subsequently append.
 func collectIssueEvents() ([]StoredEvent, string, error) {
-	return collectIssueEventsWithLimits(defaultIssueReadLimits())
+	events, snapshot, err := collectIssueEventsWithLimits(defaultIssueReadLimits())
+	if err != nil {
+		return nil, "", err
+	}
+	snapshot, err = contributionReadSnapshot(snapshot)
+	return events, snapshot, err
 }
 
 func collectIssueEventsWithLimits(limits issueReadLimits) ([]StoredEvent, string, error) {

@@ -314,7 +314,7 @@ func githubWorkflowRejectNativeEcho(m githubWorkflowManifest, s WorkflowState) e
 	if err != nil {
 		return err
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return err
 	}

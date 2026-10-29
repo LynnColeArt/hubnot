@@ -534,7 +534,7 @@ func forgeBuildResourcePlan(p forge.Identity, o transferOptions, g forge.Graph, 
 	if report.Blocked() {
 		return journal, errors.New("resource migration plan requires mapping or has unsupported/missing/conflicting data")
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return journal, err
 	}
@@ -1112,14 +1112,23 @@ func forgeSnapshotResource(id string, resource forge.Resource) (forgeResourceSna
 	if err != nil {
 		return forgeResourceSnapshot{}, err
 	}
-	return forgeSnapshotResourceAt(id, resource, events)
+	return forgeSnapshotResourceSelectedAt(id, resource, events, true)
 }
+
+// Historical checkpoint authentication uses exact raw signed observations. It
+// does not select current content for export or create new admission.
 func forgeSnapshotResourceAt(id string, resource forge.Resource, events []StoredEvent) (forgeResourceSnapshot, error) {
+	return forgeSnapshotResourceSelectedAt(id, resource, events, false)
+}
+func forgeSnapshotResourceSelectedAt(id string, resource forge.Resource, events []StoredEvent, governed bool) (forgeResourceSnapshot, error) {
 	snapshot := forgeResourceSnapshot{Anchors: forgeResourceAnchors(events), NativeID: id, Resource: resource, Graph: forge.Graph{Nodes: []forge.Node{}, Findings: []forge.Finding{}}, Versions: []forgeResourceVersion{}}
 	if !validEventID(id) {
 		return snapshot, errors.New("resource export requires a full native ID")
 	}
 	cat, err := BuildResourceCatalog(events)
+	if governed {
+		cat, err = buildGovernedResourceCatalog(events)
+	}
 	if err != nil {
 		return snapshot, err
 	}
@@ -1205,6 +1214,11 @@ func forgeSnapshotResourceAt(id string, resource forge.Resource, events []Stored
 		return snapshot, errors.New("native resource snapshot exceeds transfer bounds")
 	}
 	snapshot.Digest = eventID(raw)
+	if governed {
+		if err := contributionAuthorizeExport(snapshot, events); err != nil {
+			return snapshot, err
+		}
+	}
 	return snapshot, nil
 }
 
@@ -1228,7 +1242,7 @@ func forgeAuthenticateResourceSnapshot(snapshot forgeResourceSnapshot) error {
 	if string(a) != string(b) {
 		return errors.New("resource export snapshot differs from exact authenticated native graph")
 	}
-	return nil
+	return contributionAuthorizeExport(snapshot, events)
 }
 func forgeImportedResourceBaseline(id string) (forgeResourceSource, forgeResourceObservation, forgeResourceVersion, error) {
 	var source forgeResourceSource
@@ -1238,7 +1252,7 @@ func forgeImportedResourceBaseline(id string) (forgeResourceSource, forgeResourc
 	if err != nil {
 		return source, observation, version, err
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return source, observation, version, err
 	}
@@ -1396,4 +1410,26 @@ func forgeValidateResourceSigningBudget(j forgeResourceJournal, identity *Identi
 func forgeResourceGraphDigest(graph forge.Graph) string {
 	raw, _ := json.Marshal(graph)
 	return eventID(raw)
+}
+
+// Resume authenticates saved signed versions against raw anchors, then applies
+// current admission/visibility before any new external mutation. A hidden old
+// pin causes an honest refusal rather than a historical-body leak.
+func contributionAuthorizeExport(snapshot forgeResourceSnapshot, events []StoredEvent) error {
+	v, _, e := contributionView(events)
+	if e != nil {
+		return e
+	}
+	if v == nil {
+		return nil
+	}
+	if !v.Visible[snapshot.NativeRevision] {
+		return fmt.Errorf("resource export revision is not admitted and visible")
+	}
+	for _, version := range snapshot.Versions {
+		if !v.Visible[version.Revision] {
+			return fmt.Errorf("resource export includes hidden or unadmitted historical revision; use explicit raw backup for immutable history")
+		}
+	}
+	return nil
 }
