@@ -548,7 +548,7 @@ func betaContributionPublicJourney(f *betaContributionCLI) {
 	betaContributionContains(t, f.hn(owner, true, "contribution", "pending", "--json"), proposalArtifact.Submission)
 	// Pending facts are excluded from the operative native catalog.
 	betaContributionContains(t, f.hn(owner, false, "merge", proposal), "not found")
-	f.decide(owner, "admit", "--submission", proposalArtifact.Submission, "absent", "admit-proposal")
+	admission := f.decide(owner, "admit", "--submission", proposalArtifact.Submission, "absent", "admit-proposal")
 	betaContributionContains(t, f.hn(owner, true, "proposal", "list"), "Stranger code proposal")
 	// Admission supplies neither review, required CI results, nor acceptance.
 	f.hn(owner, false, "merge", proposal)
@@ -566,6 +566,15 @@ func betaContributionPublicJourney(f *betaContributionCLI) {
 	}
 	betaContributionContains(t, f.hn(owner, false, "runner", "once"), "unsupported under enabled contribution policy")
 	betaContributionContains(t, f.hn(owner, false, "run", "list"), "raw history")
+	rejected := f.decide(owner, "reject", "--submission", proposalArtifact.Submission, admission, "reject-proposal")
+	if strings.Contains(f.hn(owner, true, "proposal", "list"), "Stranger code proposal") {
+		t.Fatal("rejected submission remained in governed proposal view")
+	}
+	if f.raw(owner, proposal) != f.raw(contributor, proposal) {
+		t.Fatal("rejection changed original signed code proposal")
+	}
+	f.decide(owner, "admit", "--submission", proposalArtifact.Submission, rejected, "readmit-proposal")
+	betaContributionContains(t, f.hn(owner, true, "proposal", "status", proposal), "1/1 trusted approvals", "proof 0/1 trusted passes")
 	// Project moderation changes visibility while exact signed history survives.
 	hide := f.decide(owner, "hide", "--revision", issue, "absent", "hide-issue")
 	if strings.Contains(f.hn(owner, true, "issue", "list", "--json"), "Stranger issue") {
