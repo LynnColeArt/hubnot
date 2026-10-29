@@ -258,7 +258,7 @@ history; raw imports during the disabled period do not become automatic intake.
 
 Record a durable receiver-local `--operation` before intake. An exact retry with
 the same digest and ref selection reuses the original durable attempt without
-reopening a changed or missing source file or spending another reservation.
+reopening a changed or missing source file or spending another input reservation.
 Changing digest/selection under that operation refuses. A failed, reserved or
 uncertain attempt is not proof of admission, even if a retry exits successfully:
 
