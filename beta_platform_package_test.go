@@ -299,6 +299,9 @@ func TestBetaPlatformPackageInstallAndRuntime(t *testing.T) {
 			}
 			for _, parent := range parents {
 				t.Run(parent, func(t *testing.T) {
+					fixture := *f
+					fixture.t = t
+					f := &fixture
 					root, err := os.MkdirTemp(parent, "hn-beta-package-")
 					if err != nil {
 						t.Fatal(err)
@@ -340,7 +343,7 @@ func TestBetaPlatformPackageInstallAndRuntime(t *testing.T) {
 					}
 					exported := filepath.Join(root, "continued.hn")
 					exportPlan := filepath.Join(root, "export")
-					plan("--source-kind", "imported", "--source-repository", local, "--snapshot", digests[0], "--destination-kind", "archive", "--destination-repository", exported, "--session", exportPlan)
+					call(true, "plan", "--source-kind", "imported", "--source-repository", local, "--snapshot", digests[0], "--destination-kind", "archive", "--destination-repository", exported, "--session", exportPlan)
 					call(true, "apply", "--session", exportPlan, "--confirm-apply")
 					view := call(true, "inspect", "--archive", exported)
 					if !strings.Contains(view, "Foreign issue") {
