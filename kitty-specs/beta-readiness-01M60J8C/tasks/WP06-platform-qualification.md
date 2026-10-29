@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: feature/beta-readiness
 merge_target_branch: feature/beta-readiness
 branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-beta-readiness-01M60J8C
+base_commit: 43aa2d6718fa1e65f016f82b4fb6e74e2ec1ba7c
+created_at: '2026-10-29T14:59:00.841463+00:00'
 subtasks:
 - T018
 - T019
