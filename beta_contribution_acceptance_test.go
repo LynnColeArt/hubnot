@@ -70,17 +70,26 @@ func newBetaContributionCLI(t *testing.T, binary string) *betaContributionCLI {
 
 func (f *betaContributionCLI) process(dir, program string, ok bool, args ...string) []byte {
 	f.t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+	watchdog := 45 * time.Second
+	if program == f.binary && len(args) > 0 && args[0] == "contribution" {
+		// Contribution commands can compose independently bounded stages.
+		// Six default 30s stages plus 60s fixture/legacy headroom is a finite
+		// test watchdog, not a production deadline or a hard runtime maximum.
+		watchdog = 240 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), watchdog)
 	defer cancel()
 	p := exec.CommandContext(ctx, program, args...)
 	p.Dir, p.Env = dir, f.env
+	started := time.Now()
 	out, err := p.CombinedOutput()
+	elapsed := time.Since(started)
 	if evidence := os.Getenv("HN_CONTRIBUTION_TEST_TRANSCRIPTS"); evidence != "" {
 		file, e := os.CreateTemp(evidence, "beta-cli-*.log")
 		if e != nil {
 			f.t.Fatal(e)
 		}
-		_, e = fmt.Fprintf(file, "test: %s\nprogram: %s\nsha256: %x\ncwd: %s\nargv: %q\nexit: %v\noutput:\n%s", f.t.Name(), program, f.digest, dir, args, err, out)
+		_, e = fmt.Fprintf(file, "test: %s\nprogram: %s\nsha256: %x\ncwd: %s\nargv: %q\nwatchdog: %v\nelapsed: %v\ncontext: %v\nexit: %v\noutput:\n%s", f.t.Name(), program, f.digest, dir, args, watchdog, elapsed, ctx.Err(), err, out)
 		closeErr := file.Close()
 		if e != nil || closeErr != nil {
 			f.t.Fatalf("transcript: %v %v", e, closeErr)

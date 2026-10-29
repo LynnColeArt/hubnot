@@ -3,9 +3,11 @@
 Status: qualification in progress, 2026-10-29. The published `0.0.3-dev` is an
 alpha. `0.1.0-beta.1` is an **unpublished qualification candidate**, not a beta
 release or tag. The contribution promotion context gap was repaired at `5bedb38c`;
-the freshly built candidate passed both Linux rows and every Mac Apple Silicon
-group. Intel qualification remains incomplete: its WP13 happy journeys reached
-the unchanged per-command deadline, while all other required Intel groups passed. Earlier H3 results remain historical
+that candidate passed both Linux rows and every Mac Apple Silicon group. Intel's
+ordinary WP13 qualification failed under the former 45-second outer watchdog;
+all other required Intel groups passed. The acceptance helper now has a documented
+finite watchdog for multi-stage contribution commands. A fresh ordinary matrix
+with the corrected source-bound harness is pending. Earlier H3 results remain historical
 observations of different executable bytes. The version was selected before freezing source because the
 remote tag lookup and release inventory contained no such version; qualifying
 these assets can support a later publication decision without rebuilding them.
@@ -34,8 +36,10 @@ seconds, with all 218 Go/module inputs unchanged; vet, standard/native-only
 builds, formatting and diff checks also passed. Source-assisted deadline fault
 controls remain separate from native package observations. All eight repaired
 executables differ from H3, so no previous runtime result transfers to them.
-The current documentation/workflow forward retains all 218 Go/module inputs and
-`docs/contributions.md` byte-for-byte from this candidate.
+The current forward changes the inherited acceptance watchdog and qualification
+workflow/guide. All 105 non-test Go/module inputs and `docs/contributions.md`
+remain byte-for-byte from this candidate. The corrected source archive and test
+harness require the fresh ordinary qualification described below.
 
 The historical H3 source is `9a950e8fbd3acb06f1aaee26fc11021f2a0dbb02`, tree
 `bdec63a0e25b72431658e4985d08c0fb87be0aed`.
@@ -68,6 +72,9 @@ its exact bytes and observed environment.
 | Linux ARM64 | `ubuntu-24.04-arm` | Repaired `5bedb38c` standard/native-only: all required groups passed |
 | macOS Apple Silicon | `macos-15` | Repaired `5bedb38c` standard/native-only: all required groups passed |
 | macOS Intel | `macos-15-intel` | Preflight, integrated journeys and both WP12 variants passed; WP13 happy journeys failed; unqualified |
+
+These are observations of the original `5bedb38c` harness. The corrected
+watchdog source has not yet completed its new ordinary matrix.
 
 These mappings were rechecked on 2026-10-29 against the
 [official GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
@@ -170,8 +177,10 @@ Their successful completion remains an observation to record, not an assumption.
 
 ## Reuse and supplemental runtime execution
 
-The optional workflow retains `candidate_mode=build` and all four native
-platforms as its dispatch defaults. Explicit `candidate_mode=reuse` requires
+The maintained optional workflow retains `candidate_mode=build` and all four
+native platforms as its dispatch defaults. One-off pinned diagnostic modes,
+inputs and jobs were archived externally and removed from maintained CI; the
+general build/reuse/split path and original source PR checks remain. Explicit `candidate_mode=reuse` requires
 an exact source commit, originating run ID, candidate artifact ID and expected
 provenance digest. It validates that the artifact and successful build belong
 to the same source and this repository, checks the original ZIP/provenance/
@@ -192,9 +201,9 @@ WP13 public contribution journeys have a separate 45-minute aggregate test
 invocation; remaining integrated/compatibility/recovery/migration journeys
 retain a 30-minute invocation. WP12's two variants each have a separate
 20-minute aggregate invocation. A native job allows 90 minutes for these
-sequential groups. These are qualification-harness budgets: all existing
-per-command deadlines, production limits, assertions and shipped variants
-remain unchanged. Independent groups run only after successful package
+sequential groups. These are qualification-harness budgets. The contribution
+public helper now uses the finite command-family watchdog documented below;
+production limits, assertions and shipped variants remain unchanged. Independent groups run only after successful package
 preflight; a failed required group still fails the job and is never hidden by
 later successful evidence collection.
 
@@ -254,7 +263,7 @@ host ran macOS 15.7.9, Git 2.55.0 and APFS in the native Intel pool. The ordinar
 therefore remains failed; neither larger aggregate budgets nor passing adjacent
 groups turn the Intel row green.
 
-The explicit `diagnostic_mode=intel-standard-45` path then executed one standard
+The archived `diagnostic_mode=intel-standard-45` path executed one standard
 happy-journey observation using these same immutable packages in
 [diagnostic run 40945963139](https://github.com/LynnColeArt/hubnot/actions/runs/40945963139).
 The executing workflow was `f205160da277701e2e65a8ef005e77b9bd15adeb`, distinct
@@ -275,32 +284,66 @@ not proof of a scaling cause. The finite production request/stage contexts do
 not constitute a cumulative whole-CLI 30-second timer. No longer capture,
 tracing, repeat-until-green run or new runtime repair has been executed.
 
-A follow-up `diagnostic_mode=intel-standard-discussion-reply-120` is prepared
-for one separately approved observation. It gives only the exact standard
-`discussion-reply-intake` receive a 120-second external capture; other commands
-retain 45 seconds and production phase budgets stay unchanged. It preserves
-all semantic assertions and remains ineligible for qualification, even if a
-command later finishes beyond the ordinary 45-second gate. No follow-up run
-has yet been dispatched.
+The separately reviewed follow-up
+[diagnostic run 40950781922](https://github.com/LynnColeArt/hubnot/actions/runs/40950781922)
+used workflow `616e472115a67361fc5b0454bc14ba14190e7262`, the same immutable
+application, and journal observations around every receive. Only the exact
+standard discussion-reply target had a 120-second external capture. That target
+completed in **44.876904965 seconds**, below 45; this run does not show that its
+extra allowance was necessary. A later proposal receive was killed at its
+unchanged 45-second ceiling after **45.002919314 seconds**, with zero output.
+The target's successful terminal result and the failed overall case are separate.
 
-The follow-up overlay records per-process UTC timing, monotonic elapsed duration,
-PID, arguments, executable digest, exit/context and output length/hash. Every
-selected `contribution receive` gets before/after observations of the known fixture
-journal, so an earlier receive failure can retain its own durable-state evidence.
-The selected target's terminal result is reported separately from any later
-happy-journey failure. A bounded output marker recognizes an anchored CLI error
-line ending in `context deadline exceeded`; only the enum is exported. The marker
-is an observed error shape, not an internal phase or causal finding. Reads refuse unsafe/nonregular paths and inputs over 1 MiB; typed
-filtering excludes descriptors, checksums/HMAC material, private paths, arbitrary
-failure text and manifest material. A filtered snapshot is capped at 60 KiB,
-each output record at 64 KiB and all records at 4 MiB. Raw application/test logs
-remain ephemeral and are neither echoed nor uploaded. No additional Hubnot
-observer command, Git trace or policy change is enabled. The longer external
-capture is limited to the one explicit diagnostic target.
-Journal observations have separate duration records and may warm caches.
-Start metadata writes occur during the command interval, so their overhead is
-included in command elapsed time and can affect the observed result. A durable journal status identifies the last recorded phase,
-not an exact internal function or the cause of a historical failure.
+Its 154 structured records include 14 before/after journal observations. After
+the proposal cutoff, the original input was durable `pending`, with its actor
+manifest marked objects-durable and complete. A generated `receipts-*` attempt
+was also pending with no manifest writes recorded. Those are last durable
+milestones; they do not identify the interrupted function or the cause of the
+latency. Recorded input milliseconds exclude later retention/receipt work and
+must not be subtracted from command elapsed as an exclusive phase measurement.
+All source, app, overlay/map and compiled harness identities stayed unchanged.
+Both diagnostics remain explicitly ineligible for qualification; no historical
+failure was converted to a pass.
+
+The diagnostic collection kept 1 MiB journal-input, 60 KiB filtered-state, 64 KiB
+record and 4 MiB aggregate caps. Typed fields excluded checksums/HMAC material,
+descriptors, private paths, arbitrary failure text and manifest material. Raw
+app/test logs stayed ephemeral outside the exact upload allowlist. An anchored,
+bounded CLI deadline-marker enum exposed no error text. No app observer, Git
+trace, policy change or runtime instrumentation was added. Extra journal reads
+could warm caches, and start metadata writes overlapped command timing; these
+were observed fixture instances, not a single-variable causal comparison. The
+one-off workflow/generators, exact reviews, artifacts and hashes remain archived
+separately from maintained CI.
+
+## Permanent qualification watchdog and new candidate
+
+The public contribution acceptance helper now permits **240 seconds only when
+it launches the selected application with first argument `contribution`**. Setup
+Git, other programs, ordinary application commands and empty argument lists keep
+45 seconds. There is no environment override. A watchdog expiration always fails,
+including when a semantic refusal was expected. All original admission, content,
+lineage, authority, replay, quota, ref and variant assertions remain intact.
+The independent short-budget/parent-cancellation stage regressions remain required.
+
+This is an engineering test ceiling: six separately bounded default 30-second
+stages, plus 60 seconds of startup, durable bookkeeping and synchronous legacy
+headroom. Production reservation/context values stay unchanged. Some intervening
+legacy validation is synchronous and contextless, so the arithmetic is **not a
+hard maximum on application runtime**, a new product deadline or a latency SLA.
+The diagnostics did not prove a historical cause or that 240 seconds is necessary.
+Observed receive latency remains a performance concern; changing a test watchdog
+is not an optimization.
+
+The corrected helper and restored general workflow need exact review, a frozen
+source race suite and **one new ordinary four-platform matrix**. The new source
+archive and BUILD records must bind that committed source/harness. Runtime/module
+inputs remain identical to `5bedb38c`; actual eight-package executable equivalence
+must still be checked after the fresh build. Earlier 45-second failures remain
+historical failures, and diagnostic results cannot substitute for the new matrix.
+If the new watchdog expires or a production stage error appears, investigate that
+exact failure rather than raising the ceiling again. No third diagnostic is part
+of this correction.
 
 ## Download experience and signing decision
 
