@@ -952,3 +952,387 @@ func TestContributionExchangeInterruptedConflictRemainsRawAndPortable(t *testing
 		t.Fatal("raw conflict retention/recovery bypassed its existing charge", e)
 	}
 }
+
+// Retention failures spend their original durable capacity even if no ref was
+// installed. Reopening the exchange must preserve the complete spending intent.
+func TestContributionExchangePrePlanFailurePinsRetentionIntent(t *testing.T) {
+	for _, changed := range []string{"destination", "head"} {
+		t.Run(changed, func(t *testing.T) {
+			repo := inReplicationTestRepository(t)
+			original := testIdentity(t, "Pinned retention author")
+			fact := appendIdentityTestEvent(t, original, "issue.open", func(e *Event) { e.Title = "Pinned retention" })
+			p := exchangePolicy()
+			refs := []string{actorRef(original.Actor)}
+			env := exchangeEnvelope(t, p, original, c.IssueCreate, c.Content{Root: fact.ID, Revision: fact.ID, Author: original.Actor, Parents: []string{}, References: []c.Reference{}}, "original-record")
+			p.Limits.Objects = 16
+			ctx := context.Background()
+			source := filepath.Join(repo, ".git")
+			v, e := c.Verify(env.Payload, env.Signature)
+			if e != nil {
+				t.Fatal(e)
+			}
+			actor := v.Record().Actor
+			path := filepath.Join(t.TempDir(), "artifact")
+			digest, e := ExportContributionArtifact(ctx, source, p.Project, refs, []c.Envelope{env}, path, p.Limits)
+			if e != nil {
+				t.Fatal(e)
+			}
+			x := exchangeOpen(t, p)
+			intake, e := x.Receive(ctx, path, digest, "pinned-retention", refs)
+			if e != nil {
+				t.Fatal(e)
+			}
+			newDestination := func() string {
+				t.Helper()
+				dir := filepath.Join(t.TempDir(), "retained.git")
+				if _, e := projectGit(ctx, "", nil, 4096, "-c", "init.templateDir=", "init", "--bare", "--quiet", dir); e != nil {
+					t.Fatal(e)
+				}
+				return dir
+			}
+			measure := func(dir string) (int64, int64) {
+				t.Helper()
+				raw, e := projectGit(ctx, dir, nil, 1<<20, "cat-file", "--batch-all-objects", "--batch-check=%(objectsize)")
+				if e != nil {
+					t.Fatal(e)
+				}
+				var size int64
+				for _, line := range strings.Fields(string(raw)) {
+					n, e := strconv.ParseInt(line, 10, 64)
+					if e != nil {
+						t.Fatal(e)
+					}
+					size += n
+				}
+				return int64(len(strings.Fields(string(raw)))), size
+			}
+			dir := newDestination()
+			ref, e := contributionRef(p.Project, actor)
+			if e != nil {
+				t.Fatal(e)
+			}
+			// Create an independently valid alternative expected head before measuring
+			// retention. It has a different selected signed record from this intake.
+			alternate := ""
+			if changed == "head" {
+				other := exchangeEnvelope(t, p, original, c.IssueCreate, c.Content{Root: fact.ID, Revision: fact.ID, Author: actor, Parents: []string{}, References: []c.Reference{}}, "alternate-record")
+				alternate, e = prepareContributionManifest(ctx, dir, p.Project, actor, "absent", []c.Envelope{other}, p.Limits)
+				if e != nil {
+					t.Fatal(e)
+				}
+			}
+			baselineObjects, baselineBytes := measure(dir)
+			x.fault = func(step string) error {
+				if step == "manifest-objects-durable" {
+					return errors.New("interrupted immutable retention")
+				}
+				return nil
+			}
+			if _, e = x.RetainActor(ctx, dir, intake.Intent, actor, "absent"); e == nil {
+				t.Fatal("write interruption not reached")
+			}
+			afterObjects, afterBytes := measure(dir)
+			if afterObjects <= baselineObjects || afterBytes <= baselineBytes {
+				t.Fatal("fault did not follow real immutable writes")
+			}
+			ledger, attempts, e := x.Accounting()
+			if e != nil {
+				t.Fatal(e)
+			}
+			if len(attempts) != 1 || ledger.RetainedUsed.Requests != 1 {
+				t.Fatal("retention changed intake accounting", ledger, attempts)
+			}
+			// Continue testing the refusal even on the vulnerable implementation, so
+			// red evidence includes actual extra objects rather than metadata alone.
+			plansDurable := len(attempts[0].ManifestWrites) == 1
+			if plansDurable {
+				plan := attempts[0].ManifestWrites[0]
+				if plan.Objects < afterObjects-baselineObjects || plan.Bytes < afterBytes-baselineBytes || plan.Objects > intake.Reserved.Objects || plan.Bytes > intake.Reserved.DecodedBytes || plan.Expected != "absent" || plan.Actor != actor || plan.ObjectsDurable || plan.Complete {
+					t.Errorf("failed immutable retention lacks its exact durable charge: %#v", plan)
+				}
+			}
+			reopened, e := OpenContributionExchange(x.root, p, "same-window")
+			if e != nil {
+				t.Fatal(e)
+			}
+			reopened.fault = x.fault
+			retainedPath := reopened.artifactPath(digest)
+			originalBytes, e := os.ReadFile(retainedPath)
+			if e != nil {
+				t.Fatal(e)
+			}
+			changedBytes := append([]byte{}, originalBytes...)
+			changedBytes[len(changedBytes)-1] ^= 1
+			if e = os.WriteFile(retainedPath, changedBytes, 0600); e != nil {
+				t.Fatal(e)
+			}
+			if _, e = reopened.RetainActor(ctx, dir, intake.Intent, actor, "absent"); e == nil {
+				t.Fatal("changed selected material accepted")
+			}
+			objects, size := measure(dir)
+			if objects != afterObjects || size != afterBytes {
+				t.Fatal("changed material retained additional immutable objects")
+			}
+			if e = os.WriteFile(retainedPath, originalBytes, 0600); e != nil {
+				t.Fatal(e)
+			}
+			if changed == "destination" {
+				for i := 0; i < 4; i++ {
+					otherDir := newDestination()
+					if _, e = reopened.RetainActor(ctx, otherDir, intake.Intent, actor, "absent"); e == nil {
+						t.Fatal("changed destination accepted")
+					}
+					objects, size := measure(otherDir)
+					afterObjects += objects
+					afterBytes += size
+					if objects != 0 || size != 0 {
+						t.Errorf("refused destination retained objects=%d bytes=%d", objects, size)
+					}
+				}
+			} else {
+				if _, e = projectGit(ctx, dir, nil, 256, "update-ref", ref, alternate); e != nil {
+					t.Fatal(e)
+				}
+				beforeObjects, beforeBytes := measure(dir)
+				if _, e = reopened.RetainActor(ctx, dir, intake.Intent, actor, alternate); e == nil {
+					t.Fatal("changed expected head accepted")
+				}
+				afterObjects, afterBytes = measure(dir)
+				if afterObjects != beforeObjects || afterBytes != beforeBytes {
+					t.Errorf("refused head change retained new objects: before=%d/%d after=%d/%d", beforeObjects, beforeBytes, afterObjects, afterBytes)
+				}
+				if _, e = projectGit(ctx, dir, nil, 256, "update-ref", "-d", ref, alternate); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if !plansDurable {
+				t.Error("immutable objects were written before durable retention plan")
+			}
+			if afterObjects-baselineObjects > intake.Reserved.Objects || afterBytes-baselineBytes > intake.Reserved.DecodedBytes {
+				t.Errorf("actual retained objects/bytes exceed durable reservation: %d/%d reserved=%d/%d", afterObjects-baselineObjects, afterBytes-baselineBytes, intake.Reserved.Objects, intake.Reserved.DecodedBytes)
+			}
+			// Exact retry after a process reopen retains the same objects and recovers
+			// an uncertain ref CAS; a second replay must not create any immutable bytes.
+			reopened.fault = func(step string) error {
+				if step == "manifest-ref-updated" {
+					return errors.New("interrupted ref receipt")
+				}
+				return nil
+			}
+			beforeObjects, beforeBytes := measure(dir)
+			if _, e = reopened.RetainActor(ctx, dir, intake.Intent, actor, "absent"); e == nil {
+				t.Fatal("CAS interruption not reached")
+			}
+			reopened, e = OpenContributionExchange(x.root, p, "same-window")
+			if e != nil {
+				t.Fatal(e)
+			}
+			head, e := reopened.RetainActor(ctx, dir, intake.Intent, actor, "absent")
+			if e != nil {
+				t.Fatal("exact retry failed", e)
+			}
+			records, gotHead, e := ReadContributionManifest(ctx, dir, p.Project, actor, p.Limits)
+			if e != nil || gotHead != head || len(records) != 1 || !bytes.Equal(records[0].Payload(), env.Payload) {
+				t.Fatal("exact material/CAS recovery failed", e)
+			}
+			objects, size = measure(dir)
+			if objects != beforeObjects || size != beforeBytes {
+				t.Fatal("exact retry accumulated immutable objects", objects, size, beforeObjects, beforeBytes)
+			}
+			finalLedger, finalAttempts, e := reopened.Accounting()
+			if e != nil || finalLedger.RetainedUsed != ledger.RetainedUsed || len(finalAttempts[0].ManifestWrites) != 1 || !finalAttempts[0].ManifestWrites[0].Complete {
+				t.Fatal("recovery lost durable charge/receipt", e)
+			}
+		})
+	}
+}
+
+func TestContributionExchangeDurableManifestPlanPrecedesAllObjects(t *testing.T) {
+	repo, _, env, p, refs := exchangeFixture(t)
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "artifact")
+	digest, e := ExportContributionArtifact(ctx, filepath.Join(repo, ".git"), p.Project, refs, []c.Envelope{env}, path, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	x := exchangeOpen(t, p)
+	intake, e := x.Receive(ctx, path, digest, "before-any-object", refs)
+	if e != nil {
+		t.Fatal(e)
+	}
+	v, e := c.Verify(env.Payload, env.Signature)
+	if e != nil {
+		t.Fatal(e)
+	}
+	actor := v.Record().Actor
+	dir := filepath.Join(t.TempDir(), "retained.git")
+	if _, e = projectGit(ctx, "", nil, 4096, "-c", "init.templateDir=", "init", "--bare", "--quiet", dir); e != nil {
+		t.Fatal(e)
+	}
+	x.fault = func(step string) error {
+		if step == "manifest-plan-durable" {
+			return errors.New("interruption before object writes")
+		}
+		return nil
+	}
+	if _, e = x.RetainActor(ctx, dir, intake.Intent, actor, "absent"); e == nil {
+		t.Fatal("plan interruption not reached")
+	}
+	raw, e := projectGit(ctx, dir, nil, 4096, "cat-file", "--batch-all-objects", "--batch-check=%(objectname)")
+	if e != nil || len(raw) != 0 {
+		t.Fatal("planning wrote immutable objects", string(raw), e)
+	}
+	ledger, attempts, e := x.Accounting()
+	if e != nil || len(attempts) != 1 || len(attempts[0].ManifestWrites) != 1 {
+		t.Fatal("missing durable plan", e)
+	}
+	plan := attempts[0].ManifestWrites[0]
+	if plan.Objects != 5 || plan.Bytes <= 0 || plan.Material == "" || plan.Head == "" || plan.ObjectsDurable || plan.Complete {
+		t.Fatal("incomplete pre-write binding", plan)
+	}
+	x, e = OpenContributionExchange(x.root, p, "same-window")
+	if e != nil {
+		t.Fatal(e)
+	}
+	head, e := x.RetainActor(ctx, dir, intake.Intent, actor, "absent")
+	if e != nil || head != plan.Head {
+		t.Fatal("planned result changed on process reopen", head, plan, e)
+	}
+	var actualBytes int64
+	e = filepath.WalkDir(filepath.Join(dir, "objects"), func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		actualBytes += info.Size()
+		return nil
+	})
+	if e != nil || actualBytes == 0 || actualBytes > plan.Bytes {
+		t.Fatal("actual immutable bytes exceed durable operation charge", actualBytes, plan.Bytes, e)
+	}
+	raw, e = projectGit(ctx, dir, nil, 4096, "cat-file", "--batch-all-objects", "--batch-check=%(objectname)")
+	if e != nil || int64(len(strings.Fields(string(raw)))) > plan.Objects {
+		t.Fatal("actual immutable object count exceeds durable operation charge", e)
+	}
+	finalLedger, attempts, e := x.Accounting()
+	if e != nil || ledger.RetainedUsed != finalLedger.RetainedUsed || !attempts[0].ManifestWrites[0].Complete {
+		t.Fatal("completion refunded or replaced pre-write charge", e)
+	}
+}
+
+func TestContributionExchangePriorManifestCannotSpendNativeReservation(t *testing.T) {
+	repo := inReplicationTestRepository(t)
+	identity := testIdentity(t, "Budgeted retention author")
+	fact := appendIdentityTestEvent(t, identity, "issue.open", func(e *Event) { e.Title = "Budgeted retention" })
+	p := exchangePolicy()
+	p.Limits.Objects = 16
+	refs := []string{actorRef(identity.Actor)}
+	content := c.Content{Root: fact.ID, Revision: fact.ID, Author: identity.Actor, Parents: []string{}, References: []c.Reference{}}
+	env := exchangeEnvelope(t, p, identity, c.IssueCreate, content, "new-record")
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "artifact")
+	digest, e := ExportContributionArtifact(ctx, filepath.Join(repo, ".git"), p.Project, refs, []c.Envelope{env}, path, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	x := exchangeOpen(t, p)
+	intake, e := x.Receive(ctx, path, digest, "bounded-merge", refs)
+	if e != nil {
+		t.Fatal(e)
+	}
+	dir := filepath.Join(t.TempDir(), "retained.git")
+	if _, e = projectGit(ctx, "", nil, 4096, "-c", "init.templateDir=", "init", "--bare", "--quiet", dir); e != nil {
+		t.Fatal(e)
+	}
+	prior := []c.Envelope{}
+	for i := 0; i < 5; i++ {
+		prior = append(prior, exchangeEnvelope(t, p, identity, c.IssueCreate, content, fmt.Sprintf("prior-%d", i)))
+	}
+	head, e := prepareContributionManifest(ctx, dir, p.Project, identity.Actor, "absent", prior, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	ref, e := contributionRef(p.Project, identity.Actor)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = projectGit(ctx, dir, nil, 256, "update-ref", ref, head); e != nil {
+		t.Fatal(e)
+	}
+	before, e := projectGit(ctx, dir, nil, 4096, "cat-file", "--batch-all-objects", "--batch-check=%(objectname) %(objectsize)")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = x.RetainActor(ctx, dir, intake.Intent, identity.Actor, head); e == nil {
+		t.Fatal("raw retention spent capacity already reserved for native material")
+	}
+	after, e := projectGit(ctx, dir, nil, 4096, "cat-file", "--batch-all-objects", "--batch-check=%(objectname) %(objectsize)")
+	if e != nil || !bytes.Equal(before, after) {
+		t.Fatal("refused over-budget merge retained uncharged immutable objects/bytes", e)
+	}
+	ledger, attempts, e := x.Accounting()
+	if e != nil || ledger.RetainedUsed.Requests != 1 || len(attempts) != 1 || len(attempts[0].ManifestWrites) != 0 || attempts[0].Reserved != intake.Reserved {
+		t.Fatal("refusal refunded intake or saved an uncharged write plan", e)
+	}
+}
+
+func TestContributionExchangePreservesPriorDurableManifestReceipt(t *testing.T) {
+	repo, _, env, p, refs := exchangeFixture(t)
+	ctx := context.Background()
+	dir := filepath.Join(repo, ".git")
+	path := filepath.Join(t.TempDir(), "artifact")
+	digest, e := ExportContributionArtifact(ctx, dir, p.Project, refs, []c.Envelope{env}, path, p.Limits)
+	if e != nil {
+		t.Fatal(e)
+	}
+	x := exchangeOpen(t, p)
+	intake, e := x.Receive(ctx, path, digest, "prior-durable-receipt", refs)
+	if e != nil {
+		t.Fatal(e)
+	}
+	v, e := c.Verify(env.Payload, env.Signature)
+	if e != nil {
+		t.Fatal(e)
+	}
+	actor := v.Record().Actor
+	head, e := x.RetainActor(ctx, dir, intake.Intent, actor, "absent")
+	if e != nil {
+		t.Fatal(e)
+	}
+	// Model the previous journal schema exactly: its plan was saved after the
+	// objects, so it can replay the pinned head but has no reusable raw allowance.
+	journal, e := x.load()
+	if e != nil {
+		t.Fatal(e)
+	}
+	journal.Attempts[0].ManifestWrites[0] = ContributionManifestWrite{Actor: actor, Expected: "absent", Head: head, Complete: true}
+	if e = x.save(journal); e != nil {
+		t.Fatal(e)
+	}
+	before, e := projectGit(ctx, dir, nil, 1<<20, "cat-file", "--batch-all-objects", "--batch-check=%(objectname) %(objectsize)")
+	if e != nil {
+		t.Fatal(e)
+	}
+	x, e = OpenContributionExchange(x.root, p, "unchanged-window")
+	if e != nil {
+		t.Fatal("prior durable accounting became unreadable", e)
+	}
+	got, e := x.RetainActor(ctx, dir, intake.Intent, actor, "absent")
+	if e != nil || got != head {
+		t.Fatal("prior exact receipt could not replay", e)
+	}
+	after, e := projectGit(ctx, dir, nil, 1<<20, "cat-file", "--batch-all-objects", "--batch-check=%(objectname) %(objectsize)")
+	if e != nil || !bytes.Equal(before, after) {
+		t.Fatal("prior receipt replay retained new material", e)
+	}
+	ledger, attempts, e := x.Accounting()
+	if e != nil || ledger.RetainedUsed != journal.Ledger.RetainedUsed || len(attempts) != 1 || attempts[0].Reserved != intake.Reserved {
+		t.Fatal("prior immutable history/accounting was lost", e)
+	}
+}

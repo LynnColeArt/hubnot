@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -1125,11 +1126,21 @@ func (x *ContributionExchange) load() (contributionJournal, error) {
 			return j, fmt.Errorf("corrupt intake selection")
 		}
 		seenActors := map[string]bool{}
+		var plannedObjects, plannedBytes int64
 		for _, plan := range a.ManifestWrites {
-			if !validActorFingerprint(plan.Actor) || seenActors[plan.Actor] || !migration.ValidOID(plan.Head) || (plan.Expected != "absent" && !migration.ValidOID(plan.Expected)) || j.GitDir == "" || a.Status != "pending" && a.Status != "conflict" {
+			// Older durable plans were saved only after immutable objects.
+			// Keep their receipts/accounting readable, but never spend their
+			// unknown per-plan remainder on another immutable operation.
+			legacy := plan.Material == "" && plan.Objects == 0 && plan.Bytes == 0 && !plan.ObjectsDurable
+			if !validActorFingerprint(plan.Actor) || seenActors[plan.Actor] || !legacy && !migration.ValidDigest(plan.Material) || plan.Objects < 0 || plan.Bytes < 0 || plan.Objects > a.Reserved.Objects || plan.Bytes > a.Reserved.DecodedBytes || plan.Complete && !plan.ObjectsDurable && !legacy || !migration.ValidOID(plan.Head) || (plan.Expected != "absent" && !migration.ValidOID(plan.Expected)) || j.GitDir == "" || a.Status != "pending" && a.Status != "conflict" {
 				return j, fmt.Errorf("corrupt raw retention intent")
 			}
 			seenActors[plan.Actor] = true
+			plannedObjects += plan.Objects
+			plannedBytes += plan.Bytes
+		}
+		if plannedObjects > a.Reserved.Objects || plannedBytes > a.Reserved.DecodedBytes {
+			return j, fmt.Errorf("raw retention plans exceed intake reservation")
 		}
 		if int64(len(a.ManifestWrites))*3 > a.Reserved.Objects || len(a.Failure) > 256 {
 			return j, fmt.Errorf("intake metadata exceeds reservation")
@@ -1806,33 +1817,41 @@ func ReadContributionManifest(ctx context.Context, gitDir, project, actor string
 	return records, head, nil
 }
 
-// prepareContributionManifest writes immutable raw objects only. RetainActor
-// owns the journal-before-ref-CAS transition; admission belongs to WP12.
-func prepareContributionManifest(ctx context.Context, gitDir, project, actor, expected string, envelopes []c.Envelope, l c.Limits) (string, error) {
-	ctx, cancel, e := contributionContext(ctx, l)
-	if e != nil {
-		return "", e
+// contributionManifestObjects is prepared without writing Git objects. The
+// complete deterministic result and conservative retention charge can therefore
+// be journaled before any hash-object -w operation.
+type contributionManifestObject struct {
+	kind string
+	raw  []byte
+	oid  string
+}
+type contributionManifestObjects struct {
+	head     string
+	material string
+	objects  []contributionManifestObject
+	bytes    int64
+}
+
+func planContributionManifest(ctx context.Context, gitDir, project, actor, expected string, envelopes []c.Envelope, l c.Limits) (contributionManifestObjects, error) {
+	var plan contributionManifestObjects
+	if e := contributionSafeGitDir(gitDir); e != nil {
+		return plan, e
 	}
-	defer cancel()
-	if e = contributionSafeGitDir(gitDir); e != nil {
-		return "", e
-	}
-	_, e = contributionRef(project, actor)
-	if e != nil {
-		return "", e
+	if _, e := contributionRef(project, actor); e != nil {
+		return plan, e
 	}
 	if expected != "absent" && !migration.ValidOID(expected) {
-		return "", fmt.Errorf("exact expected-old commit or absent required")
+		return plan, fmt.Errorf("exact expected-old commit or absent required")
 	}
 	all := map[string]c.Verified{}
 	priorCount := 0
 	if expected != "absent" {
 		prior, head, e := ReadContributionManifest(ctx, gitDir, project, actor, l)
 		if e != nil {
-			return "", e
+			return plan, e
 		}
 		if head != expected {
-			return "", fmt.Errorf("contribution ref changed")
+			return plan, fmt.Errorf("contribution ref changed")
 		}
 		for _, v := range prior {
 			all[v.ID()] = v
@@ -1842,89 +1861,133 @@ func prepareContributionManifest(ctx context.Context, gitDir, project, actor, ex
 	for _, env := range envelopes {
 		v, e := c.Verify(env.Payload, env.Signature)
 		if e != nil {
-			return "", e
+			return plan, e
 		}
 		r := v.Record()
 		if r.Project != project || r.Actor != actor {
-			return "", fmt.Errorf("contribution namespace mismatch")
+			return plan, fmt.Errorf("contribution namespace mismatch")
 		}
 		all[v.ID()] = v
 	}
-	if expected != "absent" && len(all) == priorCount {
-		return expected, nil
+	selected, e := json.Marshal(envelopes)
+	if e != nil {
+		return plan, e
 	}
-	if len(all) == 0 || int64(len(all)) > l.Events || int64(len(all))*2+2 > l.Objects {
-		return "", fmt.Errorf("contribution manifest count limit")
+	plan.material = c.Digest(selected)
+	if expected != "absent" && len(all) == priorCount {
+		plan.head = expected
+		return plan, nil
+	}
+	if len(all) == 0 || int64(len(all)) > l.Events || int64(len(all))*2+3 > l.Objects {
+		return plan, fmt.Errorf("contribution manifest count limit")
 	}
 	ids := []string{}
-	var total int64
-	for id, v := range all {
+	for id := range all {
 		ids = append(ids, id)
-		total += int64(len(v.Payload()) + len(v.Signature()))
 	}
 	sort.Strings(ids)
 	manifest, _ := json.Marshal(contributionRefManifest{Schema: contributionRefSchema, Project: project, Actor: actor, Records: ids})
-	total += int64(len(manifest))
-	if total > l.DecodedBytes {
-		return "", fmt.Errorf("contribution manifest bytes limit")
-	}
-	rows := []string{}
-	writeBlob := func(name string, raw []byte) error {
-		oid, e := projectGit(ctx, gitDir, raw, 256, "hash-object", "-w", "--stdin")
+	// hash-object without -w is read-only and honors the destination's object
+	// format. Build the canonical Git tree bytes in memory instead of mktree,
+	// which would already persist an immutable tree before the journal save.
+	add := func(kind string, raw []byte) (string, error) {
+		out, e := projectGit(ctx, gitDir, raw, 256, "hash-object", "-t", kind, "--stdin")
 		if e != nil {
-			return e
+			return "", e
 		}
-		id := strings.TrimSpace(string(oid))
-		if !migration.ValidOID(id) {
-			return fmt.Errorf("invalid stored blob")
+		oid := strings.TrimSpace(string(out))
+		if !migration.ValidOID(oid) {
+			return "", fmt.Errorf("invalid planned Git object")
 		}
-		rows = append(rows, "100644 blob "+id+"\t"+name+"\n")
-		return nil
+		plan.objects = append(plan.objects, contributionManifestObject{kind, raw, oid})
+		// Include Git's header and a conservative zlib expansion allowance.
+		// This bounds loose-object file bytes even for incompressible material.
+		plan.bytes += int64(len(raw) + len(raw)/1000 + 256)
+		return oid, nil
 	}
-	if e = writeBlob("manifest.json", manifest); e != nil {
-		return "", e
+	entries := map[string]string{}
+	if entries["manifest.json"], e = add("blob", manifest); e != nil {
+		return plan, e
 	}
 	for _, id := range ids {
 		v := all[id]
-		if e = writeBlob(id[7:]+".payload", v.Payload()); e != nil {
-			return "", e
+		if entries[id[7:]+".payload"], e = add("blob", v.Payload()); e != nil {
+			return plan, e
 		}
-		if e = writeBlob(id[7:]+".signature", v.Signature()); e != nil {
-			return "", e
+		if entries[id[7:]+".signature"], e = add("blob", v.Signature()); e != nil {
+			return plan, e
 		}
 	}
-	sort.Strings(rows)
-	tree, e := projectGit(ctx, gitDir, []byte(strings.Join(rows, "")), 256, "mktree")
+	names := make([]string, 0, len(entries))
+	for name := range entries {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	var tree bytes.Buffer
+	for _, name := range names {
+		oid, e := hex.DecodeString(entries[name])
+		if e != nil {
+			return plan, e
+		}
+		tree.WriteString("100644 " + name + "\x00")
+		tree.Write(oid)
+	}
+	treeID, e := add("tree", tree.Bytes())
 	if e != nil {
-		return "", e
+		return plan, e
 	}
-	// The raw retention commit is deterministic, including its metadata. A
-	// journal failure before the ref plan is durable must not let a retry retain
-	// another timestamp-distinct immutable object against the same reservation.
-	commitBytes := "tree " + strings.TrimSpace(string(tree)) + "\n"
+	commit := "tree " + treeID + "\n"
 	if expected != "absent" {
-		commitBytes += "parent " + expected + "\n"
+		commit += "parent " + expected + "\n"
 	}
-	commitBytes += "author Hubnot contribution retention <retention@hn.invalid> 0 +0000\ncommitter Hubnot contribution retention <retention@hn.invalid> 0 +0000\n\nRaw signed contribution retention\n"
-	commit, e := projectGit(ctx, gitDir, []byte(commitBytes), 256, "hash-object", "-w", "-t", "commit", "--stdin")
+	commit += "author Hubnot contribution retention <retention@hn.invalid> 0 +0000\ncommitter Hubnot contribution retention <retention@hn.invalid> 0 +0000\n\nRaw signed contribution retention\n"
+	plan.head, e = add("commit", []byte(commit))
+	if e != nil {
+		return plan, e
+	}
+	if plan.bytes > l.DecodedBytes {
+		return plan, fmt.Errorf("contribution manifest bytes limit")
+	}
+	return plan, nil
+}
+
+func writeContributionManifest(ctx context.Context, gitDir string, plan contributionManifestObjects, l c.Limits) error {
+	for _, object := range plan.objects {
+		oid, e := projectGit(ctx, gitDir, object.raw, 256, "hash-object", "-w", "-t", object.kind, "--stdin")
+		if e != nil {
+			return e
+		}
+		if strings.TrimSpace(string(oid)) != object.oid {
+			return fmt.Errorf("stored Git object differs from durable plan")
+		}
+	}
+	ml, _ := contributionLimits(l)
+	if _, e := projectObjectIDs(ctx, gitDir, []string{plan.head}, ml); e != nil {
+		return e
+	}
+	history, e := projectGit(ctx, gitDir, nil, l.Depth*65+1, "rev-list", plan.head)
+	if e != nil || int64(len(strings.Fields(string(history))))+1 > l.Depth {
+		return fmt.Errorf("contribution ref depth limit")
+	}
+	return nil
+}
+
+// prepareContributionManifest is the immutable-only primitive. RetainActor
+// journals the complete plan before calling writeContributionManifest directly.
+func prepareContributionManifest(ctx context.Context, gitDir, project, actor, expected string, envelopes []c.Envelope, l c.Limits) (string, error) {
+	ctx, cancel, e := contributionContext(ctx, l)
 	if e != nil {
 		return "", e
 	}
-	head := strings.TrimSpace(string(commit))
-	if !migration.ValidOID(head) {
-		return "", fmt.Errorf("invalid contribution commit")
-	}
-	// Validate total retained ancestor closure/depth before ref promotion. Immutable
-	// objects created on a failed write are intentionally not claimed rolled back.
-	ml, _ := contributionLimits(l)
-	if _, e = projectObjectIDs(ctx, gitDir, []string{head}, ml); e != nil {
+	defer cancel()
+	plan, e := planContributionManifest(ctx, gitDir, project, actor, expected, envelopes, l)
+	if e != nil {
 		return "", e
 	}
-	history, e := projectGit(ctx, gitDir, nil, l.Depth*65+1, "rev-list", head)
-	if e != nil || int64(len(strings.Fields(string(history))))+1 > l.Depth {
-		return "", fmt.Errorf("contribution ref depth limit")
+	if e = writeContributionManifest(ctx, gitDir, plan, l); e != nil {
+		return "", e
 	}
-	return head, nil
+	return plan.head, nil
 }
 
 // ExportContributionRefs explicitly packages selected contribution manifests and
@@ -1963,10 +2026,14 @@ func ExportContributionRefs(ctx context.Context, gitDir, project string, nativeR
 // ContributionManifestWrite is a durable expected-old Git intent. An uncertain
 // write is reconciled by exact planned head, never by guessing remote absence.
 type ContributionManifestWrite struct {
-	Actor    string `json:"actor"`
-	Expected string `json:"expected"`
-	Head     string `json:"head"`
-	Complete bool   `json:"complete"`
+	Actor          string `json:"actor"`
+	Expected       string `json:"expected"`
+	Head           string `json:"head"`
+	Material       string `json:"material,omitempty"`
+	Objects        int64  `json:"objects,omitempty"`
+	Bytes          int64  `json:"bytes,omitempty"`
+	ObjectsDurable bool   `json:"objectsDurable,omitempty"`
+	Complete       bool   `json:"complete"`
 }
 
 // RetainActor explicitly installs authenticated raw envelope blobs from a
@@ -2049,9 +2116,18 @@ func (x *ContributionExchange) RetainActor(ctx context.Context, gitDir, intent, 
 			j.Attempts[index] = a
 			return plan.Head, x.save(j)
 		}
-		for _, plan := range a.ManifestWrites {
+		var existing *ContributionManifestWrite
+		for i := range a.ManifestWrites {
+			plan := &a.ManifestWrites[i]
 			if plan.Actor == actor {
-				return finish(plan)
+				if plan.Expected != expected {
+					return "", fmt.Errorf("conflicting raw retention intent")
+				}
+				if plan.ObjectsDurable || plan.Material == "" {
+					return finish(*plan)
+				}
+				existing = plan
+				break
 			}
 		}
 		verified, e := x.inspectAttempt(ctx, a)
@@ -2086,21 +2162,59 @@ func (x *ContributionExchange) RetainActor(ctx context.Context, gitDir, intent, 
 		l.Events = a.Reserved.Events
 		l.Depth = a.Reserved.Depth
 		l.Milliseconds = a.Reserved.Milliseconds
-		head, e := prepareContributionManifest(ctx, dir, x.policy.Project, actor, expected, envelopes, l)
+		objects, e := planContributionManifest(ctx, dir, x.policy.Project, actor, expected, envelopes, l)
 		if e != nil {
+			return "", e
+		}
+		plan := ContributionManifestWrite{Actor: actor, Expected: expected, Head: objects.head, Material: objects.material, Objects: int64(len(objects.objects)), Bytes: objects.bytes}
+		if existing != nil {
+			if *existing != plan {
+				return "", fmt.Errorf("conflicting raw retention material or charge")
+			}
+		} else {
+			// The intake's measured totals already include an allowance for
+			// every selected actor. Replace those allowances with the complete
+			// plans, retaining the native/artifact baseline and all failed plans.
+			actors := map[string]bool{}
+			for _, record := range verified.Records {
+				actors[record.Record().Actor] = true
+			}
+			usedObjects := verified.Objects - int64(len(verified.Records))*2 - int64(len(actors))*3
+			usedBytes := verified.DecodedBytes - int64(len(actors))*4096 - int64(len(verified.Records))*512
+			for _, prior := range a.ManifestWrites {
+				if prior.Material == "" {
+					return "", fmt.Errorf("legacy raw retention intent permits exact replay only")
+				}
+				usedObjects += prior.Objects
+				usedBytes += prior.Bytes
+			}
+			if usedObjects+plan.Objects > a.Reserved.Objects || usedBytes+plan.Bytes > a.Reserved.DecodedBytes {
+				return "", fmt.Errorf("raw retention exceeds durable intake reservation")
+			}
+			a.ManifestWrites = append(a.ManifestWrites, plan)
+			j.GitDir = dir
+			j.Attempts[index] = a
+			if e = x.save(j); e != nil {
+				return "", e
+			}
+			if e = x.failpoint("manifest-plan-durable"); e != nil {
+				return "", e
+			}
+		}
+		if e = writeContributionManifest(ctx, dir, objects, l); e != nil {
 			return "", e
 		}
 		if e = x.failpoint("manifest-objects-durable"); e != nil {
 			return "", e
 		}
-		plan := ContributionManifestWrite{Actor: actor, Expected: expected, Head: head}
-		a.ManifestWrites = append(a.ManifestWrites, plan)
-		j.GitDir = dir
+		for i := range a.ManifestWrites {
+			if a.ManifestWrites[i].Actor == actor {
+				a.ManifestWrites[i].ObjectsDurable = true
+			}
+		}
+		plan.ObjectsDurable = true
 		j.Attempts[index] = a
 		if e = x.save(j); e != nil {
-			return "", e
-		}
-		if e = x.failpoint("manifest-plan-durable"); e != nil {
 			return "", e
 		}
 		return finish(plan)
