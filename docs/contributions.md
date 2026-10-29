@@ -304,6 +304,23 @@ The following bounds apply before supported public-file promotion:
 | Failure | Failed/canceled/uncertain reservations stay charged; exhaustion refuses before new input I/O and adds no unbounded refusal journal. |
 | Cancellation | Public adapter checks context during bounded reads/subprocess work. Trusted local legacy native validation checks at boundaries; it does not interrupt every synchronous internal Git call. |
 
+The deadline is a request/stage bound, not one cumulative wall-clock or CPU
+budget for the whole CLI command. Initial `Receive` has its own finite input
+deadline. Subsequent raw retention uses the original charged reservation's
+milliseconds across retained-artifact revalidation, coverage planning, native
+object copy and actor-manifest retention; a stricter parent deadline still
+applies. Receipt revalidation and authorization/signing checks use another
+finite stage deadline from that same original reservation. Exact retries read
+receiver-retained immutable bytes and preserve the original digest, selection
+and charges, even after policy or window changes. Generated receipt controls
+have their own separately charged finite request and retention stage.
+
+Cancellation is checked after synchronous legacy validation and before later
+authority/signing or ref publication. It cannot interrupt every legacy Git call
+or a blocked kernel/filesystem operation, and does not guarantee total filesystem
+rollback: partially copied immutable objects can remain within the charged
+reservation. These limits are receiver-local, not a hard global CPU/storage quota.
+
 The graph also has a static 16,384-record ceiling. Available window or retention
 capacity does not guarantee that an arbitrary history fits the supported profile.
 

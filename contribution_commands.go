@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func init() { localCommands["contribution"] = cmdContribution }
@@ -705,6 +706,10 @@ func signContribution(id *Identity, r c.Record) (c.Envelope, error) {
 // complete deterministic target/OID plan derives from the durable intake's exact
 // digest/selection. Replay cannot overwrite another observed actor branch.
 func contributionRetainIntake(a *contributionAuthority, x *ContributionExchange, intent string) error {
+	return contributionRetainIntakeContext(context.Background(), a, x, intent)
+}
+
+func contributionRetainIntakeContext(parent context.Context, a *contributionAuthority, x *ContributionExchange, intent string) error {
 	plan, e := contributionLoadLocalPlan(a, x, intent)
 	if e != nil {
 		return e
@@ -721,12 +726,34 @@ func contributionRetainIntake(a *contributionAuthority, x *ContributionExchange,
 		}
 		return fmt.Errorf("reserved local native result not yet appended")
 	}
-	artifact, e := x.Inspect(context.Background(), intent)
+	// Revalidation, coverage, copy and actor retention share the original
+	// reservation's finite stage budget. A stricter caller deadline still wins;
+	// retry never extends the reservation or reopens the foreign source.
+	_, attempts, e := x.Accounting()
+	if e != nil {
+		return e
+	}
+	milliseconds := int64(0)
+	for _, attempt := range attempts {
+		if attempt.Intent == intent {
+			milliseconds = attempt.Reserved.Milliseconds
+			break
+		}
+	}
+	if milliseconds <= 0 {
+		return fmt.Errorf("original input reservation required")
+	}
+	ctx, cancel := context.WithTimeout(parent, time.Duration(milliseconds)*time.Millisecond)
+	defer cancel()
+	artifact, e := x.Inspect(ctx, intent)
 	if e != nil {
 		return e
 	}
 	defer artifact.Close()
-	if e = contributionCoverArtifact(a, x, artifact); e != nil {
+	if e = ctx.Err(); e != nil {
+		return e
+	}
+	if e = contributionCoverArtifact(ctx, a, x, artifact); e != nil {
 		return e
 	}
 	gitdir, e := contributionGitDirectory()
@@ -737,7 +764,7 @@ func contributionRetainIntake(a *contributionAuthority, x *ContributionExchange,
 	if e != nil {
 		return e
 	}
-	if e = projectCopyObjectIDs(context.Background(), artifact.Quarantine.GitDir, gitdir, artifact.Quarantine.ObjectIDs(), ml); e != nil {
+	if e = projectCopyObjectIDs(ctx, artifact.Quarantine.GitDir, gitdir, artifact.Quarantine.ObjectIDs(), ml); e != nil {
 		return e
 	}
 	promotions := []replicationPromotion{}
@@ -763,6 +790,9 @@ func contributionRetainIntake(a *contributionAuthority, x *ContributionExchange,
 		if e != nil {
 			return e
 		}
+		if e = ctx.Err(); e != nil {
+			return e
+		}
 		if exists {
 			if old != ref.OID {
 				return fmt.Errorf("raw contribution target conflict")
@@ -771,7 +801,7 @@ func contributionRetainIntake(a *contributionAuthority, x *ContributionExchange,
 		}
 		promotions = append(promotions, replicationPromotion{Ref: target, NewOID: ref.OID})
 	}
-	if e = contributionPromoteRawRefs(promotions); e != nil {
+	if e = contributionPromoteRawRefsContext(ctx, promotions); e != nil {
 		return e
 	}
 	actors := map[string]bool{}
@@ -798,7 +828,7 @@ func contributionRetainIntake(a *contributionAuthority, x *ContributionExchange,
 				break
 			}
 		}
-		if _, e = x.RetainActor(context.Background(), gitdir, intent, actor, old); e != nil {
+		if _, e = x.RetainActor(ctx, gitdir, intent, actor, old); e != nil {
 			return e
 		}
 	}

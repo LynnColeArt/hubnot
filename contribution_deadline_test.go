@@ -17,7 +17,7 @@ import (
 // This is not package process-kill or synchronous kernel-I/O cancellation proof.
 func TestContributionPostIntakeDeadlines(t *testing.T) {
 	binary := betaContributionBinary(t, false)
-	for _, phase := range []string{"coverage", "copy", "receipt"} {
+	for _, phase := range []string{"coverage", "copy", "receipt", "receipt-legacy"} {
 		t.Run(phase, func(t *testing.T) {
 			f := newBetaContributionCLI(t, binary)
 			limits := betaContributionLimits()
@@ -42,7 +42,8 @@ func TestContributionPostIntakeDeadlines(t *testing.T) {
 				t.Fatalf("initial Receive must complete before fault installation: %+v %v", attempt, err)
 			}
 			t.Logf("initial Receive COMPLETED: phase=%s digest=%s refs=%v reservedMillis=%d", phase, attempt.Artifact, attempt.Refs, attempt.Reserved.Milliseconds)
-			if phase == "receipt" {
+			receipt := strings.HasPrefix(phase, "receipt")
+			if receipt {
 				if err = contributionRetainIntake(a, x, intent); err != nil {
 					t.Fatal(err)
 				}
@@ -65,21 +66,42 @@ func TestContributionPostIntakeDeadlines(t *testing.T) {
 			wrapperDir := t.TempDir()
 			marker := filepath.Join(wrapperDir, "phase-reached")
 			pattern := "*' init --bare '*"
+			stall := "exec /bin/sleep 8"
 			if phase == "coverage" {
 				pattern = fmt.Sprintf("'--git-dir=%s hash-object -t '*", gitdir)
 			} else if phase == "copy" {
 				pattern = fmt.Sprintf("'--git-dir=%s hash-object -w '*", gitdir)
+			} else if phase == "receipt-legacy" {
+				pattern = "'for-each-ref --format=%(refname) %(objectname) refs/hn/actors refs/hn/remotes'"
+				// Legacy Git is deliberately synchronous. Let it finish normally
+				// after expiry; the caller must refuse before authority/signing.
+				stall = "/bin/sleep 3"
 			}
 			// exec gives CommandContext ownership of the actual stalled process;
 			// the eight-second fallback also bounds the original-runtime red run.
-			script := fmt.Sprintf("#!/bin/sh\ncase \"$*\" in\n%s) printf '%%s\\n' '%s' > '%s'; exec /bin/sleep 8 ;;\nesac\nexec '%s' \"$@\"\n", pattern, phase, marker, git)
+			script := fmt.Sprintf("#!/bin/sh\ncase \"$*\" in\n%s) printf '%%s\\n' '%s' > '%s'; %s ;;\nesac\nexec '%s' \"$@\"\n", pattern, phase, marker, stall, git)
 			if err = os.WriteFile(filepath.Join(wrapperDir, "git"), []byte(script), 0700); err != nil {
 				t.Fatal(err)
 			}
 			path := os.Getenv("PATH")
 			t.Setenv("PATH", wrapperDir+string(os.PathListSeparator)+path)
+			if phase == "coverage" {
+				parent, cancel := context.WithTimeout(context.Background(), 750*time.Millisecond)
+				start := time.Now()
+				parentErr := contributionRetainIntakeContext(parent, a, x, intent)
+				elapsed := time.Since(start)
+				cancel()
+				marked, err := os.ReadFile(marker)
+				if err != nil || strings.TrimSpace(string(marked)) != phase || parentErr == nil || elapsed > 1750*time.Millisecond {
+					t.Fatalf("stricter parent did not cancel actual late coverage subprocess: marker=%q elapsed=%v err=%v markerErr=%v", marked, elapsed, parentErr, err)
+				}
+				t.Logf("stricter 750ms parent canceled actual coverage subprocess in %v: %v", elapsed, parentErr)
+				if err = os.Remove(marker); err != nil {
+					t.Fatal(err)
+				}
+			}
 			start := time.Now()
-			if phase == "receipt" {
+			if receipt {
 				err = contributionReceiptIntake(a, x, intent)
 			} else {
 				err = contributionRetainIntake(a, x, intent)
@@ -90,7 +112,7 @@ func TestContributionPostIntakeDeadlines(t *testing.T) {
 			if markerErr != nil || strings.TrimSpace(string(marked)) != phase {
 				t.Fatalf("late-phase positive marker missing; early intake cancellation cannot satisfy test: %q %v", marked, markerErr)
 			}
-			t.Logf("positive late-phase marker=%s; actual context-aware subprocess returned after %v: %v", marked, elapsed, err)
+			t.Logf("positive late-phase marker=%s; selected Git phase returned after %v: %v", marked, elapsed, err)
 			if err == nil || elapsed > 5*time.Second {
 				t.Errorf("post-intake %s failed to cancel within original 2s reservation (5s harness allowance): elapsed=%v err=%v", phase, elapsed, err)
 			}

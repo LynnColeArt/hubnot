@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 // Generated project records travel through a second bounded local intake before
@@ -117,17 +118,31 @@ func contributionReceiptIntake(a *contributionAuthority, x *ContributionExchange
 		if window == "" {
 			return nil, fmt.Errorf("original input reservation required")
 		}
-		artifact, e := x.inspectAttempt(context.Background(), *attempt)
+		// The lock already validated this durable attempt and its reservation.
+		// Do not recursively acquire it through Inspect, or use today's limits
+		// to extend the original input's revalidation/signing stage budget.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(attempt.Reserved.Milliseconds)*time.Millisecond)
+		defer cancel()
+		artifact, e := x.inspectAttempt(ctx, *attempt)
 		if e != nil {
 			return nil, e
 		}
 		defer artifact.Close()
+		if e = ctx.Err(); e != nil {
+			return nil, e
+		}
 		events, e := collectEvents()
 		if e != nil {
 			return nil, e
 		}
+		if e = ctx.Err(); e != nil {
+			return nil, e
+		}
 		view, current, e := contributionView(events)
 		if e != nil {
+			return nil, e
+		}
+		if e = ctx.Err(); e != nil {
 			return nil, e
 		}
 		if current == nil || current.Commit != a.Commit || current.PolicyDigest != a.PolicyDigest || current.ReadOnly {
@@ -139,6 +154,9 @@ func contributionReceiptIntake(a *contributionAuthority, x *ContributionExchange
 		}
 		envelopes := []c.Envelope{}
 		for _, submission := range artifact.Records {
+			if e = ctx.Err(); e != nil {
+				return nil, e
+			}
 			r := submission.Record()
 			if r.Submission == nil {
 				continue
@@ -165,13 +183,16 @@ func contributionReceiptIntake(a *contributionAuthority, x *ContributionExchange
 				return nil, fmt.Errorf("contribution operation denied: %s", permission.Reason)
 			}
 			receipt := c.Receipt{Submission: submission.ID(), Authority: a.current().Ref, Artifact: attempt.Artifact, Accounting: attempt.Accounting, Window: window, Cost: attempt.Reserved, Automatic: permission.Allowed && permission.Automatic, Evaluated: evaluated}
+			if e = ctx.Err(); e != nil {
+				return nil, e
+			}
 			env, e := signContribution(identity, c.Record{Kind: c.ReceiptKind, Project: r.Project, Intent: "receipt-" + c.Digest([]byte(submission.ID() + a.PolicyDigest))[7:], Receipt: &receipt})
 			if e != nil {
 				return nil, e
 			}
 			envelopes = append(envelopes, env)
 		}
-		return envelopes, nil
+		return envelopes, ctx.Err()
 	}()
 	if e != nil {
 		return e
@@ -1242,6 +1263,13 @@ func contributionRetryNative(stored *StoredEvent) error {
 // Git reference-transaction hooks. Receiving signed data never executes a host
 // hook, checks out code or changes a development branch.
 func contributionPromoteRawRefs(promotions []replicationPromotion) error {
+	return contributionPromoteRawRefsContext(context.Background(), promotions)
+}
+
+func contributionPromoteRawRefsContext(parent context.Context, promotions []replicationPromotion) error {
+	if e := parent.Err(); e != nil {
+		return e
+	}
 	if len(promotions) == 0 {
 		return nil
 	}
@@ -1270,7 +1298,7 @@ func contributionPromoteRawRefs(promotions []replicationPromotion) error {
 	if e != nil {
 		return e
 	}
-	ctx, cancel, e := contributionContext(context.Background(), c.DefaultLimits())
+	ctx, cancel, e := contributionContext(parent, c.DefaultLimits())
 	if e != nil {
 		return e
 	}
@@ -1535,7 +1563,10 @@ func contributionRegisterRetained(a *contributionAuthority, expected string, ext
 	return contributionWriteCoverage(x, plan.Digest, coverage)
 }
 
-func contributionCoverArtifact(a *contributionAuthority, x *ContributionExchange, artifact *ContributionArtifact) error {
+func contributionCoverArtifact(ctx context.Context, a *contributionAuthority, x *ContributionExchange, artifact *ContributionArtifact) error {
+	if e := ctx.Err(); e != nil {
+		return e
+	}
 	native := []string{}
 	for _, row := range artifact.Events {
 		native = append(native, row.ID)
@@ -1578,7 +1609,7 @@ func contributionCoverArtifact(a *contributionAuthority, x *ContributionExchange
 		if !exists {
 			old = "absent"
 		}
-		plan, e := planContributionManifest(context.Background(), gitdir, a.Policy.Contributions.Project, actor, old, envs, a.Policy.Contributions.Limits)
+		plan, e := planContributionManifest(ctx, gitdir, a.Policy.Contributions.Project, actor, old, envs, a.Policy.Contributions.Limits)
 		if e != nil {
 			return e
 		}
@@ -1610,7 +1641,13 @@ func contributionCoverArtifact(a *contributionAuthority, x *ContributionExchange
 	if !found {
 		return fmt.Errorf("artifact reservation unavailable")
 	}
+	if e = ctx.Err(); e != nil {
+		return e
+	}
 	if e = x.save(journal); e != nil {
+		return e
+	}
+	if e = ctx.Err(); e != nil {
 		return e
 	}
 	return contributionWriteCoverage(x, artifact.Intake.Artifact, coverage)
