@@ -3,6 +3,7 @@ work_package_id: WP08
 title: Independent beta boundary review
 dependencies:
 - WP04
+- WP06
 - WP07
 - WP13
 requirement_refs:

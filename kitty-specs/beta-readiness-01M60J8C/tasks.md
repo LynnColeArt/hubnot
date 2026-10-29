@@ -6,6 +6,10 @@ Each WP has a separate owned surface and independent review. Initial delivery is
 WP01 → WP02 → WP03 → WP04, then WP10 → WP11 → WP12 → WP13 delivers optional
 unified contribution/moderation before WP08 and the final beta verdict.
 Later qualification cannot fabricate external evidence.
+The 2026-10-29 deadline audit adds T046–T048 to the active WP06 qualification
+work, with explicitly amended ownership and separate focused implementation and
+independent review. WP08 and the final verdict must use that repaired runtime;
+earlier package results remain historical evidence for their original source.
 Subtask completion is recorded by the framework event log using `mark-status`.
 
 ## Work Package WP01: Beta support contract and current release status (Priority: P1)
@@ -100,13 +104,16 @@ Depends on: WP03
 **Goal**: Candidate package and distribution qualification.
 **Independent Test**: Each claimed OS/architecture/variant gets observed normal-environment package evidence. Missing hardware is pending, not a pass. Inspect archive digests/BUILD provenance independently of runtime qualification.
 **Prompt**: `tasks/WP06-platform-qualification.md`
-**Requirement Refs**: FR-010, NFR-004
+**Requirement Refs**: FR-010, FR-017, FR-020, NFR-002, NFR-004, NFR-006, NFR-007
 
 ### Included Subtasks
 
 T018 Define exact-package Linux/macOS architecture/variant installation and runtime cases, supported Git/filesystem configurations and download experience in docs/platform-qualification.md.
 T019 Run available candidate package cases using existing Go-only packaging and public package acceptance; collect actual platform/binary evidence.
 T020 Record outstanding Intel/Mac exact-byte work and a signing/notarization recommendation with owner decision prerequisites.
+T046 Prove late-stage deadline/cancellation failures at receipt retained-artifact revalidation, coverage manifest planning and native object copy after successful initial intake, with phase-positive controls.
+T047 Propagate finite appropriate recorded/parent contexts through those stages and check cancellation before authority/signing/publication boundaries; preserve charged reservations, immutable exact retry and disabled defaults.
+T048 Clarify actual stage/request deadline scope and legacy cancellation limits, validate standard/native behavior and full charter gates, and obtain separate independent source review before a new candidate qualification.
 
 ### Dependencies
 
@@ -144,7 +151,7 @@ T026 Recheck disposition of release-blocking findings against reviewed fixes wit
 
 ### Dependencies
 
-Depends on: WP04, WP07, WP13
+Depends on: WP04, WP06, WP07, WP13
 
 ## Work Package WP09: External pilot and beta readiness verdict (Priority: P2)
 
@@ -241,3 +248,4 @@ T045 Write docs/contributions.md with submission/admission/moderation commands, 
 ### Dependencies
 
 Depends on: WP12
+

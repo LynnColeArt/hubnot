@@ -6,7 +6,12 @@ dependencies:
 - WP13
 requirement_refs:
 - FR-010
+- FR-017
+- FR-020
+- NFR-002
 - NFR-004
+- NFR-006
+- NFR-007
 planning_base_branch: feature/beta-readiness
 merge_target_branch: feature/beta-readiness
 branch_strategy: Planning artifacts for this mission were generated on feature/beta-readiness. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/beta-readiness unless the human explicitly redirects the landing branch.
@@ -17,6 +22,9 @@ subtasks:
 - T018
 - T019
 - T020
+- T046
+- T047
+- T048
 phase: Beta readiness
 history: []
 agent_profile: implementer-ivan
@@ -24,6 +32,11 @@ authoritative_surface: docs/
 create_intent:
 - docs/platform-qualification.md
 - beta_platform_package_test.go
+- beta_compatibility_test.go
+- contribution_commands.go
+- contribution_moderation.go
+- contribution_deadline_test.go
+- docs/contributions.md
 execution_mode: code_change
 owned_files:
 - docs/platform-qualification.md
@@ -33,6 +46,10 @@ owned_files:
 - beta_compatibility_test.go
 - .github/workflows/portability.yml
 - docs/filesystem-portability.md
+- contribution_commands.go
+- contribution_moderation.go
+- contribution_deadline_test.go
+- docs/contributions.md
 role: implementer
 tags: []
 task_type: implement
@@ -40,6 +57,54 @@ tracker_refs: []
 ---
 
 # WP06 — Candidate package and distribution qualification
+
+## Runtime repair amendment — T046–T048, 2026-10-29
+
+Independent contract/source assessment at
+`/home/lynn/Documents/Codex/2026-10-24/wa/work/beta-readiness-WP06/deadline-contract-assessment.md`
+established three late-stage deadline gaps at runtime `9a950e8f`: receipt
+retained-artifact revalidation, coverage manifest planning and native object copy
+pass Background into context-aware work before public promotion. Initial ingress
+already has a finite timer; material and aggregate accounting remain bounded.
+This is not a new whole-CLI 30-second requirement or a proven explanation of the
+separate Intel 45-second test-helper timeout.
+
+WP06 explicitly owns the two existing runtime files from WP12, one new regression
+file and the existing WP13 guide for this cohesive repair. The inherited paths
+also appear in create_intent because the planning target lacks dependency-created
+files; inspect and modify the approved dependency contents, never create stubs.
+Prior WP12/WP13 approvals remain historical. Existing lane assignments stay fixed;
+source writers and commits are serialized. A separate focused implementer and
+independent source reviewer cover this repair before final WP06 review.
+
+T046 must establish original-runtime red evidence at each actual late phase,
+after successful initial intake, with a positive marker/control proving the
+stall was reached. T047 must propagate finite appropriate original-reservation/
+parent contexts through retention, coverage, copy and receipt revalidation,
+checking cancellation before later authority/signing/publication effects. Do not
+recursively call a lock-taking inspection method while holding the intake lock.
+Separately charged controls keep their own finite request context.
+
+Preserve exact digest/ref/intent and reservation semantics, immutable retained
+source, failure charges, authority, cryptography, defaults and disabled behavior.
+No source reopening, refund, reservation extension, deadline increase, skipped
+case, schema change, broad Git/store rewrite or unrelated optimization. Preserve
+the documented synchronous legacy/kernel-I/O cancellation limitations.
+
+Tests must exercise actual context-aware subprocess cancellation, not only context
+presence. Assert no prohibited ref/admission/receipt publication, inspectable
+retained state and charged original reservation, then successful exact retry.
+Charged immutable partial object retention is not total filesystem rollback.
+Use existing package-aware public helpers for real standard/native assertions;
+source-assisted faults are labelled, not package/process-kill proof. T048 updates
+the actual stage/request scope in the guide without concealing the gap, then
+formatting, vet/build and one full uncached race run with a 30-minute harness
+ceiling at a fixed clean head. Coordinate the one local execution slot with root.
+Request additional ownership before editing any unlisted production surface.
+
+Runtime changes require a new immutable candidate and requalification. H0/H2/H3
+observations remain exact-head historical evidence. Workflow-only orchestration
+may reuse an unchanged candidate with separately bound workflow/source/harness.
 
 ## Objectives & Success Criteria
 

@@ -177,7 +177,7 @@ initial documentation/implementation authorization.
    memory sync can fail its push after successfully importing a newer head.
 4. WP04: reuse existing interruption fault seams and add only missing public
    assertions for supported recovery. Confirm retries never infer remote absence.
-5. Every Go WP: formatting, `go test -race -count=1 -timeout 20m ./...`, vet,
+5. Every Go WP: formatting, `go test -race -count=1 -timeout 30m ./...`, vet,
    build and diff check at a fixed committed head. Avoid simultaneous expensive
    full runs; targeted iterations precede one final full run per reviewed change.
 6. WP05–09: explicit observation records for real provider/platform/user work,
@@ -192,6 +192,31 @@ initial documentation/implementation authorization.
    explicit rules, moderation and independent existing proposal merge gates.
    Run standard/native-only public CLI journeys and observer reconstruction
    with no credentials, external network, daemon or copied signing keys.
+
+### Qualification discovery: post-input deadlines, 2026-10-29
+
+Independent contract/source assessment at runtime `9a950e8f` established three
+post-input public promotion paths that pass `context.Background()` into
+context-aware work: receipt retained-artifact inspection, coverage manifest
+planning and native object copy. Initial ingress is timed and all retained
+bytes/counts remain bounded. This finding is distinct from the unresolved Intel
+Mac 45-second test-helper timeout and does not establish its cause or a single
+whole-command 30-second limit.
+
+The active WP06 owns the narrow runtime repair, regression proof and stage-scope
+guide clarification as T046–T048, with separately focused implementation and
+independent source review. Its explicit ownership amendment covers only the two
+existing contribution command/moderation files, a new regression file and the
+guide; prior approvals remain historical. WP08 now waits for WP06's repaired
+runtime. A proposed new downstream WP was not finalized: the running topology's
+shared-file grouping would collapse earlier owners into a cyclic lane graph.
+Keep established lanes and amend the existing authorized qualification scope
+rather than fabricate a lane or override the guard. Preserve H0/H2/H3 evidence.
+Runtime changes
+require a new candidate and requalification; a workflow-only orchestration change
+may reuse an unchanged candidate with explicit source/harness/workflow bindings.
+The full-test harness ceiling is now 30 minutes because observed Linux full runs
+already take 16–17.3 minutes; this changes no application deadline or assertion.
 
 ## Risks and decisions
 
