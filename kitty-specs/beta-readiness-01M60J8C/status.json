@@ -1,7 +1,7 @@
 {
-  "event_count": 48,
-  "last_event_id": "01M63GQRPWM6RWG43C1MQNYQ9Q",
-  "materialized_at": "2026-10-29T09:44:25.564594+00:00",
+  "event_count": 50,
+  "last_event_id": "01M63GRXJMTXDSTYYMFC3EAPDH",
+  "materialized_at": "2026-10-29T09:45:03.307408+00:00",
   "mission_number": "",
   "mission_slug": "beta-readiness-01M60J8C",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 7
+    "planned": 6
   },
   "work_packages": {
     "WP01": {
@@ -232,12 +232,12 @@
     "WP11": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 1,
-      "lane": "planned",
-      "last_event_id": "01M63GQRPWM6RWG43C1MQNYQ9Q",
-      "last_transition_at": "2026-10-29T09:44:25.564594+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M63GRXJMTXDSTYYMFC3EAPDH",
+      "last_transition_at": "2026-10-29T09:45:03.307408+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review at tested source 6207ff21: bounded local regular-file exchange, native profile verification, receiver-local durable accounting, inspectable conflict/pending/recovery and explicit raw ref retention/backup. Full race passed 640.554s; standard/native-only focused race, vet, build, formatting and range diff checks pass; 417 product hashes unchanged. Evidence: /home/lynn/Documents/Codex/2026-10-24/wa/work/beta-readiness-WP11/evidence/20261028T133705Z-full. First public intake profile limitations and WP12 admission/authority obligations remain explicit.",
