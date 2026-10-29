@@ -637,6 +637,13 @@ func betaContributionPublicAbuse(f *betaContributionCLI) {
 		}
 	}
 	before := f.git(owner, "show-ref")
+	// The next independently signed, otherwise valid submission is refused too;
+	// the absent-path control below proves the same refusal precedes source I/O.
+	fourth := f.repository()
+	f.hn(fourth, true, "init", "--name", "Fourth independent spam key")
+	fourthIssue := contributionEventID(t, f.hn(fourth, true, "issue", "open", "--json", "Signed over-budget message"))
+	fourthArtifact := f.prepare(fourth, policy.Contributions.Project, fourthIssue)
+	betaContributionContains(t, f.receive(owner, "fourth-key", fourthArtifact, false), "budget exhausted")
 	// Exhaustion must precede source opening, including after queue draining.
 	missing := first
 	missing.File = filepath.Join(t.TempDir(), "does-not-exist.hnc")
