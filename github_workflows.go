@@ -314,7 +314,9 @@ func githubWorkflowRejectNativeEcho(m githubWorkflowManifest, s WorkflowState) e
 	if err != nil {
 		return err
 	}
-	cat, err := buildGovernedResourceCatalog(events)
+	// Exact publication identity is historical evidence, including hidden rows.
+	// Current export eligibility is checked separately against the governed view.
+	cat, err := BuildResourceCatalog(events)
 	if err != nil {
 		return err
 	}

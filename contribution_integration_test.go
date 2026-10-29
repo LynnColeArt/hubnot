@@ -2,24 +2,38 @@ package main
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	c "hubnot/internal/contribution"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 )
 
 func contributionCLI(t *testing.T, binary, dir string, ok bool, args ...string) string {
 	t.Helper()
+	return contributionCLIEnvironment(t, binary, dir, nil, ok, args...)
+}
+func contributionCLIEnvironment(t *testing.T, binary, dir string, environment map[string]string, ok bool, args ...string) string {
+	t.Helper()
+	if binary == os.Getenv("HN_CONTRIBUTION_TEST_BINARY") {
+		if err := contributionVerifyCandidate(binary, os.Getenv("HN_CONTRIBUTION_TEST_BINARY_SHA256")); err != nil {
+			t.Fatal(err)
+		}
+	}
 	p := exec.Command(binary, args...)
 	p.Dir = dir
-	p.Env = operationalTestEnvironment(t.TempDir())
+	p.Env = operationalTestEnvironmentWith(t.TempDir(), environment)
 	out, err := p.CombinedOutput()
 	if evidence := os.Getenv("HN_CONTRIBUTION_TEST_TRANSCRIPTS"); evidence != "" {
 		file, e := os.CreateTemp(evidence, "cli-*.log")
@@ -52,7 +66,7 @@ func contributionGit(t *testing.T, dir string, args ...string) string {
 	return strings.TrimSpace(string(out))
 }
 func TestContributionCLIAutomaticAndScopedModeration(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	owner := migrationCLIRepository(t)
 	stranger := migrationCLIRepository(t)
 	contributionCLI(t, binary, owner, true, "init", "--name", "Maintainer")
@@ -358,7 +372,7 @@ func actorRefFromCLI(t *testing.T, binary, dir string) string {
 }
 
 func TestContributionCLIBaselineGrowthRequiresLocalReservation(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	owner := migrationCLIRepository(t)
 	contributionCLI(t, binary, owner, true, "init", "--name", "Maintainer")
 	actor := strings.TrimPrefix(actorRefFromCLI(t, binary, owner), "refs/hn/actors/")
@@ -537,7 +551,7 @@ func TestContributionCLIBaselineGrowthRequiresLocalReservation(t *testing.T) {
 }
 
 func TestContributionCLILocalCapacityBeforeNativeWritesAndRawCannotSelectTrust(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	owner := migrationCLIRepository(t)
 	contributionCLI(t, binary, owner, true, "init", "--name", "Maintainer")
 	actor := strings.TrimPrefix(actorRefFromCLI(t, binary, owner), "refs/hn/actors/")
@@ -733,7 +747,7 @@ func contributionStateFile(t *testing.T, state any) string {
 }
 
 func TestContributionCLIGovernedSpecializedResourcesAndHiddenDependencies(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	rules := []c.Rule{}
 	for _, op := range []c.Operation{c.ProjectCreate, c.ProjectEdit, c.ProjectItemCreate, c.ProjectItemEdit, c.DiscussionCreate, c.DiscussionReply, c.DiscussionEdit, c.WorkflowCreate, c.WorkflowEdit} {
 		rules = append(rules, c.Rule{Operation: op, Automatic: true})
@@ -807,7 +821,7 @@ func TestContributionCLIGovernedSpecializedResourcesAndHiddenDependencies(t *tes
 }
 
 func TestContributionCLIDisabledPreservesNativeBehavior(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	repo := migrationCLIRepository(t)
 	contributionCLI(t, binary, repo, true, "init", "--name", "Default native author")
 	id := contributionEventID(t, contributionCLI(t, binary, repo, true, "issue", "open", "--operation", "legacy-open", "--json", "Legacy native issue"))
@@ -824,7 +838,7 @@ func TestContributionCLIDisabledPreservesNativeBehavior(t *testing.T) {
 }
 
 func TestContributionCLIWorktreesShareAccountingAndLockKeepLocalAuthority(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	repo := migrationCLIRepository(t)
 	contributionCLI(t, binary, repo, true, "init", "--name", "First maintainer")
 	first := strings.TrimPrefix(actorRefFromCLI(t, binary, repo), "refs/hn/actors/")
@@ -919,7 +933,7 @@ func TestContributionCLIWorktreesShareAccountingAndLockKeepLocalAuthority(t *tes
 }
 
 func TestContributionCLIConflictsRevocationAndManufacturedHistoricalDecisions(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	moderatorRepo := migrationCLIRepository(t)
 	contributionCLI(t, binary, moderatorRepo, true, "init", "--name", "Scoped moderator")
 	moderator := strings.TrimPrefix(actorRefFromCLI(t, binary, moderatorRepo), "refs/hn/actors/")
@@ -1054,7 +1068,7 @@ func TestContributionCLIConflictsRevocationAndManufacturedHistoricalDecisions(t 
 }
 
 func TestContributionCLIRawRecoveryChargesLocalRetentionAndGuardsNewRefs(t *testing.T) {
-	binary := buildMigrationCLIBinary(t, "")
+	binary := contributionCLIBinary(t)
 	source := migrationCLIRepository(t)
 	contributionCLI(t, binary, source, true, "init", "--name", "Source maintainer")
 	actor := strings.TrimPrefix(actorRefFromCLI(t, binary, source), "refs/hn/actors/")
@@ -1156,4 +1170,158 @@ func TestContributionCLIRawRecoveryChargesLocalRetentionAndGuardsNewRefs(t *test
 		t.Fatal("raw registration reset exhausted receiver capacity")
 	}
 	contributionCLI(t, binary, reader, false, "identity", "show", "--json")
+}
+
+func contributionVerifyCandidate(path, digest string) error {
+	if !filepath.IsAbs(path) || !validEventID(digest) {
+		return fmt.Errorf("candidate binary requires absolute path and exact sha256 digest")
+	}
+	info, e := os.Lstat(path)
+	if e != nil {
+		return e
+	}
+	if !info.Mode().IsRegular() || info.Mode()&0111 == 0 {
+		return fmt.Errorf("candidate binary must be a regular executable")
+	}
+	raw, e := os.ReadFile(path)
+	if e != nil {
+		return e
+	}
+	if c.Digest(raw) != digest {
+		return fmt.Errorf("candidate binary digest changed")
+	}
+	return nil
+}
+func contributionCLIBinary(t *testing.T) string {
+	t.Helper()
+	if candidate := os.Getenv("HN_CONTRIBUTION_TEST_BINARY"); candidate != "" {
+		if e := contributionVerifyCandidate(candidate, os.Getenv("HN_CONTRIBUTION_TEST_BINARY_SHA256")); e != nil {
+			t.Fatal(e)
+		}
+		t.Logf("unchanged injected CLI: %s %s", candidate, os.Getenv("HN_CONTRIBUTION_TEST_BINARY_SHA256"))
+		return candidate
+	}
+	return buildMigrationCLIBinary(t, "")
+}
+func TestContributionInjectedBinaryRequiresExactImmutableSelection(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "candidate")
+	if e := os.WriteFile(path, []byte("candidate bytes"), 0700); e != nil {
+		t.Fatal(e)
+	}
+	digest := c.Digest([]byte("candidate bytes"))
+	if e := contributionVerifyCandidate(path, digest); e != nil {
+		t.Fatal(e)
+	}
+	for _, input := range [][2]string{{"relative", digest}, {path, ""}, {path, c.Digest([]byte("different"))}} {
+		if contributionVerifyCandidate(input[0], input[1]) == nil {
+			t.Fatal("unsafe candidate selector accepted")
+		}
+	}
+	link := filepath.Join(t.TempDir(), "link")
+	if e := os.Symlink(path, link); e != nil {
+		t.Fatal(e)
+	}
+	if contributionVerifyCandidate(link, digest) == nil {
+		t.Fatal("linked candidate accepted")
+	}
+	if e := os.WriteFile(path, []byte("changed bytes"), 0700); e != nil {
+		t.Fatal(e)
+	}
+	if contributionVerifyCandidate(path, digest) == nil {
+		t.Fatal("changed executable retained original binding")
+	}
+}
+
+func TestContributionCLIHiddenWorkflowKeepsRawPublicationWitness(t *testing.T) {
+	// Provider proof is deliberately exercised with the standard adapter binary.
+	// Native-only qualification selects the independent native journey tests.
+	binary := buildMigrationCLIBinary(t, "")
+	repo, _, _ := contributionEnabledRepository(t, binary, "hidden publication witness", []c.Rule{{Operation: c.WorkflowCreate, Automatic: true}})
+	state := WorkflowState{Schema: "hn.workflow/1", Name: "ci", Title: "Published native workflow", Enabled: true, Pipeline: &PipelineDefinition{Version: pipelineVersion, Steps: []PipelineStep{{Name: "proof", Command: "true"}}}}
+	workflow := contributionEventID(t, contributionCLI(t, binary, repo, true, "workflow", "open", "--input", contributionStateFile(t, state), "--operation", "published", "--json"))
+	var mu sync.Mutex
+	content := []byte("old workflow\n")
+	writes := 0
+	blob := func(data []byte) string {
+		return fmt.Sprintf("%x", sha1.Sum(append([]byte(fmt.Sprintf("blob %d%c", len(data), 0)), data...)))
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		hash := blob(content)
+		commit := strings.Repeat("a", 40)
+		switch {
+		case r.URL.Path == "/repos/a/b/commits":
+			json.NewEncoder(w).Encode([]any{map[string]any{"sha": commit, "commit": map[string]any{"tree": map[string]any{"sha": strings.Repeat("b", 40)}}}})
+		case r.URL.Path == "/repos/a/b/actions/workflows":
+			json.NewEncoder(w).Encode(map[string]any{"total_count": 1, "workflows": []any{map[string]any{"id": 1, "node_id": "W_1", "name": "CI", "path": ".github/workflows/ci.yml", "state": "active", "created_at": "2026-01-02T03:04:05Z", "updated_at": "2026-01-02T03:04:05Z"}}})
+		case strings.Contains(r.URL.Path, "/git/trees/"):
+			name, mode, kind, sha := ".github", "040000", "tree", strings.Repeat("c", 40)
+			if strings.HasSuffix(r.URL.Path, strings.Repeat("c", 40)) {
+				name, sha = "workflows", strings.Repeat("d", 40)
+			}
+			if strings.HasSuffix(r.URL.Path, strings.Repeat("d", 40)) {
+				name, mode, kind, sha = "ci.yml", "100644", "blob", hash
+			}
+			json.NewEncoder(w).Encode(map[string]any{"tree": []any{map[string]any{"path": name, "mode": mode, "type": kind, "sha": sha}}})
+		case r.URL.Path == "/repos/a/b/contents/.github/workflows/ci.yml" && r.Method == "GET":
+			json.NewEncoder(w).Encode(map[string]any{"type": "file", "path": ".github/workflows/ci.yml", "sha": hash, "size": len(content), "encoding": "base64", "content": base64.StdEncoding.EncodeToString(content)})
+		case r.URL.Path == "/repos/a/b/contents/.github/workflows/ci.yml" && r.Method == "PUT":
+			var input map[string]string
+			if e := json.NewDecoder(r.Body).Decode(&input); e != nil {
+				t.Error(e)
+				w.WriteHeader(400)
+				return
+			}
+			if input["sha"] != hash || input["branch"] != "main" {
+				w.WriteHeader(409)
+				return
+			}
+			next, e := base64.StdEncoding.DecodeString(input["content"])
+			if e != nil {
+				t.Error(e)
+				w.WriteHeader(400)
+				return
+			}
+			content = next
+			writes++
+			json.NewEncoder(w).Encode(map[string]any{"content": map[string]any{"path": ".github/workflows/ci.yml", "sha": blob(content)}, "commit": map[string]any{"sha": commit}})
+		default:
+			t.Errorf("unexpected workflow fixture request %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(404)
+		}
+	}))
+	defer server.Close()
+	call := func(ok bool, args ...string) string {
+		t.Helper()
+		args = append(args, "--provider", "github", "--resource", "workflow", "--project", "a/b", "--endpoint", server.URL)
+		return contributionCLIEnvironment(t, binary, repo, map[string]string{"HN_GITHUB_TOKEN": "test-only-token"}, ok, append([]string{"transfer"}, args...)...)
+	}
+	call(true, "export", workflow, "--map", "format=actions", "--map", "runner=ubuntu-24.04", "--map", "trigger=workflow_dispatch", "--map", "checkout=none", "--map", "runtime=python3-posix", "--map", "branch=main", "--map", "path=.github/workflows/ci.yml", "--map", "expected-sha="+blob([]byte("old workflow\n")))
+	mu.Lock()
+	published := append([]byte{}, content...)
+	count := writes
+	mu.Unlock()
+	if count != 1 || !strings.Contains(string(published), "# hn-workflow/1 ") {
+		t.Fatal("public export did not produce an exact publication")
+	}
+	positive := call(false, "import", "--dry-run")
+	if !strings.Contains(positive, "existing signed native workflow") {
+		t.Fatal("publication positive control failed: " + positive)
+	}
+	contributionCLI(t, binary, repo, true, "contribution", "decide", "hide", "--revision", workflow, "--expect-heads", "absent", "--json")
+	before := contributionGit(t, repo, "show-ref")
+	after := call(false, "import", "--dry-run")
+	if !strings.Contains(after, "existing signed native workflow") {
+		t.Fatal("hidden raw publication witness was lost: " + after)
+	}
+	if before != contributionGit(t, repo, "show-ref") {
+		t.Fatal("publication dry-run changed native refs")
+	}
+	if strings.Contains(contributionCLI(t, binary, repo, true, "workflow", "list", "--json"), "Published native workflow") {
+		t.Fatal("raw publication proof leaked into governed query")
+	}
+	if !strings.Contains(contributionCLI(t, binary, repo, true, "contribution", "inspect", "--raw", workflow, "--json"), "Published native workflow") {
+		t.Fatal("original signed publication disappeared")
+	}
 }
