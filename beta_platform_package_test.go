@@ -279,7 +279,7 @@ func TestBetaPlatformPackageInstallAndRuntime(t *testing.T) {
 			identity := operationalLabel(t, f.hn(repo, true, "identity", "public"), "Actor:")
 			writeOperationalMemoryPolicy(t, repo, identity, []string{identity})
 			f.git(repo, "add", ".hn/policy.json")
-			f.git(repo, "commit", "-qm", "Explicit memory policy")
+			f.git(repo, "-c", "user.name=Package fixture", "-c", "user.email=package@hn.invalid", "commit", "-qm", "Explicit memory policy")
 			f.hn(repo, true, "memory", "record", "--kind", "decision", "--at", "HEAD", "--applies", "exact", "--content", "Package Needle-42 世界", "--json")
 			output := f.hn(repo, true, "memory", "grep", "Needle-4[23]", "--json")
 			var result MemoryRecallEnvelopeV0
