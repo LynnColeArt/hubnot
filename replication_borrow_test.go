@@ -314,8 +314,9 @@ func TestGitObjectsPresentMissingPromisedBlobDoesNotLazyFetch(t *testing.T) {
 }
 
 func TestGitObjectsPresentCorruptObjectFailsClosed(t *testing.T) {
-	inReplicationTestRepository(t)
+	borrowFixture(t, partialClone)
 	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	promised := mustGitText(t, "rev-parse", "HEAD:vendor/crate000.rs")
 	object := mustGitTextFromInput(t, []byte("corrupt presence fixture"), "hash-object", "-w", "--stdin")
 	objectPath := filepath.Join(gitDir, "objects", object[:2], object[2:])
 	if err := os.Chmod(objectPath, 0o644); err != nil {
@@ -324,8 +325,13 @@ func TestGitObjectsPresentCorruptObjectFailsClosed(t *testing.T) {
 	if err := os.WriteFile(objectPath, []byte("invalid object"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := gitObjectsPresentAt(gitDir, []string{object}); err == nil {
-		t.Fatalf("corrupt object was treated as ordinary presence or absence: %v", got)
+	for _, id := range []string{object, promised} {
+		// The corrupt loose object exercises a successful batch with an error
+		// diagnostic. The promised missing blob forces a physical inventory,
+		// which must also refuse corruption instead of proving false absence.
+		if got, err := gitObjectsPresentAt(gitDir, []string{id}); err == nil {
+			t.Fatalf("corrupt storage was treated as ordinary presence or absence for %s: %v", id, got)
+		}
 	}
 }
 
