@@ -998,10 +998,13 @@ func printMemorySearchEnvelope(envelope MemoryRecallEnvelopeV0, jsonOutput bool,
 	fmt.Println(memoryRecallWarning)
 	fmt.Printf("Matched: %d; returned: %d; truncated: %t\n", envelope.Matched, envelope.Returned, envelope.Truncated)
 	for _, row := range envelope.Memories {
-		fmt.Printf("%s  actor=%s  kind=%s  lifecycle=%s  applicability=%s  evidence=%s  trust=%s\n  %s\n",
-			row.ID, row.Actor, row.Kind, row.Lifecycle, row.Applicability, row.Evidence, row.Trust, safeText(row.Data.Content))
+		fmt.Printf("%s  actor=%s  kind=%s  lifecycle=%s  applicability=%s  evidence=%s  trust=%s\n",
+			row.ID, row.Actor, row.Kind, row.Lifecycle, row.Applicability, row.Evidence, row.Trust)
 		if printMatches != nil {
+			fmt.Printf("  Content: %q\n", row.Data.Content)
 			printMatches(row)
+		} else {
+			fmt.Printf("  %s\n", safeText(row.Data.Content))
 		}
 	}
 	if envelope.NextCursor != "" {
