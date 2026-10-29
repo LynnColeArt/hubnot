@@ -153,9 +153,18 @@ beneath `memories[].data.content`, and handoff fields stay beneath
 `memories[].data.handoff`. Continuation cursors bind the normalized filters,
 bounds, exact policy digest, and accepted-source fingerprint. Any change to
 sources, policy, filters, query, commit, or bounds invalidates the cursor.
-Recall uses native Git subprocesses to read and verify local state and may
-rebuild its disposable verified index. It performs no fetch, author-command
-execution, memory-driven tool action, policy change, event append, or ref update.
+Recall and grep use native Git subprocesses to read and verify repository
+objects and may rebuild their disposable verified index. They perform no
+explicit Hubnot sync/fetch, memory author-command execution, memory-driven tool
+action, policy change, event append, or ref update.
+
+In a configured partial clone, Git's promisor behavior may lazily fetch a
+missing object, including the `.hn/policy.json` blob, during those reads.
+On Git versions that support it, `GIT_NO_LAZY_FETCH=1` enforces an offline read
+for either command; verification may fail when required objects are unavailable.
+For example: `GIT_NO_LAZY_FETCH=1 hn memory grep --json 'stream[-_]isolation'`.
+Complete repositories read their existing local objects. Trust and source
+verification remain unchanged in either case.
 
 ## Explicit regex fallback
 
