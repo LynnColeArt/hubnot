@@ -5,6 +5,29 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      candidate_mode:
+        description: Build a new candidate or reuse immutable existing assets
+        type: choice
+        options: [build, reuse]
+        default: build
+      platform_scope:
+        description: Native platforms to execute in this run
+        type: choice
+        options: [all, macos]
+        default: all
+      reuse_source:
+        description: Exact candidate source commit (reuse only)
+        type: string
+      reuse_run_id:
+        description: Originating candidate build run ID (reuse only)
+        type: string
+      reuse_artifact_id:
+        description: Exact candidate artifact ID (reuse only)
+        type: string
+      reuse_provenance:
+        description: Expected PROVENANCE.json SHA-256 (reuse only)
+        type: string
 
 env:
   CANDIDATE_VERSION: 0.1.0-beta.1
@@ -60,15 +83,56 @@ jobs:
       - name: Static checks
         run: go vet ./...
 
+  candidate-request:
+    name: Validate optional candidate request
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.request.outputs.mode }}
+      matrix: ${{ steps.request.outputs.matrix }}
+    steps:
+      - name: Validate mode, complete reuse identity and fixed platform selection
+        id: request
+        shell: bash
+        env:
+          CANDIDATE_MODE: ${{ inputs.candidate_mode }}
+          PLATFORM_SCOPE: ${{ inputs.platform_scope }}
+          REUSE_SOURCE: ${{ inputs.reuse_source }}
+          REUSE_RUN_ID: ${{ inputs.reuse_run_id }}
+          REUSE_ARTIFACT_ID: ${{ inputs.reuse_artifact_id }}
+          REUSE_PROVENANCE: ${{ inputs.reuse_provenance }}
+        run: |
+          set -euo pipefail
+          case "$CANDIDATE_MODE" in
+            build) test -z "$REUSE_SOURCE$REUSE_RUN_ID$REUSE_ARTIFACT_ID$REUSE_PROVENANCE" ;;
+            reuse)
+              [[ "$REUSE_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+              [[ "$REUSE_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+              [[ "$REUSE_ARTIFACT_ID" =~ ^[1-9][0-9]*$ ]]
+              [[ "$REUSE_PROVENANCE" =~ ^[0-9a-f]{64}$ ]]
+              ;;
+            *) exit 1 ;;
+          esac
+          case "$PLATFORM_SCOPE" in
+            all) matrix='[{"runner":"ubuntu-24.04","target":"linux/amd64","uname":"x86_64"},{"runner":"ubuntu-24.04-arm","target":"linux/arm64","uname":"aarch64"},{"runner":"macos-15","target":"darwin/arm64","uname":"arm64"},{"runner":"macos-15-intel","target":"darwin/amd64","uname":"x86_64"}]' ;;
+            macos) matrix='[{"runner":"macos-15","target":"darwin/arm64","uname":"arm64"},{"runner":"macos-15-intel","target":"darwin/amd64","uname":"x86_64"}]' ;;
+            *) exit 1 ;;
+          esac
+          printf 'mode=%s\nmatrix=%s\n' "$CANDIDATE_MODE" "$matrix" >> "$GITHUB_OUTPUT"
+
   candidate-build:
     name: Freeze one candidate bundle
-    if: github.event_name == 'workflow_dispatch'
+    needs: candidate-request
+    if: needs.candidate-request.outputs.mode == 'build'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
       source: ${{ steps.freeze.outputs.source }}
       tree: ${{ steps.freeze.outputs.tree }}
       provenance: ${{ steps.freeze.outputs.provenance }}
+      artifact: ${{ steps.upload.outputs.artifact-id }}
+      run: ${{ github.run_id }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -97,6 +161,7 @@ jobs:
           printf 'tree=%s\n' "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD^{tree})" >> "$GITHUB_OUTPUT"
           printf 'provenance=%s\n' "$(sha256sum PROVENANCE.json | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
+        id: upload
         with:
           name: beta-candidate-${{ github.sha }}
           path: ${{ runner.temp }}/candidate/
@@ -110,38 +175,107 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  candidate-native:
-    name: Exact candidate (${{ matrix.target }})
-    if: github.event_name == 'workflow_dispatch'
-    needs: candidate-build
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: ubuntu-24.04
-            target: linux/amd64
-            uname: x86_64
-          - runner: ubuntu-24.04-arm
-            target: linux/arm64
-            uname: aarch64
-          - runner: macos-15
-            target: darwin/arm64
-            uname: arm64
-          - runner: macos-15-intel
-            target: darwin/amd64
-            uname: x86_64
-    env:
-      EXPECTED_TARGET: ${{ matrix.target }}
-      EXPECTED_UNAME: ${{ matrix.uname }}
-      FROZEN_SOURCE: ${{ needs.candidate-build.outputs.source }}
-      FROZEN_TREE: ${{ needs.candidate-build.outputs.tree }}
-      FROZEN_PROVENANCE: ${{ needs.candidate-build.outputs.provenance }}
+  candidate-reuse:
+    name: Resolve existing immutable candidate
+    needs: candidate-request
+    if: needs.candidate-request.outputs.mode == 'reuse'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      source: ${{ steps.resolve.outputs.source }}
+      tree: ${{ steps.resolve.outputs.tree }}
+      provenance: ${{ steps.resolve.outputs.provenance }}
+      artifact: ${{ inputs.reuse_artifact_id }}
+      run: ${{ inputs.reuse_run_id }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ needs.candidate-build.outputs.source }}
+          ref: ${{ inputs.reuse_source }}
+          persist-credentials: false
+      - name: Validate same-repository origin and independently verify original bytes
+        id: resolve
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY_ID: ${{ github.repository_id }}
+          REUSE_SOURCE: ${{ inputs.reuse_source }}
+          REUSE_RUN_ID: ${{ inputs.reuse_run_id }}
+          REUSE_ARTIFACT_ID: ${{ inputs.reuse_artifact_id }}
+          REUSE_PROVENANCE: ${{ inputs.reuse_provenance }}
+        run: |
+          set -euo pipefail
+          export LC_ALL=C
+          evidence="$RUNNER_TEMP/reuse-evidence"
+          mkdir "$evidence"
+          test "$(git rev-parse HEAD)" = "$REUSE_SOURCE"
+          test -z "$(git status --porcelain)"
+          tree="$(git rev-parse HEAD^{tree})"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$REUSE_RUN_ID" > "$evidence/run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$REUSE_ARTIFACT_ID" > "$evidence/artifact.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$REUSE_RUN_ID/jobs?per_page=100" > "$evidence/jobs.json"
+          jq -e --arg source "$REUSE_SOURCE" --argjson run "$REUSE_RUN_ID" --argjson repo "$REPOSITORY_ID" '.id == $run and .head_sha == $source and .repository.id == $repo and .head_repository.id == $repo and .event == "workflow_dispatch" and .path == ".github/workflows/portability.yml"' "$evidence/run.json"
+          jq -e --arg source "$REUSE_SOURCE" --argjson run "$REUSE_RUN_ID" --argjson artifact "$REUSE_ARTIFACT_ID" --argjson repo "$REPOSITORY_ID" '.id == $artifact and .expired == false and .name == ("beta-candidate-" + $source) and .workflow_run.id == $run and .workflow_run.head_sha == $source and .workflow_run.repository_id == $repo and .workflow_run.head_repository_id == $repo and (.digest | test("^sha256:[0-9a-f]{64}$"))' "$evidence/artifact.json"
+          jq -e '[.jobs[] | select(.name == "Freeze one candidate bundle" and .conclusion == "success")] | length == 1' "$evidence/jobs.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$REUSE_ARTIFACT_ID/zip" > "$RUNNER_TEMP/candidate.zip"
+          zip_digest="$(jq -r .digest "$evidence/artifact.json")"
+          printf '%s  %s\n' "${zip_digest#sha256:}" "$RUNNER_TEMP/candidate.zip" | sha256sum -c -
+          {
+            printf 'PROVENANCE.json\nSHA256SUMS\nhubnot_%s_source.tar.gz\n' "$CANDIDATE_VERSION"
+            for target in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
+              printf 'hubnot_%s_%s.tar.gz\nhubnot_%s_%s_native-only.tar.gz\n' "$CANDIDATE_VERSION" "$target" "$CANDIDATE_VERSION" "$target"
+            done
+          } | sort > "$evidence/expected-members.txt"
+          unzip -Z1 "$RUNNER_TEMP/candidate.zip" | sort > "$evidence/actual-members.txt"
+          cmp "$evidence/expected-members.txt" "$evidence/actual-members.txt"
+          unzip -p "$RUNNER_TEMP/candidate.zip" PROVENANCE.json > "$evidence/PROVENANCE.json"
+          unzip -p "$RUNNER_TEMP/candidate.zip" SHA256SUMS > "$evidence/SHA256SUMS"
+          test "$(sha256sum "$evidence/PROVENANCE.json" | cut -d ' ' -f1)" = "$REUSE_PROVENANCE"
+          jq -e --arg source "$REUSE_SOURCE" --arg tree "$tree" --arg version "$CANDIDATE_VERSION" '.schema == "hn.release/1" and .source_commit == $source and .source_tree == $tree and .version == $version and .compiler == "go1.26.4" and (.assets | length == 9)' "$evidence/PROVENANCE.json"
+          awk 'NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/ {exit 1}' "$evidence/SHA256SUMS"
+          grep -v '^SHA256SUMS$' "$evidence/expected-members.txt" > "$evidence/expected-checksums.txt"
+          awk '{print $2}' "$evidence/SHA256SUMS" | sort > "$evidence/actual-checksums.txt"
+          cmp "$evidence/expected-checksums.txt" "$evidence/actual-checksums.txt"
+          while read -r digest name; do
+            test "$(unzip -p "$RUNNER_TEMP/candidate.zip" "$name" | sha256sum | cut -d ' ' -f1)" = "$digest"
+          done < "$evidence/SHA256SUMS"
+          jq -n --arg workflow "$GITHUB_SHA" --arg source "$REUSE_SOURCE" --arg tree "$tree" --arg run "$REUSE_RUN_ID" --arg artifact "$REUSE_ARTIFACT_ID" --arg provenance "$REUSE_PROVENANCE" '{mode:"reuse",workflow_source:$workflow,candidate_source:$source,candidate_tree:$tree,origin_run:$run,artifact_id:$artifact,provenance_sha256:$provenance}' > "$evidence/binding.json"
+          printf 'source=%s\ntree=%s\nprovenance=%s\n' "$REUSE_SOURCE" "$tree" "$REUSE_PROVENANCE" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: candidate-reuse-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reuse-evidence/
+          if-no-files-found: error
+          retention-days: 30
+
+  candidate-native:
+    name: Exact candidate (${{ matrix.target }})
+    if: always() && github.event_name == 'workflow_dispatch' && needs.candidate-request.result == 'success' && ((needs.candidate-build.result == 'success' && needs.candidate-reuse.result == 'skipped') || (needs.candidate-reuse.result == 'success' && needs.candidate-build.result == 'skipped'))
+    needs: [candidate-request, candidate-build, candidate-reuse]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.candidate-request.outputs.matrix) }}
+    env:
+      EXPECTED_TARGET: ${{ matrix.target }}
+      EXPECTED_UNAME: ${{ matrix.uname }}
+      FROZEN_SOURCE: ${{ needs.candidate-reuse.outputs.source || needs.candidate-build.outputs.source }}
+      FROZEN_TREE: ${{ needs.candidate-reuse.outputs.tree || needs.candidate-build.outputs.tree }}
+      FROZEN_PROVENANCE: ${{ needs.candidate-reuse.outputs.provenance || needs.candidate-build.outputs.provenance }}
+      CANDIDATE_RUN: ${{ needs.candidate-reuse.outputs.run || needs.candidate-build.outputs.run }}
+      CANDIDATE_ARTIFACT: ${{ needs.candidate-reuse.outputs.artifact || needs.candidate-build.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.candidate-reuse.outputs.source || needs.candidate-build.outputs.source }}
           persist-credentials: false
       - uses: actions/setup-go@v7
         with:
@@ -149,7 +283,11 @@ jobs:
           cache: false
       - uses: actions/download-artifact@v4
         with:
-          name: beta-candidate-${{ needs.candidate-build.outputs.source }}
+          artifact-ids: ${{ needs.candidate-reuse.outputs.artifact || needs.candidate-build.outputs.artifact }}
+          run-id: ${{ needs.candidate-reuse.outputs.run || needs.candidate-build.outputs.run }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          merge-multiple: true
           path: ${{ runner.temp }}/candidate
       - name: Observe native host and independently verify transported bytes
         shell: bash
@@ -159,6 +297,7 @@ jobs:
           {
             date -u
             pwd
+            printf 'executing-workflow-source=%s\ncandidate-source=%s\norigin-run=%s\nartifact-id=%s\n' "$GITHUB_SHA" "$FROZEN_SOURCE" "$CANDIDATE_RUN" "$CANDIDATE_ARTIFACT"
             git rev-parse HEAD HEAD^{tree}
             go env GOMOD GOOS GOARCH GOVERSION
             uname -a
@@ -192,6 +331,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$RUNNER_TEMP/native-evidence/source-inputs.before.sha256"
       - name: Verify bundle and exercise package install, memory and filesystem paths
+        id: package-preflight
         shell: bash
         env:
           HN_PORTABLE_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
@@ -202,7 +342,7 @@ jobs:
           date -u > "$RUNNER_TEMP/native-evidence/bundle.started"
           go test -race -count=1 -timeout=5m -v -run '^(TestBetaPlatformCandidateBundle|TestBetaPlatformPackageInstallAndRuntime)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/candidate" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/bundle.log"
       - name: Repeat released-writer refusals on the observed Linux Git hosts
-        if: startsWith(matrix.target, 'linux/')
+        if: steps.package-preflight.outcome == 'success' && startsWith(matrix.target, 'linux/')
         shell: bash
         env:
           HN_PORTABLE_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
@@ -211,7 +351,18 @@ jobs:
           trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/compatibility-repeat.exit"; date -u > "$RUNNER_TEMP/native-evidence/compatibility-repeat.finished"' EXIT
           date -u > "$RUNNER_TEMP/native-evidence/compatibility-repeat.started"
           go test -race -count=3 -timeout=10m -v -run '^TestBetaReleasedWriterCompatibility$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/compatibility-repeat.log"
-      - name: Actual integrated collaboration, upgrade, recovery, journal and contribution journeys
+      - name: Actual package WP13 contribution and moderation public journeys
+        if: always() && steps.package-preflight.outcome == 'success'
+        shell: bash
+        env:
+          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+        run: |
+          set -euo pipefail
+          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp13.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp13.finished"' EXIT
+          date -u > "$RUNNER_TEMP/native-evidence/wp13.started"
+          go test -race -count=1 -timeout=45m -v -run '^TestBetaContributionPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp13.log"
+      - name: Actual package integrated collaboration, upgrade, recovery and migration journeys
+        if: always() && steps.package-preflight.outcome == 'success'
         shell: bash
         env:
           HN_MIGRATION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
@@ -221,30 +372,33 @@ jobs:
           set -euo pipefail
           trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/journeys.exit"; date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"' EXIT
           date -u > "$RUNNER_TEMP/native-evidence/journeys.started"
-          go test -race -count=1 -timeout=30m -v -run '^(TestPortableCollaborationIntegratedPublicVariants|TestBetaReleasedWriterCompatibility|TestBetaRecoveryJourneys|TestBetaRotationJournalRefusalPreservesRecovery|TestBetaMigrationFutureSessionRefusesWithoutReset|TestMigrationCLINativeOfflineBuildVariants|TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline|TestMigrationCLIPublicRefusalsPreserveRemoteState|TestBetaContributionPublicVariants)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/journeys.log"
+          go test -race -count=1 -timeout=30m -v -run '^(TestPortableCollaborationIntegratedPublicVariants|TestBetaReleasedWriterCompatibility|TestBetaRecoveryJourneys|TestBetaRotationJournalRefusalPreservesRecovery|TestBetaMigrationFutureSessionRefusesWithoutReset|TestMigrationCLINativeOfflineBuildVariants|TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline|TestMigrationCLIPublicRefusalsPreserveRemoteState)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/journeys.log"
           date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"
-      - name: WP12 recovery and contribution runtime against each exact package
+      - name: WP12 recovery and contribution runtime against standard package
+        if: always() && steps.package-preflight.outcome == 'success'
         shell: bash
         env:
           HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
         run: |
           set -euo pipefail
-          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp12.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp12.finished"' EXIT
-          date -u > "$RUNNER_TEMP/native-evidence/wp12.started"
-          for variant in standard native-only; do
-            suffix=''
-            tests='^TestContributionCLI'
-            if [ "$variant" = native-only ]; then
-              suffix='_native-only'
-              # HiddenWorkflowKeepsRawPublicationWitness explicitly selects the
-              # standard provider binary. Keep its proof in the standard run.
-              tests='^TestContributionCLI(AutomaticAndScopedModeration|BaselineGrowthRequiresLocalReservation|LocalCapacityBeforeNativeWritesAndRawCannotSelectTrust|GovernedSpecializedResourcesAndHiddenDependencies|DisabledPreservesNativeBehavior|WorktreesShareAccountingAndLockKeepLocalAuthority|ConflictsRevocationAndManufacturedHistoricalDecisions|RawRecoveryChargesLocalRetentionAndGuardsNewRefs|DurableArtifactRetryRecovery)$'
-            fi
-            binary="$RUNNER_TEMP/unpacked/hubnot_${CANDIDATE_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}${suffix}/hn"
-            export HN_CONTRIBUTION_TEST_BINARY="$binary"
-            export HN_CONTRIBUTION_TEST_BINARY_SHA256="sha256:$(shasum -a 256 "$binary" | cut -d ' ' -f1)"
-            go test -race -count=1 -timeout=15m -v -run "$tests" . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-${variant}.log"
-          done
+          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp12-standard.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp12-standard.finished"' EXIT
+          date -u > "$RUNNER_TEMP/native-evidence/wp12-standard.started"
+          export HN_CONTRIBUTION_TEST_BINARY="$RUNNER_TEMP/unpacked/hubnot_${CANDIDATE_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}/hn"
+          export HN_CONTRIBUTION_TEST_BINARY_SHA256="sha256:$(shasum -a 256 "$HN_CONTRIBUTION_TEST_BINARY" | cut -d ' ' -f1)"
+          go test -race -count=1 -timeout=20m -v -run '^TestContributionCLI' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-standard.log"
+      - name: WP12 recovery and contribution runtime against native-only package
+        if: always() && steps.package-preflight.outcome == 'success'
+        shell: bash
+        env:
+          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+        run: |
+          set -euo pipefail
+          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp12-native-only.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp12-native-only.finished"' EXIT
+          date -u > "$RUNNER_TEMP/native-evidence/wp12-native-only.started"
+          export HN_CONTRIBUTION_TEST_BINARY="$RUNNER_TEMP/unpacked/hubnot_${CANDIDATE_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}_native-only/hn"
+          export HN_CONTRIBUTION_TEST_BINARY_SHA256="sha256:$(shasum -a 256 "$HN_CONTRIBUTION_TEST_BINARY" | cut -d ' ' -f1)"
+          # The hidden-workflow publication witness deliberately uses standard.
+          go test -race -count=1 -timeout=20m -v -run '^TestContributionCLI(AutomaticAndScopedModeration|BaselineGrowthRequiresLocalReservation|LocalCapacityBeforeNativeWritesAndRawCannotSelectTrust|GovernedSpecializedResourcesAndHiddenDependencies|DisabledPreservesNativeBehavior|WorktreesShareAccountingAndLockKeepLocalAuthority|ConflictsRevocationAndManufacturedHistoricalDecisions|RawRecoveryChargesLocalRetentionAndGuardsNewRefs|DurableArtifactRetryRecovery)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-native-only.log"
       - name: Verify immutable source and preserve evidence
         if: always()
         shell: bash
@@ -255,7 +409,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: native-evidence-${{ matrix.runner }}-${{ needs.candidate-build.outputs.source }}
+          name: native-evidence-${{ matrix.runner }}-${{ needs.candidate-reuse.outputs.source || needs.candidate-build.outputs.source }}
           path: ${{ runner.temp }}/native-evidence/
           if-no-files-found: error
           retention-days: 30
