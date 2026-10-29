@@ -153,8 +153,76 @@ beneath `memories[].data.content`, and handoff fields stay beneath
 `memories[].data.handoff`. Continuation cursors bind the normalized filters,
 bounds, exact policy digest, and accepted-source fingerprint. Any change to
 sources, policy, filters, query, commit, or bounds invalidates the cursor.
-Recall performs no fetch, command execution, tool invocation, policy change,
-event append, or ref update.
+Recall and grep use native Git subprocesses to read and verify repository
+objects and may rebuild their disposable verified index. They perform no
+explicit Hubnot sync/fetch, memory author-command execution, memory-driven tool
+action, policy change, event append, or ref update.
+
+In a configured partial clone, Git's promisor behavior may lazily fetch a
+missing object, including the `.hn/policy.json` blob, during those reads.
+On Git versions that support it, `GIT_NO_LAZY_FETCH=1` enforces an offline read
+for either command; verification may fail when required objects are unavailable.
+For example: `GIT_NO_LAZY_FETCH=1 hn memory grep --json 'stream[-_]isolation'`.
+Complete repositories read their existing local objects. Trust and source
+verification remain unchanged in either case.
+
+## Explicit regex fallback
+
+When lexical recall misses a spelling, identifier fragment, or punctuation
+pattern, an agent may explicitly choose regex search:
+
+```sh
+hn memory grep --at HEAD --topic architecture --json 'stream[-_ ]isolat.*'
+hn memory grep --ignore-case --max-records 5 'failure|timeout'
+hn memory grep --json '(?m)^Decision:'
+hn memory grep --json -- '-legacy[0-9]+'
+```
+
+`hn memory grep [filters] [bounds] [-i|--ignore-case] [--json] PATTERN`
+accepts exactly one positional pattern. Put flags before the pattern; use `--`
+when it starts with a hyphen. Quote patterns so the shell passes them literally.
+It uses Go's standard-library `regexp` syntax (RE2-style), including Unicode
+classes such as `\p{Han}`; lookaround and backreferences are unsupported.
+Matching is case-sensitive by default. `-i` and `--ignore-case` enable Unicode
+simple case folding; inline `(?i)` and scoped flags follow Go regexp semantics.
+`^` and `$` anchor the whole field by default; `(?m)` anchors each line.
+`.` excludes newlines by default; `(?s)` includes them. Empty patterns match
+every eligible record. This is an explicit fallback: `recall --query` continues
+to mean lexical terms and never automatically interprets regular expressions.
+
+Each candidate's complete `data.content`, each topic, and each string in handoff
+`completed`, `assumptions`, `blockers`, and `nextActions` are searched separately.
+A match in any field returns the complete record once. Matching never crosses
+field or list-item boundaries. Evidence references, provenance, IDs, generated
+warnings, and classification metadata are outside this search surface. Human
+output identifies each matching field with a generated label and an escaped
+value, including matches found only in structured handoff fields.
+
+Grep shares recall's filters (`--at`, `--subject`, `--path`, repeated `--topic`,
+`--kind`, `--actor`, `--lifecycle`, `--trust`, and `--include-untrusted`), defaults,
+verified sources, applicability and resolved-evidence requirements, deterministic
+ordering, `--max-records`, and `--cursor`. For grep, `--max-content-bytes`
+counts the complete JSON encoding of each returned `data` object, including
+content, topics, handoff strings, and other author-supplied record fields.
+Records remain atomic: if any match exceeds that bound, the query fails before
+emitting a page. Lexical recall retains its existing `data.content`-only byte
+budget. Grep emits human output or the same version-0 JSON result envelope,
+including full provenance and inert author data. It has no `--query` or `--input` mode; existing recall
+machine requests are unchanged. Grep cursors additionally bind a separate regex
+domain, exact pattern bytes, and ignore-case flag, and cannot be reused for
+lexical recall or another regex/flag combination.
+
+Patterns must be valid UTF-8 and at most 4,096 bytes. A conservative syntax-tree
+expansion estimate (including fixed program overhead) and the compiled
+program must each fit 4,096 Go regexp instructions. The estimate is checked
+before expanding counted repetitions. Invalid, unsupported, and over-complex
+patterns fail before any index rebuild. Before matching, the complete eligible selection must
+fit a deterministic work limit of 67,108,864 units:
+`compiledInstructions × sum(fieldUTF8Bytes + 1)` over all searchable fields.
+Exceeding this limit fails without emitting a partial result; narrow filters or
+simplify the pattern. Pagination bounds output rather than the scanned corpus.
+Grep uses the existing verified private index; it creates no text export and
+requires no external grep, shell evaluation, or additional runtime.
 
 ## Disposable local index
 

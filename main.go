@@ -93,6 +93,7 @@ Usage:
   hn memory challenge MEMORY --reason REASON [--evidence TYPED-ID]...
   hn memory show MEMORY [--json]
   hn memory recall [filters] [bounds] [--json]
+  hn memory grep [filters] [bounds] [-i] [--json] PATTERN
   hn memory index rebuild|verify
   hn issue help
   hn gh issue create|list|view|edit|comment|close|reopen (local compatibility)
