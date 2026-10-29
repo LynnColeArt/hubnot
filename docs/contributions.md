@@ -209,6 +209,11 @@ inspection. Enabling contributions does not enable a worker.
 Only a currently evaluated project moderator can sign these decisions. Inspect
 the exact target and all current decision heads first:
 
+Initial writable authority setup requires a native maintainer. Being listed as
+a moderator alone does not bootstrap a new writable worktree. After activation,
+native maintenance and project moderation permissions remain independently
+evaluated.
+
 ```sh
 hn contribution decide reject --submission SUBMISSION_ID --expect-heads absent --operation reject-001 --json
 hn contribution decide hide --revision REVISION_ID --expect-heads absent --operation hide-001 --json
