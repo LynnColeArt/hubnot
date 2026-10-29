@@ -65,13 +65,14 @@ func contributionStoreRecords(a *contributionAuthority, envs []c.Envelope, inten
 	if e != nil {
 		return e
 	}
-	if _, e = x.Receive(context.Background(), path, digest, intent, refs); e != nil {
+	intake, e := contributionReceiveArtifact(context.Background(), x, path, digest, intent, refs)
+	if e != nil {
 		return e
 	}
 	if e = contributionValidateLiveRecords(a, envs); e != nil {
 		return e
 	}
-	return contributionRetainIntake(a, x, intent)
+	return contributionRetainIntake(a, x, intake.Intent)
 }
 func contributionReceiptIntake(a *contributionAuthority, x *ContributionExchange, intent string) error {
 	identity, e := loadIdentity()
@@ -103,6 +104,18 @@ func contributionReceiptIntake(a *contributionAuthority, x *ContributionExchange
 		}
 		if attempt == nil || attempt.Status != "pending" {
 			return nil, fmt.Errorf("completed conflict-free bounded intake required")
+		}
+		// Input accounting belongs to its original reservation, even after an
+		// explicit rollover. The separately charged receipt intake uses today's window.
+		window := ""
+		for _, reservation := range j.Ledger.Reservations {
+			if reservation.Intent == attempt.Intent && reservation.Artifact == attempt.Artifact && reservation.Cost == attempt.Reserved {
+				window = reservation.Window
+				break
+			}
+		}
+		if window == "" {
+			return nil, fmt.Errorf("original input reservation required")
 		}
 		artifact, e := x.inspectAttempt(context.Background(), *attempt)
 		if e != nil {
@@ -151,7 +164,7 @@ func contributionReceiptIntake(a *contributionAuthority, x *ContributionExchange
 			if !permission.Allowed && permission.Reason != "project moderator admission required" {
 				return nil, fmt.Errorf("contribution operation denied: %s", permission.Reason)
 			}
-			receipt := c.Receipt{Submission: submission.ID(), Authority: a.current().Ref, Artifact: attempt.Artifact, Accounting: attempt.Accounting, Window: j.Ledger.Window, Cost: attempt.Reserved, Automatic: permission.Allowed && permission.Automatic, Evaluated: evaluated}
+			receipt := c.Receipt{Submission: submission.ID(), Authority: a.current().Ref, Artifact: attempt.Artifact, Accounting: attempt.Accounting, Window: window, Cost: attempt.Reserved, Automatic: permission.Allowed && permission.Automatic, Evaluated: evaluated}
 			env, e := signContribution(identity, c.Record{Kind: c.ReceiptKind, Project: r.Project, Intent: "receipt-" + c.Digest([]byte(submission.ID() + a.PolicyDigest))[7:], Receipt: &receipt})
 			if e != nil {
 				return nil, e

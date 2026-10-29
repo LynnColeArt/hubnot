@@ -1350,3 +1350,296 @@ func TestContributionCLIHiddenWorkflowKeepsRawPublicationWitness(t *testing.T) {
 		t.Fatal("original signed publication disappeared")
 	}
 }
+
+type contributionRecoveryFixture struct {
+	repo, actor, revision, file, digest, operation, original string
+	refs                                                     []string
+	policy                                                   PolicyDocument
+	x                                                        *ContributionExchange
+	attempt                                                  ContributionIntake
+	bytes                                                    []byte
+}
+
+// Only interruption setup uses the source adapter. Every retry below invokes
+// the actual selected CLI; this does not claim an OS crash/cancellation test.
+func contributionInterruptedFixture(t *testing.T, binary, mode, failpoint string) contributionRecoveryFixture {
+	t.Helper()
+	repo, actor, policy := contributionEnabledRepository(t, binary, t.Name(), []c.Rule{{Operation: c.IssueCreate, Automatic: true}})
+	if mode == "read-only" {
+		anchor, e := os.ReadFile(filepath.Join(repo, ".git/hn/contribution/authority.json"))
+		if e != nil {
+			t.Fatal(e)
+		}
+		contributionCLI(t, binary, repo, true, "contribution", "authority", "set", "--ref", "refs/heads/main", "--expect", c.Digest(anchor), "--read-only")
+		if e = os.RemoveAll(filepath.Join(repo, ".git/hn/identities")); e != nil {
+			t.Fatal(e)
+		}
+		if e = os.Remove(filepath.Join(repo, ".git/hn/active")); e != nil {
+			t.Fatal(e)
+		}
+	} else if mode == "unselected" {
+		if e := os.Remove(filepath.Join(repo, ".git/hn/contribution/authority.json")); e != nil {
+			t.Fatal(e)
+		}
+	}
+	stranger := migrationCLIRepository(t)
+	contributionCLI(t, binary, stranger, true, "init", "--name", "Interrupted contributor")
+	revision := contributionEventID(t, contributionCLI(t, binary, stranger, true, "issue", "open", "--json", "Durable interrupted contribution"))
+	file := filepath.Join(t.TempDir(), "input.hnc")
+	var prepared struct {
+		Digest string   `json:"digest"`
+		Refs   []string `json:"refs"`
+	}
+	if e := json.Unmarshal([]byte(contributionCLI(t, binary, stranger, true, "contribution", "prepare", "--project", policy.Contributions.Project, "--revision", revision, "--output", file, "--json")), &prepared); e != nil {
+		t.Fatal(e)
+	}
+	x, e := OpenContributionExchange(filepath.Join(repo, ".git/hn/contribution/inbox-"+policy.Contributions.Project[7:]), *policy.Contributions, "initial")
+	if e != nil {
+		t.Fatal(e)
+	}
+	x.fault = func(step string) error {
+		if step == failpoint {
+			return fmt.Errorf("source fixture interrupted at %s", step)
+		}
+		return nil
+	}
+	attempt, e := x.Receive(context.Background(), file, prepared.Digest, "interrupted-input", prepared.Refs)
+	if e == nil || failpoint == "artifact-durable" && (attempt.Status != "uncertain" || attempt.WireBytes <= 0) || failpoint == "reserved" && attempt.Status != "reserved" {
+		t.Fatalf("interruption not reached: %+v %v", attempt, e)
+	}
+	raw, e := os.ReadFile(file)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = os.Remove(file); e != nil {
+		t.Fatal(e)
+	}
+	x.fault = nil
+	return contributionRecoveryFixture{repo: repo, actor: actor, revision: revision, file: file, digest: prepared.Digest, operation: attempt.Intent, refs: prepared.Refs, policy: policy, x: x, attempt: attempt, bytes: raw, original: contributionCLI(t, binary, stranger, true, "contribution", "inspect", "--raw", revision, "--json")}
+}
+
+func (f contributionRecoveryFixture) arguments(verb string) []string {
+	args := []string{"contribution", verb, "--file", f.file, "--digest", f.digest, "--operation", f.operation, "--json"}
+	for _, ref := range f.refs {
+		args = append(args, "--ref", ref)
+	}
+	return args
+}
+func contributionRecoveryLedger(t *testing.T, x *ContributionExchange) string {
+	t.Helper()
+	ledger, _, e := x.Accounting()
+	if e != nil {
+		t.Fatal(e)
+	}
+	raw, e := json.Marshal(ledger)
+	if e != nil {
+		t.Fatal(e)
+	}
+	return string(raw)
+}
+
+func TestContributionCLIDurableArtifactRetryRecovery(t *testing.T) {
+	binary := contributionCLIBinary(t)
+	for _, mode := range []string{"receive", "restore", "read-only", "unselected", "blocked"} {
+		t.Run(mode, func(t *testing.T) {
+			f := contributionInterruptedFixture(t, binary, mode, "artifact-durable")
+			before := contributionRecoveryLedger(t, f.x)
+			refs := contributionGit(t, f.repo, "show-ref")
+			for _, changed := range []string{"digest", "refs"} {
+				wrong := f
+				if changed == "digest" {
+					wrong.digest = c.Digest([]byte("different input"))
+				} else {
+					wrong.refs = []string{"refs/heads/main"}
+				}
+				verb := "receive"
+				if mode == "unselected" {
+					verb = "restore"
+				}
+				if output := contributionCLI(t, binary, f.repo, false, wrong.arguments(verb)...); !strings.Contains(output, "conflicting operation intent") {
+					t.Fatal(output)
+				}
+			}
+			if before != contributionRecoveryLedger(t, f.x) || refs != contributionGit(t, f.repo, "show-ref") {
+				t.Fatal("changed intent altered original reservation/refs")
+			}
+			verb := "receive"
+			if mode == "restore" || mode == "unselected" {
+				verb = "restore"
+			}
+			if mode == "receive" {
+				contributionCLI(t, binary, f.repo, true, "contribution", "rollover", "--expect", "initial", "--window", "after-interruption")
+			}
+			if mode == "blocked" {
+				contributionCLI(t, binary, f.repo, true, "contribution", "decide", "block", "--actor", strings.TrimPrefix(f.refs[0], "refs/hn/actors/"), "--expect-heads", "absent", "--json")
+			}
+			output := contributionCLI(t, binary, f.repo, mode != "blocked", f.arguments(verb)...)
+			if mode == "blocked" && !strings.Contains(output, "admission pending") {
+				t.Fatal("current block did not refuse admission after raw reconciliation: " + output)
+			}
+			if mode != "blocked" && !strings.Contains(output, `"status":"pending"`) {
+				t.Fatal("actual public retry did not reconcile retained artifact: " + output)
+			}
+			ledger, attempts, e := f.x.Accounting()
+			if e != nil {
+				t.Fatal(e)
+			}
+			want := 1
+			if mode == "receive" || mode == "blocked" {
+				want = 2
+			}
+			if len(ledger.Reservations) != want || ledger.Reservations[0].Intent != f.operation || ledger.Reservations[0].Cost != f.attempt.Reserved || ledger.Reservations[0].Window != "initial" {
+				t.Fatal("input reservation duplicated/replaced", ledger)
+			}
+			if attempts[0].Accounting != f.attempt.Accounting || attempts[0].Artifact != f.digest || attempts[0].Status != "pending" {
+				t.Fatal("original intake identity lost", attempts)
+			}
+			if mode == "unselected" {
+				if refs != contributionGit(t, f.repo, "show-ref") || !strings.Contains(output, `"nativePublished":false`) || !strings.Contains(output, `"authorityAdopted":false`) {
+					t.Fatal("unselected restore published/adopted authority", output)
+				}
+				contributionCLI(t, binary, f.repo, false, "contribution", "authority", "show", "--json")
+			} else {
+				if f.original != contributionCLI(t, binary, f.repo, true, "contribution", "inspect", "--raw", f.revision, "--json") {
+					t.Fatal("native original payload/signature changed")
+				}
+				visible := strings.Contains(contributionCLI(t, binary, f.repo, true, "issue", "list", "--json"), "Durable interrupted contribution")
+				if visible != (mode == "receive") {
+					t.Fatal("retry granted incorrect admission", mode)
+				}
+			}
+			if mode == "receive" {
+				records, _, e := ReadContributionManifest(context.Background(), filepath.Join(f.repo, ".git"), f.policy.Contributions.Project, f.actor, f.policy.Contributions.Limits)
+				if e != nil {
+					t.Fatal(e)
+				}
+				if len(records) != 1 || records[0].Record().Receipt == nil {
+					t.Fatal("authorized receipt missing", records)
+				}
+				r := records[0].Record().Receipt
+				if r.Window != "initial" || r.Cost != f.attempt.Reserved || r.Accounting != f.attempt.Accounting || r.Artifact != f.digest {
+					t.Fatal("recovered receipt lost original reservation provenance", r)
+				}
+				if ledger.Reservations[1].Window != "after-interruption" {
+					t.Fatal("new receipt control reservation not charged to current window")
+				}
+			}
+			stableLedger := contributionRecoveryLedger(t, f.x)
+			stableRefs := contributionGit(t, f.repo, "show-ref")
+			for i := 0; i < 2; i++ {
+				contributionCLI(t, binary, f.repo, mode != "blocked", f.arguments(verb)...)
+			}
+			if stableLedger != contributionRecoveryLedger(t, f.x) || stableRefs != contributionGit(t, f.repo, "show-ref") {
+				t.Fatal("exact retry duplicated input/control charge or signed refs")
+			}
+		})
+	}
+	for _, damage := range []string{"missing", "corrupt", "reserved-no-artifact"} {
+		t.Run(damage, func(t *testing.T) {
+			step := "artifact-durable"
+			if damage == "reserved-no-artifact" {
+				step = "reserved"
+			}
+			f := contributionInterruptedFixture(t, binary, "receive", step)
+			if damage == "missing" {
+				if e := os.Remove(f.x.artifactPath(f.digest)); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if damage == "corrupt" {
+				if e := os.WriteFile(f.x.artifactPath(f.digest), []byte("corrupt retained input"), 0600); e != nil {
+					t.Fatal(e)
+				}
+			}
+			// Even a valid replacement at the old foreign path cannot repair local damage.
+			if e := os.WriteFile(f.file, f.bytes, 0600); e != nil {
+				t.Fatal(e)
+			}
+			ledger := contributionRecoveryLedger(t, f.x)
+			refs := contributionGit(t, f.repo, "show-ref")
+			for i := 0; i < 2; i++ {
+				if output := contributionCLI(t, binary, f.repo, false, f.arguments("receive")...); !strings.Contains(output, "intake remains uncertain") {
+					t.Fatal(output)
+				}
+			}
+			if ledger != contributionRecoveryLedger(t, f.x) || refs != contributionGit(t, f.repo, "show-ref") {
+				t.Fatal("damaged retained input was replaced/refunded/promoted")
+			}
+		})
+	}
+	t.Run("generated-control", func(t *testing.T) {
+		repo, actor, policy := contributionEnabledRepository(t, binary, t.Name(), []c.Rule{{Operation: c.IssueCreate, Automatic: true}})
+		revision := contributionEventID(t, contributionCLI(t, binary, repo, true, "issue", "open", "--json", "Original controlled issue"))
+		original := contributionCLI(t, binary, repo, true, "contribution", "inspect", "--raw", revision, "--json")
+		raw, e := os.ReadFile(filepath.Join(repo, ".git/hn/identities/"+actor+".json"))
+		if e != nil {
+			t.Fatal(e)
+		}
+		var id Identity
+		if e = json.Unmarshal(raw, &id); e != nil {
+			t.Fatal(e)
+		}
+		policyRaw, e := os.ReadFile(filepath.Join(repo, ".hn/policy.json"))
+		if e != nil {
+			t.Fatal(e)
+		}
+		env, e := signContribution(&id, c.Record{Kind: c.DecisionKind, Project: policy.Contributions.Project, Intent: "interrupted-hide", Decision: &c.Decision{Action: c.Hide, Target: c.Target{Kind: c.RevisionTarget, ID: revision}, Authority: c.AuthorityRef{Commit: contributionGit(t, repo, "rev-parse", "main"), Digest: c.Digest(policyRaw)}, Parents: []string{}}})
+		if e != nil {
+			t.Fatal(e)
+		}
+		file := filepath.Join(t.TempDir(), "control.hnc")
+		refs := []string{"refs/heads/main"}
+		digest, e := ExportContributionArtifact(context.Background(), filepath.Join(repo, ".git"), policy.Contributions.Project, refs, []c.Envelope{env}, file, policy.Contributions.Limits)
+		if e != nil {
+			t.Fatal(e)
+		}
+		x, e := OpenContributionExchange(filepath.Join(repo, ".git/hn/contribution/inbox-"+policy.Contributions.Project[7:]), *policy.Contributions, "initial")
+		if e != nil {
+			t.Fatal(e)
+		}
+		x.fault = func(step string) error {
+			if step == "artifact-durable" {
+				return fmt.Errorf("source fixture interrupted generated control")
+			}
+			return nil
+		}
+		intent := "control-" + c.Digest(env.Payload)[7:]
+		attempt, e := x.Receive(context.Background(), file, digest, intent, refs)
+		if e == nil || attempt.Status != "uncertain" {
+			t.Fatal("control interruption not reached", attempt, e)
+		}
+		if e = os.Remove(file); e != nil {
+			t.Fatal(e)
+		}
+		x.fault = nil
+		ledger := contributionRecoveryLedger(t, x)
+		decision := contributionCLI(t, binary, repo, true, "contribution", "decide", "hide", "--revision", revision, "--expect-heads", "absent", "--operation", "interrupted-hide", "--json")
+		if contributionDecisionID(t, decision) != c.Digest(env.Payload) || ledger != contributionRecoveryLedger(t, x) {
+			t.Fatal("control recovery changed signed identity or charged again")
+		}
+		if strings.Contains(contributionCLI(t, binary, repo, true, "issue", "list", "--json"), "Original controlled issue") {
+			t.Fatal("recovered control was not applied")
+		}
+		if original != contributionCLI(t, binary, repo, true, "contribution", "inspect", "--raw", revision, "--json") {
+			t.Fatal("control changed original native fact")
+		}
+		records, _, e := ReadContributionManifest(context.Background(), filepath.Join(repo, ".git"), policy.Contributions.Project, actor, policy.Contributions.Limits)
+		if e != nil {
+			t.Fatal(e)
+		}
+		found := false
+		for _, v := range records {
+			if v.ID() == c.Digest(env.Payload) {
+				found = string(v.Payload()) == string(env.Payload) && string(v.Signature()) == string(env.Signature)
+			}
+		}
+		if !found {
+			t.Fatal("original signed control bytes were not retained")
+		}
+		stable := contributionGit(t, repo, "show-ref")
+		contributionCLI(t, binary, repo, true, "contribution", "decide", "hide", "--revision", revision, "--expect-heads", "absent", "--operation", "interrupted-hide", "--json")
+		if stable != contributionGit(t, repo, "show-ref") || ledger != contributionRecoveryLedger(t, x) {
+			t.Fatal("control retry duplicated refs/charge")
+		}
+	})
+}

@@ -248,6 +248,19 @@ func contributionChargeBaseline(a *contributionAuthority, events []StoredEvent) 
 	return contributionWriteBaselineReceipt(x, a, j.Attempts[len(j.Attempts)-1])
 }
 
+// An exact public retry first binds the original operation/digest/ref selection
+// through Receive. Reconcile interrupted intake only from immutable local bytes;
+// Recover keeps the original reservation and limits and never reopens the source.
+func contributionReceiveArtifact(ctx context.Context, x *ContributionExchange, path, digest, intent string, refs []string) (ContributionIntake, error) {
+	intake, e := x.Receive(ctx, path, digest, intent, refs)
+	if e != nil || !intake.Replayed || intake.Status != "reserved" && intake.Status != "uncertain" {
+		return intake, e
+	}
+	intake, e = x.Recover(ctx, intake.Intent)
+	intake.Replayed = true
+	return intake, e
+}
+
 // Raw restore can precede authority adoption. The already-present branch policy
 // supplies only finite local retention bounds; it grants no signing or project
 // authority. Native facts remain staged until explicit selection publishes them.
@@ -281,7 +294,7 @@ func contributionRestoreUnselected(args []string) error {
 	if e = contributionPublicInput(x, *digest, *operation); e != nil {
 		return e
 	}
-	intake, e := x.Receive(context.Background(), *file, *digest, *operation, refs)
+	intake, e := contributionReceiveArtifact(context.Background(), x, *file, *digest, *operation, refs)
 	if e != nil {
 		return e
 	}
@@ -355,7 +368,7 @@ func cmdContribution(args []string) error {
 		if e = contributionPublicInput(x, *digest, *operation); e != nil {
 			return e
 		}
-		intake, e := x.Receive(context.Background(), *file, *digest, *operation, refs)
+		intake, e := contributionReceiveArtifact(context.Background(), x, *file, *digest, *operation, refs)
 		if e != nil {
 			if intake.Status == "conflict" {
 				if retainErr := contributionRetainIntake(a, x, intake.Intent); retainErr != nil {
