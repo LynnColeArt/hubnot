@@ -482,7 +482,9 @@ jobs:
           cd "$RUNNER_TEMP/candidate"
           test "$(shasum -a 256 PROVENANCE.json | cut -d ' ' -f1)" = "$FROZEN_PROVENANCE"
           shasum -a 256 -c SHA256SUMS > "$DIAGNOSTIC_EVIDENCE/transport-checksums.log"
-          tar -xzf "hubnot_${CANDIDATE_VERSION}_darwin_amd64.tar.gz" -C "$RUNNER_TEMP/diagnostic-unpacked"
+          for suffix in '' _native-only; do
+            tar -xzf "hubnot_${CANDIDATE_VERSION}_darwin_amd64${suffix}.tar.gz" -C "$RUNNER_TEMP/diagnostic-unpacked"
+          done
           app="$RUNNER_TEMP/diagnostic-unpacked/hubnot_${CANDIDATE_VERSION}_darwin_amd64/hn"
           app_sha="$(shasum -a 256 "$app" | cut -d ' ' -f1)"
           test "$app_sha" = 42a8c16f7aed882a09469fae593181a721ed6564c8d9dfd4930d26b6a6756e3a
@@ -530,7 +532,7 @@ jobs:
               programSHA := os.Getenv("HN_BETA_DIAGNOSTIC_GIT_SHA256")
               if program == f.binary { programSHA = fmt.Sprintf("%x", f.digest) }
               if programSHA == "" { f.t.Fatal("diagnostic executable digest unavailable") }
-              betaDiagnosticWrite(f.t, map[string]any{"kind":"process-start", "test":f.t.Name(), "utc":started.UTC().Format(time.RFC3339Nano), "pid":pid, "program":p.Path, "argv":args, "executable_sha256":programSHA, "selected_app_sha256":fmt.Sprintf("%x", f.digest), "target":target, "deadline_seconds":45})
+              betaDiagnosticWrite(f.t, map[string]any{"kind":"process-start", "test":f.t.Name(), "utc":started.UTC().Format(time.RFC3339Nano), "pid":pid, "program":p.Path, "argv":args, "executable_sha256":programSHA, "selected_app_sha256":fmt.Sprintf("%x", f.digest), "target":target, "start_success":err == nil, "deadline_seconds":45})
               if err == nil { err = p.Wait() }
               ended := time.Now()
               out := output.Bytes()
@@ -692,8 +694,8 @@ jobs:
           d=Path(os.environ['DIAGNOSTIC_EVIDENCE'])
           lines=(d/'observations.jsonl').read_text().splitlines() if (d/'observations.jsonl').exists() else []
           records=[json.loads(line) for line in lines]
-          target=any(r.get('kind')=='process-start' and r.get('target') for r in records)
-          result={'diagnostic':True,'qualification_eligible':False,'external_deadline_seconds':45,'test_exit':int(os.environ['DIAGNOSTIC_STATUS']),'target_reached':target,'target_status':'reached' if target else 'target not reached','raw_output_uploaded':False,'observations':len(records),'observer_effects':'Bounded file reads before/after the target, per-process metadata writes, and process timing instrumentation. No extra CLI observer or Git tracing. Last durable journal state does not identify the exact internal function.'}
+          target=any(r.get('kind')=='process-start' and r.get('target') and r.get('start_success') is True and type(r.get('pid')) is int and r.get('pid') > 0 for r in records)
+          result={'diagnostic':True,'qualification_eligible':False,'external_deadline_seconds':45,'test_exit':int(os.environ['DIAGNOSTIC_STATUS']),'target_reached':target,'target_status':'reached' if target else 'target not reached','raw_output_uploaded':False,'observations':len(records),'observer_effects':'Journal reads before/after the target have separate elapsed records and may warm caches. Start metadata writes occur during the command interval and their overhead is included in its elapsed time. No extra CLI observer or Git tracing. Last durable journal state does not identify the exact internal function.'}
           (d/'outcome.json').write_text(json.dumps(result,indent=2)+'\n')
           if not target: raise SystemExit(1)
           PY_OUTCOME

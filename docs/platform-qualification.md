@@ -263,8 +263,9 @@ failure text and manifest material. A filtered snapshot is capped at 60 KiB,
 each output record at 64 KiB and all records at 4 MiB. Raw application/test logs
 remain ephemeral and are neither echoed nor uploaded. No additional Hubnot
 observer command, Git trace, policy change or longer capture mode is enabled.
-File observations and metadata writes can affect timing; their durations are
-recorded separately. A durable journal status identifies the last recorded phase,
+Journal observations have separate duration records and may warm caches.
+Start metadata writes occur during the command interval, so their overhead is
+included in command elapsed time and can affect the observed result. A durable journal status identifies the last recorded phase,
 not an exact internal function or the cause of a historical failure.
 
 ## Download experience and signing decision
