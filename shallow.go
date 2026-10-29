@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -164,36 +166,115 @@ func probeExactGitObjectAt(gitDir, objectish string) (gitObjectProbe, error) {
 	return gitObjectProbe{Exists: true, Type: fields[1]}, nil
 }
 
-// gitObjectsPresentAt reports, for many full object IDs and with one cat-file
-// process, whether each original object is stored (replacements ignored). Spawning one process per object made a sync of a
-// repository with vendored dependencies spend most of its time in fork/exec.
+// gitObjectsPresentAt reports whether each original object is stored
+// (replacements ignored), normally with one batched cat-file process. Spawning
+// one process per object made a sync of a repository with vendored dependencies
+// spend most of its time in fork/exec.
 func gitObjectsPresentAt(gitDir string, objectIDs []string) (map[string]bool, error) {
 	present := make(map[string]bool, len(objectIDs))
 	if len(objectIDs) == 0 {
 		return present, nil
 	}
 	for _, id := range objectIDs {
-		if !validGitOID(id) {
+		if !validFullGitObjectID(id) {
 			return nil, fmt.Errorf("Git object probe needs a full object ID, got %s", safeDiagnostic(id))
 		}
 	}
 	// Replacement refs would report a replacement's type under the requested
 	// name, so an absent original could look present. In a partial clone a
 	// lazy fetch would make the probe change the object database.
-	output, err := gitInputWithDirectory(gitDir, []byte(strings.Join(objectIDs, "\n")+"\n"), []string{"GIT_NO_REPLACE_OBJECTS=1", "GIT_NO_LAZY_FETCH=1"}, "cat-file", "--batch-check=%(objectname) %(objecttype)")
-	if err != nil {
-		return nil, err
+	args := []string{"cat-file", "--batch-check=%(objectname) %(objecttype)"}
+	if gitDir != "" {
+		args = append([]string{"--git-dir=" + gitDir}, args...)
 	}
-	lines := strings.Split(strings.TrimRight(string(output), "\n"), "\n")
+	cmd := exec.Command("git", args...)
+	cmd.Env = append(os.Environ(), "GIT_NO_REPLACE_OBJECTS=1", "GIT_NO_LAZY_FETCH=1", "LC_ALL=C")
+	cmd.Stdin = strings.NewReader(strings.Join(objectIDs, "\n") + "\n")
+	var stdout bytes.Buffer
+	stderr := limitedPolicyBuffer{limit: 16 << 10}
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	if err := cmd.Run(); err != nil {
+		// Git 2.43 can abort on an absent promised object even with lazy
+		// fetching disabled. Enumerate physical storage instead of looking up
+		// missing names; a successful complete inventory proves absence.
+		return gitStoredObjectsPresentAt(gitDir, objectIDs)
+	}
+	for _, line := range strings.Split(strings.TrimSpace(stderr.String()), "\n") {
+		// A missing unpromised object can produce this warning with success;
+		// corruption diagnostics must still refuse the probe.
+		if line != "" && line != "warning: lazy fetching disabled; some objects may not be available" {
+			return nil, fmt.Errorf("probe Git objects: %s", line)
+		}
+	}
+	lines := strings.Split(strings.TrimRight(stdout.String(), "\n"), "\n")
 	if len(lines) != len(objectIDs) {
 		return nil, fmt.Errorf("Git returned %d object probes for %d objects", len(lines), len(objectIDs))
 	}
 	for i, line := range lines {
 		fields := strings.Fields(line)
-		if len(fields) != 2 || fields[0] != objectIDs[i] {
+		if len(fields) != 2 || fields[0] != objectIDs[i] ||
+			(fields[1] != "missing" && fields[1] != "commit" && fields[1] != "tree" && fields[1] != "blob" && fields[1] != "tag") {
 			return nil, fmt.Errorf("Git returned invalid object probe for %s", safeDiagnostic(objectIDs[i]))
 		}
 		present[objectIDs[i]] = fields[1] != "missing"
+	}
+	return present, nil
+}
+
+func gitStoredObjectsPresentAt(gitDir string, objectIDs []string) (map[string]bool, error) {
+	present := make(map[string]bool, len(objectIDs))
+	for _, id := range objectIDs {
+		present[id] = false
+	}
+	args := []string{"cat-file", "--batch-all-objects", "--unordered", "--batch-check=%(objectname) %(objecttype)"}
+	if gitDir != "" {
+		args = append([]string{"--git-dir=" + gitDir}, args...)
+	}
+	cmd := exec.Command("git", args...)
+	cmd.Env = append(os.Environ(), "GIT_NO_REPLACE_OBJECTS=1", "GIT_NO_LAZY_FETCH=1", "LC_ALL=C")
+	output, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	stderr := limitedPolicyBuffer{limit: 16 << 10}
+	cmd.Stderr = &stderr
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner(output)
+	var parseErr error
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) != 2 || !validFullGitObjectID(fields[0]) ||
+			(fields[1] != "commit" && fields[1] != "tree" && fields[1] != "blob" && fields[1] != "tag") {
+			parseErr = fmt.Errorf("Git returned invalid stored object probe")
+			break
+		}
+		if _, requested := present[fields[0]]; requested {
+			present[fields[0]] = true
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		parseErr = err
+	}
+	if parseErr != nil {
+		_ = cmd.Process.Kill()
+	}
+	processErr := cmd.Wait()
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	if processErr != nil {
+		return nil, fmt.Errorf("enumerate stored Git objects: %s", commandFailure(processErr, stderr.String()))
+	}
+	// Some Git versions skip corrupt loose objects with an error diagnostic
+	// but still exit successfully. Such an inventory cannot prove absence.
+	for _, line := range strings.Split(strings.TrimSpace(stderr.String()), "\n") {
+		// Git warns that promised objects are omitted; that is precisely the
+		// physical inventory wanted here. Every other diagnostic fails closed.
+		if line != "" && line != "warning: This repository uses promisor remotes. Some objects may not be loaded." {
+			return nil, fmt.Errorf("enumerate stored Git objects: %s", line)
+		}
 	}
 	return present, nil
 }
