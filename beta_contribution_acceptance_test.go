@@ -271,43 +271,169 @@ func TestBetaContributionPublicVariants(t *testing.T) {
 	}
 }
 
-// The failure is injected through the source adapter, then the selected actual
-// CLI is asked to retry. This records the current operational limitation: public
-// retry preserves uncertainty; it does not expose the adapter's Recover method.
+// The failure is injected through the source adapter. Only the selected actual
+// CLI performs retry/reconciliation/publication; the test never calls Recover.
+// This is source-assisted interruption setup, not process-kill evidence.
 func betaContributionInterruptedStatus(f *betaContributionCLI) {
+	for _, mode := range []string{"receive", "restore-selected", "restore-unselected"} {
+		for _, condition := range []string{"durable", "missing-retained", "corrupt-retained"} {
+			f.t.Run(mode+"/"+condition, func(t *testing.T) {
+				betaContributionRecoveryCase(newBetaContributionCLI(t, f.binary), mode, condition)
+			})
+		}
+	}
+}
+
+type betaContributionIntakeSnapshot struct {
+	Attempt ContributionIntake `json:"attempt"`
+	Ledger  c.Ledger           `json:"ledger"`
+}
+
+func betaContributionRecoveryCase(f *betaContributionCLI, mode, condition string) {
 	t := f.t
-	owner, _, policy := f.enabled(t.Name(), betaContributionLimits(), false)
+	owner, maintainer, policy := f.enabled(t.Name(), betaContributionLimits(), false)
+	receiver := owner
+	if mode == "restore-unselected" {
+		receiver = filepath.Join(t.TempDir(), "keyless-receiver")
+		f.git(owner, "clone", "--quiet", owner, receiver)
+		// An explicit contribution command creates safe private control paths,
+		// while reporting that no authority or identity has been selected.
+		f.hn(receiver, false, "contribution", "authority", "show", "--json")
+	}
 	contributor := f.repository()
 	f.hn(contributor, true, "init", "--name", "Interrupted contributor")
-	issue := contributionEventID(t, f.hn(contributor, true, "issue", "open", "--json", "Durable but uncertain public issue"))
+	issue := contributionEventID(t, f.hn(contributor, true, "issue", "open", "--json", "Durable interrupted public issue"))
+	original := f.raw(contributor, issue)
 	a := f.prepare(contributor, policy.Contributions.Project, issue)
-	x, err := OpenContributionExchange(filepath.Join(owner, ".git/hn/contribution/inbox-"+policy.Contributions.Project[7:]), *policy.Contributions, "initial")
+	x, err := OpenContributionExchange(filepath.Join(receiver, ".git/hn/contribution/inbox-"+policy.Contributions.Project[7:]), *policy.Contributions, "initial")
 	if err != nil {
 		t.Fatal(err)
 	}
-	x.fault = func(step string) error {
-		if step == "artifact-durable" {
-			return fmt.Errorf("source fixture interrupted after durable artifact")
+	step := "artifact-durable"
+	if condition == "missing-retained" {
+		step = "reserved"
+	}
+	x.fault = func(at string) error {
+		if at == step {
+			return fmt.Errorf("source fixture interrupted at %s", step)
 		}
 		return nil
 	}
 	attempt, err := x.Receive(context.Background(), a.File, a.Digest, "interrupted-public", a.Refs)
-	if err == nil || attempt.Status != "uncertain" || attempt.WireBytes <= 0 {
+	if err == nil || condition != "missing-retained" && (attempt.Status != "uncertain" || attempt.WireBytes <= 0) || condition == "missing-retained" && attempt.Status != "reserved" {
 		t.Fatalf("valid interruption not reached: %+v %v", attempt, err)
 	}
-	ledger := f.hn(owner, true, "contribution", "intake", "--operation", "interrupted-public", "--json")
-	refs := f.git(owner, "show-ref")
+	if condition == "corrupt-retained" {
+		betaContributionWrite(t, x.artifactPath(a.Digest), []byte("corrupted receiver-retained artifact"), 0600)
+	}
 	if err = os.Remove(a.File); err != nil {
 		t.Fatal(err)
 	}
-	betaContributionContains(t, f.receive(owner, "interrupted-public", a, true), `"status":"uncertain"`)
-	if ledger != f.hn(owner, true, "contribution", "intake", "--operation", "interrupted-public", "--json") || refs != f.git(owner, "show-ref") {
-		t.Fatal("public uncertain retry mutated ledger or promoted facts")
+	// Inspect accounting through the public CLI for selected authority. A raw
+	// unselected restore intentionally has no public authority-dependent reader;
+	// its source snapshot remains explicitly labeled as setup/accounting evidence.
+	before, _, err := x.Accounting()
+	if err != nil {
+		t.Fatal(err)
 	}
-	if strings.Contains(f.hn(owner, true, "issue", "list", "--json"), "Durable but uncertain public issue") {
-		t.Fatal("uncertain retry published content")
+	if mode != "restore-unselected" {
+		public := betaContributionJSON[betaContributionIntakeSnapshot](t, f.hn(receiver, true, "contribution", "intake", "--operation", "interrupted-public", "--json"))
+		if public.Attempt.Artifact != a.Digest || public.Attempt.Reserved != attempt.Reserved || !reflect.DeepEqual(public.Ledger, before) {
+			t.Fatal("public pre-recovery intake identity/accounting differs from injected setup")
+		}
+		before = public.Ledger
 	}
-	t.Log("source-assisted interruption fixture; actual CLI retry preserves uncertain status, charged ledger and zero shared publication; no public reconciliation command exists")
+	refs := f.git(receiver, "show-ref")
+	verb := "receive"
+	if mode != "receive" {
+		verb = "restore"
+	}
+	args := []string{"contribution", verb, "--file", a.File, "--digest", a.Digest, "--operation", "interrupted-public", "--json"}
+	for _, ref := range a.Refs {
+		args = append(args, "--ref", ref)
+	}
+	if condition != "durable" {
+		betaContributionContains(t, f.hn(receiver, false, args...), "intake remains uncertain")
+		after, _, e := x.Accounting()
+		if e != nil || !reflect.DeepEqual(before, after) || refs != f.git(receiver, "show-ref") {
+			t.Fatal("unrecoverable input changed reservation or promoted facts", e)
+		}
+		if strings.Contains(f.hn(receiver, true, "issue", "list", "--json"), "Durable interrupted public issue") {
+			t.Fatal("missing/corrupt retained bytes became shared content")
+		}
+		return
+	}
+	output := f.hn(receiver, true, args...)
+	betaContributionContains(t, output, `"status":"pending"`)
+	after, attempts, err := x.Accounting()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mode != "restore-unselected" {
+		public := betaContributionJSON[betaContributionIntakeSnapshot](t, f.hn(receiver, true, "contribution", "intake", "--operation", "interrupted-public", "--json"))
+		if public.Attempt.Status != "pending" || public.Attempt.Artifact != a.Digest || !reflect.DeepEqual(public.Ledger, after) {
+			t.Fatal("public recovered identity/accounting differs from retained receiver state")
+		}
+		after = public.Ledger
+	}
+	originalReservations := 0
+	for _, reservation := range after.Reservations {
+		if reservation.Intent == "interrupted-public" {
+			originalReservations++
+			if reservation.Cost != attempt.Reserved || reservation.Artifact != a.Digest {
+				t.Fatal("recovery reinterpreted original charged input")
+			}
+		}
+	}
+	if originalReservations != 1 {
+		t.Fatalf("original input charged %d times", originalReservations)
+	}
+	found := false
+	for _, retained := range attempts {
+		if retained.Intent == "interrupted-public" {
+			found = true
+			if retained.Status != "pending" || retained.Reserved != attempt.Reserved || retained.Artifact != a.Digest || !reflect.DeepEqual(retained.Refs, a.Refs) {
+				t.Fatalf("recovered identity/reservation changed: %+v", retained)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("original intake identity disappeared")
+	}
+	if mode == "receive" {
+		// Publishing the legitimate signed receipt is a separate charged control.
+		if after.RetainedUsed.Requests != before.RetainedUsed.Requests+1 {
+			t.Fatal("missing/double charged receipt control")
+		}
+		betaContributionContains(t, f.hn(receiver, true, "issue", "list", "--json"), "Durable interrupted public issue")
+		if f.raw(receiver, issue) != original || f.actor(receiver) != maintainer {
+			t.Fatal("recovery changed original native bytes/identity")
+		}
+	} else {
+		if after.RetainedUsed != before.RetainedUsed {
+			t.Fatal("raw restore added a receipt charge or refunded input")
+		}
+		if strings.Contains(f.hn(receiver, true, "issue", "list", "--json"), "Durable interrupted public issue") {
+			t.Fatal("raw restore manufactured admission")
+		}
+		if mode == "restore-selected" {
+			betaContributionContains(t, f.hn(receiver, true, "contribution", "pending", "--json"), a.Submission)
+			if f.raw(receiver, issue) != original {
+				t.Fatal("raw selected restore changed signed bytes")
+			}
+		} else {
+			betaContributionContains(t, output, `"authorityAdopted":false`, `"nativePublished":false`)
+			f.hn(receiver, false, "identity", "show", "--json")
+			f.hn(receiver, false, "contribution", "authority", "show", "--json")
+		}
+	}
+	recoveredRefs := f.git(receiver, "show-ref")
+	f.hn(receiver, true, args...)
+	replayed, _, err := x.Accounting()
+	if err != nil || !reflect.DeepEqual(after, replayed) || recoveredRefs != f.git(receiver, "show-ref") {
+		t.Fatal("exact recovered replay charged or rewrote history", err)
+	}
+	t.Logf("source-assisted %s interruption; actual CLI recovered from immutable retained bytes after foreign-file removal; original reservation once, total retained=%+v", mode, after.RetainedUsed)
 }
 
 func betaContributionPublicJourney(f *betaContributionCLI) {
