@@ -6,6 +6,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  CANDIDATE_VERSION: 0.1.0-beta.1
+
 permissions:
   contents: read
 
@@ -16,6 +19,7 @@ concurrency:
 jobs:
   portability:
     name: Portability (${{ matrix.os }})
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
@@ -55,3 +59,181 @@ jobs:
         run: go test -race -count=1 -timeout 10m -v -run '^TestPortableCollaborationIntegratedPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/portability-unpacked"
       - name: Static checks
         run: go vet ./...
+
+  candidate-build:
+    name: Freeze one candidate bundle
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      source: ${{ steps.freeze.outputs.source }}
+      tree: ${{ steps.freeze.outputs.tree }}
+      provenance: ${{ steps.freeze.outputs.provenance }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.4'
+          cache: false
+      - name: Build all eight packages once from committed source
+        id: freeze
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/candidate-evidence"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(go env GOVERSION)" = go1.26.4
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/candidate-evidence/source.txt"
+          go version > "$RUNNER_TEMP/candidate-evidence/compiler.txt"
+          go env GOMOD >> "$RUNNER_TEMP/candidate-evidence/source.txt"
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 sha256sum > "$RUNNER_TEMP/candidate-evidence/source-inputs.sha256"
+          go run -buildvcs=false ./cmd/hn-release --source . --rev "$GITHUB_SHA" --version "$CANDIDATE_VERSION" --out "$RUNNER_TEMP/candidate" 2>&1 | tee "$RUNNER_TEMP/candidate-evidence/build.log"
+          cd "$RUNNER_TEMP/candidate"
+          sha256sum -c SHA256SUMS
+          printf 'source=%s\n' "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          printf 'tree=%s\n' "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD^{tree})" >> "$GITHUB_OUTPUT"
+          printf 'provenance=%s\n' "$(sha256sum PROVENANCE.json | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: beta-candidate-${{ github.sha }}
+          path: ${{ runner.temp }}/candidate/
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: candidate-build-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/candidate-evidence/
+          if-no-files-found: error
+          retention-days: 30
+
+  candidate-native:
+    name: Exact candidate (${{ matrix.target }})
+    if: github.event_name == 'workflow_dispatch'
+    needs: candidate-build
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            target: linux/amd64
+            uname: x86_64
+          - runner: ubuntu-24.04-arm
+            target: linux/arm64
+            uname: aarch64
+          - runner: macos-15
+            target: darwin/arm64
+            uname: arm64
+          - runner: macos-15-intel
+            target: darwin/amd64
+            uname: x86_64
+    env:
+      EXPECTED_TARGET: ${{ matrix.target }}
+      EXPECTED_UNAME: ${{ matrix.uname }}
+      FROZEN_SOURCE: ${{ needs.candidate-build.outputs.source }}
+      FROZEN_TREE: ${{ needs.candidate-build.outputs.tree }}
+      FROZEN_PROVENANCE: ${{ needs.candidate-build.outputs.provenance }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.candidate-build.outputs.source }}
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.4'
+          cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: beta-candidate-${{ needs.candidate-build.outputs.source }}
+          path: ${{ runner.temp }}/candidate
+      - name: Observe native host and independently verify transported bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/native-evidence" "$RUNNER_TEMP/unpacked" "$RUNNER_TEMP/native-evidence/processes"
+          {
+            date -u
+            pwd
+            git rev-parse HEAD HEAD^{tree}
+            go env GOMOD GOOS GOARCH GOVERSION
+            uname -a
+            git --version
+            printf 'TMPDIR=%s\n' "${TMPDIR-<unset>}"
+            df -h . "$RUNNER_TEMP"
+            if [ "$(uname -s)" = Darwin ]; then
+              sw_vers
+              translated="$(sysctl -in sysctl.proc_translated 2>/dev/null || true)"
+              printf 'sysctl.proc_translated=%s\n' "${translated-<unavailable>}"
+              test "$translated" != 1
+              stat -f '%T' . "$RUNNER_TEMP"
+              diskutil info "$(df "$RUNNER_TEMP" | awk 'NR==2 {print $1}')"
+              ls -ld /tmp /var /var/tmp
+            else
+              cat /etc/os-release
+              stat -f -c '%T' . "$RUNNER_TEMP"
+            fi
+          } 2>&1 | tee "$RUNNER_TEMP/native-evidence/environment.log"
+          test "$(uname -m)" = "$EXPECTED_UNAME"
+          test "$(go env GOOS)/$(go env GOARCH)" = "$EXPECTED_TARGET"
+          test "$(git rev-parse HEAD)" = "$FROZEN_SOURCE"
+          test "$(git rev-parse HEAD^{tree})" = "$FROZEN_TREE"
+          test "$(go env GOVERSION)" = go1.26.4
+          cd "$RUNNER_TEMP/candidate"
+          test "$(shasum -a 256 PROVENANCE.json | cut -d ' ' -f1)" = "$FROZEN_PROVENANCE"
+          shasum -a 256 -c SHA256SUMS | tee "$RUNNER_TEMP/native-evidence/transport-checksums.log"
+          for archive in hubnot_"$CANDIDATE_VERSION"_"${EXPECTED_TARGET%/*}"_"${EXPECTED_TARGET#*/}"*.tar.gz; do
+            tar -xzf "$archive" -C "$RUNNER_TEMP/unpacked"
+          done
+          cd "$GITHUB_WORKSPACE"
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$RUNNER_TEMP/native-evidence/source-inputs.before.sha256"
+      - name: Inspect archives, BUILD and executable digests before runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          go test -race -count=1 -timeout=5m -v -run '^TestBetaPlatformCandidateBundle$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/candidate" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/bundle.log"
+      - name: Actual package install, integrated collaboration, upgrade, recovery, journal and contribution journeys
+        shell: bash
+        env:
+          HN_MIGRATION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+        run: |
+          set -euo pipefail
+          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/journeys.exit"; date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"' EXIT
+          date -u > "$RUNNER_TEMP/native-evidence/journeys.started"
+          go test -race -count=1 -timeout=30m -v -run '^(TestBetaPlatformPackageInstallAndRuntime|TestPortableCollaborationIntegratedPublicVariants|TestBetaReleasedWriterCompatibility|TestBetaRecoveryJourneys|TestBetaRotationJournalRefusalPreservesRecovery|TestBetaMigrationFutureSessionRefusesWithoutReset|TestMigrationCLINativeOfflineBuildVariants|TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline|TestMigrationCLIPublicRefusalsPreserveRemoteState|TestBetaContributionPublicVariants)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/journeys.log"
+          date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"
+      - name: WP12 recovery and contribution runtime against each exact package
+        shell: bash
+        env:
+          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+        run: |
+          set -euo pipefail
+          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp12.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp12.finished"' EXIT
+          date -u > "$RUNNER_TEMP/native-evidence/wp12.started"
+          for variant in standard native-only; do
+            suffix=''
+            if [ "$variant" = native-only ]; then suffix='_native-only'; fi
+            binary="$RUNNER_TEMP/unpacked/hubnot_${CANDIDATE_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}${suffix}/hn"
+            export HN_CONTRIBUTION_TEST_BINARY="$binary"
+            export HN_CONTRIBUTION_TEST_BINARY_SHA256="sha256:$(shasum -a 256 "$binary" | cut -d ' ' -f1)"
+            go test -race -count=1 -timeout=15m -v -run '^TestContributionCLI' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-${variant}.log"
+          done
+      - name: Verify immutable source and preserve evidence
+        if: always()
+        shell: bash
+        run: |
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$RUNNER_TEMP/native-evidence/source-inputs.after.sha256"
+          cmp "$RUNNER_TEMP/native-evidence/source-inputs.before.sha256" "$RUNNER_TEMP/native-evidence/source-inputs.after.sha256"
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-evidence-${{ matrix.runner }}-${{ needs.candidate-build.outputs.source }}
+          path: ${{ runner.temp }}/native-evidence/
+          if-no-files-found: error
+          retention-days: 30

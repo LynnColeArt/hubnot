@@ -31,6 +31,9 @@ func TestMigrationForeignInputsRequireExplicitProfile(t *testing.T) {
 
 func buildMigrationCLIBinary(t *testing.T, tags string) string {
 	t.Helper()
+	if *portablePackageDirectory != "" {
+		return portableJourneyBinary(t, tags)
+	}
 	binary := filepath.Join(t.TempDir(), "hn")
 	args := []string{"build", "-o", binary}
 	if tags != "" {

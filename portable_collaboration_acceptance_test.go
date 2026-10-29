@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"debug/buildinfo"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -25,6 +26,8 @@ import (
 )
 
 var portablePackageDirectory = flag.String("hn-package-dir", "", "explicit extracted release packages for the public portability journey")
+var portablePackageCompiler = flag.String("hn-package-compiler", "", "expected package Go compiler (optional outside candidate qualification)")
+
 var portablePackageVersion = flag.String("hn-package-version", "0.0.0-portability-proof", "expected version for --hn-package-dir")
 
 func portableJourneyBinary(t *testing.T, tags string) string {
@@ -37,7 +40,7 @@ func portableJourneyBinary(t *testing.T, tags string) string {
 	}
 	target, variant := runtime.GOOS+"/"+runtime.GOARCH, "standard"
 	name := "hubnot_" + *portablePackageVersion + "_" + runtime.GOOS + "_" + runtime.GOARCH
-	if tags == "noforge" {
+	if tags == "noforge" || tags == "nogithub,noforge" {
 		variant = "native-only"
 		name += "_native-only"
 	} else if tags != "" {
@@ -48,6 +51,15 @@ func portableJourneyBinary(t *testing.T, tags string) string {
 		t.Fatal(err)
 	}
 	dir := filepath.Join(packageDirectory, name)
+	for _, filename := range []string{"BUILD.json", "hn"} {
+		info, err := os.Lstat(filepath.Join(dir, filename))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !info.Mode().IsRegular() || (filename == "hn" && info.Mode()&0111 == 0) {
+			t.Fatal("package requires regular BUILD and executable files", filename)
+		}
+	}
 	raw, err := os.ReadFile(filepath.Join(dir, "BUILD.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -66,10 +78,28 @@ func portableJourneyBinary(t *testing.T, tags string) string {
 		t.Fatal(err)
 	}
 	digest := fmt.Sprintf("%x", sha256.Sum256(data))
+	tree, err := exec.Command("git", "rev-parse", "HEAD^{tree}").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	info, err := buildinfo.ReadFile(binary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings := map[string]string{}
+	for _, setting := range info.Settings {
+		settings[setting.Key] = setting.Value
+	}
+	if build.SourceTree != strings.TrimSpace(string(tree)) || info.GoVersion != build.Compiler || settings["GOOS"] != runtime.GOOS || settings["GOARCH"] != runtime.GOARCH || (*portablePackageCompiler != "" && build.Compiler != *portablePackageCompiler) {
+		t.Fatal("packaged executable does not match source tree/compiler/native build target")
+	}
+	if (variant == "native-only" && settings["-tags"] != "nogithub,noforge") || (variant == "standard" && settings["-tags"] != "") {
+		t.Fatal("packaged executable build tags do not match variant")
+	}
 	if build.Schema != "hn.release-build/1" || build.SourceCommit != strings.TrimSpace(string(commit)) || build.Target != target || build.Variant != variant || build.Version != *portablePackageVersion || build.ExecutableSHA256 != digest {
 		t.Fatal("packaged executable does not match the selected commit/target/variant/version/digest")
 	}
-	t.Logf("actual packaged executable: commit=%s target=%s variant=%s version=%s sha256=%s", build.SourceCommit, target, variant, build.Version, digest)
+	t.Logf("actual packaged executable: commit=%s tree=%s compiler=%s target=%s variant=%s version=%s sha256=%s", build.SourceCommit, build.SourceTree, build.Compiler, target, variant, build.Version, digest)
 	return binary
 }
 
