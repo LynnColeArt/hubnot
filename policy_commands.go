@@ -217,6 +217,14 @@ func comparePolicies(base, proposed policySource) []policyChange {
 			proposedRunners = nil
 		}
 		changes = append(changes, actorChanges("pipeline "+name+" trusted runners", baseRunners, proposedRunners)...)
+		baseRequesters, proposedRequesters := basePipeline.Requesters, proposedPipeline.Requesters
+		if !inBase {
+			baseRequesters = nil
+		}
+		if !inProposed {
+			proposedRequesters = nil
+		}
+		changes = append(changes, actorChanges("pipeline "+name+" requesters", baseRequesters, proposedRequesters)...)
 	}
 	changes = append(changes, compareOptionalPolicies(base.Policy, proposed.Policy)...)
 	return changes
@@ -238,6 +246,12 @@ func printPolicySource(source policySource) {
 		fmt.Printf("  %s (required results %d):\n", name, pipeline.RequiredResults)
 		for _, actor := range sortedStrings(pipeline.TrustedRunners) {
 			fmt.Printf("    %s\n", actor)
+		}
+		if len(pipeline.Requesters) > 0 {
+			fmt.Println("    requesters besides maintainers:")
+			for _, actor := range sortedStrings(pipeline.Requesters) {
+				fmt.Printf("      %s\n", actor)
+			}
 		}
 	}
 }
