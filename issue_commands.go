@@ -538,6 +538,7 @@ func parseIssueJSONValue(decoder *json.Decoder, depth int) (any, error) {
 }
 
 type issueMutationResult struct {
+	Admission string `json:"admission,omitempty"`
 	IssueID   string `json:"issue_id"`
 	EventID   string `json:"event_id"`
 	Replayed  bool   `json:"replayed"`
@@ -586,7 +587,7 @@ func applyIssueMutation(o issueOptions, identity *Identity, captured Event, even
 	if err := checkIssueActor(o, identity); err != nil {
 		return nil, err
 	}
-	cat, err := BuildIssueCatalog(events)
+	cat, err := buildGovernedIssueCatalog(events)
 	if err != nil {
 		return nil, issueFailure("invalid_history", err)
 	}
@@ -644,9 +645,21 @@ func applyIssueMutation(o issueOptions, identity *Identity, captured Event, even
 		if wanted != recorded {
 			return nil, issueFailure("operation_conflict", errors.New("operation key was already used for different content"))
 		}
+		if err := contributionRetryNative(prior); err != nil {
+			return nil, issueFailure("admission_pending", err)
+		}
 		id := issueRootID(*prior)
 		view := cat.Issues[id]
-		return &issueMutationResult{id, prior.ID, true, view.Conflict, len(view.Heads)}, nil
+		admission, err := contributionAdmission(events, prior.ID)
+		if err != nil {
+			return nil, err
+		}
+		result := &issueMutationResult{IssueID: id, EventID: prior.ID, Replayed: true, Admission: admission}
+		if view != nil {
+			result.Conflict = view.Conflict
+			result.HeadCount = len(view.Heads)
+		}
+		return result, nil
 	}
 	view := cat.Issues[o.id]
 	if o.command != "open" && view == nil {
@@ -705,6 +718,13 @@ func applyIssueMutation(o issueOptions, identity *Identity, captured Event, even
 	if err := validateEventContent(event); err != nil {
 		return nil, issueFailure("invalid_input", err)
 	}
+	if err := contributionAuthorizeCandidate(event, events); err != nil {
+		return nil, issueFailure("permission_denied", err)
+	}
+	localPlan, err := contributionBeforeNative(event, identity, events)
+	if err != nil {
+		return nil, issueFailure("admission_refused", err)
+	}
 	stored, err := appendEvent(event, identity)
 	if err != nil {
 		next, nextErr := nextEvent(identity, event.Kind)
@@ -713,13 +733,26 @@ func applyIssueMutation(o issueOptions, identity *Identity, captured Event, even
 		}
 		return nil, issueFailure("repository_error", err)
 	}
-	after, err := BuildIssueCatalog(append(append([]StoredEvent{}, events...), *stored))
+	if err := contributionFinishNative(stored, localPlan); err != nil {
+		return nil, issueFailure("admission_pending", err)
+	}
+	afterEvents := append(append([]StoredEvent{}, events...), *stored)
+	after, err := buildGovernedIssueCatalog(afterEvents)
 	if err != nil {
 		return nil, issueFailure("invalid_history", err)
 	}
 	id := issueRootID(*stored)
 	view = after.Issues[id]
-	return &issueMutationResult{id, stored.ID, false, view.Conflict, len(view.Heads)}, nil
+	admission, err := contributionAdmission(afterEvents, stored.ID)
+	if err != nil {
+		return nil, err
+	}
+	result := &issueMutationResult{IssueID: id, EventID: stored.ID, Admission: admission}
+	if view != nil {
+		result.Conflict = view.Conflict
+		result.HeadCount = len(view.Heads)
+	}
+	return result, nil
 }
 func equalIssueIDs(a, b []string) bool {
 	if len(a) != len(b) {
@@ -785,6 +818,7 @@ type issueGraphItem struct {
 }
 
 type issueOperationResult struct {
+	Admission string      `json:"admission,omitempty"`
 	IssueID   string      `json:"issue_id"`
 	EventID   string      `json:"event_id"`
 	Actor     string      `json:"actor"`
@@ -917,9 +951,21 @@ func executeIssueQuery(o issueOptions) (any, string, string, error) {
 	}
 	if o.command == "operation" {
 		result, err := observeIssueOperation(events, o.actor, o.operation)
-		return result, snapshot, "", err
+		if err != nil {
+			return nil, snapshot, "", err
+		}
+		admission, err := contributionAdmission(events, result.EventID)
+		if err != nil {
+			return nil, snapshot, "", err
+		}
+		result.Admission = admission
+		if admission != "" && admission != "admitted" {
+			result.State = nil
+			result.Body = nil
+		}
+		return result, snapshot, "", nil
 	}
-	cat, err := BuildIssueCatalog(events)
+	cat, err := buildGovernedIssueCatalog(events)
 	if err != nil {
 		return nil, "", "", issueFailure("invalid_history", err)
 	}

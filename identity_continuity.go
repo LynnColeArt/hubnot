@@ -616,52 +616,59 @@ func prepareIdentityRotation(name string) (identityRotationState, *Identity, *Id
 	command, commandErr := loadIdentityRotationCommand()
 	state, rotationErr := loadIdentityRotation()
 	if commandErr == nil {
+		if rotationErr != nil && !errors.Is(rotationErr, os.ErrNotExist) {
+			return command.State, nil, nil, false, rotationErr
+		}
+		merged := command.State
+		if rotationErr == nil {
+			var err error
+			merged, err = reconcileIdentityRotationStates(command.State, state)
+			if err != nil {
+				return command.State, nil, nil, false, err
+			}
+		}
 		predecessor, err := loadIdentityRecord(command.State.PredecessorActor)
 		if err != nil {
 			return command.State, nil, nil, false, err
 		}
 		target := command.Target
 		storedTarget, err := loadIdentityRecord(target.Actor)
-		if errors.Is(err, os.ErrNotExist) {
-			if _, err := storeIdentityRecord(&target, identityLifecycleAvailable); err != nil {
-				return command.State, nil, nil, false, err
-			}
-		} else if err != nil {
+		missingTarget := errors.Is(err, os.ErrNotExist)
+		if err != nil && !missingTarget {
 			return command.State, nil, nil, false, err
-		} else if *storedTarget != target {
+		} else if !missingTarget && *storedTarget != target {
 			return command.State, nil, nil, false, fmt.Errorf("rotation target record differs from its durable command journal")
-		}
-
-		if rotationErr == nil {
-			merged, err := reconcileIdentityRotationStates(command.State, state)
-			if err != nil {
-				return command.State, nil, nil, false, err
-			}
-			if err := updateIdentityRotationCommand(merged, &target); err != nil {
-				return merged, nil, nil, false, err
-			}
-			return merged, predecessor, &target, false, nil
-		}
-		if !errors.Is(rotationErr, os.ErrNotExist) {
-			return command.State, nil, nil, false, rotationErr
 		}
 		active, err := loadActiveActor()
 		if err != nil {
 			return command.State, nil, nil, false, err
 		}
-		if active == command.State.TargetActor {
-			if err := validateIdentityRotationProgress(command.State, &target, true); err != nil {
-				return command.State, nil, nil, false, err
-			}
-			return command.State, predecessor, &target, true, nil
-		}
-		if active != command.State.PredecessorActor {
+		if active != merged.PredecessorActor && active != merged.TargetActor {
 			return command.State, nil, nil, false, fmt.Errorf("active identity is %s, not rotation predecessor %s", active, command.State.PredecessorActor)
 		}
-		if err := storeIdentityRotation(command.State); err != nil {
-			return command.State, nil, nil, false, err
+		// Both durable records and their signed progress must agree before
+		// recovery recreates target material or advances either journal.
+		if err := validateIdentityRotationProgress(merged, &target, active == merged.TargetActor); err != nil {
+			return merged, nil, nil, false, err
 		}
-		return command.State, predecessor, &target, false, nil
+		if missingTarget {
+			if _, err := storeIdentityRecord(&target, identityLifecycleAvailable); err != nil {
+				return merged, nil, nil, false, err
+			}
+		}
+		if rotationErr == nil {
+			if err := updateIdentityRotationCommand(merged, &target); err != nil {
+				return merged, nil, nil, false, err
+			}
+			return merged, predecessor, &target, false, nil
+		}
+		if active == merged.TargetActor {
+			return merged, predecessor, &target, true, nil
+		}
+		if err := storeIdentityRotation(merged); err != nil {
+			return merged, nil, nil, false, err
+		}
+		return merged, predecessor, &target, false, nil
 	}
 	if !errors.Is(commandErr, os.ErrNotExist) {
 		return identityRotationState{}, nil, nil, false, commandErr
@@ -673,6 +680,16 @@ func prepareIdentityRotation(name string) (identityRotationState, *Identity, *Id
 		}
 		target, err := loadIdentityRecord(state.TargetActor)
 		if err != nil {
+			return state, nil, nil, false, err
+		}
+		active, err := loadActiveActor()
+		if err != nil {
+			return state, nil, nil, false, err
+		}
+		if active != state.PredecessorActor && active != state.TargetActor {
+			return state, nil, nil, false, fmt.Errorf("active identity is %s, not rotation predecessor %s", active, state.PredecessorActor)
+		}
+		if err := validateIdentityRotationProgress(state, target, active == state.TargetActor); err != nil {
 			return state, nil, nil, false, err
 		}
 		if err := updateIdentityRotationCommand(state, target); err != nil {

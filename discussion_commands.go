@@ -100,7 +100,7 @@ func discussionBase(family, id string, expected []string) (json.RawMessage, erro
 	if err != nil {
 		return nil, err
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +318,7 @@ func discussionRead(args []string) error {
 		if err != nil {
 			return err
 		}
-		cat, err := BuildResourceCatalog(events)
+		cat, err := buildGovernedResourceCatalog(events)
 		if err != nil {
 			return err
 		}
@@ -345,7 +345,7 @@ func discussionRead(args []string) error {
 			view := cat.Resources[root]
 			if view.Family == ResourceDiscussionReply {
 				var s DiscussionReplyState
-				_ = json.Unmarshal([]byte(view.History[0].Event.Body), &s)
+				_ = json.Unmarshal(view.Heads[0].State, &s)
 				if s.DiscussionID == id {
 					replies = append(replies, view)
 				}

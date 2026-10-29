@@ -81,7 +81,7 @@ func cmdProposalRevise(args []string) error {
 	if err := guardCandidateCreationDependencies("proposal revision", base, head); err != nil {
 		return err
 	}
-	events, err := collectEvents()
+	events, err := collectGovernedEvents()
 	if err != nil {
 		return err
 	}
@@ -118,6 +118,17 @@ func cmdProposalRevise(args []string) error {
 	event.Body = *body
 	event.Base = base
 	event.Head = head
+	rawEvents, err := collectEvents()
+	if err != nil {
+		return err
+	}
+	if err := contributionAuthorizeCandidate(event, rawEvents); err != nil {
+		return err
+	}
+	localPlan, err := contributionBeforeNative(event, identity, rawEvents)
+	if err != nil {
+		return err
+	}
 	stored, err := appendEvent(event, identity)
 	if err != nil {
 		return err
@@ -125,7 +136,13 @@ func cmdProposalRevise(args []string) error {
 	if err := createProposalRef(stored.ID, head); err != nil {
 		return fmt.Errorf("proposal revision event %s was created but its code ref failed: %w", stored.ID, err)
 	}
+	if err := contributionFinishNative(stored, localPlan); err != nil {
+		return err
+	}
 	fmt.Printf("Created proposal revision %s\n", stored.ID)
+	if e := contributionPrintNativeAdmission(stored.ID); e != nil {
+		return e
+	}
 	fmt.Printf("Predecessor: %s\n", predecessor.ID)
 	fmt.Printf("Code: %s..%s\n", base, head)
 	return nil
@@ -181,6 +198,17 @@ func cmdProposalOpen(args []string) error {
 	event.Body = *body
 	event.Base = base
 	event.Head = head
+	rawEvents, err := collectEvents()
+	if err != nil {
+		return err
+	}
+	if err := contributionAuthorizeCandidate(event, rawEvents); err != nil {
+		return err
+	}
+	localPlan, err := contributionBeforeNative(event, identity, rawEvents)
+	if err != nil {
+		return err
+	}
 	stored, err := appendEvent(event, identity)
 	if err != nil {
 		return err
@@ -188,7 +216,13 @@ func cmdProposalOpen(args []string) error {
 	if err := createProposalRef(stored.ID, head); err != nil {
 		return fmt.Errorf("proposal event %s was created but its code ref failed: %w", shortID(stored.ID), err)
 	}
+	if err := contributionFinishNative(stored, localPlan); err != nil {
+		return err
+	}
 	fmt.Printf("Opened proposal %s: %s\n", shortID(stored.ID), oneLine(title))
+	if e := contributionPrintNativeAdmission(stored.ID); e != nil {
+		return e
+	}
 	fmt.Printf("Code: %s..%s\n", shortOID(base), shortOID(head))
 	if policyDiagnostic != "" {
 		fmt.Println(policyDiagnostic)
@@ -255,7 +289,7 @@ func sortStoredEvents(events []StoredEvent) {
 }
 
 func cmdProposalList() error {
-	events, err := collectEvents()
+	events, err := collectGovernedEvents()
 	if err != nil {
 		return err
 	}
@@ -269,6 +303,9 @@ func cmdProposalList() error {
 		return err
 	}
 	for _, proposal := range proposals {
+		if err := contributionRequireProposal(proposal.ID); err != nil {
+			continue
+		}
 		state, err := lineage.state(proposal.ID)
 		if err != nil {
 			return err
@@ -300,7 +337,7 @@ func cmdProposalShow(query string) error {
 	if err := guardShallowEventClosure("proposal show"); err != nil {
 		return err
 	}
-	events, err := collectEvents()
+	events, err := collectGovernedEvents()
 	if err != nil {
 		return err
 	}
@@ -310,6 +347,9 @@ func cmdProposalShow(query string) error {
 	}
 	if !isProposalKind(proposal.Event.Kind) {
 		return fmt.Errorf("%s is not a proposal", shortID(proposal.ID))
+	}
+	if err := contributionRequireProposal(proposal.ID); err != nil {
+		return err
 	}
 	lineage, err := buildLineageIndex(events)
 	if err != nil {
@@ -359,6 +399,9 @@ func lineageDisplayTitle(lineage *lineageIndex, state proposalLineageState) (str
 	root, err := lineage.candidate(state.RootID)
 	if err != nil {
 		return "", err
+	}
+	if err := contributionRequireProposal(root.ID); err != nil {
+		return "[hidden proposal title]", nil
 	}
 	return root.Event.Title, nil
 }
@@ -435,12 +478,15 @@ func cmdReview(args []string) error {
 	if err := guardShallowEventClosure("proposal review"); err != nil {
 		return err
 	}
-	events, err := collectEvents()
+	events, err := collectGovernedEvents()
 	if err != nil {
 		return err
 	}
 	proposal, err := resolveEventDependency("proposal review", proposalQuery, shallowCandidateEvent, events)
 	if err != nil {
+		return err
+	}
+	if err := contributionRequireProposal(proposal.ID); err != nil {
 		return err
 	}
 	if !isProposalKind(proposal.Event.Kind) {

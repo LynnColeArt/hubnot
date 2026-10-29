@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1-dev",
+  "commit": "f82b57420f0c825a9ea6f3b9f93ede680c8cf06f",
+  "source_date_epoch": 1792934322,
+  "go_version": "go1.26.4",
+  "os": "linux",
+  "arch": "amd64",
+  "cgo_enabled": false,
+  "tags": [],
+  "build_flags": [
+    "-trimpath",
+    "-buildvcs=false",
+    "-ldflags=-s -w -buildid="
+  ],
+  "binary_sha256": "1a7395b2345890224259416a0f5a2d497f61e0f6fc3aafcd57416924c2449ac9"
+}
