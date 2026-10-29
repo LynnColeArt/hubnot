@@ -65,6 +65,10 @@ func appendEventWithAttachments(event Event, identity *Identity, attachments map
 		return nil, err
 	}
 
+	if err := ensureActorSigningRoot(identity.Actor, previousCommit); err != nil {
+		return nil, err
+	}
+
 	payload, signature, err := encodeAndSign(event, identity)
 	if err != nil {
 		return nil, err
@@ -100,7 +104,7 @@ func appendEventWithAttachments(event Event, identity *Identity, attachments map
 		return nil, fmt.Errorf("event kind %s does not support attachments", event.Kind)
 	}
 	if hasPrevious {
-		previous, err := loadStoredEvent(previousCommit)
+		previous, err := readStoredEvent(previousCommit)
 		if err != nil {
 			return nil, fmt.Errorf("read actor head: %w", err)
 		}
@@ -177,6 +181,101 @@ func appendEventWithAttachments(event Event, identity *Identity, attachments map
 	return &StoredEvent{ID: id, Commit: commitID, Event: event, Payload: payload, Signature: signature, Attachments: attachments}, nil
 }
 
+// ensureActorSigningRoot compares only this signer's accepted histories. A
+// remote head is evidence to reconcile explicitly, never a signing ref to adopt.
+// An older signed prefix is harmless even if Git transported it differently.
+func ensureActorSigningRoot(actor, head string) error {
+	refs, err := gitText("for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/remotes")
+	if err != nil {
+		return err
+	}
+	var accepted []string
+	fields := strings.Fields(refs)
+	for i := 0; i+1 < len(fields); i += 2 {
+		_, owner, ok := parseAcceptedActorRef(fields[i])
+		if ok && owner == actor {
+			accepted = append(accepted, fields[i+1])
+		}
+	}
+	if len(accepted) == 0 {
+		return nil
+	}
+	gitDir, err := requireGitRepository()
+	if err != nil {
+		return err
+	}
+	admission, err := newReplicationAcceptanceReader(gitDir)
+	if err != nil {
+		return err
+	}
+	cache := make(map[string]StoredEvent)
+	readChain := func(root string) ([]string, error) {
+		if root == "" {
+			return nil, nil
+		}
+		text, err := gitText("rev-list", "--reverse", root)
+		if err != nil {
+			return nil, err
+		}
+		var events []StoredEvent
+		for _, commit := range strings.Fields(text) {
+			if err := admission.check(commit); err != nil {
+				return nil, err
+			}
+			stored, ok := cache[commit]
+			if !ok {
+				verified, err := readStoredEventAt("", commit)
+				if err != nil {
+					return nil, err
+				}
+				stored = *verified
+				cache[commit] = stored
+			}
+			if stored.Event.Actor != actor {
+				return nil, fmt.Errorf("actor signing root contains another identity")
+			}
+			events = append(events, stored)
+		}
+		if err := validateActorChains(events); err != nil {
+			return nil, err
+		}
+		sort.Slice(events, func(i, j int) bool { return events[i].Event.Sequence < events[j].Event.Sequence })
+		ids := make([]string, len(events))
+		for i, event := range events {
+			ids[i] = event.ID
+		}
+		return ids, nil
+	}
+	local, err := readChain(head)
+	if err != nil {
+		return fmt.Errorf("verify actor signing root: %w", err)
+	}
+	for _, root := range accepted {
+		chain, err := readChain(root)
+		if err != nil {
+			return fmt.Errorf("verify accepted actor history: %w", err)
+		}
+		if err := requireSigningPrefix(local, chain, "actor"); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Both protocols compare verified signed IDs at every sequence, not timestamps,
+// Git ancestry alone, or only a maximum sequence (which misses equal-size forks).
+func requireSigningPrefix(local, accepted []string, kind string) error {
+	if len(accepted) <= len(local) {
+		for i, id := range accepted {
+			if local[i] != id {
+				return fmt.Errorf("%s signing root diverges from known accepted history; fence prior writers and explicitly reconcile verified roots", kind)
+			}
+		}
+		return nil
+	}
+	return fmt.Errorf("%s signing root is missing or stale against known accepted history; fence prior writers and explicitly restore the verified root", kind)
+}
+
 func nextEvent(identity *Identity, kind string) (Event, error) {
 	ref := actorRef(identity.Actor)
 	head, exists, err := refValue(ref)
@@ -186,7 +285,7 @@ func nextEvent(identity *Identity, kind string) (Event, error) {
 	if !exists {
 		return newEvent(identity, kind, 1, ""), nil
 	}
-	previous, err := loadStoredEvent(head)
+	previous, err := readStoredEvent(head)
 	if err != nil {
 		return Event{}, fmt.Errorf("read previous actor event: %w", err)
 	}
@@ -207,7 +306,33 @@ func loadStoredEvent(commit string) (*StoredEvent, error) {
 	return loadStoredEventAt("", commit)
 }
 
+// readStoredEvent verifies the signed record without importing audit packs.
+// Position discovery and writer preflight must remain free of object writes.
+func readStoredEvent(commit string) (*StoredEvent, error) {
+	gitDir, err := requireGitRepository()
+	if err != nil {
+		return nil, err
+	}
+	if err := replicationPendingError(gitDir, commit); err != nil {
+		return nil, err
+	}
+	return readStoredEventAt("", commit)
+}
+
 func loadStoredEventAt(gitDir, commit string) (*StoredEvent, error) {
+	stored, err := readStoredEventAt(gitDir, commit)
+	if err != nil {
+		return nil, err
+	}
+	if isAuditKind(stored.Event.Kind) {
+		if err := importAuditPack(gitDir, stored.Attachments["audit.pack"], stored.Event); err != nil {
+			return nil, err
+		}
+	}
+	return stored, nil
+}
+
+func readStoredEventAt(gitDir, commit string) (*StoredEvent, error) {
 	payload, err := gitOutputAt(gitDir, "show", commit+":event.json")
 	if err != nil {
 		return nil, err
@@ -254,9 +379,6 @@ func loadStoredEventAt(gitDir, commit string) (*StoredEvent, error) {
 			attachments[name] = raw
 		}
 		if err := validateAuditAttachments(event, attachments); err != nil {
-			return nil, err
-		}
-		if err := importAuditPack(gitDir, attachments["audit.pack"], event); err != nil {
 			return nil, err
 		}
 	}

@@ -1,0 +1,36 @@
+{
+  "executable_sha256": "f4b7cc9ee8de69227241219e6b559b390c0f08fd4f1c28435285758d5cbbf8e5",
+  "files_sha256": {
+    "RELEASE_SHA256SUMS": "995b3fe622097d9a33506dd0141eb26a475aa41f65c3761d4443f2efa3974647",
+    "BUILD.json": "82760216676bed90164db649abfdb81d1aa4635604f98e23437d06b4f758c45d",
+    "future-protocol.bundle": "1578680a741fa2080d9d59888f6b49fe2eff6265c71d79358ef5d5d971b02ee3",
+    "future-resource.bundle": "63718f3b34185836ec0f3107c987de303a6c21d28c64faafcd2c6f2d38621edc",
+    "observations.json": "6825a6d5abcb40b12454dd17d25e0ee562e40628b3889ae90587b36b9c55c564",
+    "project.hn": "03be249283d02182a752712e9a4140c8156086ed84ea97ce823876ec5f3f9b68",
+    "public.bundle": "a6ddfa8f77c7a838067aa2a896b746254583d59eac054d4032ea19433ff4a070"
+  },
+  "future_actors": {
+    "protocol": "dfb9a34aee866021362924dd11ad879477f62a7891767697a5b0da9f3e38e7b5",
+    "resource": "26cba1ab9e28b3d2b999648f532e24a3f04052f6aff2f6dd29d50ecca192c9ff"
+  },
+  "ids": {
+    "discussion": "sha256:89c23076495a41e465794fa98c58720627e838d1972479b3fd4984b3d06d6767",
+    "discussion-reply": "sha256:623bf6131683c37548244941e8f497e45e6749167b2562370dff05d800752358",
+    "issue": "sha256:99a8c03a2b9ba2d99ec02530588b933d326d92d30d5654589809bce2117dc2ad",
+    "memory": "sha256:add0b94567d7770194c223884b59d3e2172cee8707f4ef46c9ca4b848f6e72af",
+    "project": "sha256:fc9c5a81623e06dd6001ef1e9aa5077b52c5cec241ad3217a2ec1f94b186ee82",
+    "project-item": "sha256:0027e9c18764a27631653ca808fe9aa2225b41149cb0ff7e27db7a99f91ee87c",
+    "workflow": "sha256:0172d5c062e7600f985a44be3919ec6357570c51566cb60d481c21fd1399c401"
+  },
+  "qualification": "exact release archive executable; Linux AMD64 standard writer",
+  "refs": {
+    "refs/heads/main": "962e82996e6443b2bdddaad3ed46fd2a92415316",
+    "refs/hn/actors/c42b4993ba49901d7e44d32b3c073d613e458601254d7642745a10ae8ec0b4bd": "a60d9e73b132e6b0f0dc75f9284e862410445e68",
+    "refs/hn/memory/c42b4993ba49901d7e44d32b3c073d613e458601254d7642745a10ae8ec0b4bd/ddbec6353e40b73a7cc432fc0c12710fcf0501ae8660282c302b5bae1da31fbc": "444626b2bc918eeef3e8a016504c9a03ab69ac14"
+  },
+  "release_archive": "hubnot_0.0.2-dev_linux_amd64.tar.gz",
+  "release_archive_sha256": "cde0c34fb8b43a461ca73d850b255e94a17be0c0ac54a14f2e42536042bd7a21",
+  "release_url": "https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev",
+  "source_commit": "e80880abc792e2c386182e06027fc251b134c0d2",
+  "version": "0.0.2-dev"
+}
