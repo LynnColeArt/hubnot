@@ -64,10 +64,35 @@ insufficient byte bound fails rather than emitting a misleading partial record.
 Opaque continuation cursors are checksum-protected and bind the complete
 normalized query, bounds, policy, and sources.
 
-Recall does not execute subprocesses, invoke tools, fetch objects, access a
-provider, append facts, update refs, amend policy, or authorize a next action.
+Recall does not execute author-provided commands, invoke tools, fetch objects,
+access a provider, append facts, update refs, amend policy, or authorize a next
+action.
 Human output escapes controls. Exact inspection can show inactive, challenged,
 dependency-missing, or untrusted facts without changing their class.
+
+`hn memory grep` is an explicitly chosen regex fallback over the same verified
+selection as lexical recall. Active lifecycle, qualified policy trust,
+applicability, and resolved evidence remain the defaults. Regex matching reads
+only complete content, individual topics, and each string in handoff completed,
+assumptions, blockers, and nextActions after those checks. Fields and list items
+are never joined. It does not scan raw Git objects, quarantine, unsigned index
+content, or generated provenance. Broader trust/lifecycle flags expose the same
+classes as recall without upgrading them.
+
+Patterns are data passed to Go's standard-library regexp engine, never to an
+external grep or shell. UTF-8 validity, a 4,096-byte pattern limit, syntax, and
+a 4,096-instruction compilation limit are checked before index mutation.
+Matching preflights the entire eligible searchable-field selection against
+67,108,864 instruction-times-byte units (including one unit per field before
+multiplication), then either returns bounded atomic records or fails. Work-limit
+failure does not emit partial results. Regex cursors bind their own domain,
+pattern, flags, normalized selection, output bounds, sources, and policy, so
+lexical and regex continuations are isolated. Grep's `--max-content-bytes` counts
+the full encoded author `data` object, including handoff and topics; atomic
+pagination cannot omit oversized matched claims. Lexical recall preserves its
+content-only budget. Human output labels and escapes matching field values.
+Content, matched text, and handoff next-action claims remain inert; no file
+export or action follows a match.
 
 ## Adapter duties
 

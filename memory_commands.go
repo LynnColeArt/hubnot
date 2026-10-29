@@ -175,7 +175,7 @@ type parsedMemoryRecordCommand struct {
 
 func cmdMemory(args []string) error {
 	if len(args) == 0 {
-		return usageError("usage: hn memory <record|handoff|supersede|retract|challenge|show|recall|index>")
+		return usageError("usage: hn memory <record|handoff|supersede|retract|challenge|show|recall|grep|index>")
 	}
 	switch args[0] {
 	case "record":
@@ -195,6 +195,8 @@ func cmdMemory(args []string) error {
 		return cmdMemoryShow(args[1:])
 	case "recall":
 		return cmdMemoryRecall(args[1:])
+	case "grep":
+		return cmdMemoryGrep(args[1:])
 	case "index":
 		return cmdMemoryIndex(args[1:])
 	default:
@@ -859,20 +861,9 @@ func parseMemoryRecallArgs(args []string) (RecallRequestV0, bool, string, error)
 	flags := quietFlags("memory recall")
 	input := flags.String("input", "", "strict JSON input file or -")
 	jsonOutput := flags.Bool("json", false, "emit JSON")
-	at := flags.String("at", "", "exact Git revision")
-	subject := flags.String("subject", "", "full subject ID")
-	path := flags.String("path", "", "repository-relative path")
-	query := flags.String("query", "", "deterministic lexical query")
-	maxRecords := flags.Int("max-records", defaultRecallRecords, "maximum records")
-	maxBytes := flags.Int("max-content-bytes", defaultRecallContentBytes, "maximum encoded content bytes")
-	cursor := flags.String("cursor", "", "opaque continuation cursor")
-	includeUntrusted := flags.Bool("include-untrusted", false, "include valid non-qualifying claims")
-	var topics, kinds, actors, lifecycles, trust stringListFlag
-	flags.Var(&topics, "topic", "topic filter")
-	flags.Var(&kinds, "kind", "kind filter")
-	flags.Var(&actors, "actor", "actor filter")
-	flags.Var(&lifecycles, "lifecycle", "lifecycle filter or all")
-	flags.Var(&trust, "trust", "trust filter")
+	request := RecallRequestV0{Version: intValuePointer(memoryCommandVersion)}
+	at := bindMemoryRecallFlags(flags, &request)
+	flags.StringVar(&request.Query, "query", "", "deterministic lexical query")
 	if err := flags.Parse(args); err != nil {
 		return RecallRequestV0{}, false, "", err
 	}
@@ -898,12 +889,7 @@ func parseMemoryRecallArgs(args []string) (RecallRequestV0, bool, string, error)
 	if err != nil {
 		return RecallRequestV0{}, false, "", err
 	}
-	request := RecallRequestV0{
-		Version: intValuePointer(memoryCommandVersion), AtCommit: commit, Subject: *subject, Path: *path,
-		Topics: topics, Kinds: kinds, Actors: actors, Lifecycles: lifecycles, Trust: trust,
-		Query: *query, MaxRecords: *maxRecords, MaxContentBytes: *maxBytes, Cursor: *cursor,
-		IncludeUntrusted: *includeUntrusted,
-	}
+	request.AtCommit = commit
 	return request, *jsonOutput, "", nil
 }
 
@@ -986,38 +972,11 @@ func cmdMemoryRecall(args []string) error {
 	if err != nil {
 		return err
 	}
-	context, err := memoryProjectionContextAt(request.AtCommit, request.Subject, request.Path)
+	rows, sourceFingerprint, policyDigest, err := loadMemoryRecallSelection(request)
 	if err != nil {
 		return err
 	}
-	index, err := verifyMemoryIndex(context)
-	if err != nil {
-		var indexError *MemoryIndexError
-		if !errors.As(err, &indexError) {
-			return err
-		}
-		index, err = rebuildMemoryIndex(context)
-		if err != nil {
-			return err
-		}
-	}
-	query := MemoryIndexQuery{
-		AtCommit: request.AtCommit, Subject: request.Subject, Path: request.Path, Topics: request.Topics,
-		Kinds: request.Kinds, Actors: request.Actors, Lifecycles: request.Lifecycles,
-		Applicabilities: []string{memoryApplicabilityApplicable}, Trust: request.Trust, Query: request.Query,
-	}
-	rows, err := queryMemoryIndexV0(index, query)
-	if err != nil {
-		return err
-	}
-	resolved := rows[:0]
-	for _, row := range rows {
-		if row.Evidence == memoryEvidenceResolved {
-			resolved = append(resolved, row)
-		}
-	}
-	rows = resolved
-	digest, err := memoryRecallQueryDigest(request, index.SourceFingerprint, context.PolicyDigest)
+	digest, err := memoryRecallQueryDigest(request, sourceFingerprint, policyDigest)
 	if err != nil {
 		return err
 	}
@@ -1025,6 +984,14 @@ func cmdMemoryRecall(args []string) error {
 	if err != nil {
 		return err
 	}
+	return printMemoryRecallEnvelope(envelope, jsonOutput)
+}
+
+func printMemoryRecallEnvelope(envelope MemoryRecallEnvelopeV0, jsonOutput bool) error {
+	return printMemorySearchEnvelope(envelope, jsonOutput, nil)
+}
+
+func printMemorySearchEnvelope(envelope MemoryRecallEnvelopeV0, jsonOutput bool, printMatches func(MemoryIndexRecordV0)) error {
 	if jsonOutput {
 		return printMemoryJSON(envelope)
 	}
@@ -1033,6 +1000,9 @@ func cmdMemoryRecall(args []string) error {
 	for _, row := range envelope.Memories {
 		fmt.Printf("%s  actor=%s  kind=%s  lifecycle=%s  applicability=%s  evidence=%s  trust=%s\n  %s\n",
 			row.ID, row.Actor, row.Kind, row.Lifecycle, row.Applicability, row.Evidence, row.Trust, safeText(row.Data.Content))
+		if printMatches != nil {
+			printMatches(row)
+		}
 	}
 	if envelope.NextCursor != "" {
 		fmt.Printf("Next cursor: %s\n", envelope.NextCursor)
@@ -1078,6 +1048,12 @@ func memoryRecallQueryDigest(request RecallRequestV0, sourceFingerprint, policyD
 }
 
 func buildMemoryRecallEnvelope(request RecallRequestV0, queryDigest string, rows []MemoryIndexRecordV0) (MemoryRecallEnvelopeV0, error) {
+	return buildMemorySearchEnvelope(request, queryDigest, rows, "content", func(data MemoryRecord) ([]byte, error) {
+		return json.Marshal(data.Content)
+	})
+}
+
+func buildMemorySearchEnvelope(request RecallRequestV0, queryDigest string, rows []MemoryIndexRecordV0, budgetName string, encodeBudget func(MemoryRecord) ([]byte, error)) (MemoryRecallEnvelopeV0, error) {
 	if request.MaxRecords <= 0 || request.MaxContentBytes <= 0 || !validMemoryDigestID(queryDigest) {
 		return MemoryRecallEnvelopeV0{}, fmt.Errorf("invalid normalized recall request")
 	}
@@ -1086,13 +1062,15 @@ func buildMemoryRecallEnvelope(request RecallRequestV0, queryDigest string, rows
 	// A record is atomic recall data. Reject an incapable byte budget before
 	// emitting any page so a later oversized match cannot create a partial
 	// traversal with an unrepresentable gap.
-	for _, row := range rows {
-		encodedContent, err := json.Marshal(row.Data.Content)
+	encodedSizes := make([]int, len(rows))
+	for index, row := range rows {
+		encoded, err := encodeBudget(row.Data)
 		if err != nil {
-			return MemoryRecallEnvelopeV0{}, fmt.Errorf("encode inert memory content")
+			return MemoryRecallEnvelopeV0{}, fmt.Errorf("encode inert memory %s", budgetName)
 		}
-		if len(encodedContent) > request.MaxContentBytes {
-			return MemoryRecallEnvelopeV0{}, fmt.Errorf("memory %s encoded content exceeds maxContentBytes; raise the explicit bound", row.ID)
+		encodedSizes[index] = len(encoded)
+		if len(encoded) > request.MaxContentBytes {
+			return MemoryRecallEnvelopeV0{}, fmt.Errorf("memory %s encoded %s exceeds maxContentBytes; raise the explicit bound", row.ID, budgetName)
 		}
 	}
 	start := 0
@@ -1120,16 +1098,11 @@ func buildMemoryRecallEnvelope(request RecallRequestV0, queryDigest string, rows
 	nextIndex := start
 	for nextIndex < len(rows) && len(result.Memories) < request.MaxRecords {
 		row := rows[nextIndex]
-		// The content budget counts the complete JSON encoding of each
-		// data.content string, including quotes and escape expansion.
-		encodedContent, err := json.Marshal(row.Data.Content)
-		if err != nil {
-			return MemoryRecallEnvelopeV0{}, fmt.Errorf("encode inert memory content")
-		}
-		if contentBytes+len(encodedContent) > request.MaxContentBytes {
+		size := encodedSizes[nextIndex]
+		if contentBytes+size > request.MaxContentBytes {
 			break
 		}
-		contentBytes += len(encodedContent)
+		contentBytes += size
 		result.Memories = append(result.Memories, row)
 		result.MissingDependencies = append(result.MissingDependencies, row.Dependencies...)
 		nextIndex++
@@ -1228,4 +1201,60 @@ func printMemoryJSON(value any) error {
 	}
 	fmt.Println(string(encoded))
 	return nil
+}
+
+// bindMemoryRecallFlags keeps selection and output bounds identical for lexical
+// recall and explicit regex fallback. Each caller owns its query syntax.
+func bindMemoryRecallFlags(flags *flag.FlagSet, request *RecallRequestV0) *string {
+	at := flags.String("at", "HEAD", "exact Git revision")
+	flags.StringVar(&request.Subject, "subject", "", "full subject ID")
+	flags.StringVar(&request.Path, "path", "", "repository-relative path")
+	flags.IntVar(&request.MaxRecords, "max-records", defaultRecallRecords, "maximum records")
+	flags.IntVar(&request.MaxContentBytes, "max-content-bytes", defaultRecallContentBytes, "maximum encoded content bytes")
+	flags.StringVar(&request.Cursor, "cursor", "", "opaque continuation cursor")
+	flags.BoolVar(&request.IncludeUntrusted, "include-untrusted", false, "include valid non-qualifying claims")
+	flags.Var((*stringListFlag)(&request.Topics), "topic", "topic filter")
+	flags.Var((*stringListFlag)(&request.Kinds), "kind", "kind filter")
+	flags.Var((*stringListFlag)(&request.Actors), "actor", "actor filter")
+	flags.Var((*stringListFlag)(&request.Lifecycles), "lifecycle", "lifecycle filter or all")
+	flags.Var((*stringListFlag)(&request.Trust), "trust", "trust filter")
+	return at
+}
+
+// loadMemoryRecallSelection is the only command search selection seam: sources
+// and cached projections are verified before filtering, and missing evidence is
+// excluded even when trust or lifecycle filters are explicitly broadened.
+func loadMemoryRecallSelection(request RecallRequestV0) ([]MemoryIndexRecordV0, string, string, error) {
+	context, err := memoryProjectionContextAt(request.AtCommit, request.Subject, request.Path)
+	if err != nil {
+		return nil, "", "", err
+	}
+	index, err := verifyMemoryIndex(context)
+	if err != nil {
+		var indexError *MemoryIndexError
+		if !errors.As(err, &indexError) {
+			return nil, "", "", err
+		}
+		index, err = rebuildMemoryIndex(context)
+		if err != nil {
+			return nil, "", "", err
+		}
+	}
+	query := MemoryIndexQuery{
+		AtCommit: request.AtCommit, Subject: request.Subject, Path: request.Path, Topics: request.Topics,
+		Kinds: request.Kinds, Actors: request.Actors, Lifecycles: request.Lifecycles,
+		Applicabilities: []string{memoryApplicabilityApplicable}, Trust: request.Trust, Query: request.Query,
+	}
+	rows, err := queryMemoryIndexV0(index, query)
+	if err != nil {
+		return nil, "", "", err
+	}
+	resolved := rows[:0]
+	for _, row := range rows {
+		if row.Evidence == memoryEvidenceResolved {
+			resolved = append(resolved, row)
+		}
+	}
+	rows = resolved
+	return rows, index.SourceFingerprint, context.PolicyDigest, nil
 }
