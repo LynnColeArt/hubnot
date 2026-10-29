@@ -37,6 +37,7 @@ create_intent:
 - contribution_moderation.go
 - contribution_deadline_test.go
 - docs/contributions.md
+- beta_contribution_acceptance_test.go
 execution_mode: code_change
 owned_files:
 - docs/platform-qualification.md
@@ -50,6 +51,7 @@ owned_files:
 - contribution_moderation.go
 - contribution_deadline_test.go
 - docs/contributions.md
+- beta_contribution_acceptance_test.go
 role: implementer
 tags: []
 task_type: implement
@@ -105,6 +107,42 @@ Request additional ownership before editing any unlisted production surface.
 Runtime changes require a new immutable candidate and requalification. H0/H2/H3
 observations remain exact-head historical evidence. Workflow-only orchestration
 may reuse an unchanged candidate with separately bound workflow/source/harness.
+
+## Qualification harness correction — T019, 2026-10-29
+
+The closed ordinary run 40935607370 and diagnostics 40945963139/40950781922
+preserve actual Intel failures at the helper's 45-second whole-command watchdog.
+The latter diagnostic completed its selected discussion reply in 44.876904965
+seconds, then cut off proposal intake at 45.002919314 seconds. Durable observations
+show completed input/raw retention and a separately charged receipt attempt;
+they do not prove the interrupted function, a production deadline failure, or
+that a longer watchdog will make the proposal succeed.
+
+Independent source review confirms the documented contract uses separately timed
+30-second input, raw-retention, receipt-revalidation and generated-control stages.
+The 45-second test-helper watchdog is not a promised whole-CLI production limit.
+T019 therefore also owns inherited `beta_contribution_acceptance_test.go` for a
+narrow permanent qualification-harness correction: only the selected Hubnot
+executable's `contribution` command family may use a finite 240-second external
+watchdog. Other application commands and Git helpers retain 45 seconds. The
+240 seconds allow six 30-second stages plus fixture/legacy headroom; this is a
+test watchdog, not a derived hard application runtime maximum or latency promise.
+
+Keep production contexts, policy defaults, accounting, semantic/refusal checks,
+closed child environments and meaningful short-stage deadline regressions
+unchanged. Do not skip cases, retry until green, or relabel diagnostics as
+qualification. The inherited path is in create_intent because it is absent on
+the planning base; edit the approved dependency contents, never create a stub.
+Serialize authors and retain established lanes and historical approvals.
+
+Archive the reviewed one-off pinned diagnostic implementation and evidence
+externally, then remove that experiment from the maintained workflow. Retain the
+general build/reuse/split path and original source PR checks. Independently review
+the narrow helper/workflow/docs checkpoint before one fresh ordinary matrix.
+Package the corrected source archive with Go-only tooling; bind all eight actual
+application hashes and report equivalence to 5bed only if verified. A harness
+change is not a production repair. Fixed-head Go validation and final qualification
+must describe their actual source, harness, archive and executable identities.
 
 ## Objectives & Success Criteria
 

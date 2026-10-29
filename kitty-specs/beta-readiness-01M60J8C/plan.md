@@ -243,3 +243,24 @@ already take 16–17.3 minutes; this changes no application deadline or assertio
 - Current selected replication receipts and post-download budgets remain valid
   for their existing purpose; never advertise them as a full public ingress DoS
   boundary. Supported contribution ingress requires independent early bounds.
+
+
+### Permanent contribution test watchdog correction, 2026-10-29
+
+WP06 T019 additionally owns the inherited contribution public acceptance helper.
+The documented separately bounded production stages do not imply a 45-second
+whole-command guarantee. Closed Intel diagnostic 40950781922 completed discussion
+reply in 44.876904965 seconds and later cut off proposal intake at 45.002919314;
+last durable state includes input/raw retention and a generated receipt attempt,
+not an internal function or cause. Preserve these failed observations.
+
+Use a finite 240-second external watchdog only for selected Hubnot contribution
+commands (six 30-second stages plus fixture/legacy headroom), keeping ordinary
+application/Git helpers at 45 seconds. This is not an application deadline increase,
+latency promise or proof that the unresolved command will succeed. Production
+contexts/defaults and all semantic/refusal/short-stage regression checks remain.
+Remove the archived one-off diagnostic from maintained CI, retain general optional
+build/reuse/split and source PR checks, review the exact checkpoint, then run one
+fresh ordinary platform matrix with new source-archive bindings. Verify actual
+runtime-input and executable equivalence rather than infer it from test-only scope.
+No additional target-specific diagnostic is authorized by this decision.
