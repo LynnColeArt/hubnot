@@ -33,6 +33,12 @@ func compileMemoryGrepPattern(pattern string, ignoreCase bool) (memoryGrepPatter
 	if err != nil {
 		return memoryGrepPattern{}, fmt.Errorf("invalid grep pattern (Go regexp syntax): %w", err)
 	}
+	// Check expansion before Simplify can materialize counted repetitions. Go's
+	// own parser permits programs much larger than this command's work limit.
+	// Reserve the compiler's initial Fail and final Match instructions.
+	if memoryGrepExpansionCost(parsed) > maxMemoryGrepInstructions-2 {
+		return memoryGrepPattern{}, fmt.Errorf("grep pattern exceeds %d estimated expanded instructions", maxMemoryGrepInstructions)
+	}
 	program, err := syntax.Compile(parsed.Simplify())
 	if err != nil {
 		return memoryGrepPattern{}, fmt.Errorf("invalid grep pattern: %w", err)
@@ -45,6 +51,51 @@ func compileMemoryGrepPattern(pattern string, ignoreCase bool) (memoryGrepPatter
 		return memoryGrepPattern{}, fmt.Errorf("invalid grep pattern: %w", err)
 	}
 	return memoryGrepPattern{compiled, len(program.Inst)}, nil
+}
+
+// memoryGrepExpansionCost conservatively counts instructions before expansion,
+// saturating at limit+1. The caller reserves fixed Fail and Match instructions.
+func memoryGrepExpansionCost(expression *syntax.Regexp) int {
+	limit := maxMemoryGrepInstructions + 1
+	if expression.Op == syntax.OpRepeat && expression.Max == 0 {
+		return 1 // A discarded subtree must not be expanded or charged.
+	}
+	cost := 0
+	for _, sub := range expression.Sub {
+		cost += memoryGrepExpansionCost(sub)
+		if cost >= limit {
+			return limit
+		}
+	}
+	switch expression.Op {
+	case syntax.OpLiteral:
+		cost = max(1, len(expression.Rune))
+	case syntax.OpConcat:
+		cost = max(1, cost)
+	case syntax.OpAlternate:
+		cost += max(0, len(expression.Sub)-1)
+	case syntax.OpCapture, syntax.OpStar:
+		cost += 2 // A nullable star can need a second branch instruction.
+	case syntax.OpPlus, syntax.OpQuest:
+		cost++
+	case syntax.OpRepeat:
+		repetitions := expression.Max
+		if repetitions < 0 {
+			repetitions = max(1, expression.Min)
+		}
+		if repetitions > limit/cost {
+			return limit
+		}
+		cost *= repetitions
+		if expression.Max < 0 {
+			cost += 2
+		} else {
+			cost += expression.Max - expression.Min
+		}
+	default:
+		cost++
+	}
+	return min(limit, cost)
 }
 
 func cmdMemoryGrep(args []string) error {

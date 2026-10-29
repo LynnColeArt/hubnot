@@ -153,8 +153,9 @@ beneath `memories[].data.content`, and handoff fields stay beneath
 `memories[].data.handoff`. Continuation cursors bind the normalized filters,
 bounds, exact policy digest, and accepted-source fingerprint. Any change to
 sources, policy, filters, query, commit, or bounds invalidates the cursor.
-Recall performs no fetch, command execution, tool invocation, policy change,
-event append, or ref update.
+Recall uses native Git subprocesses to read and verify local state and may
+rebuild its disposable verified index. It performs no fetch, author-command
+execution, memory-driven tool action, policy change, event append, or ref update.
 
 ## Explicit regex fallback
 
@@ -202,9 +203,11 @@ machine requests are unchanged. Grep cursors additionally bind a separate regex
 domain, exact pattern bytes, and ignore-case flag, and cannot be reused for
 lexical recall or another regex/flag combination.
 
-Patterns must be valid UTF-8, at most 4,096 bytes, and compile to at most 4,096
-Go regexp instructions. Invalid, unsupported, and over-complex patterns fail
-before any index rebuild. Before matching, the complete eligible selection must
+Patterns must be valid UTF-8 and at most 4,096 bytes. A conservative syntax-tree
+expansion estimate (including fixed program overhead) and the compiled
+program must each fit 4,096 Go regexp instructions. The estimate is checked
+before expanding counted repetitions. Invalid, unsupported, and over-complex
+patterns fail before any index rebuild. Before matching, the complete eligible selection must
 fit a deterministic work limit of 67,108,864 units:
 `compiledInstructions × sum(fieldUTF8Bytes + 1)` over all searchable fields.
 Exceeding this limit fails without emitting a partial result; narrow filters or

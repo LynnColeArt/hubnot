@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp/syntax"
 	"strconv"
 	"strings"
 	"testing"
@@ -83,7 +84,7 @@ func TestMemoryGrepCLI(t *testing.T) {
 	}
 	t.Run("invalid patterns have no index side effects", func(t *testing.T) {
 		index := filepath.Join(repo, ".git", "hn", "memory", "index-v0.json")
-		for _, pattern := range []string{"[", `(needle)\1`, `(?=needle)`, strings.Repeat("a", 4097), strings.Repeat("a", 4096), `(?:a{1000}){10}`, string([]byte{0xff})} {
+		for _, pattern := range []string{"[", `(needle)\1`, `(?=needle)`, strings.Repeat("a", 4097), strings.Repeat("a", 4096), `(?:` + strings.Repeat("a", 2000) + `){1000}`, `(?:a{1000}){10}`, string([]byte{0xff})} {
 			failure := runOperationalCommandFailure(t, binary, repo, "memory", "grep", "--json", pattern)
 			if !strings.Contains(failure, "pattern") {
 				t.Fatalf("unexpected error: %s", failure)
@@ -291,5 +292,38 @@ func TestMemoryGrepWorkBudget(t *testing.T) {
 	}
 	if _, err := matchMemoryGrepRows([]MemoryIndexRecordV0{row, row}, pattern); err == nil || !strings.Contains(err.Error(), "work limit") {
 		t.Fatalf("over-budget candidate scan: %v", err)
+	}
+}
+
+func TestMemoryGrepExpansionBound(t *testing.T) {
+	for _, test := range []struct {
+		pattern string
+		want    int
+	}{
+		{`a{0}`, 1}, {`(?:a|b){2}`, 2}, {`(a){2}`, 6}, {`a{1,3}`, 5}, {`a{2,}`, 4},
+		{`(?:` + strings.Repeat("a", 2000) + `){1000}`, maxMemoryGrepInstructions + 1},
+	} {
+		expression, err := syntax.Parse(test.pattern, syntax.Perl)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := memoryGrepExpansionCost(expression); got != test.want {
+			t.Fatalf("expansion cost = %d want %d for %.40q", got, test.want, test.pattern)
+		}
+	}
+	// Discarding a valid large group is cheap even when its nonzero expansion
+	// would exceed the guard; this also exercises saturation without expansion.
+	pattern := `(?:` + strings.Repeat("a", 2000) + `){0}`
+	if _, err := compileMemoryGrepPattern(pattern, false); err != nil {
+		t.Fatalf("discarded subtree rejected: %v", err)
+	}
+}
+
+func TestMemoryGrepInstructionBoundary(t *testing.T) {
+	if _, err := compileMemoryGrepPattern(strings.Repeat("a", maxMemoryGrepInstructions-2), false); err != nil {
+		t.Fatalf("instruction boundary rejected: %v", err)
+	}
+	if _, err := compileMemoryGrepPattern(strings.Repeat("a", maxMemoryGrepInstructions-1), false); err == nil {
+		t.Fatal("instruction boundary exceeded")
 	}
 }

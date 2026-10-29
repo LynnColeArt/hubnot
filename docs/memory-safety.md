@@ -64,9 +64,11 @@ insufficient byte bound fails rather than emitting a misleading partial record.
 Opaque continuation cursors are checksum-protected and bind the complete
 normalized query, bounds, policy, and sources.
 
-Recall does not execute author-provided commands, invoke tools, fetch objects,
-access a provider, append facts, update refs, amend policy, or authorize a next
-action.
+Recall uses native Git subprocesses to read and verify local state and may
+rebuild the disposable verified index. It does not execute memory author
+content, run a shell or external grep, perform memory-driven tool actions,
+fetch objects, access a provider, append facts, update refs, amend policy, or
+authorize a next action.
 Human output escapes controls. Exact inspection can show inactive, challenged,
 dependency-missing, or untrusted facts without changing their class.
 
@@ -81,7 +83,9 @@ classes as recall without upgrading them.
 
 Patterns are data passed to Go's standard-library regexp engine, never to an
 external grep or shell. UTF-8 validity, a 4,096-byte pattern limit, syntax, and
-a 4,096-instruction compilation limit are checked before index mutation.
+a conservative 4,096-instruction expansion estimate are checked before counted
+repetitions are expanded. The final compiled program also has a 4,096-instruction
+limit. These checks precede index mutation.
 Matching preflights the entire eligible searchable-field selection against
 67,108,864 instruction-times-byte units (including one unit per field before
 multiplication), then either returns bounded atomic records or fails. Work-limit
