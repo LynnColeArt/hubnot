@@ -1194,11 +1194,12 @@ func contributionVerifyCandidate(path, digest string) error {
 }
 func contributionCLIBinary(t *testing.T) string {
 	t.Helper()
-	if candidate := os.Getenv("HN_CONTRIBUTION_TEST_BINARY"); candidate != "" {
-		if e := contributionVerifyCandidate(candidate, os.Getenv("HN_CONTRIBUTION_TEST_BINARY_SHA256")); e != nil {
+	candidate, digest := os.Getenv("HN_CONTRIBUTION_TEST_BINARY"), os.Getenv("HN_CONTRIBUTION_TEST_BINARY_SHA256")
+	if candidate != "" || digest != "" {
+		if e := contributionVerifyCandidate(candidate, digest); e != nil {
 			t.Fatal(e)
 		}
-		t.Logf("unchanged injected CLI: %s %s", candidate, os.Getenv("HN_CONTRIBUTION_TEST_BINARY_SHA256"))
+		t.Logf("unchanged injected CLI: %s %s", candidate, digest)
 		return candidate
 	}
 	return buildMigrationCLIBinary(t, "")
@@ -1229,6 +1230,30 @@ func TestContributionInjectedBinaryRequiresExactImmutableSelection(t *testing.T)
 	}
 	if contributionVerifyCandidate(path, digest) == nil {
 		t.Fatal("changed executable retained original binding")
+	}
+}
+
+func TestContributionInjectedBinarySelectionRejectsIncompletePair(t *testing.T) {
+	if os.Getenv("HN_CONTRIBUTION_TEST_SELECTION_PROBE") == "1" {
+		contributionCLIBinary(t)
+		t.Fatal("incomplete explicit candidate selection unexpectedly returned")
+	}
+	for _, input := range []struct{ name, path, digest string }{
+		{"digest only", "", c.Digest([]byte("candidate bytes"))},
+		{"path only", filepath.Join(t.TempDir(), "candidate"), ""},
+	} {
+		t.Run(input.name, func(t *testing.T) {
+			probe := exec.Command(os.Args[0], "-test.run=^TestContributionInjectedBinarySelectionRejectsIncompletePair$")
+			// A source-build fallback must fail differently from candidate validation.
+			probe.Env = operationalTestEnvironmentWith(t.TempDir(), map[string]string{
+				"PATH": t.TempDir(), "HN_CONTRIBUTION_TEST_SELECTION_PROBE": "1",
+				"HN_CONTRIBUTION_TEST_BINARY": input.path, "HN_CONTRIBUTION_TEST_BINARY_SHA256": input.digest,
+			})
+			output, e := probe.CombinedOutput()
+			if e == nil || !strings.Contains(string(output), "candidate binary requires absolute path and exact sha256 digest") {
+				t.Fatalf("explicit incomplete selection did not fail before fallback: %v\n%s", e, output)
+			}
+		})
 	}
 }
 
