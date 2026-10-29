@@ -3,9 +3,9 @@
 Status: qualification in progress, 2026-10-29. The published `0.0.3-dev` is an
 alpha. `0.1.0-beta.1` is an **unpublished qualification candidate**, not a beta
 release or tag. The contribution promotion context gap was repaired at `5bedb38c`;
-a freshly built candidate passed both Linux rows. Mac qualification is still
-incomplete: the Intel WP13 group reached the unchanged per-command deadline,
-and remaining Mac groups are still running. Earlier H3 results remain historical
+the freshly built candidate passed both Linux rows and every Mac Apple Silicon
+group. Intel qualification remains incomplete: its WP13 happy journeys reached
+the unchanged per-command deadline, while all other required Intel groups passed. Earlier H3 results remain historical
 observations of different executable bytes. The version was selected before freezing source because the
 remote tag lookup and release inventory contained no such version; qualifying
 these assets can support a later publication decision without rebuilding them.
@@ -66,8 +66,8 @@ its exact bytes and observed environment.
 | --- | --- | --- |
 | Linux AMD64 | `ubuntu-24.04` | Repaired `5bedb38c` standard/native-only: all required groups passed |
 | Linux ARM64 | `ubuntu-24.04-arm` | Repaired `5bedb38c` standard/native-only: all required groups passed |
-| macOS Apple Silicon | `macos-15` | Repaired candidate preflight and both WP13 variants passed; remaining groups pending |
-| macOS Intel | `macos-15-intel` | Repaired candidate preflight passed; WP13 failed at the per-command deadline; unqualified |
+| macOS Apple Silicon | `macos-15` | Repaired `5bedb38c` standard/native-only: all required groups passed |
+| macOS Intel | `macos-15-intel` | Preflight, integrated journeys and both WP12 variants passed; WP13 happy journeys failed; unqualified |
 
 These mappings were rechecked on 2026-10-29 against the
 [official GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
@@ -211,8 +211,9 @@ missing context propagation in public-file promotion seams, but did not
 attribute the Intel results to those seams. No larger job budget or reused
 artifact establishes that those Intel cases passed. A runtime repair requires
 new package bytes and fresh qualification; this reuse path cannot substitute
-H3 evidence for that future candidate. No supplemental reuse run has been
-claimed here.
+H3 evidence for that future candidate. H3 artifacts were not reused for repaired
+candidate qualification. The separate diagnostic below reused repaired `5bedb38c`
+bytes and remains ineligible for qualification.
 
 The two complete H3 Linux runs each retain 4,018 process transcripts. Exact
 required top-level names/counts were checked: two preflight cases, three full
@@ -234,35 +235,68 @@ harness overlay. Both 24-unit, four-scenario checks passed in 68.940 and 67.520
 seconds respectively. These are observed operating-envelope scenarios, not a
 cross-platform latency guarantee.
 
-The repaired Intel WP13 step failed in 1,506.68 seconds. Preliminary live step
-logs identify a killed standard `proposal-intake` receive and a killed native-only
+The final repaired Mac ARM job passed every required group, with 2,910 process
+transcripts and all 218 source inputs unchanged. Both WP13 variants completed in
+1,605.05 seconds; the remaining eight integrated journeys, ten standard WP12
+cases and nine native-only WP12 cases also passed. Its observed host ran macOS
+15.7.9, Git 2.55.0 and APFS with native ARM execution. This is CI runtime evidence;
+the independent download and human cases below remain pending.
+
+The repaired Intel WP13 step failed in 1,506.68 seconds. Final raw artifacts
+confirm a killed standard `proposal-intake` receive and a killed native-only
 `block-author` moderation command at the existing 45-second subprocess context.
-Other WP13 groups completed successfully in both variants. Final job artifacts
-must corroborate those live observations before closeout. The internal failing
-phase, last durable state and cause remain unknown. The finite request/stage
-contexts added by the repair do not constitute one cumulative whole-CLI timer.
-Apple Silicon's repaired WP13 group passed; its remaining required groups and
-both Mac final job outcomes are still pending.
+The other three WP13 subgroups passed in each variant. Intel's bundle preflight,
+all eight integrated journey groups, all ten standard WP12 cases and all nine
+native-only WP12 cases passed; there was no aggregate timeout. All 218 source
+inputs stayed unchanged, with 2,670 process transcripts retained. Its observed
+host ran macOS 15.7.9, Git 2.55.0 and APFS in the native Intel pool. The ordinary
+[run 40935607370](https://github.com/LynnColeArt/hubnot/actions/runs/40935607370)
+therefore remains failed; neither larger aggregate budgets nor passing adjacent
+groups turn the Intel row green.
 
-An explicit `diagnostic_mode=intel-standard-45` path is prepared for one standard
-happy-journey observation using only this exact source, origin run, artifact and
-provenance. It requires reuse mode and cannot build a replacement application.
-It checks out the original candidate harness and applies an external observation
-overlay; every semantic assertion and the 45-second subprocess context remain.
-The independent native qualification jobs are skipped in this mode. Diagnostic
-records and artifact names explicitly say `qualification_eligible=false`, so a
-diagnostic success never qualifies the platform. No diagnostic dispatch has yet
-been authorized or executed.
+The explicit `diagnostic_mode=intel-standard-45` path then executed one standard
+happy-journey observation using these same immutable packages in
+[diagnostic run 40945963139](https://github.com/LynnColeArt/hubnot/actions/runs/40945963139).
+The executing workflow was `f205160da277701e2e65a8ef005e77b9bd15adeb`, distinct
+from original application/harness source `5bedb38c`. Live reuse validation,
+cross-run download, strict bundle verification, overlay generation and immutable
+checks passed; the application was not rebuilt. Both Intel variants were
+extracted for the strict verifier, while only the standard journey executed.
+Ordinary native qualification jobs were skipped; all diagnostic records and
+artifact names explicitly mark `qualification_eligible=false`.
 
-The overlay records per-process UTC timing, monotonic elapsed duration, PID,
-arguments, executable digest, exit/context and output length/hash. Only the
-target `proposal-intake` receives before/after observations of the known fixture
-journal. Reads refuse unsafe/nonregular paths and inputs over 1 MiB; typed
+That diagnostic stopped earlier: `discussion-reply-intake` was killed after
+45.004022952 monotonic seconds with zero output. Proposal intake was correctly
+reported `target not reached`. Its 102 structured records include no journal
+observations, so the last durable/internal failing phase and cause remain
+unknown. Successful initial issue, issue-reply and discussion receives measured
+13.128, 25.678 and 37.516 seconds. Those instrumented durations are observations,
+not proof of a scaling cause. The finite production request/stage contexts do
+not constitute a cumulative whole-CLI 30-second timer. No longer capture,
+tracing, repeat-until-green run or new runtime repair has been executed.
+
+A follow-up `diagnostic_mode=intel-standard-discussion-reply-120` is prepared
+for one separately approved observation. It gives only the exact standard
+`discussion-reply-intake` receive a 120-second external capture; other commands
+retain 45 seconds and production phase budgets stay unchanged. It preserves
+all semantic assertions and remains ineligible for qualification, even if a
+command later finishes beyond the ordinary 45-second gate. No follow-up run
+has yet been dispatched.
+
+The follow-up overlay records per-process UTC timing, monotonic elapsed duration,
+PID, arguments, executable digest, exit/context and output length/hash. Every
+selected `contribution receive` gets before/after observations of the known fixture
+journal, so an earlier receive failure can retain its own durable-state evidence.
+The selected target's terminal result is reported separately from any later
+happy-journey failure. A bounded output marker recognizes an anchored CLI error
+line ending in `context deadline exceeded`; only the enum is exported. The marker
+is an observed error shape, not an internal phase or causal finding. Reads refuse unsafe/nonregular paths and inputs over 1 MiB; typed
 filtering excludes descriptors, checksums/HMAC material, private paths, arbitrary
 failure text and manifest material. A filtered snapshot is capped at 60 KiB,
 each output record at 64 KiB and all records at 4 MiB. Raw application/test logs
 remain ephemeral and are neither echoed nor uploaded. No additional Hubnot
-observer command, Git trace, policy change or longer capture mode is enabled.
+observer command, Git trace or policy change is enabled. The longer external
+capture is limited to the one explicit diagnostic target.
 Journal observations have separate duration records and may warm caches.
 Start metadata writes occur during the command interval, so their overhead is
 included in command elapsed time and can affect the observed result. A durable journal status identifies the last recorded phase,

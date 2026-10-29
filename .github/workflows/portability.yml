@@ -19,7 +19,7 @@ on:
       diagnostic_mode:
         description: Explicit observation only; never beta qualification
         type: choice
-        options: [none, intel-standard-45]
+        options: [none, intel-standard-45, intel-standard-discussion-reply-120]
         default: none
       reuse_source:
         description: Exact candidate source commit (reuse only)
@@ -128,7 +128,7 @@ jobs:
           esac
           case "$DIAGNOSTIC_MODE" in
             none) ;;
-            intel-standard-45)
+            intel-standard-45|intel-standard-discussion-reply-120)
               test "$CANDIDATE_MODE" = reuse
               test "$PLATFORM_SCOPE" = macos
               test "$REUSE_SOURCE" = 5bedb38c2bf8f59938515114297aeedeb959e53f
@@ -434,8 +434,8 @@ jobs:
           retention-days: 30
 
   candidate-diagnostic:
-    name: Diagnostic only (Intel standard, 45-second gate)
-    if: always() && github.event_name == 'workflow_dispatch' && needs.candidate-request.result == 'success' && needs.candidate-request.outputs.diagnostic == 'intel-standard-45' && needs.candidate-reuse.result == 'success' && needs.candidate-build.result == 'skipped'
+    name: Diagnostic only (Intel standard observation)
+    if: always() && github.event_name == 'workflow_dispatch' && needs.candidate-request.result == 'success' && (needs.candidate-request.outputs.diagnostic == 'intel-standard-45' || needs.candidate-request.outputs.diagnostic == 'intel-standard-discussion-reply-120') && needs.candidate-reuse.result == 'success' && needs.candidate-build.result == 'skipped'
     needs: [candidate-request, candidate-build, candidate-reuse]
     runs-on: macos-15-intel
     timeout-minutes: 30
@@ -447,6 +447,7 @@ jobs:
       FROZEN_TREE: ${{ needs.candidate-reuse.outputs.tree }}
       FROZEN_PROVENANCE: ${{ needs.candidate-reuse.outputs.provenance }}
       BASE_HARNESS_SHA256: d7438e11d0b5da89de1e3ebc226f6af614159f683d3a7ca5475fb01d392d12ed
+      HN_BETA_DIAGNOSTIC_MODE: ${{ needs.candidate-request.outputs.diagnostic }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -490,7 +491,7 @@ jobs:
           app_sha="$(shasum -a 256 "$app" | cut -d ' ' -f1)"
           test "$app_sha" = 42a8c16f7aed882a09469fae593181a721ed6564c8d9dfd4930d26b6a6756e3a
           shasum -a 256 "$app" > "$DIAGNOSTIC_EVIDENCE/app.before.sha256"
-          jq -n --arg workflow "$GITHUB_SHA" --arg source "$FROZEN_SOURCE" --arg tree "$FROZEN_TREE" --arg provenance "$FROZEN_PROVENANCE" --arg app "$app_sha" '{diagnostic:true,qualification_eligible:false,workflow_source:$workflow,candidate_source:$source,candidate_tree:$tree,provenance_sha256:$provenance,origin_run:40935607370,artifact_id:12925340544,origin_zip_sha256:"e40d154999cf500d4bb3aa043a9ee72b111942aac58eb4452ec3b83607bd2dac",app_sha256:$app,external_deadline_seconds:45,raw_output_upload:false}' > "$DIAGNOSTIC_EVIDENCE/subject.json"
+          jq -n --arg workflow "$GITHUB_SHA" --arg source "$FROZEN_SOURCE" --arg tree "$FROZEN_TREE" --arg provenance "$FROZEN_PROVENANCE" --arg app "$app_sha" --arg mode "$HN_BETA_DIAGNOSTIC_MODE" '{diagnostic_mode:$mode,diagnostic:true,qualification_eligible:false,workflow_source:$workflow,candidate_source:$source,candidate_tree:$tree,provenance_sha256:$provenance,origin_run:40935607370,artifact_id:12925340544,origin_zip_sha256:"e40d154999cf500d4bb3aa043a9ee72b111942aac58eb4452ec3b83607bd2dac",app_sha256:$app,ordinary_gate_seconds:45,selected_target_capture_seconds:(if $mode == "intel-standard-discussion-reply-120" then 120 else 45 end),raw_output_upload:false}' > "$DIAGNOSTIC_EVIDENCE/subject.json"
       - name: Generate reviewed external observation overlay
         if: steps.diagnostic-bind.outcome == 'success'
         shell: bash
@@ -513,14 +514,13 @@ jobs:
           assert original.count('ctx.Err() != nil || (err == nil) != ok') == 1
           replacement = r'''func (f *betaContributionCLI) process(dir, program string, ok bool, args ...string) []byte {
               f.t.Helper()
-              target := program == f.binary && len(args) >= 2 && args[0] == "contribution" && args[1] == "receive"
-              operation := ""
-              for i := 0; i+1 < len(args); i++ {
-                  if args[i] == "--operation" { operation = args[i+1] }
-              }
-              target = target && operation == "proposal-intake"
-              if target { betaDiagnosticJournal(f, dir, "before") }
-              ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+              f.diagnosticSequence++
+              sequence := f.diagnosticSequence
+              mode := os.Getenv("HN_BETA_DIAGNOSTIC_MODE")
+              receive, target, operation, inputDigest, refs, captureSeconds := betaDiagnosticSelect(mode, f.t.Name(), f.binary, program, fmt.Sprintf("%x", f.digest), f.diagnosticCaptureUsed, args)
+              if target { f.diagnosticCaptureUsed = true }
+              if receive { betaDiagnosticJournal(f, dir, "before", sequence, 0, operation, inputDigest, refs) }
+              ctx, cancel := context.WithTimeout(context.Background(), time.Duration(captureSeconds)*time.Second)
               defer cancel()
               p := exec.CommandContext(ctx, program, args...)
               p.Dir, p.Env = dir, f.env
@@ -533,15 +533,16 @@ jobs:
               programSHA := os.Getenv("HN_BETA_DIAGNOSTIC_GIT_SHA256")
               if program == f.binary { programSHA = fmt.Sprintf("%x", f.digest) }
               if programSHA == "" { f.t.Fatal("diagnostic executable digest unavailable") }
-              betaDiagnosticWrite(f.t, map[string]any{"kind":"process-start", "test":f.t.Name(), "utc":started.UTC().Format(time.RFC3339Nano), "pid":pid, "program":p.Path, "argv":args, "executable_sha256":programSHA, "selected_app_sha256":fmt.Sprintf("%x", f.digest), "target":target, "start_success":err == nil, "deadline_seconds":45})
+              betaDiagnosticWrite(f.t, map[string]any{"kind":"process-start", "command_sequence":sequence, "diagnostic_mode":mode, "test":f.t.Name(), "utc":started.UTC().Format(time.RFC3339Nano), "pid":pid, "program":p.Path, "argv":args, "executable_sha256":programSHA, "selected_app_sha256":fmt.Sprintf("%x", f.digest), "target":target, "receive":receive, "start_success":err == nil, "expected_ok":ok, "ordinary_gate_seconds":45, "capture_seconds":captureSeconds})
               if err == nil { err = p.Wait() }
               ended := time.Now()
               out := output.Bytes()
               commandContextErr := ctx.Err()
               cancel()
-              ctxState := fmt.Sprint(commandContextErr)
-              betaDiagnosticWrite(f.t, map[string]any{"kind":"process-end", "test":f.t.Name(), "utc":ended.UTC().Format(time.RFC3339Nano), "elapsed_ns":ended.Sub(started).Nanoseconds(), "pid":pid, "exit":fmt.Sprint(err), "context":ctxState, "output_bytes":len(out), "output_sha256":fmt.Sprintf("%x", sha256.Sum256(out)), "target":target})
-              if target { betaDiagnosticJournal(f, dir, "after") }
+              marker := "not-applicable"
+              if program == f.binary { marker = betaDiagnosticOutputMarker(out) }
+              betaDiagnosticWrite(f.t, map[string]any{"kind":"process-end", "command_sequence":sequence, "test":f.t.Name(), "utc":ended.UTC().Format(time.RFC3339Nano), "elapsed_ns":ended.Sub(started).Nanoseconds(), "crossed_ordinary_gate":ended.Sub(started) > 45*time.Second, "pid":pid, "exit":fmt.Sprint(err), "context":fmt.Sprint(commandContextErr), "expectation_satisfied":commandContextErr == nil && (err == nil) == ok, "output_bytes":len(out), "output_sha256":fmt.Sprintf("%x", sha256.Sum256(out)), "observed_output_marker":marker, "target":target})
+              if receive { betaDiagnosticJournal(f, dir, "after", sequence, pid, operation, inputDigest, refs) }
               if commandContextErr != nil || (err == nil) != ok {
                   f.t.Fatalf("%s %q: %v, deadline=%v; diagnostic omits raw output (%d bytes)", program, args, err, commandContextErr, len(out))
               }
@@ -643,25 +644,69 @@ jobs:
               return result
           }
 
-          func betaDiagnosticJournal(f *betaContributionCLI, repo, when string) {
+          func betaDiagnosticJournal(f *betaContributionCLI, repo, when string, sequence, pid int, operation, digest string, refs []string) {
               started := time.Now()
               project := c.Digest([]byte(f.t.Name()))
               result := betaDiagnosticSnapshot(repo, project)
               result["kind"] = "journal-observation"
               result["when"] = when
+              result["test"] = f.t.Name()
+              result["command_sequence"] = sequence
+              result["pid"] = pid
+              result["operation"] = operation
+              result["input_digest"] = digest
+              result["selected_refs"] = refs
               result["utc_start"] = started.UTC().Format(time.RFC3339Nano)
               result["utc_end"] = time.Now().UTC().Format(time.RFC3339Nano)
               result["elapsed_ns"] = time.Since(started).Nanoseconds()
               betaDiagnosticWrite(f.t, result)
           }
+          // Only the explicit reviewed mode and exact standard case can select 120.
+          func betaDiagnosticSelect(mode, testName, binary, program, executableSHA string, used bool, args []string) (receive, target bool, operation, digest string, refs []string, captureSeconds int) {
+              captureSeconds = 45
+              receive = program == binary && len(args) >= 2 && args[0] == "contribution" && args[1] == "receive"
+              if !receive { return }
+              operations, digests := 0, 0
+              invalid := false
+              for i := 2; i < len(args); i++ {
+                  if (args[i] == "--operation" || args[i] == "--digest" || args[i] == "--ref" || args[i] == "--file") && i+1 >= len(args) { invalid = true; break }
+                  switch args[i] {
+                  case "--operation": operations++; operation = args[i+1]; i++
+                  case "--digest": digests++; digest = args[i+1]; i++
+                  case "--ref": refs = append(refs, args[i+1]); i++
+                  case "--file": i++
+                  }
+              }
+              if operations != 1 { operation = "ambiguous-or-missing" }
+              if digests != 1 { digest = "" }
+              if invalid || used || operations != 1 || digests != 1 || testName != "TestBetaContributionPublicVariants/standard/contributor-maintainer-keyless-observer" || executableSHA != "42a8c16f7aed882a09469fae593181a721ed6564c8d9dfd4930d26b6a6756e3a" { return }
+              switch mode {
+              case "intel-standard-45": target = operation == "proposal-intake"
+              case "intel-standard-discussion-reply-120":
+                  target = operation == "discussion-reply-intake"
+                  if target { captureSeconds = 120 }
+              }
+              return
+          }
+
+          // This is an observed CLI output shape, never a phase or causal classification.
+          func betaDiagnosticOutputMarker(raw []byte) string {
+              if len(raw) == 0 { return "empty" }
+              if len(raw) > 256 { return "oversize" }
+              if bytes.HasPrefix(raw, []byte("hn: ")) && bytes.HasSuffix(raw, []byte("context deadline exceeded\n")) && bytes.Count(raw, []byte("\n")) == 1 && !bytes.Contains(raw, []byte("\r")) { return "hn_context_deadline_suffix" }
+              return "other"
+          }
+
           '''
           assert source.count('\t"fmt"\n') == 1
           source = source[:start] + replacement + source[end:]
+          assert source.count('\tenv    []string\n') == 1
+          source = source.replace('\tenv    []string\n', '\tenv    []string\n\tdiagnosticSequence int\n\tdiagnosticCaptureUsed bool\n', 1)
           source = source.replace('\t"fmt"\n', '\t"fmt"\n\t"io"\n', 1) + helpers
           overlay = out / 'beta_contribution_acceptance_test.go'
           overlay.write_text(source)
           (out / 'overlay.json').write_text(json.dumps({'Replace':{str(base):str(overlay)}}, indent=2)+'\n')
-          binding = {'diagnostic':True, 'qualification_eligible':False, 'base_sha256':hashlib.sha256(base.read_bytes()).hexdigest(), 'overlay_sha256':hashlib.sha256(overlay.read_bytes()).hexdigest(), 'overlay_map_sha256':hashlib.sha256((out/'overlay.json').read_bytes()).hexdigest(), 'deadline_seconds':45, 'target':'standard/contributor-maintainer-keyless-observer; receive proposal-intake', 'output':'typed journal scalar/cost/manifest allowlist; raw application outputs omitted'}
+          binding = {'diagnostic':True, 'qualification_eligible':False, 'base_sha256':hashlib.sha256(base.read_bytes()).hexdigest(), 'overlay_sha256':hashlib.sha256(overlay.read_bytes()).hexdigest(), 'overlay_map_sha256':hashlib.sha256((out/'overlay.json').read_bytes()).hexdigest(), 'ordinary_gate_seconds':45, 'capture_target':'standard/contributor-maintainer-keyless-observer; discussion-reply-intake only in explicit 120 mode', 'journal_observers':'all selected app receives', 'output':'typed journal scalar/cost/manifest allowlist; raw application outputs omitted'}
           (out / 'overlay-binding.json').write_text(json.dumps(binding,indent=2)+'\n')
           PY_DIAGNOSTIC
           python3 "$DIAGNOSTIC_EVIDENCE/generate.py"
@@ -675,7 +720,7 @@ jobs:
           go test -race -c -overlay "$DIAGNOSTIC_EVIDENCE/overlay.json" -o "$RUNNER_TEMP/intel-diagnostic.test" . > "$RUNNER_TEMP/private-diagnostic-compile.log" 2>&1
           shasum -a 256 "$RUNNER_TEMP/intel-diagnostic.test" > "$DIAGNOSTIC_EVIDENCE/harness.before.sha256"
           "$RUNNER_TEMP/intel-diagnostic.test" -test.count=1 -test.timeout=5m -test.run '^TestBetaPlatformCandidateBundle$' -hn-package-dir "$RUNNER_TEMP/diagnostic-unpacked" -hn-package-bundle "$RUNNER_TEMP/candidate" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 > "$RUNNER_TEMP/private-diagnostic-preflight.log" 2>&1
-      - name: Observe one original standard happy journey at the unchanged deadline
+      - name: Observe one original standard happy journey with explicit capture selection
         if: steps.diagnostic-preflight.outcome == 'success'
         shell: bash
         env:
@@ -693,10 +738,23 @@ jobs:
           import json,os
           from pathlib import Path
           d=Path(os.environ['DIAGNOSTIC_EVIDENCE'])
-          lines=(d/'observations.jsonl').read_text().splitlines() if (d/'observations.jsonl').exists() else []
-          records=[json.loads(line) for line in lines]
-          target=any(r.get('kind')=='process-start' and r.get('target') and r.get('start_success') is True and type(r.get('pid')) is int and r.get('pid') > 0 for r in records)
-          result={'diagnostic':True,'qualification_eligible':False,'external_deadline_seconds':45,'test_exit':int(os.environ['DIAGNOSTIC_STATUS']),'target_reached':target,'target_status':'reached' if target else 'target not reached','raw_output_uploaded':False,'observations':len(records),'observer_effects':'Journal reads before/after the target have separate elapsed records and may warm caches. Start metadata writes occur during the command interval and their overhead is included in its elapsed time. No extra CLI observer or Git tracing. Last durable journal state does not identify the exact internal function.'}
+          records=[json.loads(line) for line in (d/'observations.jsonl').read_text().splitlines()] if (d/'observations.jsonl').exists() else []
+          starts=[r for r in records if r.get('kind')=='process-start']
+          ends={r.get('command_sequence'):r for r in records if r.get('kind')=='process-end'}
+          targets=[r for r in starts if r.get('target') and r.get('start_success') is True and type(r.get('pid')) is int and r['pid']>0]
+          if len(targets)>1: raise SystemExit('diagnostic target selection invariant failed')
+          target=targets[0] if targets else None
+          terminal=ends.get(target['command_sequence']) if target else None
+          if terminal and terminal.get('pid')!=target['pid']: raise SystemExit('diagnostic target PID invariant failed')
+          result={'diagnostic':True,'qualification_eligible':False,'diagnostic_mode':os.environ['HN_BETA_DIAGNOSTIC_MODE'],'ordinary_gate_seconds':45,'overall_happy_case_test_exit':int(os.environ['DIAGNOSTIC_STATUS']),'target_reached':bool(target),'target_status':'launched' if target else 'target not reached','target_result':None,'helper_failures':[],'raw_output_uploaded':False,'observations':len(records),'observer_effects':'Journal reads before/after receives have separate elapsed records and may warm caches. Start metadata writes overlap command elapsed. Output markers and last durable journal state are not a proven phase or cause.'}
+          if target:
+           result['target_result']={'command_sequence':target['command_sequence'],'pid':target['pid'],'capture_seconds':target['capture_seconds'],'terminal_observed':terminal is not None,'ordinary_gate_seconds':45}
+           if terminal:
+            result['target_result'].update({key:terminal.get(key) for key in ['elapsed_ns','crossed_ordinary_gate','exit','context','observed_output_marker','expectation_satisfied','output_bytes']})
+          for start in starts:
+           end=ends.get(start.get('command_sequence'))
+           if end and end.get('expectation_satisfied') is False:
+            result['helper_failures'].append({'command_sequence':start['command_sequence'],'pid':start.get('pid'),'argv':start.get('argv'),'target':start.get('target'),'capture_seconds':start.get('capture_seconds'),**{key:end.get(key) for key in ['elapsed_ns','exit','context','observed_output_marker','crossed_ordinary_gate']}})
           (d/'outcome.json').write_text(json.dumps(result,indent=2)+'\n')
           if not target: raise SystemExit(1)
           PY_OUTCOME
@@ -723,7 +781,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: diagnostic-NOT-qualification-intel-standard-45-${{ github.run_id }}-${{ github.run_attempt }}
+          name: diagnostic-NOT-qualification-${{ inputs.diagnostic_mode }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/diagnostic-evidence/*.json
             ${{ runner.temp }}/diagnostic-evidence/*.jsonl
