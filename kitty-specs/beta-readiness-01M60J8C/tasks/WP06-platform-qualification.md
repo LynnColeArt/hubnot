@@ -30,6 +30,7 @@ owned_files:
 - migration_commands_test.go
 - portable_collaboration_acceptance_test.go
 - beta_platform_package_test.go
+- beta_compatibility_test.go
 - .github/workflows/portability.yml
 - docs/filesystem-portability.md
 role: implementer
@@ -72,7 +73,30 @@ Do not relabel Go 1.26.6 native Mac rebuilds as execution of Go 1.26.4 published
 Owned surfaces: `docs/platform-qualification.md`,
 `migration_commands_test.go`, `portable_collaboration_acceptance_test.go`,
 `beta_platform_package_test.go`, `.github/workflows/portability.yml`, and
-`docs/filesystem-portability.md`.
+`docs/filesystem-portability.md`. The 2026-10-29 qualification repair also owns
+`beta_compatibility_test.go` for the bounded test-fixture correction below.
+
+### Qualification repair decision — 2026-10-29
+
+The first candidate run, `40922372405` at `0b556b36`, failed on both Linux
+architectures under Git 2.56.0: complete-repository refusal snapshots observed
+temporary pack files disappearing and directory cleanup racing Git activity.
+Detached automatic maintenance is a hypothesis, not a proven application defect.
+The existing replication fixtures already explicitly disable automatic
+maintenance to establish quiescent snapshot preconditions.
+
+This WP may make the disposable compatibility reader/destination fixtures
+quiescent before clone/fetch/continuation/import using per-command or scoped
+repository maintenance settings. Do not change global Git configuration,
+production defaults, the closed application environment or frozen released-writer
+data. Preserve the complete before/after snapshot comparison and every traversal
+or read failure; do not ignore pack files, weaken the assertion, skip cases or
+retry away failures. Add bounded path-only diagnostics for differing snapshots
+without printing private file contents. Preserve first-run evidence and verify
+the corrected fixture on the observed Git 2.56 environments using a new fixed
+candidate revision. Remaining failures require investigation rather than a
+presumed maintenance explanation. Enable the existing portable CLI transcript
+hook in the owned workflow for the new run.
 
 Concrete package-evidence obligation: the existing package-dir/version flags
 in `portableJourneyBinary` already consume extracted real packages and refuse
