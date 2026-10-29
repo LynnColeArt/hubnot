@@ -1,0 +1,366 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"testing"
+)
+
+// borrowFixture publishes a proposal whose base already holds many code
+// objects, then clones a receiver that has that code but none of the Hubnot
+// refs. It returns the receiver path and the selected actor and proposal.
+type borrowClone int
+
+const (
+	fullClone borrowClone = iota
+	shallowClone
+	partialClone
+	sharedPartialCache
+	bracketPromisorPack
+)
+
+func borrowFixture(t *testing.T, clone borrowClone) (receiver string, actor *Identity, proposal *StoredEvent, head string) {
+	t.Helper()
+	original, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(original) })
+	root := t.TempDir()
+	publisher := filepath.Join(root, "publisher")
+	remote := filepath.Join(root, "project.git")
+	receiver = filepath.Join(root, "receiver")
+	if clone == bracketPromisorPack {
+		receiver = filepath.Join(root, "receiver[1]")
+	}
+	if err := os.Mkdir(publisher, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	mustGit(t, "-C", publisher, "init", "-q", "-b", "main")
+	mustGit(t, "-C", publisher, "config", "user.name", "Publisher")
+	mustGit(t, "-C", publisher, "config", "user.email", "publisher@hn.invalid")
+	for i := 0; i < 300; i++ {
+		name := filepath.Join(publisher, "vendor", fmt.Sprintf("crate%03d.rs", i))
+		if err := os.MkdirAll(filepath.Dir(name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(name, []byte(fmt.Sprintf("pub fn f%d() {}\n", i)), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mustGit(t, "-C", publisher, "add", "-A")
+	mustGit(t, "-C", publisher, "commit", "-q", "-m", "base with vendored code")
+	if err := os.Chdir(publisher); err != nil {
+		t.Fatal(err)
+	}
+	base := mustGitText(t, "rev-parse", "HEAD")
+	mustGit(t, "checkout", "-q", "-b", "candidate")
+	if err := os.WriteFile(filepath.Join(publisher, "change.rs"), []byte("pub fn change() {}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	mustGit(t, "add", "change.rs")
+	mustGit(t, "commit", "-q", "-m", "candidate")
+	head = mustGitText(t, "rev-parse", "HEAD")
+	mustGit(t, "checkout", "-q", "main")
+	actor = testIdentity(t, "Borrow Actor")
+	opened := newEvent(actor, "proposal.open", 1, "")
+	opened.Title = "borrow fixture"
+	opened.Base = base
+	opened.Head = head
+	proposal, err = appendEvent(opened, actor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := createProposalRef(proposal.ID, head); err != nil {
+		t.Fatal(err)
+	}
+	mustGit(t, "clone", "-q", "--bare", publisher, remote)
+	mustGit(t, "-C", remote, "config", "uploadpack.allowFilter", "true")
+	mustGit(t, "remote", "add", "origin", remote)
+	for _, ref := range []string{actorRef(actor.Actor), proposalRef(proposal.ID)} {
+		mustGit(t, "push", "-q", "origin", ref+":"+ref)
+	}
+	cloneArgs := []string{"clone", "--no-local", "-q", "--branch", "main", "--single-branch"}
+	switch clone {
+	case shallowClone:
+		cloneArgs = append(cloneArgs, "--depth", "1")
+	case partialClone, bracketPromisorPack:
+		cloneArgs = append(cloneArgs, "--filter=blob:none", "--no-checkout")
+	}
+	if clone == sharedPartialCache {
+		// The receiver has no promisor settings or packs of its own; its
+		// alternate store is a blob-filtered cache that lacks blobs.
+		cache := filepath.Join(root, "cache")
+		mustGit(t, append(cloneArgs, "--filter=blob:none", "--no-checkout", "file://"+remote, cache)...)
+		mustGit(t, "clone", "-q", "--shared", "--no-checkout", cache, receiver)
+	} else {
+		mustGit(t, append(cloneArgs, "file://"+remote, receiver)...)
+	}
+	if clone == bracketPromisorPack {
+		// Retained promisor packs with the promisor settings removed.
+		mustGit(t, "-C", receiver, "config", "--unset", "remote.origin.promisor")
+		mustGit(t, "-C", receiver, "config", "--unset", "remote.origin.partialclonefilter")
+		// Present only in some Git versions; absence is fine.
+		_, _ = gitOutput("-C", receiver, "config", "--unset-all", "extensions.partialclone")
+		packs, err := os.ReadDir(filepath.Join(receiver, ".git", "objects", "pack"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		retained := false
+		for _, pack := range packs {
+			retained = retained || strings.HasSuffix(pack.Name(), ".promisor")
+		}
+		if !retained {
+			t.Fatal("test precondition failed: no retained promisor pack")
+		}
+		if out, _ := gitOutput("-C", receiver, "config", "--get-regexp", `^(extensions\.partialclone|remote\..*\.(promisor|partialclonefilter))$`); len(out) != 0 {
+			t.Fatalf("test precondition failed: promisor settings remain: %s", out)
+		}
+	}
+	if err := os.Chdir(receiver); err != nil {
+		t.Fatal(err)
+	}
+	if clone != partialClone {
+		mustGit(t, "remote", "set-url", "origin", remote)
+	}
+	// No lazy fetch: in a partial clone the probe itself would fetch it.
+	if _, err := gitInputWithDirectory("", nil, []string{"GIT_NO_LAZY_FETCH=1"}, "cat-file", "-e", head+"^{commit}"); err == nil {
+		t.Fatal("test precondition failed: receiver already has the candidate commit")
+	}
+	if err := cmdReplication([]string{"select", "origin", "--actor", actor.Actor, "--proposal", proposal.ID}); err != nil {
+		t.Fatal(err)
+	}
+	return receiver, actor, proposal, head
+}
+
+// quarantineState reports the quarantine's alternates file and how many
+// objects it stores itself, while the transaction is between fetch and copy.
+func quarantineState(t *testing.T) (alternates string, localObjects int) {
+	t.Helper()
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	// Literal listing: test paths can contain glob metacharacters.
+	root := filepath.Join(gitDir, "hn", "replication", "quarantine")
+	entries, err := os.ReadDir(root)
+	var found []string
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), "txn-") {
+			found = append(found, filepath.Join(root, entry.Name()))
+		}
+	}
+	if err != nil || len(found) != 1 {
+		t.Fatalf("quarantine directories = %v, err=%v", found, err)
+	}
+	if data, err := os.ReadFile(filepath.Join(found[0], "objects", "info", "alternates")); err == nil {
+		alternates = strings.TrimSpace(string(data))
+	} else if !os.IsNotExist(err) {
+		t.Fatal(err)
+	}
+	for _, line := range strings.Split(mustGitTextAtDir(t, found[0], "count-objects", "-v"), "\n") {
+		key, value, ok := strings.Cut(line, ": ")
+		if ok && (key == "count" || key == "in-pack") {
+			n, err := strconv.Atoi(value)
+			if err != nil {
+				t.Fatal(err)
+			}
+			localObjects += n
+		}
+	}
+	return alternates, localObjects
+}
+
+func TestReplicationQuarantineBorrowsMainObjectsAndFetchesOnlyNewOnes(t *testing.T) {
+	receiver, actor, proposal, head := borrowFixture(t, fullClone)
+	var alternates string
+	var local int
+	replicationAfterFetchHook = func() error {
+		alternates, local = quarantineState(t)
+		return nil
+	}
+	t.Cleanup(func() { replicationAfterFetchHook = nil })
+	if output, err := captureTestOutput(t, func() error { return cmdSync(nil) }); err != nil {
+		t.Fatalf("sync failed: %v\n%s", err, output)
+	}
+	wantObjects, err := filepath.EvalSymlinks(filepath.Join(receiver, ".git", "objects"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gotObjects, err := filepath.EvalSymlinks(alternates)
+	if err != nil || gotObjects != wantObjects {
+		t.Fatalf("quarantine alternates = %q, want the receiver object database %q (err=%v)", alternates, wantObjects, err)
+	}
+	// The receiver already has the 300 vendored blobs; only the event commit,
+	// its tree and blobs, and the candidate commit, tree and new blob are new.
+	if local == 0 || local > 20 {
+		t.Fatalf("quarantine stored %d objects itself; want only the new ones", local)
+	}
+	assertRefValue(t, acceptedActorRef("origin", actor.Actor), proposal.Commit)
+	assertRefValue(t, acceptedProposalRef("origin", proposal.ID), head)
+	if _, err := gitOutput("cat-file", "-e", head+"^{commit}"); err != nil {
+		t.Fatal("candidate commit was not copied into the main object database")
+	}
+	if strings.TrimSpace(mustGitText(t, "fsck", "--connectivity-only", "--no-dangling")) != "" {
+		t.Fatal("main object database is not connected after import")
+	}
+}
+
+func TestReplicationBorrowedObjectsStillCountAgainstBudgets(t *testing.T) {
+	_, _, proposal, _ := borrowFixture(t, fullClone)
+	// The candidate reaches more than 300 objects, all but a few borrowed from
+	// the receiver. Borrowing must not discount them.
+	if err := cmdReplication([]string{"select", "origin", "--proposal", proposal.ID, "--max-objects", "100"}); err != nil {
+		t.Fatal(err)
+	}
+	output, err := captureTestOutput(t, func() error { return cmdSync(nil) })
+	if err == nil {
+		t.Fatalf("sync accepted a selection over its object budget:\n%s", output)
+	}
+	if !strings.Contains(output+err.Error(), "max-objects") {
+		t.Fatalf("sync failure did not name the object budget:\n%s\n%v", output, err)
+	}
+	assertRefAbsent(t, acceptedProposalRef("origin", proposal.ID))
+}
+
+func assertIsolatedQuarantineImports(t *testing.T, clone borrowClone) {
+	t.Helper()
+	_, actor, proposal, head := borrowFixture(t, clone)
+	sawQuarantine := false
+	replicationAfterFetchHook = func() error {
+		sawQuarantine = true
+		if alternates, _ := quarantineState(t); alternates != "" {
+			t.Fatalf("quarantine borrowed %q from an incomplete receiver", alternates)
+		}
+		return nil
+	}
+	t.Cleanup(func() { replicationAfterFetchHook = nil })
+	output, err := captureTestOutput(t, func() error { return cmdSync(nil) })
+	if !sawQuarantine {
+		t.Fatalf("sync never reached the quarantine: %v\n%s", err, output)
+	}
+	if err != nil {
+		t.Fatalf("sync failed with an isolated quarantine: %v\n%s", err, output)
+	}
+	assertRefValue(t, acceptedActorRef("origin", actor.Actor), proposal.Commit)
+	assertRefValue(t, acceptedProposalRef("origin", proposal.ID), head)
+}
+
+func TestReplicationShallowReceiverKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, shallowClone)
+}
+
+func TestReplicationPartialCloneReceiverKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, partialClone)
+}
+
+func TestReplicationSharedReceiverOfPartialCacheKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, sharedPartialCache)
+}
+
+func TestReplicationRetainedPromisorPackInBracketPathKeepsIsolatedQuarantine(t *testing.T) {
+	assertIsolatedQuarantineImports(t, bracketPromisorPack)
+}
+
+func TestGitObjectsPresentDoesNotLazyFetch(t *testing.T) {
+	_, _, _, head := borrowFixture(t, partialClone)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	got, err := gitObjectsPresentAt(gitDir, []string{head})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got[head] {
+		t.Fatal("absent candidate reported present")
+	}
+	if _, err := gitInputWithDirectory("", nil, []string{"GIT_NO_LAZY_FETCH=1"}, "cat-file", "-e", head+"^{commit}"); err == nil {
+		t.Fatal("presence probe lazily fetched the candidate into the main object database")
+	}
+}
+
+func TestGitObjectsPresentMissingPromisedBlobDoesNotLazyFetch(t *testing.T) {
+	_, _, _, head := borrowFixture(t, partialClone)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	blob := mustGitText(t, "rev-parse", "HEAD:vendor/crate000.rs")
+	present := mustGitText(t, "rev-parse", "HEAD")
+	if _, err := gitInputWithDirectory(gitDir, nil, []string{"GIT_NO_LAZY_FETCH=1"}, "cat-file", "-e", blob); err == nil {
+		t.Fatal("test precondition failed: promised blob is already stored")
+	}
+	// Even an offline promisor remote must not turn an absence probe into a
+	// fetch attempt. Trace subprocesses as well as checking object storage.
+	mustGit(t, "remote", "set-url", "origin", filepath.Join(t.TempDir(), "offline.git"))
+	before := mustGitText(t, "count-objects", "-v")
+	trace := filepath.Join(t.TempDir(), "git.trace")
+	t.Setenv("GIT_TRACE", trace)
+	got, err := gitObjectsPresentAt(gitDir, []string{blob, head, present})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got[blob] || got[head] || !got[present] {
+		t.Fatalf("presence = %v; absent promised blob must remain absent", got)
+	}
+	if _, err := gitObjectsPresentAt(gitDir, []string{blob, strings.ToUpper(present)}); err == nil {
+		t.Fatal("non-canonical object ID was accepted beside a missing promised blob")
+	}
+	if after := mustGitText(t, "count-objects", "-v"); after != before {
+		t.Fatalf("presence probe changed object storage: before=%s after=%s", before, after)
+	}
+	commands, err := os.ReadFile(trace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(commands), " fetch ") {
+		t.Fatalf("presence probe attempted a lazy fetch:\n%s", commands)
+	}
+}
+
+func TestGitObjectsPresentCorruptObjectFailsClosed(t *testing.T) {
+	borrowFixture(t, partialClone)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	promised := mustGitText(t, "rev-parse", "HEAD:vendor/crate000.rs")
+	object := mustGitTextFromInput(t, []byte("corrupt presence fixture"), "hash-object", "-w", "--stdin")
+	objectPath := filepath.Join(gitDir, "objects", object[:2], object[2:])
+	if err := os.Chmod(objectPath, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(objectPath, []byte("invalid object"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{object, promised} {
+		// The corrupt loose object exercises a successful batch with an error
+		// diagnostic. The promised missing blob forces a physical inventory,
+		// which must also refuse corruption instead of proving false absence.
+		if got, err := gitObjectsPresentAt(gitDir, []string{id}); err == nil {
+			t.Fatalf("corrupt storage was treated as ordinary presence or absence for %s: %v", id, got)
+		}
+	}
+}
+
+func TestGitObjectsPresentIgnoresReplacementRefs(t *testing.T) {
+	inReplicationTestRepository(t)
+	present := mustGitText(t, "rev-parse", "HEAD")
+	absent := strings.Repeat("ab", 20)
+	mustGit(t, "update-ref", "refs/replace/"+absent, present)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	got, err := gitObjectsPresentAt(gitDir, []string{absent, present})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got[absent] || !got[present] {
+		t.Fatalf("presence = %v; a replacement must not make an absent object present", got)
+	}
+	if _, err := gitObjectsPresentAt(gitDir, []string{strings.ToUpper(present)}); err == nil {
+		t.Fatal("non-canonical object ID was accepted")
+	}
+	if got, err := gitObjectsPresentAt(gitDir, nil); err != nil || len(got) != 0 {
+		t.Fatalf("empty input = %v, %v", got, err)
+	}
+}
+
+func mustGitTextAtDir(t *testing.T, gitDir string, args ...string) string {
+	t.Helper()
+	value, err := gitTextAt(gitDir, args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return value
+}
