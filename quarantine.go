@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -216,6 +217,9 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 		}
 	}()
 	if _, err := gitOutput("init", "--bare", "--quiet", quarantineDir); err != nil {
+		return result, replicationPhaseError(selection.Remote, "quarantine setup")
+	}
+	if err := borrowMainObjects(quarantineDir, mainGitDir); err != nil {
 		return result, replicationPhaseError(selection.Remote, "quarantine setup")
 	}
 	if replicationBeforeFetchHook != nil {
@@ -491,8 +495,12 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 	if err := replicationCopyObjects(quarantineDir, mainGitDir, sortedUniqueStrings(roots...)); err != nil {
 		return result, replicationPhaseError(selection.Remote, "object copy")
 	}
-	for _, objectID := range requiredObjects {
-		if _, err := gitOutputAt(mainGitDir, "cat-file", "-e", objectID+"^{object}"); err != nil {
+	copied, err := gitObjectsPresentAt(mainGitDir, sortedUniqueStrings(requiredObjects...))
+	if err != nil {
+		return result, replicationResidueError(selection.Remote, "object verification failed")
+	}
+	for _, objectID := range sortedUniqueStrings(requiredObjects...) {
+		if !copied[objectID] {
 			return result, replicationResidueError(selection.Remote, fmt.Sprintf("object verification failed at %s", objectID))
 		}
 	}
@@ -538,13 +546,14 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 }
 
 func replicationObjectsAbsentFromMain(gitDir string, objectIDs []string) ([]string, error) {
-	absent := make([]string, 0, len(objectIDs))
-	for _, id := range sortedUniqueStrings(objectIDs...) {
-		probe, err := probeExactGitObjectAt(gitDir, id)
-		if err != nil {
-			return nil, err
-		}
-		if !probe.Exists {
+	ids := sortedUniqueStrings(objectIDs...)
+	present, err := gitObjectsPresentAt(gitDir, ids)
+	if err != nil {
+		return nil, err
+	}
+	absent := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if !present[id] {
 			absent = append(absent, id)
 		}
 	}
@@ -1770,4 +1779,88 @@ func recordReplicationTransaction(mainGitDir string, result replicationTransacti
 		return fmt.Errorf("record replication transaction: %w", err)
 	}
 	return nil
+}
+
+// borrowMainObjects lets the quarantine read, but never write, the main object
+// database through objects/info/alternates, as Git's own receive quarantine
+// does. Fetch can then negotiate with objects the clone already holds and
+// transfer only new ones. Nothing about trust changes: budgets still count
+// every object reachable from a fetched root except those reachable from the
+// selection's previous accepted root, validation still reads every reachable
+// object, and new objects still reach the main database only through
+// copyGitObjects after validation. Shallow and partial (promisor) main
+// repositories keep the old isolated quarantine: borrowed commits there can
+// lack parents or promised blobs that fetch negotiation would then treat as
+// present. When that cannot be determined, the quarantine also stays
+// isolated, which is always correct and only slower.
+func borrowMainObjects(quarantineDir, mainGitDir string) error {
+	if !mainObjectsCompleteForBorrowing(mainGitDir) {
+		return nil
+	}
+	objects, err := gitTextAt(mainGitDir, "rev-parse", "--path-format=absolute", "--git-path", "objects")
+	if err != nil {
+		return err
+	}
+	if !filepath.IsAbs(objects) || strings.ContainsAny(objects, "\n\r") {
+		return fmt.Errorf("unexpected main object directory %q", objects)
+	}
+	return os.WriteFile(filepath.Join(quarantineDir, "objects", "info", "alternates"), []byte(objects+"\n"), 0o600)
+}
+
+// mainObjectsCompleteForBorrowing reports whether the main repository is
+// not shallow, not configured as a partial clone, holds no promisor packs and
+// uses no alternate object stores of its own. Any inspection failure answers
+// false.
+func mainObjectsCompleteForBorrowing(mainGitDir string) bool {
+	shallow, err := gitTextAt(mainGitDir, "rev-parse", "--is-shallow-repository")
+	if err != nil || shallow != "false" {
+		return false
+	}
+	cmd := exec.Command("git", "--git-dir="+mainGitDir, "--no-replace-objects", "config", "--null", "--get-regexp", `^(extensions\.partialclone|remote\..*\.(promisor|partialclonefilter))$`)
+	output, err := cmd.Output()
+	if err != nil {
+		exit, ok := err.(*exec.ExitError)
+		if !ok || exit.ExitCode() != 1 {
+			return false
+		}
+	}
+	for _, entry := range bytes.Split(output, []byte{0}) {
+		if len(entry) == 0 {
+			continue
+		}
+		key, value, _ := strings.Cut(string(entry), "\n")
+		value = strings.ToLower(strings.TrimSpace(value))
+		if strings.HasSuffix(strings.ToLower(key), ".promisor") && (value == "false" || value == "no" || value == "off" || value == "0") {
+			continue
+		}
+		return false
+	}
+	if os.Getenv("GIT_ALTERNATE_OBJECT_DIRECTORIES") != "" {
+		return false
+	}
+	objects, err := gitTextAt(mainGitDir, "rev-parse", "--path-format=absolute", "--git-path", "objects")
+	if err != nil || !filepath.IsAbs(objects) {
+		return false
+	}
+	// Borrowing exposes the main repository's own alternates transitively,
+	// and those stores can be incomplete (for example a shared clone of a
+	// partial cache). Their completeness is not checked, so any alternates
+	// keep the quarantine isolated.
+	if alternates, err := os.ReadFile(filepath.Join(objects, "info", "alternates")); err == nil {
+		if strings.TrimSpace(string(alternates)) != "" {
+			return false
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	entries, err := os.ReadDir(filepath.Join(objects, "pack"))
+	if err != nil {
+		return errors.Is(err, os.ErrNotExist)
+	}
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".promisor") {
+			return false
+		}
+	}
+	return true
 }
