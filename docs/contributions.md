@@ -271,13 +271,28 @@ hn contribution pending --json
 Intake inspection reports measured wire/decoded bytes, objects/events, status,
 reservation and receiver-local ledger. Preserve the journal and retained files
 after interruption; do not delete them to retry or infer that missing progress
-means no effects. Exact public retry reports a retained `reserved`, `failed`
-or `uncertain` state without promoting it. There is currently no public
-`hn contribution recover` command. Deterministic durable-artifact reconciliation
-is covered at the source adapter; public operator recovery for such an
-interrupted attempt remains a limitation requiring inspection/support. Native
-operation retries can finish their retained exact local transaction; inspect
-their outcome rather than generating a different operation blindly.
+means no effects. Repeat the **same** `receive` or `restore` command with its
+original operation, digest and ref selection. A recorded `reserved` or
+`uncertain` intake reconciles only immutable receiver-retained bytes; it never
+reopens the foreign file, which may already be gone. Valid retained bytes resume
+the existing retention/admission path under current authority. Missing or corrupt
+retained bytes cause a nonzero refusal and cannot establish completion. A recorded
+failed attempt stays charged and is not reinterpreted as new intake.
+
+Recovery preserves the original input reservation and its original window.
+An authorized writable `receive` can separately charge a new signed receipt
+control in the current window; the original input is not charged twice.
+Insufficient capacity or current permission still refuses admission. Exact
+completed retry adds no further records, refs or charge. There is no additional
+`recover` verb: the original `receive`/`restore` command is the public retry path.
+
+`restore` in an unselected repository keeps raw intake staged without native
+publication or authority adoption. An already selected context, including a
+read-only observer, can retain raw authenticated native facts and reconstruct
+already-signed valid admissions. It creates no new admission signatures, keys,
+roles or authority. Native operation retries can also finish their retained exact
+local transaction; inspect their outcome rather than blindly choosing a new
+operation name.
 
 The following bounds apply before supported public-file promotion:
 
@@ -288,6 +303,9 @@ The following bounds apply before supported public-file promotion:
 | Shared project | One receiver-local window and aggregate retained budget across keys, automatic admissions, pending/admitted/hidden content and linked worktrees. |
 | Failure | Failed/canceled/uncertain reservations stay charged; exhaustion refuses before new input I/O and adds no unbounded refusal journal. |
 | Cancellation | Public adapter checks context during bounded reads/subprocess work. Trusted local legacy native validation checks at boundaries; it does not interrupt every synchronous internal Git call. |
+
+The graph also has a static 16,384-record ceiling. Available window or retention
+capacity does not guarantee that an arbitrary history fits the supported profile.
 
 Reservations conservatively charge the configured wire maximum plus decoded
 maximum plus 4 KiB accounting metadata, and object/event maxima. With the listed
