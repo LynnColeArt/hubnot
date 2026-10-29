@@ -281,8 +281,9 @@ observations, so the last durable/internal failing phase and cause remain
 unknown. Successful initial issue, issue-reply and discussion receives measured
 13.128, 25.678 and 37.516 seconds. Those instrumented durations are observations,
 not proof of a scaling cause. The finite production request/stage contexts do
-not constitute a cumulative whole-CLI 30-second timer. No longer capture,
-tracing, repeat-until-green run or new runtime repair has been executed.
+not constitute a cumulative whole-CLI 30-second timer. At that checkpoint, no
+longer capture, tracing, repeat-until-green run or new runtime repair had been
+executed.
 
 The separately reviewed follow-up
 [diagnostic run 40950781922](https://github.com/LynnColeArt/hubnot/actions/runs/40950781922)
