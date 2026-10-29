@@ -217,11 +217,17 @@ jobs:
           date -u > "$RUNNER_TEMP/native-evidence/wp12.started"
           for variant in standard native-only; do
             suffix=''
-            if [ "$variant" = native-only ]; then suffix='_native-only'; fi
+            tests='^TestContributionCLI'
+            if [ "$variant" = native-only ]; then
+              suffix='_native-only'
+              # HiddenWorkflowKeepsRawPublicationWitness explicitly selects the
+              # standard provider binary. Keep its proof in the standard run.
+              tests='^TestContributionCLI(AutomaticAndScopedModeration|BaselineGrowthRequiresLocalReservation|LocalCapacityBeforeNativeWritesAndRawCannotSelectTrust|GovernedSpecializedResourcesAndHiddenDependencies|DisabledPreservesNativeBehavior|WorktreesShareAccountingAndLockKeepLocalAuthority|ConflictsRevocationAndManufacturedHistoricalDecisions|RawRecoveryChargesLocalRetentionAndGuardsNewRefs|DurableArtifactRetryRecovery)$'
+            fi
             binary="$RUNNER_TEMP/unpacked/hubnot_${CANDIDATE_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}${suffix}/hn"
             export HN_CONTRIBUTION_TEST_BINARY="$binary"
             export HN_CONTRIBUTION_TEST_BINARY_SHA256="sha256:$(shasum -a 256 "$binary" | cut -d ' ' -f1)"
-            go test -race -count=1 -timeout=15m -v -run '^TestContributionCLI' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-${variant}.log"
+            go test -race -count=1 -timeout=15m -v -run "$tests" . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-${variant}.log"
           done
       - name: Verify immutable source and preserve evidence
         if: always()

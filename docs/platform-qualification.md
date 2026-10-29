@@ -87,7 +87,9 @@ The selected package journeys cover:
   reconstruction in both variants. WP12 public intake/retry/linked-worktree
   journeys additionally receive the exact selected executable through the
   `HN_CONTRIBUTION_TEST_BINARY` plus `_SHA256` hook; outer Go test tags do not
-  select a child binary.
+  select a child binary. All nine provider-independent WP12 journeys run in
+  both variants. The raw hidden-workflow publication witness explicitly selects
+  the standard provider binary and runs only in the standard WP12 batch.
 - Execute actual packaged `memory record` and regex `memory grep`, check match
   bytes/warning and invalid-pattern refusal. The source `TestMemoryGrepCLI`
   builds its own executable and is separately classified.
