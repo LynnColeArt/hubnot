@@ -209,6 +209,7 @@ type betaContributionArtifact struct {
 	Digest, Submission, Revision string
 	Refs                         []string
 	File                         string
+	SourceHeads                  map[string]string
 }
 
 func (f *betaContributionCLI) prepare(repo, project, revision string) betaContributionArtifact {
@@ -219,6 +220,12 @@ func (f *betaContributionCLI) prepare(repo, project, revision string) betaContri
 	if a.Digest == "" || a.Submission == "" || len(a.Refs) == 0 {
 		f.t.Fatalf("incomplete handoff: %+v", a)
 	}
+	// Freeze the exact observation selected NOW, before the source actor can
+	// append again. The receiver retains this observation under a remote name.
+	a.SourceHeads = map[string]string{}
+	for _, ref := range a.Refs {
+		a.SourceHeads[ref] = f.git(repo, "rev-parse", ref)
+	}
 	return a
 }
 
@@ -228,7 +235,31 @@ func (f *betaContributionCLI) receive(repo, operation string, a betaContribution
 	for _, ref := range a.Refs {
 		args = append(args, "--ref", ref)
 	}
-	return f.hn(repo, ok, args...)
+	output := f.hn(repo, ok, args...)
+	if ok && len(a.SourceHeads) != 0 {
+		retained := strings.Split(f.git(repo, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/remotes/"), "\n")
+		for source, oid := range a.SourceHeads {
+			index := strings.LastIndex(source, "/actors/")
+			if index < 0 {
+				index = strings.LastIndex(source, "/proposals/")
+			}
+			if index < 0 {
+				f.t.Fatalf("unexpected prepared native-ref kind: %s", source)
+			}
+			suffix := source[index:]
+			found := false
+			for _, line := range retained {
+				fields := strings.Fields(line)
+				if len(fields) == 2 && strings.HasPrefix(fields[0], "refs/hn/remotes/contribution-"+a.Digest[7:]+"-") && strings.HasSuffix(fields[0], suffix) && fields[1] == oid {
+					found = true
+				}
+			}
+			if !found {
+				f.t.Fatalf("selected source observation %s=%s not retained under its contribution remote namespace:\n%s", source, oid, strings.Join(retained, "\n"))
+			}
+		}
+	}
+	return output
 }
 
 func (f *betaContributionCLI) latest(repo, actor string) string {
@@ -584,6 +615,14 @@ func betaContributionPublicJourney(f *betaContributionCLI) {
 	f.hn(observer, false, "identity", "show", "--json")
 	f.hn(observer, false, "contribution", "authority", "show", "--json")
 	f.hn(observer, true, "contribution", "authority", "set", "--ref", "refs/heads/main", "--expect", "absent", "--read-only", "--json")
+	retained := betaContributionJSON[struct {
+		Digest string `json:"digest"`
+	}](t, f.hn(observer, true, "contribution", "retained", "show", "--json"))
+	if retained.Digest == "" {
+		t.Fatal("keyless retained inspection omitted exact snapshot digest")
+	}
+	betaContributionContains(t, f.hn(observer, false, "contribution", "retained", "register", "--expect", c.Digest([]byte("stale inspected snapshot")), "--json"), "retained snapshot changed")
+	f.hn(observer, true, "contribution", "retained", "register", "--expect", retained.Digest, "--json")
 	betaContributionContains(t, f.hn(observer, true, "issue", "history", issue, "--kind", "comments", "--json"), "Stranger issue reply")
 	if strings.Contains(f.hn(observer, true, "discussion", "replies", thread, "--json"), "Stranger discussion reply") {
 		t.Fatal("keyless reconstruction lost exact scoped hide")

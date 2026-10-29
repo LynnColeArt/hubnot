@@ -138,6 +138,11 @@ hn issue list --json
 Repeat `--ref` for **every** returned ref. Do not replace the list with an
 arbitrary branch, wildcard or remote. `--project` is required when preparing
 without a local selected authority; `--ref` selection is required at intake.
+Retain each selected source ref's OID at preparation time. The receiver keeps
+actor/proposal observations under `refs/hn/remotes/.../actors/...` or
+`refs/hn/remotes/.../proposals/...`; those local names differ deliberately from
+the source names. Compare the original selected OID and signed bytes, rather
+than a source actor's later current head after more contributions.
 An automatic issue rule admits the exact operation after bounded authenticated
 intake and a charged signed receipt. It does not require a moderator to approve
 every message. A pending operation remains outside the shared view.
@@ -328,6 +333,8 @@ The final identity command should report no local signer. Restore alone adopts
 no authority or key and publishes no native facts before explicit selection.
 Read-only adoption/retained registration charges this receiver's verified
 coverage; portable receipts do not supply local storage allowance.
+Registering the already covered exact snapshot reuses that local coverage;
+new retained coverage requires its own charged registration.
 
 The outer `hn.contribution/1` profile refuses native review/run/decision/merge/
 audit/memory predecessors. It never truncates actor ancestry, and independently
