@@ -446,7 +446,6 @@ jobs:
       FROZEN_SOURCE: ${{ needs.candidate-reuse.outputs.source }}
       FROZEN_TREE: ${{ needs.candidate-reuse.outputs.tree }}
       FROZEN_PROVENANCE: ${{ needs.candidate-reuse.outputs.provenance }}
-      DIAGNOSTIC_EVIDENCE: ${{ runner.temp }}/diagnostic-evidence
       BASE_HARNESS_SHA256: d7438e11d0b5da89de1e3ebc226f6af614159f683d3a7ca5475fb01d392d12ed
     steps:
       - uses: actions/checkout@v7
@@ -470,7 +469,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir "$DIAGNOSTIC_EVIDENCE" "$RUNNER_TEMP/diagnostic-unpacked"
+          export DIAGNOSTIC_EVIDENCE="$RUNNER_TEMP/diagnostic-evidence"
+          mkdir -m 700 "$DIAGNOSTIC_EVIDENCE" "$RUNNER_TEMP/diagnostic-unpacked"
+          printf 'DIAGNOSTIC_EVIDENCE=%s\n' "$DIAGNOSTIC_EVIDENCE" >> "$GITHUB_ENV"
           test "$(git rev-parse HEAD)" = "$FROZEN_SOURCE"
           test "$(git rev-parse HEAD^{tree})" = "$FROZEN_TREE"
           test "$(go env GOVERSION)" = go1.26.4
