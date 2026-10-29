@@ -281,7 +281,7 @@ func TestBetaPlatformPackageInstallAndRuntime(t *testing.T) {
 			f.git(repo, "add", ".hn/policy.json")
 			f.git(repo, "-c", "user.name=Package fixture", "-c", "user.email=package@hn.invalid", "commit", "-qm", "Explicit memory policy")
 			f.hn(repo, true, "memory", "record", "--kind", "decision", "--at", "HEAD", "--applies", "exact", "--content", "Package Needle-42 世界", "--json")
-			output := f.hn(repo, true, "memory", "grep", "Needle-4[23]", "--json")
+			output := f.hn(repo, true, "memory", "grep", "--json", "Needle-4[23]")
 			var result MemoryRecallEnvelopeV0
 			if err := json.Unmarshal([]byte(output), &result); err != nil {
 				t.Fatal(err)
@@ -289,7 +289,9 @@ func TestBetaPlatformPackageInstallAndRuntime(t *testing.T) {
 			if result.Returned != 1 || result.Memories[0].Data.Content != "Package Needle-42 世界" || result.Warning != memoryRecallWarning {
 				t.Fatal("actual package memory grep lost match/content/warning", output)
 			}
-			f.hn(repo, false, "memory", "grep", "[", "--json")
+			if failure := f.hn(repo, false, "memory", "grep", "--json", "["); !strings.Contains(failure, "invalid grep pattern") {
+				t.Fatal("invalid regex did not reach pattern validation", failure)
+			}
 			// Preserve literal aliases; do not physicalize paths or inject TMPDIR.
 			parents := []string{t.TempDir()}
 			if runtime.GOOS == "darwin" {
