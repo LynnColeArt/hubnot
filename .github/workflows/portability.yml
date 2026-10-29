@@ -191,21 +191,37 @@ jobs:
           done
           cd "$GITHUB_WORKSPACE"
           git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$RUNNER_TEMP/native-evidence/source-inputs.before.sha256"
-      - name: Inspect archives, BUILD and executable digests before runtime
+      - name: Verify bundle and exercise package install, memory and filesystem paths
         shell: bash
+        env:
+          HN_PORTABLE_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
         run: |
           set -euo pipefail
-          go test -race -count=1 -timeout=5m -v -run '^TestBetaPlatformCandidateBundle$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/candidate" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/bundle.log"
-      - name: Actual package install, integrated collaboration, upgrade, recovery, journal and contribution journeys
+          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/bundle.exit"; date -u > "$RUNNER_TEMP/native-evidence/bundle.finished"' EXIT
+          date -u > "$RUNNER_TEMP/native-evidence/bundle.started"
+          go test -race -count=1 -timeout=5m -v -run '^(TestBetaPlatformCandidateBundle|TestBetaPlatformPackageInstallAndRuntime)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/candidate" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/bundle.log"
+      - name: Repeat released-writer refusals on the observed Linux Git hosts
+        if: startsWith(matrix.target, 'linux/')
+        shell: bash
+        env:
+          HN_PORTABLE_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+        run: |
+          set -euo pipefail
+          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/compatibility-repeat.exit"; date -u > "$RUNNER_TEMP/native-evidence/compatibility-repeat.finished"' EXIT
+          date -u > "$RUNNER_TEMP/native-evidence/compatibility-repeat.started"
+          go test -race -count=3 -timeout=10m -v -run '^TestBetaReleasedWriterCompatibility$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/compatibility-repeat.log"
+      - name: Actual integrated collaboration, upgrade, recovery, journal and contribution journeys
         shell: bash
         env:
           HN_MIGRATION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
+          HN_PORTABLE_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
           HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
         run: |
           set -euo pipefail
           trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/journeys.exit"; date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"' EXIT
           date -u > "$RUNNER_TEMP/native-evidence/journeys.started"
-          go test -race -count=1 -timeout=30m -v -run '^(TestBetaPlatformPackageInstallAndRuntime|TestPortableCollaborationIntegratedPublicVariants|TestBetaReleasedWriterCompatibility|TestBetaRecoveryJourneys|TestBetaRotationJournalRefusalPreservesRecovery|TestBetaMigrationFutureSessionRefusesWithoutReset|TestMigrationCLINativeOfflineBuildVariants|TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline|TestMigrationCLIPublicRefusalsPreserveRemoteState|TestBetaContributionPublicVariants)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/journeys.log"
+          go test -race -count=1 -timeout=30m -v -run '^(TestPortableCollaborationIntegratedPublicVariants|TestBetaReleasedWriterCompatibility|TestBetaRecoveryJourneys|TestBetaRotationJournalRefusalPreservesRecovery|TestBetaMigrationFutureSessionRefusesWithoutReset|TestMigrationCLINativeOfflineBuildVariants|TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline|TestMigrationCLIPublicRefusalsPreserveRemoteState|TestBetaContributionPublicVariants)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/journeys.log"
           date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"
       - name: WP12 recovery and contribution runtime against each exact package
         shell: bash

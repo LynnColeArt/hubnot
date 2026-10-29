@@ -398,7 +398,7 @@ func portablePublic(t *testing.T, binary, directory string, env []string, ok boo
 		if e != nil {
 			t.Fatal(e)
 		}
-		_, e = f.WriteString("test: " + t.Name() + "\nargv: " + strings.Join(args, " ") + "\noutput:\n" + string(out) + "\n")
+		_, e = fmt.Fprintf(f, "test: %s\nprogram: %s\ncwd: %s\nargv: %q\nexit: %v\ndeadline: %v\noutput:\n%s\n", t.Name(), binary, directory, args, err, ctx.Err(), out)
 		ce := f.Close()
 		if e != nil || ce != nil {
 			t.Fatal(e, ce)

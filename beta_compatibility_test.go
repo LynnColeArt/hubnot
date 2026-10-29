@@ -172,6 +172,24 @@ func betaFutureArchive(t *testing.T, original, output, from, to string) {
 	}
 }
 
+// Report paths only: snapshots can include disposable private signer files.
+// Every path and digest remains part of the unchanged full-tree comparison.
+func betaCompatibilityChangedPaths(before, after map[string]string) []string {
+	var paths []string
+	for path, value := range before {
+		if after[path] != value {
+			paths = append(paths, path)
+		}
+	}
+	for path := range after {
+		if _, exists := before[path]; !exists {
+			paths = append(paths, path)
+		}
+	}
+	sort.Strings(paths)
+	return paths
+}
+
 func TestBetaReleasedWriterCompatibility(t *testing.T) {
 	releases := []struct{ version, source, archive string }{
 		{"0.0.1-dev", "f82b57420f0c825a9ea6f3b9f93ede680c8cf06f", "7606efc4018c6afb93538f7325603854860039fc642e05f8a06529cca246d070"},
@@ -214,7 +232,12 @@ func TestBetaReleasedWriterCompatibility(t *testing.T) {
 					betaReadJSON(t, filepath.Join(dir, "observations.json"), &expected)
 					parent := t.TempDir()
 					repo := filepath.Join(parent, "reader")
-					portablePublic(t, git, parent, env, true, "clone", "-q", filepath.Join(dir, "public.bundle"), repo)
+					// Raw repository snapshots require a quiescent fixture. Newer Git
+					// may detach maintenance after clone/fetch/commit; prevent that
+					// fixture activity before the clone and persist only local settings.
+					portablePublic(t, git, parent, env, true, "-c", "maintenance.auto=false", "-c", "gc.auto=0", "clone", "-q", filepath.Join(dir, "public.bundle"), repo)
+					portablePublic(t, git, repo, env, true, "config", "maintenance.auto", "false")
+					portablePublic(t, git, repo, env, true, "config", "gc.auto", "0")
 					portablePublic(t, git, repo, env, true, "fetch", "--no-write-fetch-head", filepath.Join(dir, "public.bundle"), "+refs/hn/*:refs/hn/*")
 					call := func(ok bool, args ...string) string { return portablePublic(t, binary, repo, env, ok, args...) }
 					observeAt := func(reader, family string, args ...string) {
@@ -325,8 +348,9 @@ func TestBetaReleasedWriterCompatibility(t *testing.T) {
 								if failure.OK || failure.Error.Code == "" || !strings.Contains(failure.Error.Message, message) || strings.Contains(failure.Error.Message, "signature") {
 									t.Fatalf("wrong refusal boundary: %s", output)
 								}
-								if !reflect.DeepEqual(before, policyPublicSnapshot(t, repo)) {
-									t.Fatal("unsupported signed format changed accepted history or private state")
+								after := policyPublicSnapshot(t, repo)
+								if !reflect.DeepEqual(before, after) {
+									t.Fatalf("unsupported signed format changed accepted history or private state; changed paths: %q", betaCompatibilityChangedPaths(before, after))
 								}
 							}
 						})
@@ -338,6 +362,8 @@ func TestBetaReleasedWriterCompatibility(t *testing.T) {
 					observe("archive", "migrate", "inspect", "--archive", archive)
 					// Import the actual historical archive, preserving every selected ref/OID.
 					destination := migrationCLIRepository(t)
+					portablePublic(t, git, destination, env, true, "config", "maintenance.auto", "false")
+					portablePublic(t, git, destination, env, true, "config", "gc.auto", "0")
 					destinationHead := portablePublic(t, git, destination, env, true, "rev-parse", "HEAD")
 					session := filepath.Join(parent, "historical-import")
 					portablePublic(t, binary, repo, env, true, "migrate", "plan", "--source-kind", "archive", "--source-repository", archive, "--destination-kind", "local", "--destination-repository", destination, "--session", session, "--decision", "local/governance=preserve")
@@ -380,8 +406,9 @@ func TestBetaReleasedWriterCompatibility(t *testing.T) {
 							if _, err := os.Stat(refusedSession); !os.IsNotExist(err) {
 								t.Fatal("unsupported archive saved a session")
 							}
-							if !reflect.DeepEqual(before, policyPublicSnapshot(t, repo)) || !reflect.DeepEqual(destBefore, policyPublicSnapshot(t, destination)) {
-								t.Fatal("unsupported archive changed accepted history or private state")
+							after, destAfter := policyPublicSnapshot(t, repo), policyPublicSnapshot(t, destination)
+							if !reflect.DeepEqual(before, after) || !reflect.DeepEqual(destBefore, destAfter) {
+								t.Fatalf("unsupported archive changed accepted history or private state; reader changed paths: %q; destination changed paths: %q", betaCompatibilityChangedPaths(before, after), betaCompatibilityChangedPaths(destBefore, destAfter))
 							}
 						})
 					}

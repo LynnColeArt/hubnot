@@ -116,6 +116,26 @@ raw commands, start/end times, exits, logs and original archive/binary hashes.
 Private fixture keys remain disposable and are never uploaded; process logs
 contain public data and fixture-only credentials, not operator secrets.
 
+## Qualification fixture controls
+
+The package install/memory/filesystem preflight runs before the longer journeys.
+It uses an explicit per-command fixture Git author, without configuring an
+operator's global identity. Public subprocess transcripts identify the selected
+program, working directory, arguments, exit and output; each invocation writes
+its own evidence file.
+
+Released-writer refusal cases compare the complete repository file snapshot,
+including signed history and private state. Their disposable clones and import
+destinations explicitly disable automatic Git maintenance before the measured
+refusals. A clone also receives those settings for that command so background
+maintenance cannot start before local fixture configuration is written. This
+is a test fixture control, not a Hubnot runtime setting or weaker snapshot
+comparison. Failure diagnostics report changed paths without disclosing private
+file contents. The Linux qualification additionally repeats the actual-package
+compatibility cases three times to check the transient-file failure observed
+with Git 2.56.0; repeated cases are separate from the one-pass integrated batch.
+Their successful completion remains an observation to record, not an assumption.
+
 ## Download experience and signing decision
 
 CI artifact extraction and native execution do not exercise browser quarantine,
