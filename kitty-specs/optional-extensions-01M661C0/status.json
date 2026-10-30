@@ -19,7 +19,7 @@
   "work_packages": {
     "WP01": {
       "actor": "user",
-      "agent": "codex",
+      "agent": null,
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -31,6 +31,7 @@
         "Ready for independent review: frozen source eb3f4932, 105 production inputs equal f8, portable issue23 fixture, actual standard/combined-native historical/detector controls, 540 valid release observations; formatting/vet/build/full uncached race passed; evidence 6ee5db80. Framework-only generated frontmatter cleanup 05931441 follows normal gate remediation. Python architecture coverage remains no_coverage and future host/platform/adopter observations pending."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP01-default-native-baseline/review-cycle-1.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP01-default-native-baseline/review-cycle-1.md",
@@ -38,15 +39,15 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done",
-        "T005": "done",
-        "T006": "done"
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned",
+        "T004": "planned",
+        "T005": "planned",
+        "T006": "planned"
       }
     },
     "WP02": {
