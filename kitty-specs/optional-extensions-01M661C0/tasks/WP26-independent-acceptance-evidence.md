@@ -18,7 +18,7 @@ requirement_refs:
 - NFR-007
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
-branch_strategy: execution-lanes
+branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
 subtasks:
 - T104
 - T105
@@ -30,18 +30,18 @@ history:
   actor: planner-priti
   action: Drafted tasks; not finalized or committed
 agent_profile: reviewer-renata
-authoritative_surface: kitty-specs/optional-extensions-01M661C0/evidence/independent/boundary-review.md
+authoritative_surface: docs/qualification/optional-extensions/independent/boundary-review.md
 create_intent:
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/boundary-review.md
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/native-user.md
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/extension-author.md
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/readiness.md
-execution_mode: planning_artifact
+- docs/qualification/optional-extensions/independent/boundary-review.md
+- docs/qualification/optional-extensions/independent/native-user.md
+- docs/qualification/optional-extensions/independent/extension-author.md
+- docs/qualification/optional-extensions/independent/readiness.md
+execution_mode: code_change
 owned_files:
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/boundary-review.md
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/native-user.md
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/extension-author.md
-- kitty-specs/optional-extensions-01M661C0/evidence/independent/readiness.md
+- docs/qualification/optional-extensions/independent/boundary-review.md
+- docs/qualification/optional-extensions/independent/native-user.md
+- docs/qualification/optional-extensions/independent/extension-author.md
+- docs/qualification/optional-extensions/independent/readiness.md
 priority: P1
 role: reviewer
 tags: []
@@ -97,10 +97,12 @@ This work is complete only when the observable outcomes below are demonstrated a
 
 ## Ownership and integration
 
-- `kitty-specs/optional-extensions-01M661C0/evidence/independent/boundary-review.md` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/independent/native-user.md` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/independent/extension-author.md` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/independent/readiness.md` (planned new; declared in create_intent)
+This WP delivers repository product documentation/qualification evidence in a dedicated execution lane (`code_change` execution mode); it owns no application code. Only WP02 owns mission planning contracts. Collapsing late documentation/review outputs into the single `lane-planning` would create a false lane dependency cycle. Keep the declared role and approval boundaries unchanged.
+
+- `docs/qualification/optional-extensions/independent/boundary-review.md` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/independent/native-user.md` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/independent/extension-author.md` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/independent/readiness.md` (planned new; declared in create_intent)
 
 No other WP owns these paths. Existing foundation surfaces are dependencies, not permission to recreate them. If a small out-of-map edit is indispensable, coordinate root first with exact path/rationale and preserve the no-overlap execution invariant.
 

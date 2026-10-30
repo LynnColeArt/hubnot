@@ -16,7 +16,7 @@ requirement_refs:
 - FR-024
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
-branch_strategy: execution-lanes
+branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
 subtasks:
 - T092
 - T093
@@ -33,7 +33,7 @@ create_intent:
 - docs/extensions.md
 - docs/artifacts-v1.md
 - docs/extension-consumers.md
-execution_mode: planning_artifact
+execution_mode: code_change
 owned_files:
 - docs/extensions.md
 - docs/artifacts-v1.md
@@ -94,6 +94,8 @@ This work is complete only when the observable outcomes below are demonstrated a
 - This draft does not itself claim finalization, lane allocation, commit or test pass.
 
 ## Ownership and integration
+
+This WP delivers repository product documentation/qualification evidence in a dedicated execution lane (`code_change` execution mode); it owns no application code. Only WP02 owns mission planning contracts. Collapsing late documentation/review outputs into the single `lane-planning` would create a false lane dependency cycle. Keep the declared role and approval boundaries unchanged.
 
 - `docs/extensions.md` (planned new; declared in create_intent)
 - `docs/artifacts-v1.md` (planned new; declared in create_intent)

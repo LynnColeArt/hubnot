@@ -15,7 +15,7 @@ requirement_refs:
 - NFR-008
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
-branch_strategy: execution-lanes
+branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
 subtasks:
 - T100
 - T101
@@ -30,15 +30,15 @@ agent_profile: implementer-ivan
 authoritative_surface: extension_package_acceptance_test.go
 create_intent:
 - extension_package_acceptance_test.go
-- kitty-specs/optional-extensions-01M661C0/evidence/packages/manifest.json
-- kitty-specs/optional-extensions-01M661C0/evidence/packages/platform-matrix.json
-- kitty-specs/optional-extensions-01M661C0/evidence/packages/checks.md
+- docs/qualification/optional-extensions/packages/manifest.json
+- docs/qualification/optional-extensions/packages/platform-matrix.json
+- docs/qualification/optional-extensions/packages/checks.md
 execution_mode: code_change
 owned_files:
 - extension_package_acceptance_test.go
-- kitty-specs/optional-extensions-01M661C0/evidence/packages/manifest.json
-- kitty-specs/optional-extensions-01M661C0/evidence/packages/platform-matrix.json
-- kitty-specs/optional-extensions-01M661C0/evidence/packages/checks.md
+- docs/qualification/optional-extensions/packages/manifest.json
+- docs/qualification/optional-extensions/packages/platform-matrix.json
+- docs/qualification/optional-extensions/packages/checks.md
 priority: P1
 role: implementer
 tags: []
@@ -95,9 +95,9 @@ This work is complete only when the observable outcomes below are demonstrated a
 ## Ownership and integration
 
 - `extension_package_acceptance_test.go` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/packages/manifest.json` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/packages/platform-matrix.json` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/packages/checks.md` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/packages/manifest.json` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/packages/platform-matrix.json` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/packages/checks.md` (planned new; declared in create_intent)
 
 No other WP owns these paths. Existing foundation surfaces are dependencies, not permission to recreate them. If a small out-of-map edit is indispensable, coordinate root first with exact path/rationale and preserve the no-overlap execution invariant.
 

@@ -15,7 +15,7 @@ requirement_refs:
 - NFR-005
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
-branch_strategy: execution-lanes
+branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
 subtasks:
 - T001
 - T002
@@ -32,21 +32,21 @@ agent_profile: implementer-ivan
 authoritative_surface: replication_borrow_test.go
 create_intent:
 - extension_default_baseline_test.go
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/manifest.json
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/native-outcomes.json
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/historical-hashes.json
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/metrics.csv
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/prerequisites.md
+- docs/qualification/optional-extensions/baseline/manifest.json
+- docs/qualification/optional-extensions/baseline/native-outcomes.json
+- docs/qualification/optional-extensions/baseline/historical-hashes.json
+- docs/qualification/optional-extensions/baseline/metrics.csv
+- docs/qualification/optional-extensions/baseline/prerequisites.md
 - beta_scale_test.go
 execution_mode: code_change
 owned_files:
 - replication_borrow_test.go
 - extension_default_baseline_test.go
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/manifest.json
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/native-outcomes.json
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/historical-hashes.json
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/metrics.csv
-- kitty-specs/optional-extensions-01M661C0/evidence/baseline/prerequisites.md
+- docs/qualification/optional-extensions/baseline/manifest.json
+- docs/qualification/optional-extensions/baseline/native-outcomes.json
+- docs/qualification/optional-extensions/baseline/historical-hashes.json
+- docs/qualification/optional-extensions/baseline/metrics.csv
+- docs/qualification/optional-extensions/baseline/prerequisites.md
 - beta_scale_test.go
 priority: P1
 role: implementer
@@ -105,11 +105,11 @@ This work is complete only when the observable outcomes below are demonstrated a
 
 - `replication_borrow_test.go` (existing; inspect integrated version)
 - `extension_default_baseline_test.go` (planned new or dependency-created; create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/baseline/manifest.json` (planned new or dependency-created; create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/baseline/native-outcomes.json` (planned new or dependency-created; create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/baseline/historical-hashes.json` (planned new or dependency-created; create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/baseline/metrics.csv` (planned new or dependency-created; create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/baseline/prerequisites.md` (planned new or dependency-created; create_intent)
+- `docs/qualification/optional-extensions/baseline/manifest.json` (planned new or dependency-created; create_intent)
+- `docs/qualification/optional-extensions/baseline/native-outcomes.json` (planned new or dependency-created; create_intent)
+- `docs/qualification/optional-extensions/baseline/historical-hashes.json` (planned new or dependency-created; create_intent)
+- `docs/qualification/optional-extensions/baseline/metrics.csv` (planned new or dependency-created; create_intent)
+- `docs/qualification/optional-extensions/baseline/prerequisites.md` (planned new or dependency-created; create_intent)
 - `beta_scale_test.go` (planned new or dependency-created; create_intent)
 
 No other WP owns these paths. Existing foundation surfaces are dependencies, not permission to recreate them. If a small out-of-map edit is indispensable, coordinate root first with exact path/rationale and preserve the no-overlap execution invariant.
@@ -143,7 +143,7 @@ Prerequisite manifest names exact import commit/tree/scale blob/runtime digest, 
 Independently assess mainObjectsCompleteForBorrowing contract before editing replication_borrow_test.go. Replace reliance on one Git version making malformed physical inventory enumerate with error. Include healthy physical-inventory positive control, direct corrupt-ID refusal and explicit physical-inventory-corruption refusal. Retain missing-promisor/no-fetch checks. Production files are outside this repair.
 
 **Observable acceptance**:
-Run the focused original regression and new controls on the actual Git; no skip, blanket allow-error, rewritten production contract or retry-to-green. Preserve failure evidence and obtain independent review of the repair.
+Run the focused original regression and new controls on the actual Git; no skip, blanket allow-error, rewritten production contract or retry-to-green. Preserve actual external macOS Git2.50/2.53 red evidence and exact f8 source-file equality. The local Git2.43 original test may pass; do not invent a local historical failure. If a controlled Git-response fixture reproduces the missing-object/no-error branch, label it source-assisted rather than actual Git2.53 execution. Obtain independent review of the repair.
 
 **Evidence and controls**:
 - Start from frozen public contracts and the actual integrated source, not assumptions about earlier branches.
@@ -216,7 +216,7 @@ All 30 observations retained per case; no synthetic samples or post-hoc exclusio
 **Purpose**: Freeze and hand off the baseline for independent approval.
 
 **Implementation guidance**:
-Publish prerequisites.md explaining source import, issue23 disposition, integrated seams, selected golden inputs and evidence limitations. Freeze native command/corpus rows, historical golden hashes and paired-metric method. Future plugin-specific failure configurations cannot be qualified before a host exists; WP24 repeats them against final code. Run appropriate fixed-source checks, retain failures and request independent WP01 review. Prepare the review-ready packet and request for_review; the implementer does not approve this WP. Only a distinct reviewer records approval, which gates every later WP.
+Publish prerequisites.md explaining source import, issue23 disposition, integrated seams, selected golden inputs and evidence limitations. Freeze native command/corpus rows, historical golden hashes and paired-metric method. Future plugin-specific failure configurations cannot be qualified before a host exists; WP24 repeats them against final code. Run the full declared initial baseline gate at the exact imported/fixed source: git diff --check, gofmt validation, go vet, build, and full uncached race suite; serialize heavy execution, retain failures and request independent WP01 review. WP25 repeats these checks at final source and does not waive this initial gate. Prepare the review-ready packet and request for_review; the implementer does not approve this WP. Only a distinct reviewer records approval, which gates every later WP.
 
 **Observable acceptance**:
 Reviewer verifies signed goldens/refusal controls and baseline method, not just exit status. Approval is the first mandatory DAG gate for every later work package.

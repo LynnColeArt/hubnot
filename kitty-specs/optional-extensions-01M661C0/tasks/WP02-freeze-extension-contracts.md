@@ -23,7 +23,7 @@ requirement_refs:
 - NFR-003
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
-branch_strategy: execution-lanes
+branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
 subtasks:
 - T007
 - T008
@@ -190,10 +190,10 @@ Examples include contribution visibility transitions, conflict/stale/replay resu
 **Purpose**: Publish implementation vectors for independent contract review.
 
 **Implementation guidance**:
-Write fixture-generation recipes with actual signed-ID substitution and externally observable expected outcomes, not unresolved digest placeholders. Enumerate all limits and live-caller negative controls. Resolve all P1/P2 findings in the external contract-review.md, without severity downgrades: local mutation head checks versus imported immutable concurrent forks; actor-stream CAS versus multi-actor forks; type.publish and record operation-key scope; immutable request digest; replay-before-current-head checks; verified absence versus incomplete/publication-uncertain history. Require independent signed vectors for type publish replay, two-clone fork import, stale resolution after third head, changed replay schema/parents/content, pre/post-publication interruption, partial frames, visibility removal and opaque unknown preservation. Prepare mechanism details for root/architect and independent reviewer; the author does not self-approve the contract freeze; any semantic change goes back to spec/plan review before implementation.
+Publish literal complete independent vectors, not recipes alone: real public keys/signatures, exact canonical signed bytes/signature preimages, exact computed full IDs/digests, local/remote refs and externally observable outcomes. Include actual signed non-doctrine declarations/revisions and malformed/tamper vectors. Recipes supplement these bytes and never replace them. Independent reviewer recomputes signatures/digests/ref names without using the implementation serializer. Enumerate all limits and live-caller negative controls. Resolve all P1/P2 findings in the external contract-review.md, without severity downgrades: local mutation head checks versus imported immutable concurrent forks; actor-stream CAS versus multi-actor forks; type.publish and record operation-key scope; immutable request digest; replay-before-current-head checks; verified absence versus incomplete/publication-uncertain history. Require independent signed vectors for type publish replay, two-clone fork import, stale resolution after third head, changed replay schema/parents/content, pre/post-publication interruption, partial frames, visibility removal and opaque unknown preservation. Prepare mechanism details for root/architect and independent reviewer; the author does not self-approve the contract freeze; any semantic change goes back to spec/plan review before implementation.
 
 **Observable acceptance**:
-Contract-only WP approved before model, storage, registration or framing WPs. No production code or fabricated test pass; vector recipes are complete enough for later independent executable conformance.
+Contract-only WP approved before model, storage, registration or framing WPs. No application production code or fabricated test pass; literal vector bytes are independently verified and complete enough for later executable conformance.
 
 **Evidence and controls**:
 - Start from frozen public contracts and the actual integrated source, not assumptions about earlier branches.

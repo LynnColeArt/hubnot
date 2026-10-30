@@ -20,7 +20,7 @@ requirement_refs:
 - NFR-006
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
-branch_strategy: execution-lanes
+branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
 subtasks:
 - T096
 - T097
@@ -36,18 +36,18 @@ authoritative_surface: extension_default_acceptance_test.go
 create_intent:
 - extension_default_acceptance_test.go
 - extension_default_performance_test.go
-- kitty-specs/optional-extensions-01M661C0/evidence/default/manifest.json
-- kitty-specs/optional-extensions-01M661C0/evidence/default/matrix.json
-- kitty-specs/optional-extensions-01M661C0/evidence/default/metrics.csv
-- kitty-specs/optional-extensions-01M661C0/evidence/default/historical-hashes.json
+- docs/qualification/optional-extensions/default/manifest.json
+- docs/qualification/optional-extensions/default/matrix.json
+- docs/qualification/optional-extensions/default/metrics.csv
+- docs/qualification/optional-extensions/default/historical-hashes.json
 execution_mode: code_change
 owned_files:
 - extension_default_acceptance_test.go
 - extension_default_performance_test.go
-- kitty-specs/optional-extensions-01M661C0/evidence/default/manifest.json
-- kitty-specs/optional-extensions-01M661C0/evidence/default/matrix.json
-- kitty-specs/optional-extensions-01M661C0/evidence/default/metrics.csv
-- kitty-specs/optional-extensions-01M661C0/evidence/default/historical-hashes.json
+- docs/qualification/optional-extensions/default/manifest.json
+- docs/qualification/optional-extensions/default/matrix.json
+- docs/qualification/optional-extensions/default/metrics.csv
+- docs/qualification/optional-extensions/default/historical-hashes.json
 priority: P1
 role: implementer
 tags: []
@@ -105,10 +105,10 @@ This work is complete only when the observable outcomes below are demonstrated a
 
 - `extension_default_acceptance_test.go` (planned new; declared in create_intent)
 - `extension_default_performance_test.go` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/default/manifest.json` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/default/matrix.json` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/default/metrics.csv` (planned new; declared in create_intent)
-- `kitty-specs/optional-extensions-01M661C0/evidence/default/historical-hashes.json` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/default/manifest.json` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/default/matrix.json` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/default/metrics.csv` (planned new; declared in create_intent)
+- `docs/qualification/optional-extensions/default/historical-hashes.json` (planned new; declared in create_intent)
 
 No other WP owns these paths. Existing foundation surfaces are dependencies, not permission to recreate them. If a small out-of-map edit is indispensable, coordinate root first with exact path/rationale and preserve the no-overlap execution invariant.
 
