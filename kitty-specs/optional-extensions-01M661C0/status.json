@@ -27,6 +27,9 @@
       "last_event_id": "01M665ZVBJ82W16MHA41QK22Z4",
       "last_transition_at": "2026-10-30T10:34:19.378535+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: frozen source eb3f4932, 105 production inputs equal f8, portable issue23 fixture, actual standard/combined-native historical/detector controls, 540 valid release observations; formatting/vet/build/full uncached race passed; evidence 6ee5db80. Framework-only generated frontmatter cleanup 05931441 follows normal gate remediation. Python architecture coverage remains no_coverage and future host/platform/adopter observations pending."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 22770,
