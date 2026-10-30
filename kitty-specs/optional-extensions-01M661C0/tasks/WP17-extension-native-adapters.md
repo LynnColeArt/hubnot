@@ -39,6 +39,8 @@ owned_files:
 - extension_native_adapter_test.go
 - extension_native_acceptance_test.go
 - contribution_moderation.go
+- resource_engine.go
+- issue_commands.go
 priority: P1
 role: implementer
 tags: []
@@ -94,6 +96,8 @@ This work is complete only when the observable outcomes below are demonstrated a
 
 ## Ownership and integration
 
+- `resource_engine.go` (existing; explicit Context variants and Background compatibility wrappers)
+- `issue_commands.go` (existing; explicit Context variants and Background compatibility wrappers)
 - `extension_native_adapter.go` (planned new or dependency-created; create_intent)
 - `extension_native_adapter_test.go` (planned new or dependency-created; create_intent)
 - `extension_native_acceptance_test.go` (planned new or dependency-created; create_intent)
@@ -232,3 +236,7 @@ Read canonical status/review references before implementation. Address every rej
 ## Activity log
 
 - 2026-10-30T09:50:45Z — planner-priti — Draft authored; root has not finalized tasks or authorized branch operations.
+
+## Approved-contract ownership follow-through
+
+O1 assigns this package the shared native writer seams in `resource_engine.go` and `issue_commands.go`, alongside `contribution_moderation.go`. Follow `contracts/host-v1.md` section 3: explicit request Context variants, Background wrappers for unchanged native callers, existing per-request command lock and actor/policy/visibility checks, and synchronous writer completion. No global context, copied writer or detached publication. `main.go` remains exclusively WP16-owned.

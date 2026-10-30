@@ -533,7 +533,7 @@ T067 Run real child fault and containment matrix (WP16)
 
 - **Priority**: P1; **Profile**: `implementer-ivan` via actual tool `codex`.
 - **Dependencies**: WP16, WP11.
-- **Prompt**: [tasks/WP17-extension-native-adapters.md](tasks/WP17-extension-native-adapters.md); 4 subtasks, 234 lines.
+- **Prompt**: [tasks/WP17-extension-native-adapters.md](tasks/WP17-extension-native-adapters.md); 4 subtasks, 242 lines.
 - **Independent test**: Raw external stdio to live hn plus real native actors/contribution policy and forbidden-effect controls per family.
 - **Risks**: Calling an internal native helper without its integrated outer policy/lock boundary would silently bypass authority.
 - **Requirement refs**: FR-004, FR-005, FR-006, FR-007, FR-017, FR-018, FR-020, C-008.
@@ -547,7 +547,7 @@ T071 Prove every advertised native family through raw stdio (WP17)
 
 **Implementation sketch**: Adapt public identity and supported native reads → Route typed writes through shared native authorization boundaries → Expose native operation lookup and immutable replay → Prove every advertised native family through raw stdio.
 
-**Ownership**: `extension_native_adapter.go`, `extension_native_adapter_test.go`, `extension_native_acceptance_test.go`, `contribution_moderation.go`.
+**Ownership**: `extension_native_adapter.go`, `extension_native_adapter_test.go`, `extension_native_acceptance_test.go`, `contribution_moderation.go`, `resource_engine.go`, `issue_commands.go`.
 
 **Parallel opportunities**: Only after listed approvals and within disjoint declared file ownership; computed lanes are authoritative. No package may begin merely because a dependency prompt exists.
 
@@ -709,7 +709,7 @@ T099 Bind default and historical evidence to final source (WP24)
 
 - **Priority**: P1; **Profile**: `implementer-ivan` via actual tool `codex`.
 - **Dependencies**: WP24.
-- **Prompt**: [tasks/WP25-exact-package-qualification.md](tasks/WP25-exact-package-qualification.md); 4 subtasks, 234 lines.
+- **Prompt**: [tasks/WP25-exact-package-qualification.md](tasks/WP25-exact-package-qualification.md); 4 subtasks, 243 lines.
 - **Independent test**: Exact distributed-candidate binary execution and fixed-source full suite; platform rows cannot be inferred from cross compilation.
 - **Risks**: Missing platform evidence remains pending; this WP cannot waive support claims or publish a release.
 - **Requirement refs**: FR-014, FR-019, FR-024, NFR-003, NFR-004, NFR-006, NFR-007, NFR-008, C-002.
@@ -723,7 +723,7 @@ T103 Reconcile limits private-state and clone evidence (WP25)
 
 **Implementation sketch**: Build fixed-source standard and combined native-only packages → Run appropriate fixed-head Go checks in serialized heavy execution → Execute exact packages on each claimed target and variant → Reconcile limits private-state and clone evidence.
 
-**Ownership**: `extension_package_acceptance_test.go`, `docs/qualification/optional-extensions/packages/manifest.json`, `docs/qualification/optional-extensions/packages/platform-matrix.json`, `docs/qualification/optional-extensions/packages/checks.md`.
+**Ownership**: `.github/workflows/portability.yml`, `.github/workflows/optional-extensions-qualification.yml`, `extension_package_acceptance_test.go`, `docs/qualification/optional-extensions/packages/manifest.json`, `docs/qualification/optional-extensions/packages/platform-matrix.json`, `docs/qualification/optional-extensions/packages/checks.md`.
 
 **Parallel opportunities**: Only after listed approvals and within disjoint declared file ownership; computed lanes are authoritative. No package may begin merely because a dependency prompt exists.
 
@@ -752,7 +752,8 @@ T107 Reconcile final readiness without beta release or main changes (WP26)
 ## Cross-cutting acceptance and ownership notes
 
 - WP01 owns beta_scale_test.go plus minimal deterministic issue23 test correction and baseline harness/evidence; its normal approved-source merge is an explicit dependency-import exception. It does not author production replication changes. WP09 alone owns later replication.go/quarantine.go integration.
-- WP16 alone owns main.go host lifetime classification; WP17 alone owns contribution_moderation.go per-request native gate and host-parent-context propagation through contributionFinishNative, preserving direct CLI behavior and stage deadlines. MutateResource alone lacks the outer lock.
+- WP16 alone owns main.go host lifetime classification. WP17 owns contribution_moderation.go, resource_engine.go and issue_commands.go for the frozen explicit Context variants and Background wrappers, per-request native command lock and actor/policy/visibility checks, and synchronous completion. This closes analysis O1 through the shared writers, without globals, copied writers, detached publication or changed direct CLI behavior.
+- WP25 owns the portability.yml explicit manual extension selector and optional-extensions-qualification.yml reusable workflow. Keep existing beta defaults and PR/push behavior; extension selection suppresses beta manual candidate jobs. Verify actual same-commit feature-ref dispatch, separate caller/workflow and candidate source identities, all eight exact package variants and supplied reference assets, with no source-build fallback or runtime hosting dependency.
 - WP13 owns extension command dispatch; WP14/WP16 add handlers through static no-I/O registration. WP03 owns artifact command dispatch and inert envelope validation; WP04 schema validate, WP05 type.publish/open, WP06 revise/resolve/convert, WP07 operation, WP08 closure inspect, WP10 file export/import and WP11 full queries each own a static registered live slice. WP12 search registers through the same no-I/O seam. WP15 framing has inert explicit frame-inspection CLI via WP13; no zero-production-caller debt. No dependency stub or dispatcher path may read registry during native startup.
 - WP02 alone uses planning_artifact execution mode for mission contract evolution. WP23 public guides and WP26 independently authored public qualification reports are repository documentation deliveries with code_change execution mode and their original curator/reviewer roles; they own no application code. This avoids collapsing early/late outputs into one lane-planning cycle. Raw/private evidence stays external; committed qualification evidence is sanitized. WP23 owns public guides. Later code WPs must report required contract changes to those owners/root rather than editing overlapping files silently.
 - Portable custom stores/refs are additive. Native/memory encoders, signed goldens, admission and recovery meanings are protected.

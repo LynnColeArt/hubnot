@@ -316,3 +316,9 @@ replay/localCAS-versus-imported-fork semantics, cancellation/partial-frame/nativ
 request-lock behavior, visibility removal/rescan reconciliation and opaque dependency
 preservation. Independent findings are preserved in the external planning evidence;
 they are not a claim these contracts are already executable or independently approved.
+
+## Approved-contract integration and qualification ownership
+
+Following independent WP02 approval, WP17 owns the shared native Context seams in `resource_engine.go`, `issue_commands.go` and `contribution_moderation.go` exactly as frozen in `contracts/host-v1.md` section 3. Existing native entry points retain Background wrappers and their behavior. Host requests reuse existing per-request native locking, actual actor/policy/visibility checks and synchronous completion. WP16 retains sole ownership of `main.go`. This resolves analysis O1 through the real shared writers, without global context or duplicate implementations.
+
+WP25 owns the narrow explicit extension selector/delegation in the already registered `.github/workflows/portability.yml` and the new `.github/workflows/optional-extensions-qualification.yml` reusable workflow. Existing beta defaults and PR/push behavior remain intact; explicit extension selection suppresses beta manual candidate jobs. Manual qualification at the reviewed feature ref must verify actual caller/workflow identity separately from candidate source identity, and execute all eight Linux/macOS AMD64/ARM64 standard/combined-native packages plus separately supplied target-bound reference assets. The same Go/Git journeys remain executable outside hosted CI. Missing execution stays pending; no default-branch registration, main change or release publication follows from this mission.

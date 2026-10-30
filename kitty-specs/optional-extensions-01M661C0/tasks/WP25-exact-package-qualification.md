@@ -33,12 +33,15 @@ create_intent:
 - docs/qualification/optional-extensions/packages/manifest.json
 - docs/qualification/optional-extensions/packages/platform-matrix.json
 - docs/qualification/optional-extensions/packages/checks.md
+- .github/workflows/optional-extensions-qualification.yml
 execution_mode: code_change
 owned_files:
 - extension_package_acceptance_test.go
 - docs/qualification/optional-extensions/packages/manifest.json
 - docs/qualification/optional-extensions/packages/platform-matrix.json
 - docs/qualification/optional-extensions/packages/checks.md
+- .github/workflows/portability.yml
+- .github/workflows/optional-extensions-qualification.yml
 priority: P1
 role: implementer
 tags: []
@@ -94,6 +97,8 @@ This work is complete only when the observable outcomes below are demonstrated a
 
 ## Ownership and integration
 
+- `.github/workflows/portability.yml` (existing; narrowly scoped explicit manual selector/delegation)
+- `.github/workflows/optional-extensions-qualification.yml` (new reusable workflow for explicit extension qualification)
 - `extension_package_acceptance_test.go` (planned new; declared in create_intent)
 - `docs/qualification/optional-extensions/packages/manifest.json` (planned new; declared in create_intent)
 - `docs/qualification/optional-extensions/packages/platform-matrix.json` (planned new; declared in create_intent)
@@ -232,3 +237,7 @@ Read canonical status/review references before implementation. Address every rej
 ## Activity log
 
 - 2026-10-30T09:50:45Z — planner-priti — Draft authored; root has not finalized tasks or authorized branch operations.
+
+## Exact-package qualification workflow ownership
+
+Use the already registered `portability.yml` manual entrypoint at the reviewed feature ref to explicitly select extension qualification and call the new reusable workflow at the same commit. The selector defaults to existing beta behavior; extension selection suppresses all beta manual candidate validation/build/reuse/native jobs. Preserve existing PR/push behavior. No default-branch registration or main change is part of this mission. Verify actual dispatch inputs and record caller/workflow SHA separately from candidate source SHA. Execute all eight actual platform/variant candidate binaries without source-build fallback, with separately supplied exact-source target-bound reference executables. Retain source/toolchain/archive/executable/asset identities for each row. The same Go/Git journeys must remain callable outside hosted CI; no module or compiler becomes a native-user runtime dependency.
