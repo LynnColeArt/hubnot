@@ -38,7 +38,7 @@ normalizing its inputs, changing the global temp environment, or inheriting a
 physical TMPDIR in the child. The existing compiled standard/`nogithub`/`noforge`
 public journey also keeps its closed child environment unchanged.
 
-The hosted jobs additionally use `hn-release` to build the exact checked-out
+The source PR jobs additionally use `hn-release` to build the exact checked-out
 commit's standard/native-only archives for the runner's native platform. The
 same public journey can consume their extracted binaries with the test-only
 `-hn-package-dir` and optional `-hn-package-version` flags. It validates each
@@ -108,3 +108,25 @@ temporary directory (for example `TMPDIR=/private/tmp`). Setting the outer
 test's TMPDIR alone does not repair explicit alias paths or a closed child
 environment. Published `0.0.2-dev` assets remain unchanged; the source fix must
 be qualified and packaged in a subsequent release.
+
+## Immutable beta candidate qualification
+
+The optional workflow dispatch now builds one eight-package candidate bundle
+with pinned Go 1.26.4 and version `0.1.0-beta.1`, then transports the same bytes
+to explicit Linux AMD64/ARM64 and macOS Intel/Apple Silicon jobs. It retains the
+source PR checks separately. See [candidate package qualification](platform-qualification.md)
+for the frozen source, observed matrix and distribution limits.
+
+Explicit package flags also route `buildMigrationCLIBinary` through the same
+verifier, so released-writer, public recovery and migration-journal journeys
+execute the selected assets without an application rebuild. Compiler, source
+tree and actual executable build information must agree with BUILD; qualification
+passes `-hn-package-compiler go1.26.4`. Native-only accepts `noforge` or combined
+`nogithub,noforge` requests and always selects the shipped native-only asset.
+Normal source builds retain their original tag semantics.
+
+The package install/runtime harness tests literal `/tmp` and `/var/tmp` on
+macOS with no child TMPDIR, including foreign-record local import and archive
+export. It does not substitute the existing internal macOS regression, which
+remains useful source evidence. Browser quarantine/Gatekeeper behavior remains
+a separate manual download check.
