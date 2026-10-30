@@ -86,16 +86,33 @@ Existing released-writer tests additionally exercise continuation and malicious
 future-version refusal without weakening their assertions. Current public CLI
 journeys and refusal coverage are enumerated in `native-outcomes.json`.
 
-Measurements use non-race release binaries and 30 retained observations per
-native read case and variant on one physical host/corpus/filesystem. Elapsed time
-uses a monotonic clock; peak RSS uses Linux wait4 rusage for the actual process
-(including waited-for Git descendants), in KiB. Samples alternate standard and
-combined native-only variants and retain every observation. Neither race times
-nor test timing substitute for these measurements. Baseline/candidate overhead
-comparison belongs to WP24/WP25, with median elapsed bound max(10%,5ms) and peak
-RSS bound max(10%,1MiB). The public manifest records binaries, compiler, host,
-corpus and method. Raw local observations, reproducible corpus, generated keys,
-executables and logs are retained outside Git in the WP01 evidence directory.
+Measurements use the same exact non-race release binaries, physical host,
+filesystem and warmed keyless `measurement-corpus-3`. The replacement CSV retains
+30 observations for each of nine historical native read commands and both variants,
+with explicit LF line endings. Samples alternate variant order and none are removed.
+Elapsed time uses Python perf_counter_ns around subprocess.run of the native
+`/usr/bin/time` wrapper and command, so wrapper launch/exec/wait overhead is included
+consistently. Peak RSS is GNU Time `%M` command rusage in KiB after the small native
+launcher exec/fork; Python wait4 RSS is not used. On this Linux host it reports the
+command/its waited-descendant maxima, not simultaneous summed RSS or whole-machine
+memory. The exact native launcher SHA256, literal version output (UNKNOWN), installed
+package version and control identities are recorded in the manifest. Qualification
+instrumentation adds no application or package dependency.
+
+The new method was validated under Python parent allocations of 0, 64 and 128 MiB:
+a small native child measured a median 1384 KiB in every case; a child touching 64 MiB
+measured 66792/66792/66920 KiB; a waited descendant touching 64 MiB measured 65924 KiB
+in every case. The identical frozen issue-read command measured 12400/12596/12340 KiB,
+while each 128 MiB parent actually reached at least 128 MiB high-water. Raw observations,
+exact control source/binary identities and diagnostic assertions are external and
+hashed in the public manifest. These diagnostic control bounds do not change the
+application regression budgets.
+
+WP24/WP25 must use this same wrapper/scope/monotonic bracket for paired comparisons,
+or separately validate a comparable mechanism. Median elapsed bound remains
+max(10%,5ms), and peak-RSS bound max(10%,1MiB). No overhead pass is claimed before
+comparison against final code. Raw local observations, corpus, generated keys,
+executables and logs remain outside Git in the WP01 evidence directory.
 
 Only local Linux/amd64 execution is observed here. Other platform targets,
 independent native-user/extension-author experience, final host failure matrices
@@ -106,24 +123,31 @@ approval is a separate mandatory gate for every later WP.
 
 ## Observed validation and retained attempts
 
-At the frozen source, formatting, diff checks, vet, builds, focused corruption and
-traced detector controls, and the complete uncached race suite passed. Exact
-commands, source-input digests, elapsed times and raw-log digests are in the
-manifest. `native-outcomes.json` records actual passed current test/subtest names
-and the exact test-source digests that define their input commands, expected
-outputs and refusal/state assertions. In particular, the nine timed historical
-read cases do not substitute for init/write/conflict/exchange or governed
-proposal/review/CI/decision/merge coverage in those existing live public journeys.
-The standard and combined native-only releases have exact source/clean-VCS stamps;
-other existing tests' variant scopes are recorded by their actual subtest names.
+The original frozen-source Go evidence remains valid and was accepted in review:
+formatting, vet, builds, focused corruption/historical/traced controls and the full
+uncached race suite passed (1903 test/subtest passes, one pre-existing opt-in skip,
+zero failures). All 220 Go/module inputs remain byte-identical to eb3. No Go source,
+production contract, binary rebuild or full-suite rerun accompanies this evidence
+correction. Current live mutation/exchange/governance/refusal test names and exact
+test-source digests are in native-outcomes.json. The nine timing read commands are
+separate from those current public journeys. Other platforms/adopters/future host
+configuration cases remain pending.
 
-The first measurement setup failed before sampling because its lowercase grep
-pattern matched one historical record. Its original log is retained. A second
-complete set of 540 observations was rejected for incorrect Go VCS stamping from
-the enclosing checkout; its binaries, logs and every sample remain in the external
-`provenance-invalid-attempt` directory. The final build invocation explicitly
-selects the assigned lane through build-only GIT_DIR/GIT_WORK_TREE, verifies both
-clean exact-source stamps, and records a complete new 540-observation dataset.
-No valid sample was removed by timing or RSS, and no overhead pass is claimed
-before the final-code paired comparison. The manifest binds all attempt logs and
-the rejected dataset digest. This provenance correction changed no Go source.
+Attempt 1 failed before sampling on a case-sensitive grep expectation. Attempt 2
+retains 540 observations and binaries with invalid VCS provenance. Attempt 3 retains
+another 540 exact-source observations, but formal review demonstrated that Python
+wait4 peak RSS was floored by inherited launcher high-water. Attempt 3 is explicitly
+superseded measurement-invalid, not a valid source for RSS budgets. Its complete
+CSV, raw samples, binaries, original capture script and logs are retained in
+external `superseded-rss-attempt` with an immutable digest map. Original files were
+also left intact. The original committed CRLF CSV's 541 whitespace reports and
+exit 2 output remain in `reviewer-diff-check.log`. No failure or sample was deleted.
+
+Attempt 4 is the complete replacement native-time dataset, with all 540 rows retained.
+The manifest records method, launcher and control identities, medians, attempt
+history and artifact hashes. The R2 check covers exact approved f8 through the
+corrected authored deliverables, explicitly listing the three owned Go paths and
+baseline evidence directory. A committed correction-cut check is recorded in the
+manifest; the final delivered-head recheck, exact input digests and raw successful
+output are bound in external final-handoff-cycle2.json. A clean-working-tree check
+alone does not satisfy this gate, and no whitespace rule is waived.

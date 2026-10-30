@@ -272,7 +272,20 @@
     "source_commit": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c",
     "source_tree": "126dc1374f6c34cb310e68f1cae3d860ea45bb46"
   },
-  "measurement_scope": "The 9 release timing cases are historical read commands only. They do not qualify native mutation, conflict, exchange, governance or future extension behavior.",
+  "measurement_cycle_2": {
+    "controls_sha256": "741901b14e0087d354ba3eb3511e7bcc08c42cafdb9cb3c97f3ef5c1a89b086e",
+    "launcher_sha256": "3b11dec50514a8473e9f6efa7a34d584d0657538c09988f61b72d38ad4991a10",
+    "metrics_sha256": "860228199811f08e88454cb87378a781e4c41b38c1ebe53e27fbc8417890d6ee",
+    "observations": 540,
+    "original_full_Go_evidence_reused": true,
+    "samples_per_case_variant": 30,
+    "source_commit": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c",
+    "variant_binary_hashes": {
+      "native-only": "2fcae86be7aebe34bc57a59b85626528a6003a46dc730149af47e316f7383542",
+      "standard": "4594590270657b1ce3274964a6d6e822ede58c02c570eb902ac1192e2344ef81"
+    }
+  },
+  "measurement_scope": "The 9 timing cases are frozen historical read commands only, remeasured in cycle2 using validated native GNU Time RSS and a monotonic elapsed bracket including wrapper overhead. These do not replace live mutation/conflict/exchange/governance/refusal tests.",
   "release_binary_observations": [
     {
       "argv": [

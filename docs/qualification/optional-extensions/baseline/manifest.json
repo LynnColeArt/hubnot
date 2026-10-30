@@ -5,7 +5,9 @@
   "compiler": "go version go1.26.4 linux/amd64",
   "evidence_scripts": {
     "capture_baseline.py_sha256": "c88cd1f346a7ed1c493e623c1abae5a4ffb358e42ef067d49a87f722162ff3f5",
+    "capture_baseline_v2.py_sha256": "9a26b0e8a0feabd8cc8cdf2ac5e3f7b340fcddc901724c266738f3d86383744b",
     "finalize_evidence.py_sha256": "583e590714e69b18602320b8f5aede5360b0d391366336208775e6b14eabb6a1",
+    "update_cycle2_evidence.py_sha256": "1495425766fb3efc8a136edaa7c83e5b3c639094da360eeb4d9c4b1aaa48847b",
     "validate_frozen.py_sha256": "5c88f4e1b6a8d81ba841831e7baf2e1a099b5aa1867d54468263d6eac3325fd0"
   },
   "gates": {
@@ -33,6 +35,7 @@
       "exit_status": 0,
       "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "result": "pass",
+      "scope": "Original clean source worktree check only; insufficient for final evidence. Retained history, superseded by delivered authored-range check.",
       "tested_go_module_inputs_sha256": "0e47bd473180b9b9f3a270dd6663d5244a5448e1671e73cbf01a0f34d32419b0"
     },
     "focused-frozen": {
@@ -565,140 +568,189 @@
     ],
     "later_elapsed_bound": "max(10 percent, 5 ms) median regression",
     "later_rss_bound": "max(10 percent, 1024 KiB) median regression",
+    "launcher": {
+      "compiler": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+      "control_binary_sha256": "d39caa826307a9ca1eb014b590aa91d593c4b3b7e19b861573ea5ae8f8f1b183",
+      "control_source_sha256": "870cb50cad4dc3dec292212d4dd020b02f5ea4556df30e5e0fbeb43c5301162e",
+      "elapsed_timer": "Python perf_counter_ns brackets subprocess.run of /usr/bin/time plus command: native wrapper launch/exec/wait overhead included consistently; WP24/WP25 must use this same timer/wrapper mechanism or separately qualify comparability",
+      "method": "GNU Time %M command rusage in KiB after native launcher exec/fork; Python wait4 is not used",
+      "package": "time 1.9-0.2build1",
+      "path": "/usr/bin/time",
+      "rss_scope": "peak command/its waited-descendant maxima as reported by GNU Time on Linux; not sum of simultaneous process RSS and not whole-machine memory",
+      "sha256": "3b11dec50514a8473e9f6efa7a34d584d0657538c09988f61b72d38ad4991a10",
+      "version_output": "time (GNU Time) UNKNOWN\nCopyright (C) 2018 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by David Keppel, David MacKenzie, and Assaf Gordon."
+    },
     "medians": [
       {
         "case": "discussion",
-        "elapsed_ns": 14387220.5,
+        "elapsed_ns": 14851534.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9004.0,
         "variant": "native-only"
       },
       {
         "case": "discussion-reply",
-        "elapsed_ns": 14144887.0,
+        "elapsed_ns": 15071258.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9260.0,
         "variant": "native-only"
       },
       {
         "case": "grep",
-        "elapsed_ns": 52771722.0,
+        "elapsed_ns": 53945309.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9678.0,
         "variant": "native-only"
       },
       {
         "case": "issue",
-        "elapsed_ns": 13749250.0,
+        "elapsed_ns": 14839369.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 8940.0,
         "variant": "native-only"
       },
       {
         "case": "memory",
-        "elapsed_ns": 66737120.0,
+        "elapsed_ns": 68383789.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9678.0,
         "variant": "native-only"
       },
       {
         "case": "project",
-        "elapsed_ns": 14205312.0,
+        "elapsed_ns": 14919898.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9260.0,
         "variant": "native-only"
       },
       {
         "case": "project-item",
-        "elapsed_ns": 14288586.5,
+        "elapsed_ns": 15107834.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9132.0,
         "variant": "native-only"
       },
       {
         "case": "recall",
-        "elapsed_ns": 52946805.5,
+        "elapsed_ns": 53497893.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9668.0,
         "variant": "native-only"
       },
       {
         "case": "workflow",
-        "elapsed_ns": 14282081.5,
+        "elapsed_ns": 15135733.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 9134.0,
         "variant": "native-only"
       },
       {
         "case": "discussion",
-        "elapsed_ns": 14747393.0,
+        "elapsed_ns": 15291007.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 12468.0,
         "variant": "standard"
       },
       {
         "case": "discussion-reply",
-        "elapsed_ns": 14371256.0,
+        "elapsed_ns": 15316377.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 12724.0,
         "variant": "standard"
       },
       {
         "case": "grep",
-        "elapsed_ns": 53048804.5,
+        "elapsed_ns": 53831368.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 13108.0,
         "variant": "standard"
       },
       {
         "case": "issue",
-        "elapsed_ns": 14237072.0,
+        "elapsed_ns": 15172453.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 12340.0,
         "variant": "standard"
       },
       {
         "case": "memory",
-        "elapsed_ns": 67379431.0,
+        "elapsed_ns": 68285310.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 12852.0,
         "variant": "standard"
       },
       {
         "case": "project",
-        "elapsed_ns": 14449680.5,
+        "elapsed_ns": 15243023.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 12702.0,
         "variant": "standard"
       },
       {
         "case": "project-item",
-        "elapsed_ns": 14337906.0,
+        "elapsed_ns": 15332383.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 12724.0,
         "variant": "standard"
       },
       {
         "case": "recall",
-        "elapsed_ns": 53318013.0,
+        "elapsed_ns": 53698549.0,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 13076.0,
         "variant": "standard"
       },
       {
         "case": "workflow",
-        "elapsed_ns": 14557594.5,
+        "elapsed_ns": 15321492.5,
         "observations": 30,
-        "peak_rss_kib": 30864.0,
+        "peak_rss_kib": 12722.0,
         "variant": "standard"
       }
     ],
+    "method_comparability": "WP24/WP25 must pair with the same native time wrapper identity/scope and Python monotonic elapsed bracket, or independently validate a comparable replacement. Wrapper overhead is included in both baseline/candidate elapsed. Superseded Python-wait4 RSS values are not comparable valid baseline data.",
     "observations_per_case_variant": 30,
     "raw_corpus_directory": "external optional-extensions-WP01/measurement-corpus-3",
     "raw_private_evidence": "external optional-extensions-WP01; no binaries/keys/raw traces in repository",
-    "rss": "Linux wait4 ru_maxrss KiB, peak observed child/its waited descendants; not summed whole-machine RSS",
+    "raw_samples_directory": "external optional-extensions-WP01/samples-native-time",
+    "rss": "GNU Time %M command rusage in KiB after native launcher exec/fork; Python wait4 is not used",
+    "rss_isolation_controls": {
+      "assertions": [
+        "zero-MiB native child <=4096KiB under every parent allocation",
+        "64-MiB child and waited descendant median >=60MiB under each parent allocation; medians vary <=4096KiB",
+        "same frozen issue command medians vary <=4096KiB across parent allocations0/64/128MiB",
+        "128-MiB Python parent actual highwater >=128MiB while measured issue command <32MiB"
+      ],
+      "medians_peak_rss_kib": {
+        "frozen-issue-read": {
+          "0": 12400,
+          "128": 12340,
+          "64": 12596
+        },
+        "native-child-64mib": {
+          "0": 66792,
+          "128": 66920,
+          "64": 66792
+        },
+        "native-waited-descendant-64mib": {
+          "0": 65924,
+          "128": 65924,
+          "64": 65924
+        },
+        "native-zero": {
+          "0": 1384,
+          "128": 1384,
+          "64": 1384
+        }
+      },
+      "qualification_tools_only": true,
+      "raw_directory": "external optional-extensions-WP01/rss-isolation-controls",
+      "report_sha256": "741901b14e0087d354ba3eb3511e7bcc08c42cafdb9cb3c97f3ef5c1a89b086e",
+      "status": "pass"
+    },
+    "rss_scope": "peak command/its waited-descendant maxima as reported by GNU Time on Linux; not sum of simultaneous process RSS and not whole-machine memory",
     "schedule": "sample index then command then alternating standard/native-only order; no exclusions",
-    "timer": "Python perf_counter_ns around actual process fork/exec/wait4",
+    "timer": "Python perf_counter_ns brackets subprocess.run of /usr/bin/time plus command: native wrapper launch/exec/wait overhead included consistently; WP24/WP25 must use this same timer/wrapper mechanism or separately qualify comparability",
     "total_observations": 540
   },
   "measurement_attempts": [
@@ -718,15 +770,28 @@
       "result": "invalid VCS provenance; retained outside Git, not used as source-bound baseline"
     },
     {
+      "archive": "external optional-extensions-WP01/superseded-rss-attempt",
+      "archive_hashes_sha256": "1db997d084af7f9eca3bbd8c36a111bc26e15eff14846040c1eaeffc9a206881",
       "attempt": 3,
       "log_sha256": "35ca20e0d377d41f94d3ef98d8540c34b667a31cc01d9eb9f545600435daaf49",
       "metrics_sha256": "b8f57f00502980b7bef1c4090936e70ae64b6f3f93ef1acba8ecf8a3090b9275",
       "observations": 540,
-      "reason": "build-only GIT_DIR/GIT_WORK_TREE select actual clean lane; both binaries stamp frozen eb3 source; new complete interleaved 30-sample dataset",
-      "result": "valid exact-source baseline; all observations retained"
+      "old_capture_script_sha256": "c88cd1f346a7ed1c493e623c1abae5a4ffb358e42ef067d49a87f722162ff3f5",
+      "reason": "Formal R1 controls showed inherited Python parent high-water floor. Exact-source binaries remain valid; all540 old samples, binary copies, old capture script and logs preserved. Old CSV also has CRLF and failed authored-range diffcheck R2.",
+      "result": "superseded measurement-invalid: launcher-contaminated peak RSS"
+    },
+    {
+      "attempt": 4,
+      "capture_script_sha256": "9a26b0e8a0feabd8cc8cdf2ac5e3f7b340fcddc901724c266738f3d86383744b",
+      "log_sha256": "d9b34f2089882cb8032f1afe51805d19791beeb96c34fff9ab5bafc61e159863",
+      "metrics_sha256": "860228199811f08e88454cb87378a781e4c41b38c1ebe53e27fbc8417890d6ee",
+      "observations": 540,
+      "reason": "same exact frozen eb3 binaries/host/corpus; validated GNU Time %M RSS with parent-memory-independence, actual child allocation and waited-descendant controls; consistent monotonic elapsed bracket includes native wrapper overhead; LF CSV, all samples retained",
+      "result": "replacement child-workload RSS baseline, pending independent review",
+      "summary_sha256": "1f014c233c5c2010e6f24ad060f1a17b13ab52e30b1c1911610ba6e83961255b"
     }
   ],
-  "metrics_sha256": "b8f57f00502980b7bef1c4090936e70ae64b6f3f93ef1acba8ecf8a3090b9275",
+  "metrics_sha256": "860228199811f08e88454cb87378a781e4c41b38c1ebe53e27fbc8417890d6ee",
   "observed_targets": [
     "linux/amd64 standard",
     "linux/amd64 nogithub,noforge"
@@ -749,8 +814,24 @@
   },
   "public_artifacts_sha256": {
     "historical-hashes.json": "eef3e223cf3ca09adc580988931aa70b77bb9362f538c64f2af961b397bdd664",
-    "metrics.csv": "b8f57f00502980b7bef1c4090936e70ae64b6f3f93ef1acba8ecf8a3090b9275",
-    "native-outcomes.json": "62c24805de0e527150f9fe1f347cebdba6ecd96c63f4bf81534fcaa626fdea38"
+    "metrics.csv": "860228199811f08e88454cb87378a781e4c41b38c1ebe53e27fbc8417890d6ee",
+    "native-outcomes.json": "71372ec4352615010b1894f66e950b3f83c7a8f2e0b73813dd35da56081abfa5"
+  },
+  "review_cycle_1": {
+    "accepted_Go_evidence": "all220 inputs unchanged; existing focused/vet/build/format/full uncached race accepted and reused; no Go rerun for measurement-only correction",
+    "feedback_sha256": "6ab89fcc92b3ed54390c2fd0214eca863c8cc6f0ca143a6a5ee41397056e5bb4",
+    "findings": [
+      "R1 launcher-contaminated RSS",
+      "R2 CRLF CSV and incomplete diff-check scope"
+    ],
+    "old_authored_range_diffcheck": {
+      "exit_status": 2,
+      "log_sha256": "e1cecf0f888f4150e2e477cb1bceb19cc08964a58ec4c07a7ee9437e9c29af91",
+      "preserved_log": "external optional-extensions-WP01/reviewer-diff-check.log",
+      "result": "fail",
+      "trailing_whitespace_reports": 541
+    },
+    "outcome": "rejected"
   },
   "runtime_count": 105,
   "runtime_path_digest_json_sha256": "7e77be2491cf1437b9593f7a74da84f50ba59a4f7d3bc2bd9249d950460c6a46",
