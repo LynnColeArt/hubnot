@@ -176,7 +176,10 @@
       "force_count": 0,
       "lane": "in_progress",
       "last_event_id": "01M67KCG2CJ6TF5992MHWJKQP2",
-      "last_transition_at": "2026-10-30T23:47:39.724870+00:00"
+      "last_transition_at": "2026-10-30T23:47:39.724870+00:00",
+      "notes": [
+        "Root codex normal blocked-to-in_progress recovery: allocator planning-merge blocker resolved by fa420df6 in canonical lane-l, recorded d33 ancestry and exact approved source verified. No implementation yet; canonical implement action will resume and establish codex implementer-ivan identity before dispatch."
+      ]
     },
     "WP14": {
       "actor": "finalize-tasks",
