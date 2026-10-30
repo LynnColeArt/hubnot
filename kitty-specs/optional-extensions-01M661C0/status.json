@@ -1,7 +1,7 @@
 {
-  "event_count": 17,
-  "last_event_id": "01M663X90B4D3HMQ8W744ZVR0J",
-  "materialized_at": "2026-10-30T09:57:57.899753+00:00",
+  "event_count": 18,
+  "last_event_id": "01M663XAS1B9KZPXQJ19X3ABMX",
+  "materialized_at": "2026-10-30T09:57:59.713791+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 17
+    "planned": 18
   },
   "work_packages": {
     "WP01": {
@@ -135,6 +135,13 @@
       "lane": "planned",
       "last_event_id": "01M663X90B4D3HMQ8W744ZVR0J",
       "last_transition_at": "2026-10-30T09:57:57.899753+00:00"
+    },
+    "WP18": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M663XAS1B9KZPXQJ19X3ABMX",
+      "last_transition_at": "2026-10-30T09:57:59.713791+00:00"
     }
   }
 }
