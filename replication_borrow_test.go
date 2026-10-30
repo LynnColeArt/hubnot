@@ -313,6 +313,30 @@ func TestGitObjectsPresentMissingPromisedBlobDoesNotLazyFetch(t *testing.T) {
 	}
 }
 
+func TestGitStoredObjectsPresentHealthyInventory(t *testing.T) {
+	borrowFixture(t, partialClone)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	promised := mustGitText(t, "rev-parse", "HEAD:vendor/crate000.rs")
+	present := mustGitText(t, "rev-parse", "HEAD")
+	before := mustGitText(t, "count-objects", "-v")
+	trace := filepath.Join(t.TempDir(), "git.trace")
+	t.Setenv("GIT_TRACE", trace)
+	got, err := gitStoredObjectsPresentAt(gitDir, []string{promised, present})
+	if err != nil || got[promised] || !got[present] || len(got) != 2 {
+		t.Fatalf("healthy physical inventory = %v, %v", got, err)
+	}
+	if after := mustGitText(t, "count-objects", "-v"); after != before {
+		t.Fatalf("physical inventory changed storage: before=%s after=%s", before, after)
+	}
+	commands, err := os.ReadFile(trace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(commands), " fetch ") {
+		t.Fatalf("physical inventory attempted lazy fetch:\n%s", commands)
+	}
+}
+
 func TestGitObjectsPresentCorruptObjectFailsClosed(t *testing.T) {
 	borrowFixture(t, partialClone)
 	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
@@ -325,13 +349,16 @@ func TestGitObjectsPresentCorruptObjectFailsClosed(t *testing.T) {
 	if err := os.WriteFile(objectPath, []byte("invalid object"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	for _, id := range []string{object, promised} {
-		// The corrupt loose object exercises a successful batch with an error
-		// diagnostic. The promised missing blob forces a physical inventory,
-		// which must also refuse corruption instead of proving false absence.
-		if got, err := gitObjectsPresentAt(gitDir, []string{id}); err == nil {
-			t.Fatalf("corrupt storage was treated as ordinary presence or absence for %s: %v", id, got)
-		}
+	// Looking up the corrupt ID must refuse. Looking up an unrelated missing
+	// promised ID does not force inventory on every Git version: a successful
+	// batch can report absence without inspecting the corrupt loose object.
+	if got, err := gitObjectsPresentAt(gitDir, []string{object}); err == nil {
+		t.Fatalf("corrupt object was treated as ordinary presence or absence: %v", got)
+	}
+	// Exercise the physical-inventory contract directly, independent of which
+	// Git versions need it as the missing-promisor batch fallback.
+	if got, err := gitStoredObjectsPresentAt(gitDir, []string{promised}); err == nil {
+		t.Fatalf("corrupt physical inventory proved false absence: %v", got)
 	}
 }
 

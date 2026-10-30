@@ -1,0 +1,613 @@
+{
+  "version": 1,
+  "mission_slug": "optional-extensions-01M661C0",
+  "mission_id": "01M661C0T0E4DS0AXBCXG7WCAX",
+  "mission_branch": "kitty/mission-optional-extensions-01M661C0",
+  "target_branch": "feature/optional-extensions",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "beta_scale_test.go",
+        "docs/qualification/optional-extensions/baseline/historical-hashes.json",
+        "docs/qualification/optional-extensions/baseline/manifest.json",
+        "docs/qualification/optional-extensions/baseline/metrics.csv",
+        "docs/qualification/optional-extensions/baseline/native-outcomes.json",
+        "docs/qualification/optional-extensions/baseline/prerequisites.md",
+        "extension_default_baseline_test.go",
+        "replication_borrow_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md",
+        "kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md",
+        "kitty-specs/optional-extensions-01M661C0/contracts/default-workflow.md",
+        "kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "artifact_commands.go",
+        "artifact_envelope_commands.go",
+        "artifact_envelope_commands_test.go",
+        "internal/artifact/canonical.go",
+        "internal/artifact/canonical_test.go",
+        "internal/artifact/envelope.go",
+        "internal/artifact/envelope_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-planning"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-l",
+      "wp_ids": [
+        "WP13"
+      ],
+      "write_scope": [
+        "extension_commands.go",
+        "extension_registration_test.go",
+        "internal/extension/manifest.go",
+        "internal/extension/manifest_test.go",
+        "internal/extension/registration.go",
+        "internal/extension/registration_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-planning"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "artifact_schema_commands.go",
+        "artifact_schema_commands_test.go",
+        "internal/artifact/content.go",
+        "internal/artifact/content_test.go",
+        "internal/artifact/schema.go",
+        "internal/artifact/schema_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-m",
+      "wp_ids": [
+        "WP14"
+      ],
+      "write_scope": [
+        "extension_enablement.go",
+        "extension_enablement_test.go",
+        "internal/extension/grants.go",
+        "internal/extension/grants_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-l"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-n",
+      "wp_ids": [
+        "WP15"
+      ],
+      "write_scope": [
+        "extension_protocol_commands.go",
+        "extension_protocol_commands_test.go",
+        "internal/extension/frame.go",
+        "internal/extension/frame_test.go",
+        "internal/extension/protocol.go",
+        "internal/extension/protocol_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-l"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "artifact_read.go",
+        "artifact_read_test.go",
+        "artifact_store.go",
+        "artifact_store_commands.go",
+        "artifact_store_commands_test.go",
+        "artifact_store_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-o",
+      "wp_ids": [
+        "WP16"
+      ],
+      "write_scope": [
+        "extension_host_command.go",
+        "extension_host_lifecycle_test.go",
+        "internal/extension/process.go",
+        "internal/extension/process_test.go",
+        "internal/extension/session.go",
+        "internal/extension/session_test.go",
+        "main.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-m",
+        "lane-n"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "artifact_catalog.go",
+        "artifact_catalog_test.go",
+        "artifact_revision.go",
+        "artifact_revision_commands.go",
+        "artifact_revision_commands_test.go",
+        "artifact_revision_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "artifact_operation.go",
+        "artifact_operation_commands.go",
+        "artifact_operation_commands_test.go",
+        "artifact_operation_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-e"
+      ],
+      "parallel_group": 6
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "artifact_closure.go",
+        "artifact_closure_commands.go",
+        "artifact_closure_commands_test.go",
+        "artifact_closure_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-e"
+      ],
+      "parallel_group": 6
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "artifact_replication.go",
+        "artifact_replication_test.go",
+        "docs/replication-v0.md",
+        "quarantine.go",
+        "replication.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-g"
+      ],
+      "parallel_group": 7
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP10"
+      ],
+      "write_scope": [
+        "artifact_exchange.go",
+        "artifact_exchange_commands.go",
+        "artifact_exchange_commands_test.go",
+        "artifact_exchange_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-g"
+      ],
+      "parallel_group": 7
+    },
+    {
+      "lane_id": "lane-j",
+      "wp_ids": [
+        "WP11"
+      ],
+      "write_scope": [
+        "artifact_acceptance_test.go",
+        "artifact_commands_test.go",
+        "artifact_query_commands.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-f",
+        "lane-h",
+        "lane-i"
+      ],
+      "parallel_group": 8
+    },
+    {
+      "lane_id": "lane-k",
+      "wp_ids": [
+        "WP12"
+      ],
+      "write_scope": [
+        "artifact_search.go",
+        "artifact_search_acceptance_test.go",
+        "artifact_search_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-j"
+      ],
+      "parallel_group": 9
+    },
+    {
+      "lane_id": "lane-p",
+      "wp_ids": [
+        "WP17"
+      ],
+      "write_scope": [
+        "contribution_moderation.go",
+        "extension_native_acceptance_test.go",
+        "extension_native_adapter.go",
+        "extension_native_adapter_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-j",
+        "lane-o"
+      ],
+      "parallel_group": 9
+    },
+    {
+      "lane_id": "lane-q",
+      "wp_ids": [
+        "WP18"
+      ],
+      "write_scope": [
+        "extension_artifact_acceptance_test.go",
+        "extension_artifact_adapter.go",
+        "extension_artifact_adapter_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-j",
+        "lane-k",
+        "lane-o"
+      ],
+      "parallel_group": 10
+    },
+    {
+      "lane_id": "lane-r",
+      "wp_ids": [
+        "WP19"
+      ],
+      "write_scope": [
+        "extension_changes.go",
+        "extension_changes_acceptance_test.go",
+        "extension_changes_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-p",
+        "lane-q"
+      ],
+      "parallel_group": 11
+    },
+    {
+      "lane_id": "lane-s",
+      "wp_ids": [
+        "WP20"
+      ],
+      "write_scope": [
+        "examples/extensions/fake-tracker/README.md",
+        "examples/extensions/fake-tracker/journal.go",
+        "examples/extensions/fake-tracker/main.go",
+        "examples/extensions/fake-tracker/main_test.go",
+        "extension_fake_tracker_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-r"
+      ],
+      "parallel_group": 12
+    },
+    {
+      "lane_id": "lane-t",
+      "wp_ids": [
+        "WP21"
+      ],
+      "write_scope": [
+        "examples/extensions/charter-model/README.md",
+        "examples/extensions/charter-model/main.go",
+        "examples/extensions/charter-model/main_test.go",
+        "examples/extensions/charter-model/model.go",
+        "extension_charter_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-r"
+      ],
+      "parallel_group": 12
+    },
+    {
+      "lane_id": "lane-u",
+      "wp_ids": [
+        "WP22"
+      ],
+      "write_scope": [
+        "examples/extensions/inventory-model/README.md",
+        "examples/extensions/inventory-model/main.go",
+        "examples/extensions/inventory-model/main_test.go",
+        "examples/extensions/inventory-model/model.go",
+        "extension_inventory_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-r"
+      ],
+      "parallel_group": 12
+    },
+    {
+      "lane_id": "lane-v",
+      "wp_ids": [
+        "WP23"
+      ],
+      "write_scope": [
+        "README.md",
+        "docs/artifacts-v1.md",
+        "docs/extension-consumers.md",
+        "docs/extensions.md",
+        "docs/threat-model.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-s",
+        "lane-t",
+        "lane-u"
+      ],
+      "parallel_group": 13
+    },
+    {
+      "lane_id": "lane-w",
+      "wp_ids": [
+        "WP24"
+      ],
+      "write_scope": [
+        "docs/qualification/optional-extensions/default/historical-hashes.json",
+        "docs/qualification/optional-extensions/default/manifest.json",
+        "docs/qualification/optional-extensions/default/matrix.json",
+        "docs/qualification/optional-extensions/default/metrics.csv",
+        "extension_default_acceptance_test.go",
+        "extension_default_performance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-v"
+      ],
+      "parallel_group": 14
+    },
+    {
+      "lane_id": "lane-x",
+      "wp_ids": [
+        "WP25"
+      ],
+      "write_scope": [
+        "docs/qualification/optional-extensions/packages/checks.md",
+        "docs/qualification/optional-extensions/packages/manifest.json",
+        "docs/qualification/optional-extensions/packages/platform-matrix.json",
+        "extension_package_acceptance_test.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-w"
+      ],
+      "parallel_group": 15
+    },
+    {
+      "lane_id": "lane-y",
+      "wp_ids": [
+        "WP26"
+      ],
+      "write_scope": [
+        "docs/qualification/optional-extensions/independent/boundary-review.md",
+        "docs/qualification/optional-extensions/independent/extension-author.md",
+        "docs/qualification/optional-extensions/independent/native-user.md",
+        "docs/qualification/optional-extensions/independent/readiness.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-x"
+      ],
+      "parallel_group": 16
+    }
+  ],
+  "computed_at": "2026-10-30T09:58:15.848193+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP02"
+  ],
+  "planning_commit_sha": "fb6055982c0756e63f33ca7e3a32d5022234dc85"
+}
