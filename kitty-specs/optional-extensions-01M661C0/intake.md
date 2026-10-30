@@ -53,3 +53,13 @@ performance or implementation results.
   https://github.com/spec-kitty/spec-kitty-charter/blob/main/README.md
 - Hubnot fixed candidate f8c68bebbaa3845d1eaaac02e3638f30dc062bbd and approved beta lane
   source used for the preceding capability assessment; published alpha remains separate.
+
+
+## Subsequent execution authorization — 2026-10-30
+
+Owner: "Perfect. Let's get back to the extension mission—break it into work packages and start implementing, with preserving the default Hubnot workflow as the first gate."
+
+Task authoring and implement/review are now authorized. Existing planning-stage
+notes remain historical. The first gate imports/rechecks the approved beta runtime,
+dispositions the issue23 test assumption and proves the native baseline. Every
+feature work package depends on its approval. No release or main push is implied.

@@ -285,3 +285,34 @@ storage and multiple speculative transports were rejected. No charter exemption.
 Specification and plan are substantive. Supporting model, contracts and qualification
 recipe accompany this plan. Task generation, lane finalization, implementation,
 mission acceptance and release are distinct later actions. No test pass is invented.
+
+
+## Execution authorization and first-gate decision — 2026-10-30
+
+The owner explicitly requested work-package authoring and implementation, with
+preserving the default Hubnot workflow as the first gate. This supersedes only
+the earlier planning-only delivery stage; product requirements remain unchanged.
+
+The first work package owns a normal content integration of the exact approved
+beta runtime f8c68bebbaa3845d1eaaac02e3638f30dc062bbd into its assigned lane.
+This imports an already reviewed dependency, not author-written extension code or
+acceptance of the incomplete beta mission. WP09 is outside that ancestry. Include
+only the exact approved WP07 beta_scale_test.go blob
+04f9587e36b571779153a8e783072d85ec22f6f3 separately, not the older WP07 source tree.
+The resulting baseline is219Go/module inputs;105non-testGo/module hashes must match
+f8. Source import metadata/ancestry and later test-only edits are reported separately.
+
+Issue23's missing-promised-object test assumes a Git-version-dependent physical
+inventory fallback. First-gate scope includes a narrowly owned deterministic test
+correction after independent contract assessment: direct corrupt-ID lookup must
+refuse, direct physical inventory must refuse corruption, and healthy/no-lazy-fetch
+controls remain. No version skip, blanket error allowance, source-runtime change or
+waived regression is authorized by this correction. Capture the repaired baseline
+and perform the full declared validation before approval unblocks extension work.
+
+Before affected feature code, a contract-only predecessor must pin exact signed
+artifact bytes/ref grammar/schema subset, host registration/grants/method shapes,
+replay/localCAS-versus-imported-fork semantics, cancellation/partial-frame/native
+request-lock behavior, visibility removal/rescan reconciliation and opaque dependency
+preservation. Independent findings are preserved in the external planning evidence;
+they are not a claim these contracts are already executable or independently approved.
