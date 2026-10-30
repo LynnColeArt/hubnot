@@ -20,6 +20,11 @@ sorted path/digest JSON digest is
 The manifest records exact tested source and tree independently of later
 evidence-only commits.
 
+`mainObjectsCompleteForBorrowing` in `quarantine.go` independently refuses
+borrowing from shallow, partial/promisor, retained-promisor-pack or alternate
+stores, and answers false on inspection failure. The corruption fixture repair
+does not alter that isolation boundary.
+
 ## Issue 23 disposition
 
 The original `TestGitObjectsPresentCorruptObjectFailsClosed` passed locally on
@@ -98,3 +103,27 @@ and final-source qualification remain pending. Python architectural coverage is
 `no_coverage` for this Go change; it must not be reported as Go test coverage.
 The manifest records gate outcomes only after actual completion. Reviewer
 approval is a separate mandatory gate for every later WP.
+
+## Observed validation and retained attempts
+
+At the frozen source, formatting, diff checks, vet, builds, focused corruption and
+traced detector controls, and the complete uncached race suite passed. Exact
+commands, source-input digests, elapsed times and raw-log digests are in the
+manifest. `native-outcomes.json` records actual passed current test/subtest names
+and the exact test-source digests that define their input commands, expected
+outputs and refusal/state assertions. In particular, the nine timed historical
+read cases do not substitute for init/write/conflict/exchange or governed
+proposal/review/CI/decision/merge coverage in those existing live public journeys.
+The standard and combined native-only releases have exact source/clean-VCS stamps;
+other existing tests' variant scopes are recorded by their actual subtest names.
+
+The first measurement setup failed before sampling because its lowercase grep
+pattern matched one historical record. Its original log is retained. A second
+complete set of 540 observations was rejected for incorrect Go VCS stamping from
+the enclosing checkout; its binaries, logs and every sample remain in the external
+`provenance-invalid-attempt` directory. The final build invocation explicitly
+selects the assigned lane through build-only GIT_DIR/GIT_WORK_TREE, verifies both
+clean exact-source stamps, and records a complete new 540-observation dataset.
+No valid sample was removed by timing or RSS, and no overhead pass is claimed
+before the final-code paired comparison. The manifest binds all attempt logs and
+the rejected dataset digest. This provenance correction changed no Go source.
