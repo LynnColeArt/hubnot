@@ -25,6 +25,38 @@
       "result": "pass",
       "tested_go_module_inputs_sha256": "0e47bd473180b9b9f3a270dd6663d5244a5448e1671e73cbf01a0f34d32419b0"
     },
+    "delivered-authored-range-diff-check": {
+      "base": "f8c68bebbaa3845d1eaaac02e3638f30dc062bbd",
+      "checked_head": "b3d21a9e2c1e8dd36513205e1d19aa81390e82d4",
+      "checked_tree": "ee490ac0f8a6058a6e280184aecf45ab8eed5172",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "f8c68bebbaa3845d1eaaac02e3638f30dc062bbd..b3d21a9e2c1e8dd36513205e1d19aa81390e82d4",
+        "--",
+        "replication_borrow_test.go",
+        "extension_default_baseline_test.go",
+        "beta_scale_test.go",
+        "docs/qualification/optional-extensions/baseline"
+      ],
+      "exit_status": 0,
+      "input_map_sha256": "b013b7e7d94b0cd61f75bebeed47ff60b0f0faea57c2d3120103bfc5d7bcae9b",
+      "input_path_digests": {
+        "beta_scale_test.go": "60cd60b0321b837adbab9959cf6b3e082ccd02647b738d0eacf5ea5b13b29f33",
+        "docs/qualification/optional-extensions/baseline/historical-hashes.json": "eef3e223cf3ca09adc580988931aa70b77bb9362f538c64f2af961b397bdd664",
+        "docs/qualification/optional-extensions/baseline/manifest.json": "1fec03d0e3eac73e1b00ebfed2dfba1a5b8eb66f7a147a5b22f4c6666162e65a",
+        "docs/qualification/optional-extensions/baseline/metrics.csv": "860228199811f08e88454cb87378a781e4c41b38c1ebe53e27fbc8417890d6ee",
+        "docs/qualification/optional-extensions/baseline/native-outcomes.json": "71372ec4352615010b1894f66e950b3f83c7a8f2e0b73813dd35da56081abfa5",
+        "docs/qualification/optional-extensions/baseline/prerequisites.md": "f0d213d74ae1cdddc793aa91d10e56de657507400bbf9d0c9b30e8d4a241bdc6",
+        "extension_default_baseline_test.go": "0c3445d1c1809f0910e5fae402630c669cdf3930e4964e682ac8ca1bf901a902",
+        "replication_borrow_test.go": "c53eb01c43bb4e94582e9ec2deb1b73e9b787d28f77aa3e12e87db03d5159eca"
+      },
+      "output_bytes": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "pass",
+      "scope": "Actual committed correction cut, not clean worktree. A subsequent manifest-only proof-record commit is rechecked at final delivered HEAD in final-handoff-cycle2.json."
+    },
     "diff-check": {
       "command": [
         "git",
