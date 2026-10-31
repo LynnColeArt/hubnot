@@ -135,7 +135,9 @@ func TestSessionProcessAsset(t *testing.T) {
 			os.Exit(68)
 		}
 		if mode == "blocked-response-eof" {
-			os.Exit(0)
+			// Isolate stdout EOF from stdin response loss: leaving the read
+			// end open keeps the bulk writer blocked until host cleanup.
+			_ = os.Stdout.Close()
 		}
 		if mode == "blocked-response-cancel" || mode == "blocked-response-wrong-cancel" {
 			target := "read"
