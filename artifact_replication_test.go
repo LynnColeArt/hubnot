@@ -865,3 +865,96 @@ func TestArtifactGitNamedTransactionStaleOldIsAtomic(t *testing.T) {
 		t.Fatal("stale transaction partially published")
 	}
 }
+
+func TestArtifactGitFetchAcknowledgementCLI(t *testing.T) {
+	for _, tc := range []struct{ name, code, recovery string }{{"committed-error", "uncertain_operation", "inspect_operation"}, {"unavailable-witness", "uncertain_operation", "inspect_operation"}, {"stale-old", "concurrent_update", "retry_identical"}} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newArtifactNamespaceFixture(t)
+			sourceBefore := f.src.snapshot()
+			sentinelBefore := namespacePublicBody(t, f.dst, f.sentinel)
+			competing := f.dst.gitInput("public competing selected-target value", "hash-object", "-w", "--stdin")
+			realGit, e := exec.LookPath("git")
+			if e != nil {
+				t.Fatal(e)
+			}
+			wrap := t.TempDir()
+			committed := filepath.Join(wrap, "committed")
+			refused := filepath.Join(wrap, "stale-refused")
+			denied := filepath.Join(wrap, "witness-denied")
+			// Only the real final local stdin transaction is faulted. Quarantine Git,
+			// raw copying and initial source/destination witnesses delegate normally.
+			script := `#!/bin/sh
+update=0; stream=0; explicit=0; witness=0
+for arg do
+ case "$arg" in update-ref) update=1 ;; --stdin) stream=1 ;; --git-dir=*) explicit=1 ;; for-each-ref) witness=1 ;; esac
+done
+if [ "$HN_WP09_ACK_MODE" = unavailable-witness ] && [ -f "$HN_WP09_ACK_COMMITTED" ] && [ "$witness" = 1 ]; then
+ : > "$HN_WP09_ACK_DENIED"
+ exit 87
+fi
+if [ "$PWD" = "$HN_WP09_ACK_REPO" ] && [ "$update$stream$explicit" = 110 ]; then
+ if [ "$HN_WP09_ACK_MODE" = stale-old ]; then
+  "$HN_WP09_ACK_GIT" update-ref --no-deref "$HN_WP09_ACK_REF" "$HN_WP09_ACK_COMPETING" "$HN_WP09_ACK_OLD" || exit 90
+  "$HN_WP09_ACK_GIT" "$@"
+  result=$?
+  [ "$result" != 0 ] || exit 91
+  : > "$HN_WP09_ACK_REFUSED"
+  exit "$result"
+ fi
+ "$HN_WP09_ACK_GIT" "$@" || exit $?
+ : > "$HN_WP09_ACK_COMMITTED"
+ exit 86
+fi
+exec "$HN_WP09_ACK_GIT" "$@"
+`
+			if e = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); e != nil {
+				t.Fatal(e)
+			}
+			cmd := exec.Command(f.dst.binary, "artifact", "fetch", "--remote", "public", "--id", f.selected, "--json")
+			cmd.Dir = f.dst.repo
+			cmd.Env = operationalTestEnvironmentWith(f.dst.home, map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP09_ACK_MODE": tc.name, "HN_WP09_ACK_GIT": realGit, "HN_WP09_ACK_REPO": f.dst.repo, "HN_WP09_ACK_REF": f.accepted, "HN_WP09_ACK_OLD": f.oldTip, "HN_WP09_ACK_COMPETING": competing, "HN_WP09_ACK_COMMITTED": committed, "HN_WP09_ACK_REFUSED": refused, "HN_WP09_ACK_DENIED": denied})
+			raw, callErr := cmd.Output()
+			var response map[string]any
+			if e = json.Unmarshal(raw, &response); e != nil {
+				t.Fatal("response", e, string(raw))
+			}
+			target := f.dst.git("rev-parse", f.accepted)
+			afterRefs := f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/")
+			sentinelAfter := namespacePublicBody(t, f.dst, f.sentinel)
+			if f.dst.git("rev-parse", f.sentinel) != f.oldTip || !bytes.Equal(sentinelBefore, sentinelAfter) {
+				t.Fatal("fetch fault changed unrelated public sentinel")
+			}
+			if tc.name == "stale-old" {
+				if _, e = os.Stat(refused); e != nil {
+					t.Fatal("control did not exercise real stale-old Git refusal", e)
+				}
+				if _, e = os.Stat(committed); !os.IsNotExist(e) || target != competing {
+					t.Fatal("stale transaction published selected successor", target, e)
+				}
+			} else {
+				if _, e = os.Stat(committed); e != nil || target != f.newTip {
+					t.Fatal("control did not commit selected successor", target, e)
+				}
+				if !bytes.Equal(namespacePublicBody(t, f.dst, f.accepted), namespacePublicBody(t, f.src, f.newTip)) {
+					t.Fatal("committed raw successor changed")
+				}
+			}
+			t.Logf("mode=%s old_target=%s selected_new=%s observed_target=%s accepted_refs=%q public_sentinel=%s sentinel_body_before=%x sentinel_body_after=%x response=%s", tc.name, f.oldTip, f.newTip, target, afterRefs, f.oldTip, sentinelBefore, sentinelAfter, raw)
+			f.src.unchanged(sourceBefore)
+			for _, p := range []string{f.dst.home, filepath.Join(f.dst.repo, ".hn"), filepath.Join(f.dst.repo, ".git", "hn")} {
+				if _, e = os.Stat(p); !os.IsNotExist(e) {
+					t.Fatal("public fault created private state", p, e)
+				}
+			}
+			if callErr == nil || response["ok"] != false || response["data"] != nil {
+				t.Fatal("failed acknowledgement became success", callErr, response)
+			}
+			artifactErrorShape(t, response, "artifact", tc.code, tc.recovery, nil)
+			if tc.name == "unavailable-witness" {
+				if _, e = os.Stat(denied); e != nil {
+					t.Fatal("control did not deny the actual post-error witness", e)
+				}
+			}
+		})
+	}
+}
