@@ -84,6 +84,11 @@ func inventoryCLI(t *testing.T, consumer string) *inventoryFixture {
 // Resolve after isolating HOME/XDG, using the same approved OS-aware fixture as
 // registration acceptance. Darwin deliberately ignores XDG_CONFIG_HOME.
 func inventoryConfig(f *artifactCLIFixture) string {
+	// A real user HOME already exists; create only the fixture's private HOME,
+	// never its extension registry, so explicit export has a safe parent.
+	if err := os.MkdirAll(f.home, 0700); err != nil {
+		f.t.Fatal(err)
+	}
 	config := extensionTestConfigDir(f.t, f.home)
 	f.overrides = map[string]string{"XDG_CONFIG_HOME": config}
 	return config
