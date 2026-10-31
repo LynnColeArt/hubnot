@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -556,6 +557,13 @@ func issueEventKind(command string) string {
 	return "issue.revise"
 }
 func executeIssueMutation(o issueOptions) (any, error) {
+	return executeIssueMutationContext(context.Background(), o)
+}
+
+func executeIssueMutationContext(ctx context.Context, o issueOptions) (any, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	identity, err := loadIdentity()
 	if err != nil {
 		return nil, issueFailure("repository_error", err)
@@ -571,7 +579,7 @@ func executeIssueMutation(o issueOptions) (any, error) {
 	if err != nil {
 		return nil, issueFailure("repository_error", err)
 	}
-	return applyIssueMutation(o, identity, captured, events, snapshot)
+	return applyIssueMutationContext(ctx, o, identity, captured, events, snapshot)
 }
 
 // applyIssueMutation keeps the actor sequence captured before the verified read.
@@ -584,6 +592,13 @@ func checkIssueActor(o issueOptions, identity *Identity) error {
 }
 
 func applyIssueMutation(o issueOptions, identity *Identity, captured Event, events []StoredEvent, snapshot string) (*issueMutationResult, error) {
+	return applyIssueMutationContext(context.Background(), o, identity, captured, events, snapshot)
+}
+
+func applyIssueMutationContext(ctx context.Context, o issueOptions, identity *Identity, captured Event, events []StoredEvent, snapshot string) (*issueMutationResult, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if err := checkIssueActor(o, identity); err != nil {
 		return nil, err
 	}
@@ -645,7 +660,7 @@ func applyIssueMutation(o issueOptions, identity *Identity, captured Event, even
 		if wanted != recorded {
 			return nil, issueFailure("operation_conflict", errors.New("operation key was already used for different content"))
 		}
-		if err := contributionRetryNative(prior); err != nil {
+		if err := contributionRetryNativeContext(ctx, prior); err != nil {
 			return nil, issueFailure("admission_pending", err)
 		}
 		id := issueRootID(*prior)
@@ -718,12 +733,21 @@ func applyIssueMutation(o issueOptions, identity *Identity, captured Event, even
 	if err := validateEventContent(event); err != nil {
 		return nil, issueFailure("invalid_input", err)
 	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if err := contributionAuthorizeCandidate(event, events); err != nil {
 		return nil, issueFailure("permission_denied", err)
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	localPlan, err := contributionBeforeNative(event, identity, events)
 	if err != nil {
 		return nil, issueFailure("admission_refused", err)
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	stored, err := appendEvent(event, identity)
 	if err != nil {
@@ -733,7 +757,7 @@ func applyIssueMutation(o issueOptions, identity *Identity, captured Event, even
 		}
 		return nil, issueFailure("repository_error", err)
 	}
-	if err := contributionFinishNative(stored, localPlan); err != nil {
+	if err := contributionFinishNativeContext(ctx, stored, localPlan); err != nil {
 		return nil, issueFailure("admission_pending", err)
 	}
 	afterEvents := append(append([]StoredEvent{}, events...), *stored)
