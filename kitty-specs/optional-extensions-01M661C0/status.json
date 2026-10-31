@@ -55,8 +55,8 @@
     "WP02": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "architect-alphonso",
+      "agent_profile_version": "1.0",
       "force_count": 1,
       "lane": "planned",
       "last_event_id": "01M68YQ079DF1Y55C2XDN80BPB",
@@ -64,24 +64,26 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Contract freeze ready for independent review: all five original findings addressed, literal cryptographic/native visibility vectors verified; future implementation remains unqualified",
-        "Review passed: independent actual codex/reviewer-renata approves contract-only WP02; original four P1 plus P2 and C1-C4 resolved, 560 independent literal/semantic assertions pass, four owned contracts only, 220 Go inputs unchanged. Full report: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP02/formal-review-cycle-1.md. Future implementation/platform qualification remains later work. Root coordinates WP17 context-seam path ownership before its code starts."
+        "Review passed: independent actual codex/reviewer-renata approves contract-only WP02; original four P1 plus P2 and C1-C4 resolved, 560 independent literal/semantic assertions pass, four owned contracts only, 220 Go inputs unchanged. Full report: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP02/formal-review-cycle-1.md. Future implementation/platform qualification remains later work. Root coordinates WP17 context-seam path ownership before its code starts.",
+        "Administrative contract rework: deterministic valid sequential response-completion defect and independent advisory require explicit bounded final-byte observation/clean-EOF clarification before WP16 code. Preserve client obligation, serial admission, cancellation, deadlines, original outcomes, frozen wire/signed vectors and earlier exact-source approvals; fresh independent contract review required."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP02-freeze-extension-contracts/review-cycle-2.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP02-freeze-extension-contracts/review-cycle-2.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T007": "done",
-        "T008": "done",
-        "T009": "done",
-        "T010": "done",
-        "T011": "done"
+        "T007": "planned",
+        "T008": "planned",
+        "T009": "planned",
+        "T010": "planned",
+        "T011": "planned"
       }
     },
     "WP03": {
