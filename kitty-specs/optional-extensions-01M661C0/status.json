@@ -1,7 +1,7 @@
 {
-  "event_count": 77,
-  "last_event_id": "01M67Q1P0K5G9MFWPQ2YC9RA1C",
-  "materialized_at": "2026-10-31T00:51:39.668015+00:00",
+  "event_count": 93,
+  "last_event_id": "01M67RVK3YHFAG16EE8DNZG3RP",
+  "materialized_at": "2026-10-31T01:23:17.246457+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
@@ -124,22 +124,25 @@
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "assignee": "codex",
-      "force_count": 0,
-      "lane": "approved",
-      "last_event_id": "01M67PVC4MQZTH1K6GR9G10JHH",
-      "last_transition_at": "2026-10-31T00:48:12.948439+00:00",
+      "force_count": 1,
+      "lane": "in_review",
+      "last_event_id": "01M67RVK3YHFAG16EE8DNZG3RP",
+      "last_transition_at": "2026-10-31T01:23:17.246457+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Administrative allocation recovery only: canonical existing-branch retry reattached lane-c; followed printed manual merge of exact recorded planning 7dd64aa738b0dcee0222a943e2d7a9e1e7f44505. Only WP03 task generated base_branch/base_commit/created_at conflicted; both sides and hashes preserved externally, authored body identical, resolved exact recorded planning copy and committed d86f2276. No WP04 implementation or tests. Resume proper codex implementer-ivan claim through canonical action next.",
         "Ready for review: e8856690 finite schema and exact supplied-context validation; 73 focused race passes, vet clean, both exact clean binaries qualified; external WP04 evidence/source binding retained",
-        "Independent review approved exact e885669056611613360e092d08b572244b31013e against frozen artifact-v1 section7.2. Anti-patterns 1 dead code PASS; 2 synthetic fixture PASS; 3 silent empty return PASS; 4 FR coverage PASS; 5 frozen surface PASS; 6 locked decision PASS; 7 shared ownership PASS; 8 production fragility PASS. All233 source inputs and both binary hashes match;23 public fixture signature/ID/request recomputations and62 independent both-binary CLI controls pass with unchanged repo/private snapshots. Both supplied-binary CLI race runs and96 internal artifact test/subtest race checks pass. Exact identity, Unicode/order/links, strict JSON/bounds and immediate conversion rules verified; unchecked history/heads/closure claims remain honest. No fixes, full suite repetition or platform/adopter claim. External reviewer-report.json and reproducible evidence preserved under optional-extensions-WP04. Python gate no_coverage remains unavailable coverage; sync/auth warning preserved."
+        "Independent review approved exact e885669056611613360e092d08b572244b31013e against frozen artifact-v1 section7.2. Anti-patterns 1 dead code PASS; 2 synthetic fixture PASS; 3 silent empty return PASS; 4 FR coverage PASS; 5 frozen surface PASS; 6 locked decision PASS; 7 shared ownership PASS; 8 production fragility PASS. All233 source inputs and both binary hashes match;23 public fixture signature/ID/request recomputations and62 independent both-binary CLI controls pass with unchanged repo/private snapshots. Both supplied-binary CLI race runs and96 internal artifact test/subtest race checks pass. Exact identity, Unicode/order/links, strict JSON/bounds and immediate conversion rules verified; unchecked history/heads/closure claims remain honest. No fixes, full suite repetition or platform/adopter claim. External reviewer-report.json and reproducible evidence preserved under optional-extensions-WP04. Python gate no_coverage remains unavailable coverage; sync/auth warning preserved.",
+        "Integration rework requested: preserve approved inert CLI 16MiB input cap, extract shared bounded record-context core for legal selected reads; original approval retained in history, new independent review required. WP05 paused at boundary.",
+        "Rework ready: tested3604bdd1 private parsed-context core, metadata-only delivery94b99440; all233Go/module bytes unchanged,75focusedracepasses/vet/both exact binaries qualified; actualWP05largepublicread pending fresh approval/integration"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP04-bounded-artifact-schemas/review-cycle-1.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP04-bounded-artifact-schemas/review-cycle-1.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP04-bounded-artifact-schemas/review-cycle-2.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP04-bounded-artifact-schemas/review-cycle-2.md",
         "reviewer": "codex",
-        "verdict": "approved"
+        "verdict": "changes_requested"
       },
       "role": "reviewer",
       "shell_pid": 22770,
@@ -260,16 +263,26 @@
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "assignee": "codex",
-      "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M67PYSV9NJKZVNMECT47K1S0",
-      "last_transition_at": "2026-10-31T00:50:05.289076+00:00",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M67R19NAGKJB8NXZXCJ4ABZ8",
+      "last_transition_at": "2026-10-31T01:08:55.594855+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Administrative allocation recovery only: canonical retry retained lane-m; followed printed manual merge of exact approved WP13 lane-l tip. Only WP03 task base_branch/base_commit/created_at differed, authored body identical; all stages/diffs/hashes external lane-m-planning-recovery. Chose exact recorded 8aa planning copy, normal merge f6868891; staged226Go inputs equal approved WP13. No WP14 implementation/tests. Resume actual codex implementer-ivan action claim next.",
-        "Ready for independent review: repository-bound enablement and closed grants; source 4b1a98d6, both exact supplied binaries and focused race/no-loader/vet checks pass; source-bound evidence in external optional-extensions-WP14; WP16 owns live-session cleanup/request integration."
+        "Ready for independent review: repository-bound enablement and closed grants; source 4b1a98d6, both exact supplied binaries and focused race/no-loader/vet checks pass; source-bound evidence in external optional-extensions-WP14; WP16 owns live-session cleanup/request integration.",
+        "Review rejected: artifact.read accepts concrete-type raw.inspect contrary to host-v1 method/action mapping; exact family/action mirror assertions missing. Partial observe installation adjudicated as non-finding; WP16 must consume corrected approved source.",
+        "Cycle2 ready: exact artifact.read selector/action pairs fixed at134fb642; complete six-family/seven-action mirrors and fourteen-method matrix; pre-fix Authorize+CLI reds preserved; both exact supplied binaries, focused race/no-loader/vet checks pass; external optional-extensions-WP14/cycle2 evidence.",
+        "Review2 passed at source134fb642a781876249c0c403e9b89bd92796ae7c: both prior blockers closed. Exact artifact.read pairs match host-v1; complete six-family/seven-action mirrors and14-method matrix verified. Independent cycle1 overlay now passes; supplied standard d9b2f5e and combined-native90bdc097 CLI correction controls pass with race/count1. All18 evidence hashes and230input map0ebabe1c match;226baseline inputs unchanged; authored diff clean. Anti-patterns: dead code PASS(live management callers); synthetic-fixture PASS(real code and binaries); silent empty return PASS(explicit absence/errors); FR coverage PASS(inert lifecycle, inventory, exact scope/binding, unsupported policy/privilege and leak controls); frozen surface PASS(baseline unchanged); locked decision PASS(closed grant mapping); shared ownership PASS(four exclusive paths); production fragility PASS(no panic or new IO). Earlier partial observe-install concern remains non-finding because actual changes requires read AND observe. Review evidence external cycle2/review-renata/verification.json SHA256709a72f4. No implementation edits/fullsuite/rebuild. WP16 still owns live cleanup, current-registry/epoch launch-idle-request checks and integration; no final platform/performance/adopter claim."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP14-extension-grants/review-cycle-2.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP14-extension-grants/review-cycle-2.md",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "shell_pid": 22770,
       "shell_pid_created_at": "1793287708.21",
@@ -286,18 +299,33 @@
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "assignee": "codex",
-      "force_count": 0,
+      "force_count": 1,
       "lane": "in_progress",
-      "last_event_id": "01M67PGW11QVB7D5XS2PE25EVJ",
-      "last_transition_at": "2026-10-31T00:42:28.769492+00:00",
+      "last_event_id": "01M67R4DGH5JWVES1ANVC0V55B",
+      "last_transition_at": "2026-10-31T01:10:37.829768+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Administrative allocation recovery only: canonical next selected WP15, normal action and retry retained lane-n after dependency merge conflict. Followed printed exact approved WP13 lane-l merge; only WP03 task generated base_branch/base_commit/created_at differed with identical authored body. All stages/diffs/hashes external lane-n-planning-recovery; chose exact recorded 8aa copy, normal merge cd8ce1f1, staged226Go equal approved WP13. No WP15 implementation/tests. Resume proper codex implementer-ivan action claim next."
+        "Administrative allocation recovery only: canonical next selected WP15, normal action and retry retained lane-n after dependency merge conflict. Followed printed exact approved WP13 lane-l merge; only WP03 task generated base_branch/base_commit/created_at differed with identical authored body. All stages/diffs/hashes external lane-n-planning-recovery; chose exact recorded 8aa copy, normal merge cd8ce1f1, staged226Go equal approved WP13. No WP15 implementation/tests. Resume proper codex implementer-ivan action claim next.",
+        "Bounded inert frame/message inspect implemented at 96f13ab7; final standard/native-only supplied binaries, focused race/vet/native no-loader and 250 independent raw controls pass. Evidence outside Git optional-extensions-WP15; live session order/outstanding writer state/cancellation remain WP16+ per frozen host-v1 7.1.",
+        "Independent review requests changes: exact closed inventory mirror assertions required by contract round-trip gate are absent. Source 96f13ab; 188 independent supplied-binary controls and focused race/no-loader checks passed. WP16 must wait and rebase after corrected WP15 approval."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP15-extension-framing/review-cycle-1.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP15-extension-framing/review-cycle-1.md",
+        "reviewer": "codex",
+        "verdict": "changes_requested"
+      },
       "role": "implementer",
-      "shell_pid": 1761118,
-      "shell_pid_created_at": "1793407344.28"
+      "shell_pid": null,
+      "shell_pid_created_at": null,
+      "subtasks": {
+        "T060": "planned",
+        "T061": "planned",
+        "T062": "planned",
+        "T063": "planned"
+      }
     },
     "WP16": {
       "actor": "finalize-tasks",

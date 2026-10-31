@@ -296,3 +296,105 @@ func TestSuppliedParentCountBound(t *testing.T) {
 		}
 	}
 }
+
+// A selected-history caller has already consumed bounded envelopes. Their
+// combined immediate context can exceed the inert CLI's separate wire cap;
+// validating that context must not serialize it back into a utility input.
+func TestRecordValueLargeSuppliedContext(t *testing.T) {
+	m := fixtureContexts(t)["note-open"]
+	opening := m["artifact"].(map[string]any)
+	pairs := make([]map[string]any, 0, 30)
+	aggregate := 0
+	for i := 0; i < 30; i++ {
+		parent := newSigned(t, func(v map[string]any) {
+			v["kind"] = "record.revise"
+			v["record"] = opening["id"]
+			v["parents"] = []any{opening["id"]}
+			p := map[string]any{}
+			for k, value := range opening["envelope"].(map[string]any)["payload"].(map[string]any) {
+				p[k] = value
+			}
+			p["content"] = fmt.Sprintf("parent%d\n", i) + strings.Repeat("x", 600*1024)
+			v["payload"] = p
+		})
+		raw, e := json.Marshal(parent["envelope"])
+		if e != nil {
+			t.Fatal(e)
+		}
+		if len(raw) > MaxEnvelopeBytes {
+			t.Fatalf("fixture envelope exceeds individual cap: %d", len(raw))
+		}
+		aggregate += len(raw)
+		pairs = append(pairs, parent)
+	}
+	if aggregate <= MaxValidationBytes || aggregate > 256*1024*1024 {
+		t.Fatalf("fixture must cross utility cap within selected-history budget: %d", aggregate)
+	}
+	t.Logf("supplied parent envelope bytes=%d, parents=%d", aggregate, len(pairs))
+	sort.Slice(pairs, func(i, j int) bool { return pairs[i]["id"].(string) < pairs[j]["id"].(string) })
+	parents := []any{}
+	parentIDs := []any{}
+	for _, p := range pairs {
+		parents = append(parents, p)
+		parentIDs = append(parentIDs, p["id"])
+	}
+	mutateCandidate(t, m, func(v map[string]any) {
+		v["kind"] = "record.resolve"
+		v["record"] = opening["id"]
+		v["parents"] = parentIDs
+	})
+	m["opening"] = opening
+	m["parents"] = parents
+	result, e := validateRecordValue(context.Background(), m)
+	if e != nil || result.ID != m["artifact"].(map[string]any)["id"] || result.RecordRules != "verified_from_supplied_context" || result.DependencyClosure != "not_checked" {
+		t.Fatalf("larger immediate context: %#v %v", result, e)
+	}
+	// A bounded context is not a trust shortcut: supplied signature and per-envelope
+	// limits are still checked by the same semantic core.
+	first := parents[0].(map[string]any)
+	signature := first["signature"].(string)
+	badPrefix := "A"
+	if signature[0] == 'A' {
+		badPrefix = "B"
+	}
+	first["signature"] = badPrefix + signature[1:]
+	_, e = validateRecordValue(context.Background(), m)
+	requireCode(t, e, "verification_failure")
+	first["signature"] = signature
+	envelope := first["envelope"].(map[string]any)
+	payload := envelope["payload"].(map[string]any)
+	content := payload["content"]
+	payload["content"] = strings.Repeat("x", MaxEnvelopeBytes)
+	_, e = validateRecordValue(context.Background(), m)
+	requireCode(t, e, "resource_limit")
+	payload["content"] = content
+	// The byte parser no longer mediates this private caller; the parent count
+	// remains bounded before allocating or expanding the supplied context.
+	for len(parents) <= 1024 {
+		parents = append(parents, first)
+	}
+	m["parents"] = parents
+	_, e = validateRecordValue(context.Background(), m)
+	requireCode(t, e, "resource_limit")
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_, e = validateRecordValue(ctx, m)
+	requireCode(t, e, "cancelled")
+}
+
+func TestRecordValueAndUtilityShareSemantics(t *testing.T) {
+	for _, name := range []string{"asset-open", "asset-revise-a", "asset-convert-v2", "asset-resolve-mixed", "list-open"} {
+		m := fixtureContexts(t)[name]
+		value, e := validateRecordValue(context.Background(), m)
+		if e != nil {
+			t.Fatal(e)
+		}
+		utility, e := ValidateRecord(context.Background(), contextBytes(t, m))
+		if e != nil {
+			t.Fatal(e)
+		}
+		if !reflect.DeepEqual(value, utility) {
+			t.Fatalf("semantic results differ for %s: %#v %#v", name, value, utility)
+		}
+	}
+}
