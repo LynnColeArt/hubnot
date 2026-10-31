@@ -30,12 +30,14 @@ create_intent:
 - examples/extensions/charter-model/model.go
 - examples/extensions/charter-model/main_test.go
 - examples/extensions/charter-model/README.md
+- extension_charter_acceptance_test.go
 execution_mode: code_change
 owned_files:
 - examples/extensions/charter-model/main.go
 - examples/extensions/charter-model/model.go
 - examples/extensions/charter-model/main_test.go
 - examples/extensions/charter-model/README.md
+- extension_charter_acceptance_test.go
 priority: P2
 role: implementer
 tags: []
@@ -234,8 +236,3 @@ Read canonical status/review references before implementation. Address every rej
 ## Activity Log
 
 - 2026-10-31T11:31:20Z – codex – Correction to the preceding administrative note: its all299 approved19 input claim was premature. The printed planning18f10 merge a4ff9544 preserves the220 baseline inputs; approved19 dependency merge has not run yet. Root assertion correctly failed before any author dispatch/build/test, with exact missing/different paths preserved in external lane-t-planning-recovery/predependency-source-check.json. Resume normal implementation action to perform dependency integration, and require actual299 equality before dispatch. No false runtime pass or product edit occurred.
-
-
-### Prospective final-test maintenance transfer — 2026-10-31
-
-The original implementation and independent review of `extension_charter_acceptance_test.go` remain historical evidence of this WP. Root assigns future edits to those test files exclusively to WP25 for the bounded config-path/private-state detector repairs described in `WP25-exact-package-qualification/integration-config-path-maintenance.md`. The historical ownership list in this body describes original delivery; the current frontmatter is the exclusive prospective write scope. No product source, requirement, dependency, prior verdict, signed data or test assertion is removed. WP25 must fix and independently qualify the tests before actual native platform acceptance.
