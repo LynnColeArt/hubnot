@@ -254,7 +254,10 @@ func copyArtifactInventory(ctx context.Context, src, dst string, c *artifactClos
 		if err != nil {
 			return err
 		}
-		got, err := projectGit(ctx, dst, raw, 128, "hash-object", "-w", "-t", kind, "--stdin")
+		// The shared reader already verified this bounded public object. Preserve
+		// its raw Git body: hash-object's extra metadata fsck is not artifact
+		// validity, and must not rewrite or reject accepted transport metadata.
+		got, err := projectGit(ctx, dst, raw, 128, "hash-object", "-w", "--literally", "-t", kind, "--stdin")
 		if err != nil || strings.TrimSpace(string(got)) != oid {
 			return artifactTransportError(ctx, "verification_failure", "artifact object copy failed verification")
 		}

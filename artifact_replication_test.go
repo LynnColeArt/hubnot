@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha1"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	c "hubnot/internal/contribution"
@@ -10,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -535,4 +539,166 @@ func TestArtifactGitIndependentNativeSelectionBudgetCLI(t *testing.T) {
 	if !reflect.DeepEqual(closureItemIDs(t, closureItems(dst, id)), []string{id}) {
 		t.Fatal("native refusal altered custom accepted data")
 	}
+}
+
+func TestArtifactGitFrozenRawBodiesCLI(t *testing.T) {
+	// These exact accepted vectors include Git transport metadata without email
+	// angle brackets. Their body bytes, not a commit-tree reconstruction, are the
+	// portability contract. Neither repository has a signer or hn init state.
+	text, e := os.ReadFile("kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md")
+	if e != nil {
+		t.Fatal(e)
+	}
+	type literal struct {
+		id, ref, commit string
+		objects         map[string]struct {
+			kind string
+			raw  []byte
+		}
+	}
+	vectors := []literal{}
+	for _, name := range []string{"type-note-v1", "optional-missing-target"} {
+		_, section, ok := strings.Cut(string(text), "## Signed vector: "+name+"\n")
+		if !ok {
+			t.Fatal("missing frozen vector", name)
+		}
+		section = strings.SplitN(section, "\n## ", 2)[0]
+		blocks := regexp.MustCompile("(?s)~~~json\\n(.*?)\\n~~~").FindAllStringSubmatch(section, -1)
+		if len(blocks) != 2 {
+			t.Fatal("unexpected frozen vector shape", name)
+		}
+		var meta map[string]any
+		if e = json.Unmarshal([]byte(blocks[1][1]), &meta); e != nil {
+			t.Fatal(e)
+		}
+		git := meta["git_sha1"].(map[string]any)
+		raw, e := hex.DecodeString(meta["canonical_utf8_hex"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		payloadOID, e := hex.DecodeString(git["payload_blob"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		signatureOID, e := hex.DecodeString(git["signature_blob"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		tree := append(append(append([]byte("100644 artifact.json\x00"), payloadOID...), []byte("100644 signature\x00")...), signatureOID...)
+		v := literal{id: meta["id"].(string), ref: meta["local_ref"].(string), commit: git["commit"].(string), objects: map[string]struct {
+			kind string
+			raw  []byte
+		}{
+			git["payload_blob"].(string): {"blob", raw}, git["signature_blob"].(string): {"blob", []byte(meta["signature"].(string))}, git["tree"].(string): {"tree", tree}, git["commit"].(string): {"commit", []byte(git["commit_body"].(string))},
+		}}
+		if eventID(raw) != v.id || bytes.Contains(v.objects[v.commit].raw, []byte("<")) {
+			t.Fatal("frozen identity/metadata control changed", name)
+		}
+		for oid, obj := range v.objects {
+			h := sha1.New()
+			fmt.Fprintf(h, "%s %d\x00", obj.kind, len(obj.raw))
+			h.Write(obj.raw)
+			if hex.EncodeToString(h.Sum(nil)) != oid {
+				t.Fatal("independent frozen Git hash mismatch", oid)
+			}
+		}
+		vectors = append(vectors, v)
+	}
+	keyless := func(name string) *artifactCLIFixture {
+		root := t.TempDir()
+		f := &artifactCLIFixture{t: t, binary: artifactStoreBinary(t), repo: filepath.Join(root, name), home: filepath.Join(root, "home")}
+		f.git("init", "--quiet")
+		return f
+	}
+	src, dst, broken, projected := keyless("source"), keyless("destination"), keyless("missing"), keyless("projected")
+	rawGit := func(f *artifactCLIFixture, input []byte, args ...string) []byte {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = f.repo
+		cmd.Env = operationalTestEnvironment(f.home)
+		cmd.Stdin = bytes.NewReader(input)
+		b, e := cmd.Output()
+		if e != nil {
+			t.Fatalf("raw fixture Git %v: %v", args, e)
+		}
+		return b
+	}
+	for _, v := range vectors {
+		for oid, obj := range v.objects {
+			got := strings.TrimSpace(string(rawGit(src, obj.raw, "hash-object", "-w", "--literally", "-t", obj.kind, "--stdin")))
+			if got != oid {
+				t.Fatal("literal fixture object changed", got, oid)
+			}
+		}
+		src.git("update-ref", v.ref, v.commit)
+	}
+	remote := filepath.Join(t.TempDir(), "public.git")
+	src.git("init", "--bare", "--quiet", remote)
+	for _, f := range []*artifactCLIFixture{src, dst, broken, projected} {
+		f.git("remote", "add", "public", remote)
+	}
+	selected := vectors[1].id
+	sourceInspect := src.call("", "", "artifact", "inspect", "--id", selected, "--json")["data"].(map[string]any)
+	want := []string{vectors[0].id, vectors[1].id}
+	sort.Strings(want)
+	if !reflect.DeepEqual(closureItemIDs(t, sourceInspect["items"].([]any)), want) {
+		t.Fatal("literal source did not verify")
+	}
+	before := src.snapshot()
+	src.call("", "", "artifact", "push", "--remote", "public", "--id", selected, "--json")
+	src.unchanged(before)
+	fetched := dst.call("", "", "artifact", "fetch", "--remote", "public", "--id", selected, "--json")["data"].(map[string]any)
+	inspected := dst.call("", "", "artifact", "inspect", "--id", selected, "--json")["data"].(map[string]any)
+	if inspected["source_cut"] == "" || fetched["source_cut"] != inspected["source_cut"] || !reflect.DeepEqual(sourceInspect["items"], inspected["items"]) {
+		t.Fatal("literal public reconstruction/Cut changed", fetched, inspected)
+	}
+	optional := false
+	for _, item := range inspected["items"].([]any) {
+		for _, d := range item.(map[string]any)["diagnostics"].([]any) {
+			if d.(map[string]any)["code"] == "missing_optional" {
+				optional = true
+			}
+		}
+	}
+	if !optional {
+		t.Fatal("signed optional target diagnostic lost")
+	}
+	for _, v := range vectors {
+		for oid, obj := range v.objects {
+			for _, f := range []*artifactCLIFixture{src, dst} {
+				if !bytes.Equal(rawGit(f, nil, "cat-file", obj.kind, oid), obj.raw) {
+					t.Fatal("raw public Git body changed", oid)
+				}
+			}
+			if !bytes.Equal(rawGit(src, nil, "--git-dir="+remote, "cat-file", obj.kind, oid), obj.raw) {
+				t.Fatal("remote rewrote raw public Git body", oid)
+			}
+		}
+	}
+	if got := dst.git("for-each-ref", "--format=%(refname)", "refs/hn/artifacts/"); got != "" {
+		t.Fatal("keyless fetch wrote local signing roots", got)
+	}
+	for _, f := range []*artifactCLIFixture{src, dst} {
+		for _, p := range []string{f.home, filepath.Join(f.repo, ".git", "hn", "artifacts", "intents")} {
+			if _, e := os.Stat(p); !os.IsNotExist(e) {
+				t.Fatal("public transport created identity or intent", p, e)
+			}
+		}
+	}
+	// Existing invalid destination facts must still fail before copying any public
+	// source bytes, even though the artifact-specific raw writer can store them.
+	bad := projected.gitInput("invalid existing destination root", "hash-object", "-w", "--stdin")
+	projected.git("update-ref", vectors[0].ref, bad)
+	projectionBefore := projected.snapshot()
+	projected.call("", "verification_failure", "artifact", "fetch", "--remote", "public", "--id", selected, "--json")
+	projected.unchanged(projectionBefore)
+	// Removing only the required schema supplier leaves the exact signed record
+	// present, but must not copy or promote an incomplete selection.
+	src.git("--git-dir="+remote, "update-ref", "-d", vectors[0].ref)
+	missingBefore := broken.snapshot()
+	v := broken.call("", "incomplete_dependency", "artifact", "fetch", "--remote", "public", "--id", selected, "--json")
+	if !strings.Contains(v["error"].(map[string]any)["message"].(string), "schema missing") {
+		t.Fatal("wrong missing-schema cause", v)
+	}
+	broken.unchanged(missingBefore)
 }
