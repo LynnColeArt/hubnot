@@ -36,6 +36,7 @@ create_intent:
 - artifact_read_test.go
 - artifact_store_commands.go
 - artifact_store_commands_test.go
+- internal/artifact/canonical_export.go
 execution_mode: code_change
 owned_files:
 - artifact_store.go
@@ -44,6 +45,7 @@ owned_files:
 - artifact_read_test.go
 - artifact_store_commands.go
 - artifact_store_commands_test.go
+- internal/artifact/canonical_export.go
 priority: P1
 role: implementer
 tags: []
@@ -105,6 +107,7 @@ This work is complete only when the observable outcomes below are demonstrated a
 - `artifact_read_test.go` (planned new or dependency-created; create_intent)
 - `artifact_store_commands.go` (planned new or dependency-created; create_intent)
 - `artifact_store_commands_test.go` (planned new or dependency-created; create_intent)
+- `internal/artifact/canonical_export.go` (planned new; create_intent): initial minimal existing-logic wrappers, `Canonical(raw)` and `TypeDeclaration.ValidateOpening(ctx, raw)`, immediately used by this package's live mutation CLI/store. Full unsigned opening validation precedes signer selection and prepared intent; reuse strict parsing, complete record.open payload checks, exact type_id/shape and private schema validation, with safe zero-value refusal. Preserve WP03/WP04-owned source and all limits; no fields-only API, copied parser or speculative SDK. After the documented WP04 integration rework receives fresh independent approval, the same owned file may expose the current-reader `ValidateRecordContext` bridge to its single private value core. This bridge consumes the bounded verified loader context without serializing a giant composite or changing the utility cap; it does not assert accepted-view authority.
 
 No other WP owns these paths. Existing foundation surfaces are dependencies, not permission to recreate them. If a small out-of-map edit is indispensable, coordinate root first with exact path/rationale and preserve the no-overlap execution invariant.
 
