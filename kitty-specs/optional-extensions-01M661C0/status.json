@@ -610,7 +610,9 @@
         "Recorded planning commit merged after archiving and resolving sole conflict: inherited WP17 prompt generated base_branch/base_commit/created_at fields only; exact authored planning18 bytes retained, normal allocation retry follows."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer"
+      "role": "implementer",
+      "shell_pid": 22770,
+      "shell_pid_created_at": "1793287708.21"
     },
     "WP19": {
       "actor": "finalize-tasks",
