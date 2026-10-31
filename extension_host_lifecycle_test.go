@@ -62,6 +62,12 @@ func TestExtensionChildAsset(t *testing.T) {
 		signalIgnoreTerm()
 	}
 	_ = os.WriteFile(marker, []byte(strconv.Itoa(os.Getpid())), 0600)
+	if mode == "descendant" {
+		signalIgnoreTerm()
+		for {
+			time.Sleep(time.Hour)
+		}
+	}
 	hello := hostRead(os.Stdin)
 	if mode == "startup-hang" {
 		_, _ = os.Stdout.Write([]byte{0, 0, 0})
@@ -93,6 +99,25 @@ func TestExtensionChildAsset(t *testing.T) {
 	if mode == "crash" {
 		os.Exit(19)
 	}
+	if mode == "crash-descendant" {
+		executable, _ := os.Executable()
+		child := exec.Command(executable, "-test.run=^TestExtensionChildAsset$", "--", "descendant", marker+".descendant", result)
+		child.Stdin = os.Stdin
+		child.Stdout = os.Stdout
+		child.Stderr = os.Stderr
+		if child.Start() != nil {
+			os.Exit(75)
+		}
+		until := time.Now().Add(time.Second)
+		for time.Now().Before(until) {
+			if _, e := os.Stat(marker + ".descendant"); e == nil {
+				break
+			}
+			time.Sleep(time.Millisecond)
+		}
+		os.Exit(19)
+	}
+
 	if mode == "oversize" {
 		_, _ = os.Stdout.Write([]byte{0, 128, 0, 1})
 		for {
@@ -524,4 +549,23 @@ func TestExtensionRunIdleDeadlineCLI(t *testing.T) {
 		t.Fatalf("idle read budget %s", d)
 	}
 	assertHostExited(t, waitHostMarker(t, f.marker))
+}
+
+func TestExtensionRunCrashCleansPipeOwningDescendantCLI(t *testing.T) {
+	f := newHostFixture(t, "crash-descendant")
+	start := time.Now()
+	f.invoke("unavailable_module", "run", f.module, "--json")
+	if time.Since(start) > 5*time.Second {
+		t.Fatal("exited leader's pipe-owning descendant escaped cleanup watchdog")
+	}
+	assertHostExited(t, waitHostMarker(t, f.marker))
+	// A process adopted by the OS may briefly remain as a reaped-pending zombie;
+	// it must have exited and cannot retain stdio or execute application code.
+	pid := waitHostMarker(t, f.marker+".descendant")
+	if e := syscall.Kill(pid, 0); e != syscall.ESRCH {
+		data, readErr := os.ReadFile(filepath.Join("/proc", strconv.Itoa(pid), "stat"))
+		if readErr != nil || !bytes.Contains(data, []byte(") Z ")) {
+			t.Fatalf("descendant %d still running: %v %s", pid, e, data)
+		}
+	}
 }
