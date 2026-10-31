@@ -382,7 +382,7 @@ func (h *artifactHistory) validate(ctx context.Context) error {
 			if parent == nil {
 				return artifactFailure("incomplete_dependency", "artifact parent missing")
 			}
-			ps = append(ps, parent)
+			ps = append(ps, parent.signedValue())
 		}
 		var opening any
 		if id := artifactText(s.Envelope, "record"); id != "" {
@@ -390,10 +390,9 @@ func (h *artifactHistory) validate(ctx context.Context) error {
 			if o == nil {
 				return artifactFailure("incomplete_dependency", "artifact opening missing")
 			}
-			opening = o
+			opening = o.signedValue()
 		}
-		raw, _ := json.Marshal(map[string]any{"artifact": s, "type": typ, "parents": ps, "opening": opening})
-		if _, e := artifact.ValidateRecord(ctx, raw); e != nil {
+		if _, e := artifact.ValidateRecordContext(ctx, map[string]any{"artifact": s.signedValue(), "type": typ.signedValue(), "parents": ps, "opening": opening}); e != nil {
 			return e
 		}
 		for _, field := range []string{"members", "relationships"} {
@@ -441,6 +440,16 @@ func (h *artifactHistory) sourceCut() (string, error) {
 	sort.Strings(ids)
 	sort.Strings(types)
 	view, _ := json.Marshal(map[string]any{"admitted_ids": ids, "visible_ids": ids, "retained_refs": []artifactSource{}})
-	cut, _ := json.Marshal(map[string]any{"repository_id": repo, "refs": h.Sources, "selection": map[string]any{"families": []string{}, "types": types}, "authority_commit": "", "policy_digest": "", "view_digest": eventID(view)})
+	refs := make([]any, 0, len(h.Sources))
+	for _, source := range h.Sources {
+		refs = append(refs, map[string]any{"ref": source.Ref, "oid": source.OID})
+	}
+	cut, _ := json.Marshal(map[string]any{"repository_id": repo, "refs": refs, "selection": map[string]any{"families": []string{}, "types": types}, "authority_commit": "", "policy_digest": "", "view_digest": eventID(view)})
 	return eventID(cut), nil
+}
+
+// The verified loader owns these immutable maps. Borrowing their bounded values
+// avoids a second aggregate JSON serialization of shared parent envelopes.
+func (s *storedArtifact) signedValue() map[string]any {
+	return map[string]any{"id": s.ID, "envelope": s.Envelope, "signature": s.Signature, "validation": s.Validation, "diagnostics": s.Diagnostics}
 }

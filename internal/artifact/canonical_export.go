@@ -33,3 +33,13 @@ func (t TypeDeclaration) ValidateOpening(ctx context.Context, raw []byte) error 
 	}
 	return t.schema.validate(ctx, payload["fields"], 0)
 }
+
+// ValidateRecordContext shares the existing immediate record rules with the
+// bounded accepted-history loader. The caller has already checked the strict
+// JSON value domain and each signed envelope, bounded the parent/model objects,
+// and charged the complete history to its read budget. This avoids serializing
+// that graph through the inert utility's16MiB wire cap. It grants no accepted-view
+// authority; the shared core rechecks individual signatures and exact identities.
+func ValidateRecordContext(ctx context.Context, value map[string]any) (RecordValidation, error) {
+	return validateRecordValue(ctx, value)
+}
