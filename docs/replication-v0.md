@@ -286,8 +286,10 @@ canonical prefix refs with expected-old leases. Fetch downloads advertised custo
 sources into an application-owned quarantine, verifies their exact ref witnesses,
 selects the requested closure, verifies the projected destination view and copies
 only its public inventory. Atomic expected-old promotion writes only
-`refs/hn/remotes/REMOTE/artifacts/ACTOR/STREAMHEX`. Existing local signing roots
-are preserved. An older/divergent selection cannot rewind an accepted prefix or a
+`refs/hn/remotes/REMOTE/artifacts/ACTOR/STREAMHEX`. Artifact promotion disables symbolic-ref dereferencing in the atomic transaction:
+a symbolic accepted entry is replaced at that exact name, while its unrelated
+referent remains unchanged, including if an alias appears after validation.
+Existing local signing roots are preserved. An older/divergent selection cannot rewind an accepted prefix or a
 remote publication. The returned fetch source_cut is the destination's actual
 accepted view after promotion, with a nonempty physical-repository-bound Cut.
 
