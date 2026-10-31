@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	c "hubnot/internal/contribution"
@@ -490,8 +491,13 @@ func TestExtensionArtifactFullResponseAtAndOverRawCLI(t *testing.T) {
 func TestExtensionArtifactOpaqueRawCLI(t *testing.T) {
 	f := extensionArtifactCLI(t, "artifact:opaque=raw.inspect", "artifact:example.test/note=read")
 	typ := revisionEvent(f.publish(artifactStoreType, "type", ""))
-	for _, n := range []int{32, 8388608} {
-		body := bytes.Repeat([]byte{'x'}, n)
+	smallCuts, smallIDs, smallBodies := []string{}, []string{}, []string{}
+	for _, test := range []struct {
+		size int
+		fill byte
+	}{{32, 'x'}, {32, 'y'}, {8388608, 'x'}} {
+		n := test.size
+		body := bytes.Repeat([]byte{test.fill}, n)
 		object := exchangeObject("blob", body)
 		bundle, _ := json.Marshal(exchangeBundle(object))
 		imported := f.call(string(bundle), "", "artifact", "import", "--input", "-", "--preserve-opaque", "--json")["data"].(map[string]any)
@@ -508,11 +514,25 @@ func TestExtensionArtifactOpaqueRawCLI(t *testing.T) {
 		}
 		response := f.request("artifact.read", p, code)
 		if n == 32 {
+			data := response["data"].(map[string]any)
 			item := extensionArtifactItems(response)[0].(map[string]any)
-			if item["id"] != nil || item["envelope"] != nil || item["signature"] != nil || item["validation"] != "opaque" || item["raw"].(map[string]any)["data"] != object.Data {
+			if item["id"] != nil || item["envelope"] != nil || item["signature"] != nil || item["validation"] != "opaque" || item["raw"].(map[string]any)["data"] != object.Data || data["next_cursor"] != nil {
 				t.Fatal(item)
 			}
+			smallCuts = append(smallCuts, data["source_cut"].(string))
+			smallIDs = append(smallIDs, opaqueID)
+			smallBodies = append(smallBodies, object.Data)
+			p["cursor"] = "forged-unissued"
+			f.request("artifact.read", p, "checkpoint_invalidated")
+			p["cursor"] = ""
+			f.request("artifact.read", p, "checkpoint_invalidated")
+			fabricated, _ := json.Marshal(map[string]any{"version": 1, "query": "sha256:" + strings.Repeat("0", 64), "cut": data["source_cut"], "offset": 0})
+			p["cursor"] = base64.RawURLEncoding.EncodeToString(fabricated)
+			f.request("artifact.read", p, "checkpoint_invalidated")
 		}
+	}
+	if len(smallCuts) != 2 || smallCuts[0] != smallCuts[1] || smallCuts[0] != extensionArtifactExpectedCut(t, f, nil, nil, false) || smallIDs[0] == smallIDs[1] || smallBodies[0] == smallBodies[1] {
+		t.Fatal("opaque Cut confused empty projection with content identity", smallCuts, smallIDs)
 	}
 	// An accepted signed identity and an arbitrary ODB object do not select the
 	// explicit public quarantine index.
@@ -520,6 +540,12 @@ func TestExtensionArtifactOpaqueRawCLI(t *testing.T) {
 	p["opaque"], p["opaque_id"] = true, typ
 	f.request("artifact.read", p, "not_found")
 	p["opaque_id"] = "sha256:" + strings.Repeat("d", 64)
+	f.request("artifact.read", p, "not_found")
+	// A prior Cut/result never bypasses current explicit index membership.
+	if err := os.Remove(filepath.Join(f.repo, ".git", "hn", "artifact-opaque", "public.json")); err != nil {
+		t.Fatal(err)
+	}
+	p["opaque_id"] = smallIDs[0]
 	f.request("artifact.read", p, "not_found")
 }
 
@@ -725,4 +751,107 @@ func TestExtensionArtifactNoReadGrantRawCLI(t *testing.T) {
 	opaque := extensionArtifactReadParams(nil, nil, "inspect")
 	opaque["opaque"], opaque["opaque_id"] = true, missing
 	f.request("artifact.read", opaque, "denied_access")
+}
+
+// Independent public metadata reconstruction: do not use the adapter's Cut or
+// projection helpers to generate expectations for the actual caller.
+func extensionArtifactExpectedCut(t *testing.T, f *extensionArtifactFixture, types, ids []string, acceptedRefs bool) string {
+	t.Helper()
+	types = append([]string{}, types...)
+	sort.Strings(types)
+	ids = append([]string{}, ids...)
+	sort.Strings(ids)
+	refs := []map[string]any{}
+	if acceptedRefs {
+		lines := f.git("for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/artifacts/", "refs/hn/remotes/*/artifacts/*/*")
+		for _, line := range strings.Split(lines, "\n") {
+			if line == "" {
+				continue
+			}
+			parts := strings.Fields(line)
+			if len(parts) != 2 {
+				t.Fatal("public ref witness", line)
+			}
+			refs = append(refs, map[string]any{"ref": parts[0], "oid": parts[1]})
+		}
+		sort.Slice(refs, func(i, j int) bool { return refs[i]["ref"].(string) < refs[j]["ref"].(string) })
+	}
+	common := f.git("rev-parse", "--path-format=absolute", "--git-common-dir")
+	physical, err := filepath.EvalSymlinks(common)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest := func(raw []byte) string { return fmt.Sprintf("sha256:%x", sha256.Sum256(raw)) }
+	repository := digest(append([]byte("hn-extension-repository-v1\x00"), []byte(physical)...))
+	view, err := json.Marshal(map[string]any{"admitted_ids": ids, "retained_refs": []any{}, "visible_ids": ids})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cut, err := json.Marshal(map[string]any{"authority_commit": "", "policy_digest": "", "refs": refs, "repository_id": repository, "selection": map[string]any{"families": []any{}, "types": types}, "view_digest": digest(view)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return digest(cut)
+}
+
+func TestExtensionArtifactSelectedTypeCutRawCLI(t *testing.T) {
+	f := extensionArtifactCLI(t, "artifact:example.test/note=read,revise", "artifact:empty.test/note=read")
+	typ := revisionEvent(f.publish(artifactStoreType, "selected-type", ""))
+	opening := revisionEvent(revisionCall(f.artifactCLIFixture, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "selected first")), "selected-open", ""))
+	// Both same-stream unrelated data and a separate accepted actor stream remain
+	// actual ref witnesses without becoming IDs in the selected type projection.
+	hiddenType := revisionEvent(f.publish(strings.ReplaceAll(artifactStoreType, "example.test/note", "unrelated.test/hidden"), "hidden-type", ""))
+	hidden := revisionPayload(hiddenType, "UNGRANTED-CUT-BODY")
+	hidden["type_id"] = "unrelated.test/hidden"
+	revisionCall(f.artifactCLIFixture, "open", revisionInput(t, nil, []string{}, hidden), "hidden-record", "")
+	b := artifactCLI(t)
+	b.publish(strings.ReplaceAll(artifactStoreType, "example.test/note", "separate.test/stream"), "unrelated-stream", "")
+	f.git("fetch", b.repo, "+refs/hn/artifacts/*:refs/hn/remotes/public/artifacts/*")
+	mutation := f.request("artifact.mutate", extensionArtifactMutationParams(f, "record.revise", opening, []string{opening}, revisionPayload(typ, "selected next"), "selected-revise"), "")["data"].(map[string]any)
+	revision := mutation["event_id"].(string)
+	want := extensionArtifactExpectedCut(t, f, []string{"example.test/note"}, []string{typ, opening, revision}, true)
+	if mutation["source_cut"] != want {
+		t.Fatal("mutation Cut scope", mutation["source_cut"], want)
+	}
+	for _, tc := range []struct {
+		method string
+		params map[string]any
+	}{
+		{"artifact.read", extensionArtifactReadParams(opening, nil, "view")},
+		{"artifact.read", extensionArtifactReadParams(revision, nil, "heads")},
+		{"artifact.read", extensionArtifactReadParams(opening, nil, "history")},
+		{"artifact.read", extensionArtifactReadParams(typ, nil, "inspect")},
+		{"artifact.type.read", map[string]any{"id": typ, "type_id": nil, "limit": 200, "cursor": nil}},
+		{"artifact.search", extensionArtifactSearchParams("example.test/note", nil, "missing match", nil)},
+		{"artifact.search", extensionArtifactSearchParams("example.test/note", "ticket", "", nil)},
+		{"artifact.operation", map[string]any{"type_id": "example.test/note", "actor": f.actor, "operation": "selected-revise"}},
+	} {
+		data := f.request(tc.method, tc.params, "")["data"].(map[string]any)
+		if data["source_cut"] != want {
+			t.Fatalf("%s varied its complete type Cut: %v want %s", tc.method, data["source_cut"], want)
+		}
+		if nested, ok := data["result"].(map[string]any); ok && nested["source_cut"] != want {
+			t.Fatal("operation nested Cut scope", nested)
+		}
+		raw, _ := json.Marshal(data)
+		if bytes.Contains(raw, []byte("UNGRANTED-CUT-BODY")) {
+			t.Fatal("Cut membership exported unrelated body")
+		}
+	}
+	empty := f.request("artifact.search", extensionArtifactSearchParams("empty.test/note", nil, "", nil), "")["data"].(map[string]any)
+	emptyWant := extensionArtifactExpectedCut(t, f, []string{"empty.test/note"}, nil, true)
+	if len(empty["items"].([]any)) != 0 || empty["source_cut"] != emptyWant || emptyWant == want {
+		t.Fatal("exact empty type disappeared from selection", empty)
+	}
+}
+
+func TestExtensionArtifactEmptyNamespaceCutRawCLI(t *testing.T) {
+	f := extensionArtifactCLI(t, "artifact:unobserved.test/*=read")
+	f.publish(artifactStoreType, "unrelated-type", "")
+	data := f.request("artifact.search", extensionArtifactSearchParams(nil, nil, "", nil), "")["data"].(map[string]any)
+	want := extensionArtifactExpectedCut(t, f, nil, nil, true)
+	opaqueWant := extensionArtifactExpectedCut(t, f, nil, nil, false)
+	if len(data["items"].([]any)) != 0 || data["next_cursor"] != nil || data["source_cut"] != want || want == opaqueWant {
+		t.Fatal("empty observed namespace lost accepted witnesses or implied all", data)
+	}
 }
