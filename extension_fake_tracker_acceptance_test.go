@@ -11,6 +11,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -143,6 +145,7 @@ type fakeTrackerTestFixture struct {
 	*nativeHostFixture
 	consumer, config, plan, journalPath, report, marker, serviceFile, api string
 	parent                                                                map[string]any
+	apiItemReads                                                          atomic.Int64
 }
 
 func fakeWrite(t *testing.T, path string, value any) {
@@ -168,6 +171,9 @@ func fakeRead(t *testing.T, path string) map[string]any {
 	return value
 }
 func fakeTrackerFixture(t *testing.T, consumer string, grants ...string) *fakeTrackerTestFixture {
+	return fakeTrackerObservedFixture(t, consumer, false, grants...)
+}
+func fakeTrackerObservedFixture(t *testing.T, consumer string, observeReads bool, grants ...string) *fakeTrackerTestFixture {
 	t.Helper()
 	base := newNativeHostFixture(t, "native:issue=read")
 	base.command("extension", "remove", "example.native/tool", "--json")
@@ -201,6 +207,23 @@ func fakeTrackerFixture(t *testing.T, consumer string, grants ...string) *fakeTr
 			t.Fatalf("fake API startup: %s", &stderr)
 		}
 		time.Sleep(5 * time.Millisecond)
+	}
+	if observeReads {
+		// This test-only transparent observer forwards every request to the
+		// actual supplied service binary; it cannot supply a response itself.
+		target, err := url.Parse(f.api)
+		if err != nil {
+			t.Fatal(err)
+		}
+		forward := httputil.NewSingleHostReverseProxy(target)
+		observer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == "GET" && r.URL.Path == "/item" {
+				f.apiItemReads.Add(1)
+			}
+			forward.ServeHTTP(w, r)
+		}))
+		t.Cleanup(observer.Close)
+		f.api = observer.URL
 	}
 	fakeWrite(t, f.config, map[string]any{"api": f.api, "token": "private-tracker-token", "connection": "local-test-connection", "source": "tracker:item:42", "journal": f.journalPath, "report": f.report, "marker": f.marker})
 	manifest := filepath.Join(f.home, "tracker-manifest.json")
@@ -680,7 +703,7 @@ func TestExtensionFakeTrackerNativeDefaultInert(t *testing.T) {
 
 func TestExtensionFakeTrackerRecoveryKeepsOriginalContentAndParents(t *testing.T) {
 	consumer := fakeTrackerBinary(t)
-	f := fakeTrackerFixture(t, consumer, "native:identity=read", "native:issue=read,observe,create,revise")
+	f := fakeTrackerObservedFixture(t, consumer, true, "native:identity=read", "native:issue=read,observe,create,revise")
 	f.actor()
 	f.trackerPlan(map[string]any{"action": "import", "pause": "native-sent:issue"})
 	run := f.trackerStart()
@@ -728,13 +751,27 @@ func TestExtensionFakeTrackerRecoveryKeepsOriginalContentAndParents(t *testing.T
 	}
 	f.killTracker(marker, run)
 	pending := f.journal()["native"].(map[string]any)["update-2"].(map[string]any)["params"]
+	f.externalEdit(2, "third external version while original update acknowledgement is lost")
 	originalUpdate := current["head_ids"].([]any)[0].(string)
 	path := filepath.Join(f.home, "later-native.json")
 	fakeWrite(t, path, nativeIssueState("newer native revision after unread update reply"))
 	f.command("issue", "revise", id, "--expect", originalUpdate, "--input", path, "--operation", "after-unread-update", "--json")
 	before = hostNativeSnapshot(t, f.repo)
-	f.trackerRun(map[string]any{"action": "update"})
+	reads := f.apiItemReads.Load()
+	parent, recoveryErr := f.trackerAttempt(map[string]any{"action": "update"})
+	if f.apiItemReads.Load() != reads {
+		t.Fatalf("pending update recovery read fresh external source before original operation settlement: parent=%v error=%v", parent, recoveryErr)
+	}
+	if recoveryErr != nil {
+		t.Fatal("original pending update recovery failed", parent, recoveryErr)
+	}
 	nativeSnapshotEqual(t, f.nativeHostFixture, before)
+	if f.journal()["external_version"] != float64(2) || f.serviceState()["item"].(map[string]any)["version"] != float64(3) {
+		t.Fatal("pending update recovery silently adopted newer external version")
+	}
+	if _, minted := f.journal()["native"].(map[string]any)["update-3"]; minted {
+		t.Fatal("unresolved original update minted a new operation")
+	}
 	update := f.journal()["native"].(map[string]any)["update-2"].(map[string]any)
 	if !reflect.DeepEqual(pending, update["params"]) || update["lookup"].(map[string]any)["event_id"] != originalUpdate || update["result"].(map[string]any)["event_id"] != originalUpdate || update["result"].(map[string]any)["replayed"] != true {
 		t.Fatal("restart changed original content/parents or lost original operation identity")

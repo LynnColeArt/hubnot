@@ -33,10 +33,11 @@ type plan struct {
 	LoseExternalAck bool           `json:"lose_external_ack"`
 }
 type nativeIntent struct {
-	Params  map[string]any `json:"params"`
-	Result  map[string]any `json:"result"`
-	Lookup  map[string]any `json:"lookup"`
-	Refusal map[string]any `json:"refusal"`
+	BaselineSaved bool           `json:"baseline_saved"`
+	Params        map[string]any `json:"params"`
+	Result        map[string]any `json:"result"`
+	Lookup        map[string]any `json:"lookup"`
+	Refusal       map[string]any `json:"refusal"`
 }
 type externalRequest struct {
 	Key       string   `json:"key"`

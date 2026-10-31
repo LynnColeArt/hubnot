@@ -420,6 +420,27 @@ func mutation(actor, key, intent string, id any, parents []string, state any, co
 	return map[string]any{"family": "issue", "intent": intent, "id": id, "expected": parents, "actor": actor, "operation": key, "state": state, "comment": comment}
 }
 func (x *client) importItem(update bool) error {
+	if update {
+		// A pending update is an existing immutable intent, not permission to
+		// select a newer external version. Its result and connector baseline
+		// settle together, including a crash after recording the result alone.
+		pending := ""
+		for name, intent := range x.j.Native {
+			if strings.HasPrefix(name, "update-") && intent != nil && !intent.BaselineSaved && intent.Refusal == nil {
+				if pending != "" {
+					return errors.New("native_uncertain")
+				}
+				pending = name
+			}
+		}
+		if pending != "" {
+			version, err := strconv.Atoi(strings.TrimPrefix(pending, "update-"))
+			if err != nil || version < 1 {
+				return errors.New("invalid_input")
+			}
+			return x.importUpdate(pending, version, x.j.Native[pending].Params)
+		}
+	}
 	var item externalItem
 	if !update && x.j.InitialItem != nil {
 		// The first source snapshot, including its version and comment claims,
@@ -453,19 +474,7 @@ func (x *client) importItem(update bool) error {
 		if prior := x.j.Native[name]; prior != nil {
 			params = prior.Params
 		}
-		result, err := x.intent(name, params)
-		if err != nil {
-			return err
-		}
-		x.j.NativeHead = textField(result, "event_id")
-		x.j.ExternalVersion = item.Version
-		id := textField(result, "resource_id")
-		x.j.Baseline[id] = []string{textField(result, "event_id")}
-		if comment := x.j.Native["comment"]; comment != nil && comment.Result != nil {
-			x.j.Baseline[id] = append(x.j.Baseline[id], textField(comment.Result, "event_id"))
-		}
-		sort.Strings(x.j.Baseline[id])
-		return x.save()
+		return x.importUpdate(name, item.Version, params)
 	}
 	params := mutation(x.j.Actor, operationKey(x.c.Connection, x.c.Source, "issue"), "open", nil, []string{}, issueState(item, x.c.Source), "")
 	if prior := x.j.Native["issue"]; prior != nil {
@@ -500,6 +509,23 @@ func (x *client) importItem(update bool) error {
 	}
 	return x.save()
 }
+func (x *client) importUpdate(name string, version int, params map[string]any) error {
+	result, err := x.intent(name, params)
+	if err != nil {
+		return err
+	}
+	x.j.NativeHead = textField(result, "event_id")
+	x.j.ExternalVersion = version
+	id := textField(result, "resource_id")
+	x.j.Baseline[id] = []string{textField(result, "event_id")}
+	if comment := x.j.Native["comment"]; comment != nil && comment.Result != nil {
+		x.j.Baseline[id] = append(x.j.Baseline[id], textField(comment.Result, "event_id"))
+	}
+	sort.Strings(x.j.Baseline[id])
+	x.j.Native[name].BaselineSaved = true
+	return x.save()
+}
+
 func revisions(entry map[string]any) ([]string, error) {
 	values, ok := entry["revision_ids"].([]any)
 	if !ok {
