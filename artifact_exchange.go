@@ -464,7 +464,8 @@ func artifactExchangeSetRefs(ctx context.Context, dir string, refs []artifactSou
 	if ctx.Err() != nil {
 		return artifactFailure("cancelled", "artifact exchange cancelled before ref transaction")
 	}
-	if _, e := projectGit(ctx, dir, []byte(input.String()), 65536, "update-ref", "--stdin"); e != nil {
+	// A symbolic accepted ref must not redirect publication to its referent.
+	if _, e := projectGit(ctx, dir, []byte(input.String()), 65536, "update-ref", "--no-deref", "--stdin"); e != nil {
 		if ctx.Err() != nil {
 			return artifactFailure("uncertain_operation", "exchange ref transaction outcome requires inspection")
 		}
