@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/exec"
@@ -24,6 +25,7 @@ import (
 )
 
 var defaultBinaryDir = flag.String("hn-default-binaries", "", "explicit directory containing standard and native-only non-race hn executables")
+var defaultBinaryProof = flag.String("hn-default-binary-proof", "", "collector binaries.json required with explicit default executables")
 var defaultEvidence = flag.String("hn-default-evidence", "", "external directory for raw default qualification transcripts")
 var defaultDonor = flag.String("hn-default-donor", "", "external output filename for the public-only large artifact bundle")
 var defaultDetectorMutant = flag.String("hn-default-detector-mutant", "", "qualification negative control: disable one detector cause")
@@ -37,6 +39,36 @@ func defaultBinary(t *testing.T, variant string) string {
 		info, err := os.Stat(p)
 		if err != nil || !info.Mode().IsRegular() || info.Mode()&0111 == 0 {
 			t.Fatalf("explicit default executable %s: %v", variant, err)
+		}
+		if *defaultBinaryProof == "" {
+			t.Fatal("explicit default executables require their collector binary identity proof")
+		}
+		proof, err := os.ReadFile(*defaultBinaryProof)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var entries map[string]struct{ Path, SHA256, Source string }
+		if err = json.Unmarshal(proof, &entries); err != nil {
+			t.Fatal(err)
+		}
+		selected, err := filepath.Abs(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		digest := fmt.Sprintf("%x", sha256.Sum256(raw))
+		matched := 0
+		for key, entry := range entries {
+			if (key == "frozen-cgo1/candidate/"+variant || key == "packager-cgo0/candidate/"+variant) && entry.Path == selected && entry.SHA256 == digest && len(entry.Source) == 40 {
+				matched++
+				t.Logf("exact selected source=%s variant=%s sha256=%s", entry.Source, key, digest)
+			}
+		}
+		if matched != 1 {
+			t.Fatal("explicit executable does not match a unique source-bound candidate proof", variant)
 		}
 		return p
 	}
@@ -428,9 +460,6 @@ func defaultLargeBundle(t *testing.T) string {
 	}
 	run(fast.String(), "fast-import", "--quiet")
 	bundle := filepath.Join(t.TempDir(), "large.bundle")
-	if *defaultDonor != "" {
-		bundle = *defaultDonor
-	}
 	run("", "bundle", "create", bundle, artifactRef(actor))
 	t.Logf("public donor records=10000 type=1 stream=%s schema=%s", artifactRef(actor), schema)
 	return bundle
@@ -440,7 +469,54 @@ func TestExtensionDefaultPrepareCorpus(t *testing.T) {
 	if *defaultDonor == "" {
 		t.Skip("explicit external donor output required")
 	}
-	defaultLargeBundle(t)
+	if *defaultBenchmarkBaseline == "" {
+		t.Fatal("explicit immutable baseline directory required to guard corpus output")
+	}
+	output, err := filepath.Abs(*defaultDonor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parent, err := filepath.EvalSymlinks(filepath.Dir(output))
+	if err != nil {
+		t.Fatal(err)
+	}
+	output = filepath.Join(parent, filepath.Base(output))
+	source, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, protected := range []string{source, *defaultBenchmarkBaseline} {
+		resolved, err := filepath.EvalSymlinks(protected)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resolved, err = filepath.Abs(resolved)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if relative, err := filepath.Rel(resolved, output); err != nil || relative == "." || !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+			t.Fatal("donor output must be outside source and immutable baseline directories")
+		}
+	}
+	if _, err = os.Lstat(output); !os.IsNotExist(err) {
+		t.Fatal("donor output must not exist; preserve every prior corpus")
+	}
+	bundle := defaultLargeBundle(t)
+	input, err := os.Open(bundle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer input.Close()
+	file, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, copyErr := io.Copy(file, input)
+	closeErr := file.Close()
+	if copyErr != nil || closeErr != nil {
+		t.Fatal(copyErr, closeErr)
+	}
+	t.Log("public-only donor retained at explicit new external output")
 }
 
 func TestExtensionDefaultNativeMatrix(t *testing.T) {
@@ -501,8 +577,8 @@ func TestExtensionDefaultNativeMatrix(t *testing.T) {
 					t.Fatal(memoryRaw)
 				}
 				memory := memoryResult.MemoryID
-				d.call(true, "memory", "recall", "--at", "HEAD", "--include-untrusted", "--lifecycle", "all", "--json")
-				d.call(true, "memory", "grep", "--at", "HEAD", "--include-untrusted", "--json", "Default")
+				betaContributionContains(t, d.call(true, "memory", "recall", "--at", "HEAD", "--include-untrusted", "--lifecycle", "all", "--json"), memory, "Default inert guidance")
+				betaContributionContains(t, d.call(true, "memory", "grep", "--at", "HEAD", "--include-untrusted", "--json", "Default"), memory, "Default inert guidance")
 				d.call(true, "memory", "retract", memory, "--reason", "invalidated", "--json")
 				base := d.f.git(d.repo, "rev-parse", "HEAD")
 				d.f.git(d.repo, "switch", "-qc", "candidate")
@@ -590,7 +666,7 @@ func TestExtensionDefaultHistoricalMatrix(t *testing.T) {
 						t.Fatal("native signed bytes/IDs/signatures changed")
 					}
 					t.Logf("historical exact object bytes release=%s sha256=%x", release, sha256.Sum256(before))
-					d.call(false, "identity", "show", "--json")
+					betaContributionContains(t, d.call(false, "identity", "show", "--json"), "identity")
 					for _, name := range []string{"identity.json", "identities", "active", "rotation.json", "keyring"} {
 						if _, e := os.Stat(filepath.Join(d.common, "hn", name)); !os.IsNotExist(e) {
 							t.Fatal("keyless read created identity", name, e)
