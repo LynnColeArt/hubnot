@@ -65,6 +65,78 @@ func paramFixtures() map[string]map[string]any {
 func mutationFixture() map[string]any {
 	return obj("protocol", "hn/0", "family", "issue", "type_id", nil, "resource_id", testID, "event_id", testID, "replayed", false, "conflict", false, "head_count", 1, "admission", nil, "source_cut", testID)
 }
+
+func TestProtocolMutationVisibleHeadCount(t *testing.T) {
+	for _, method := range []string{"resource.mutate", "resource.operation", "artifact.mutate", "artifact.operation", "artifact.type.publish"} {
+		t.Run(method, func(t *testing.T) {
+			inspect := func(result map[string]any) error {
+				data := result
+				if strings.HasSuffix(method, ".operation") {
+					data = obj("status", "found", "protocol", result["protocol"], "actor", testActor, "operation", "key", "family", result["family"], "type_id", result["type_id"], "request", testID, "resource_id", testID, "event_id", testID, "result", result, "source_cut", testID, "reason", nil)
+				}
+				response := obj("protocol", "hn.extension/1", "request_id", "r", "ok", true, "data", data, "error", nil)
+				_, err := InspectMessage(encode(response), "response", "r", method)
+				return err
+			}
+			result := mutationFixture()
+			if strings.HasPrefix(method, "resource.") {
+				// Pending and hidden admission can leave the governed native view
+				// with no visible heads, including in a recovered acknowledgement.
+				for _, family := range []string{"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"} {
+					result["family"] = family
+					for _, admission := range []string{"pending", "hidden"} {
+						result["head_count"], result["admission"] = 0, admission
+						if err := inspect(result); err != nil {
+							t.Errorf("%s %s with zero visible heads: %v", family, admission, err)
+						}
+					}
+				}
+				result["family"], result["admission"] = "issue", "admitted"
+			} else {
+				result["protocol"], result["family"], result["type_id"] = "hn-artifact/1", nil, "example.test/item"
+			}
+			// Native visible mutations and custom publication retain their actual
+			// one-head result; the exact finite JSON integer upper bound is unchanged.
+			for _, count := range []any{1, json.Number("9007199254740991")} {
+				result["head_count"] = count
+				if err := inspect(result); err != nil {
+					t.Errorf("valid head_count %v: %v", count, err)
+				}
+			}
+			for _, count := range []any{-1, json.Number("0.5"), json.Number("9007199254740992"), nil, "0", true} {
+				result["head_count"] = count
+				requireCode(t, inspect(result), "invalid_input")
+			}
+			delete(result, "head_count")
+			requireCode(t, inspect(result), "invalid_input")
+			result["head_count"] = 0
+			for key, bad := range map[string]any{"protocol": "invented", "family": "invented", "type_id": "invalid", "admission": "invented", "resource_id": nil, "event_id": nil, "source_cut": nil, "replayed": nil, "conflict": nil, "extra": true} {
+				original, present := result[key]
+				result[key] = bad
+				requireCode(t, inspect(result), "invalid_input")
+				if present {
+					result[key] = original
+				} else {
+					delete(result, key)
+				}
+			}
+			if strings.HasPrefix(method, "resource.") {
+				result["family"] = nil
+				requireCode(t, inspect(result), "invalid_input")
+				result["family"], result["type_id"] = "issue", "example.test/item"
+				requireCode(t, inspect(result), "invalid_input")
+			} else {
+				result["admission"] = "pending"
+				requireCode(t, inspect(result), "invalid_input")
+				result["admission"], result["type_id"] = nil, nil
+				requireCode(t, inspect(result), "invalid_input")
+				result["type_id"], result["family"] = "example.test/item", "issue"
+				requireCode(t, inspect(result), "invalid_input")
+			}
+		})
+	}
+}
+
 func resultFixtures() map[string]map[string]any {
 	page := obj("items", []any{}, "source_cut", testID, "next_cursor", nil)
 	change := obj("capture", "capture", "snapshot_id", testID, "selection", obj("families", []any{"issue"}, "types", []any{}), "selection_digest", testID, "source_cut", testID, "mode", "replace", "items", []any{}, "next_cursor", nil, "complete", true, "checkpoint", "checkpoint", "expires_at", "2026-10-30T12:00:00Z")

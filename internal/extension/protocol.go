@@ -537,7 +537,7 @@ func page(item wireRule) wireRule {
 }
 func mutationResultRule() wireRule {
 	return func(v any) error {
-		if err := closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "event_id": idRule, "replayed": booleanRule, "conflict": booleanRule, "head_count": integer(1, 9007199254740991, false), "admission": nullable(inventoryRule("native_admission")), "source_cut": idRule}, nil)(v); err != nil {
+		if err := closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "event_id": idRule, "replayed": booleanRule, "conflict": booleanRule, "head_count": integer(0, 9007199254740991, false), "admission": nullable(inventoryRule("native_admission")), "source_cut": idRule}, nil)(v); err != nil {
 			return err
 		}
 		o := v.(map[string]any)
