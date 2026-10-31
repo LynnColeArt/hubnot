@@ -1,0 +1,50 @@
+{
+  "authorized_date": "2026-10-31",
+  "decision": "bounded production record-count preflight; no persistent object-reader/batching refactor",
+  "executor": "WP25 in_progress; sole executor; pause affected paths if an original owner reopens",
+  "existing_owned_files_create_intent_unchanged": true,
+  "new_source_paths": [],
+  "existing_path_exceptions": [
+    {
+      "path": "artifact_read.go",
+      "original_owner": "WP05",
+      "owner_state": "approved/inactive",
+      "kind": "production",
+      "allowed_region": "bounded selected immutable-tip unique commit count preflight invoked in loadArtifactHistoryFromSources; adjacent private count/graph-view helper declarations and directly required imports only",
+      "preserve": [
+        "existing selected ref bound and source witness checks",
+        "existing cached record-count defense and exact selected artifact record limit exceeded diagnostic",
+        "30-second stage, cancellation and child reaping",
+        "scrubbed/no-replace/no-lazy-fetch Git environment",
+        "safe old raw-parent fallback for shallow/grafted graph views",
+        "consistent multi-parent rejection; graph failures never empty/success",
+        "all subsequent object/type/hash/size/tree/schema/signature/continuity/history verification",
+        "all other reader business bodies, authority, errors, signed bytes, refs and private state"
+      ],
+      "supersession": "ONLY earlier production-no-edit prohibition for this exact region"
+    },
+    {
+      "path": "extension_default_performance_test.go",
+      "original_owner": "WP24",
+      "owner_state": "approved/inactive",
+      "kind": "TEST ONLY",
+      "allowed_region": "closed source-input union in defaultPerformanceDriver adds ONLY extension_package_acceptance_test.go;317=311inherited+5WP24+1WP25",
+      "preserve": [
+        "len(approved_inputs)==311",
+        "equality of EVERY inherited input hash against fresh root-attested map",
+        "all sample selection and paired observations",
+        "all build/capture flags, immutable baseline assets, host/corpus identity rules",
+        "all budgets, capture math, collectors, failure retention and detector/budget controls"
+      ],
+      "stop_if": "any additional source path, count or fix is required"
+    }
+  ],
+  "already_WP25_owned_test_paths": [
+    "artifact_read_test.go",
+    "extension_package_acceptance_test.go"
+  ],
+  "no_original_ownership_transfer": true,
+  "no_new_global_optional_startup_state": true,
+  "no_new_native_dependency": true,
+  "no_other_source_scope": true
+}

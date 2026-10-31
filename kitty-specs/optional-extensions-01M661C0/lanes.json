@@ -156,6 +156,8 @@
       ],
       "predicted_surfaces": [
         "api",
+        "artifact-rendering",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -549,11 +551,13 @@
         "docs/qualification/optional-extensions/default/metrics.csv",
         "extension_default_acceptance_test.go",
         "extension_default_performance_test.go",
+        "internal/extension/vocabulary_test.go",
         "optional_bootstrap.go",
         "optional_bootstrap_test.go"
       ],
       "predicted_surfaces": [
         "api",
+        "artifact-rendering",
         "legacy-cleanup",
         "tracker-integration",
         "workspace"
@@ -618,10 +622,10 @@
       "parallel_group": 16
     }
   ],
-  "computed_at": "2026-10-31T20:47:47.295091+00:00",
+  "computed_at": "2026-10-31T21:33:59.522602+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [
     "WP02"
   ],
-  "planning_commit_sha": "457ba25e4ec4257009a552640ec7303ef3e1ee42"
+  "planning_commit_sha": "2f1a65668fcf41e80fdfb6143deff8f5d67e1d97"
 }
