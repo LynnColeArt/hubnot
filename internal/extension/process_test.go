@@ -52,8 +52,30 @@ func TestSessionProcessAsset(t *testing.T) {
 		return
 	}
 	_ = os.WriteFile(os.Getenv("HN_SESSION_PID"), []byte(strconv.Itoa(os.Getpid())), 0600)
-	_ = assetRead()
+	hello := assetRead()
 	assetWrite(map[string]any{"protocol": HostProtocol, "ready": true})
+	if mode == "identity-handoff" {
+		assetWrite(map[string]any{"protocol": HostProtocol, "request_id": "inventory", "method": "capabilities.list", "params": map[string]any{}})
+		inventory := assetRead()
+		request := map[string]any{"protocol": HostProtocol, "request_id": "read", "method": "resource.read", "params": map[string]any{"family": "issue", "id": nil, "limit": 20, "cursor": nil}}
+		switch os.Getenv("HN_SESSION_OVERRIDE") {
+		case "request":
+			request["session_id"] = "caller-selected"
+		case "params":
+			request["params"].(map[string]any)["session_id"] = "caller-selected"
+		}
+		attempted, _ := json.Marshal(request)
+		if os.WriteFile(os.Getenv("HN_SESSION_PID")+".request", attempted, 0600) != nil {
+			os.Exit(63)
+		}
+		assetWrite(request)
+		response := assetRead()
+		observed, _ := json.Marshal(map[string]any{"hello": hello, "capabilities": inventory, "response": response})
+		if os.WriteFile(os.Getenv("HN_SESSION_PID")+".session", observed, 0600) != nil {
+			os.Exit(64)
+		}
+		os.Exit(0)
+	}
 	if mode == "idle" {
 		for {
 			time.Sleep(time.Hour)

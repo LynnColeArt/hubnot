@@ -2,6 +2,7 @@ package extension
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"reflect"
@@ -256,5 +257,101 @@ func TestSessionInFlightRecheckAtShutdown(t *testing.T) {
 			}
 			assertSessionPIDGone(t, pid)
 		})
+	}
+}
+
+func TestSessionInvocationIdentity(t *testing.T) {
+	cfg, pid := sessionFixture(t, "identity-handoff")
+	t.Setenv("HN_SESSION_OVERRIDE", "")
+	var calls []Invocation
+	cfg.Dispatch = func(ctx context.Context, call Invocation) (any, error) {
+		if e := AuthorizeRequest(call); e != nil {
+			return nil, e
+		}
+		calls = append(calls, call)
+		return map[string]any{"items": []any{}, "source_cut": testID, "next_cursor": nil}, nil
+	}
+	entry, _, err := cfg.Store.Entry(cfg.Registration)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedBinding := Binding{cfg.Registration.RegistrationID, cfg.Store.RepositoryID(), entry.Epoch}
+	expectedRequest := Request{ID: "read", Method: "resource.read", Params: map[string]any{"family": "issue", "id": nil, "limit": float64(20), "cursor": nil}}
+	ids := []string{}
+	for i := 0; i < 2; i++ {
+		result, err := Run(context.Background(), cfg)
+		if err != nil || result.CompletedRequests != 2 || result.Outcome != "completed" {
+			t.Fatalf("session %d: %#v %v", i, result, err)
+		}
+		assertSessionPIDGone(t, pid)
+		if len(calls) != i+1 {
+			t.Fatalf("expected one real dispatch per session, got %d", len(calls))
+		}
+		call := calls[i]
+		if call.Binding != expectedBinding || !reflect.DeepEqual(call.Request, expectedRequest) || !reflect.DeepEqual(call.Registration, cfg.Registration) || !reflect.DeepEqual(call.Enablement, entry) {
+			t.Fatalf("dispatch handoff changed request/registration/enablement/binding: %#v", call)
+		}
+		data, err := os.ReadFile(pid + ".session")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var observed struct {
+			Hello struct {
+				Hello struct {
+					SessionID string `json:"session_id"`
+				} `json:"hello"`
+			} `json:"hello"`
+			Capabilities struct {
+				Data struct {
+					Session Session `json:"session"`
+				} `json:"data"`
+			} `json:"capabilities"`
+			Response struct {
+				OK bool `json:"ok"`
+			} `json:"response"`
+		}
+		if json.Unmarshal(data, &observed) != nil || !observed.Response.OK {
+			t.Fatalf("actual child observation %s", data)
+		}
+		// Reflection lets this assertion execute against the old Invocation without
+		// turning the missing live handoff into an unrelated compilation failure.
+		field := reflect.ValueOf(call).FieldByName("SessionID")
+		id := ""
+		if !field.IsValid() || field.Kind() != reflect.String {
+			t.Error("Invocation.SessionID missing from live Run dispatch")
+		} else {
+			id = field.String()
+		}
+		if len(id) != 32 || id != result.Session.SessionID || id != observed.Hello.Hello.SessionID || id != observed.Capabilities.Data.Session.SessionID {
+			t.Errorf("session %d dispatch identity %q differs from actual result/hello/capabilities %q/%q/%q", i, id, result.Session.SessionID, observed.Hello.Hello.SessionID, observed.Capabilities.Data.Session.SessionID)
+		}
+		ids = append(ids, id)
+	}
+	if ids[0] == ids[1] {
+		t.Errorf("distinct sessions with identical binding reused identity %q", ids[0])
+	}
+	for _, location := range []string{"request", "params"} {
+		t.Setenv("HN_SESSION_OVERRIDE", location)
+		_, err := Run(context.Background(), cfg)
+		expectGrantError(t, err, "invalid_input")
+		assertSessionPIDGone(t, pid)
+		if len(calls) != 2 {
+			t.Fatal("caller-selected session identity reached dispatch")
+		}
+		data, err := os.ReadFile(pid + ".request")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var request map[string]any
+		if json.Unmarshal(data, &request) != nil {
+			t.Fatalf("actual request marker %s", data)
+		}
+		target := request
+		if location == "params" {
+			target = request["params"].(map[string]any)
+		}
+		if target["session_id"] != "caller-selected" {
+			t.Fatalf("missing actual override control %s", data)
+		}
 	}
 }

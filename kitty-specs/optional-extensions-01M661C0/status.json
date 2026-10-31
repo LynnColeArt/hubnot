@@ -1,19 +1,19 @@
 {
-  "event_count": 207,
-  "last_event_id": "01M68KA8JWH993WQ079ERK5C9E",
-  "materialized_at": "2026-10-31T09:05:40.956577+00:00",
+  "event_count": 212,
+  "last_event_id": "01M68N0VKHN2N9SR6YH6NXMVKK",
+  "materialized_at": "2026-10-31T09:35:29.905111+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 16,
+    "approved": 15,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 2,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 8
   },
   "work_packages": {
@@ -550,10 +550,10 @@
       "agent": "codex",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
-      "force_count": 2,
-      "lane": "approved",
-      "last_event_id": "01M68KA8JWH993WQ079ERK5C9E",
-      "last_transition_at": "2026-10-31T09:05:40.956577+00:00",
+      "force_count": 3,
+      "lane": "in_review",
+      "last_event_id": "01M68N0VKHN2N9SR6YH6NXMVKK",
+      "last_transition_at": "2026-10-31T09:35:29.905111+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods.",
@@ -563,15 +563,17 @@
         "Independent bounded dependency refresh review passed at19cc5d1591d1148f516947730a7355562663d9ef, mapf68fb22fca827cbbb208817c9179b3ba27016fb79114354e0c951e0c4588d6d0. Root be349643 coordinates exact approved WP15 protocol import; all other240 inputs and7 lifecycle paths equal prior approved WP16.28 independent actual frame controls and4 real supplied-binary race host tests across both variants passed with exact14method/13unsupported inventory, argv/binding, idle native/second-module progress, exact old-lock detector, epoch disable cleanup and observed PID exit.29 closed inventory mirrors and12 prior evidence log hashes verified. All8 anti-pattern items PASS; contracts reviewed. Business adapters17/18/19 and final full platform/performance qualification remain pending. No force/skip/reviewer fixes; heavy slot released.",
         "Administrative integration rework: current governed native caller exposed clean-monitor shutdown cancellation race; deterministic lifecycle repair and permanent unsupported-surface test control required before17/18 qualification.",
         "WP16 clean shutdown correction source e4349c8d; metadata delivery5d2de715. Causal held-in-flight two-stage RED retained; private intentional-stop cause and joined monitor result preserve clean completion/real failures/cancellation/uncertainty. Frozen memory.mutate actual child control replaces stage-only supported read expectation. Fresh clean std+combined binaries, focused race/live controls/vet pass. Evidence optional-extensions-WP16/clean-shutdown-rework/report.md.",
-        "Independent clean-shutdown review passed: exact source e4349c8d02b6 and metadata delivery5d2de715, input map49e4ca969880 verified; both deterministic causal RED stages reproduced once; focused race108 pass0fail/skip; supplied standard/combined real clean/refusal/unsupported/PID/lock controls pass, explicit supplied native-read detector pass. All8 anti-patterns PASS,29 closed mirrors/drift+14method matrix retained. Root-authorized WP17 generated3field metadata-only repair verified; no17/18 WIP imported. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16/clean-shutdown-review/report.md. LinuxAMD64 only; old broad/platform evidence provenance retained; Python no_coverage unavailable; final WP24/25 qualification pending."
+        "Independent clean-shutdown review passed: exact source e4349c8d02b6 and metadata delivery5d2de715, input map49e4ca969880 verified; both deterministic causal RED stages reproduced once; focused race108 pass0fail/skip; supplied standard/combined real clean/refusal/unsupported/PID/lock controls pass, explicit supplied native-read detector pass. All8 anti-patterns PASS,29 closed mirrors/drift+14method matrix retained. Root-authorized WP17 generated3field metadata-only repair verified; no17/18 WIP imported. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16/clean-shutdown-review/report.md. LinuxAMD64 only; old broad/platform evidence provenance retained; Python no_coverage unavailable; final WP24/25 qualification pending.",
+        "Administrative bounded value-object/dispatch handoff: expose actual existing host SessionID internally for session-bound WP19 capture, no wire or grant change; active17/18 preserve source evidence before normal refresh.",
+        "WP16 bounded actual SessionID handoff source0e728734. Live Invocation receives existing host-generated session ID; deterministic missing-field RED and actual two same-binding distinct sessions/hello/capabilities equality/strict raw override controls pass. Full approved shutdown code reconstructs exactly except field/initializer,239 other inputs exact. Fresh stamped std+combined binaries, focused session race/current CLI/static checks pass. Evidence optional-extensions-WP16/session-identity-handoff/report.md."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-5.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-5.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-6.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-6.md",
         "reviewer": "codex",
-        "verdict": "approved"
+        "verdict": "changes_requested"
       },
       "role": "reviewer",
       "shell_pid": 22770,
