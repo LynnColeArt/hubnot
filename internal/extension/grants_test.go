@@ -3,6 +3,7 @@ package extension
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +11,175 @@ import (
 	"strings"
 	"testing"
 )
+
+// These are literal mirrors of host-v1.md sections 1 and 4. Comparing complete
+// sets catches additions as well as removals, independently of the matrix below.
+func TestGrantClosedContractSets(t *testing.T) {
+	wantFamilies := map[string]bool{"issue": true, "project": true, "project-item": true, "discussion": true, "discussion-reply": true, "workflow": true}
+	wantActions := map[string]bool{"read": true, "observe": true, "create": true, "revise": true, "resolve": true, "type.publish": true, "raw.inspect": true}
+	if !reflect.DeepEqual(nativeFamilies, wantFamilies) {
+		t.Fatalf("native data families: got %v want %v", nativeFamilies, wantFamilies)
+	}
+	if !reflect.DeepEqual(grantActions, wantActions) {
+		t.Fatalf("grant actions: got %v want %v", grantActions, wantActions)
+	}
+}
+
+func grantMatrixRegistration(t *testing.T, capabilities []string) (Registration, Binding) {
+	t.Helper()
+	r, registry := registrationFixture(t)
+	r.Manifest.Capabilities = capabilities
+	r.ManifestDigest = r.Manifest.Digest()
+	r, err := Register(registry, r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return r, Binding{r.RegistrationID, "sha256:" + strings.Repeat("a", 64), strings.Repeat("1", 32)}
+}
+
+func expectGrantError(t *testing.T, err error, code string) {
+	t.Helper()
+	var public *Error
+	if !errors.As(err, &public) || public.Origin != "host" || public.Code != code || public.Recovery != "do_not_retry" || public.Operation != nil {
+		t.Fatalf("want host/%s do_not_retry operation:null, got %#v", code, err)
+	}
+}
+
+func TestArtifactReadSelectorActionContract(t *testing.T) {
+	r, binding := grantMatrixRegistration(t, []string{"artifact.read"})
+	entry := EnablementEntry{r.RegistrationID, binding.RepositoryID, binding.Epoch, true, []Grant{{"artifact:example/type", []string{"read"}}, {"artifact:opaque", []string{"raw.inspect"}}}}
+	for _, access := range []Access{{"artifact.read", "artifact:example/type", "read"}, {"artifact.read", "artifact:opaque", "raw.inspect"}} {
+		if err := Authorize(r, entry, binding, access, false); err != nil {
+			t.Fatalf("supported pairing %+v: %v", access, err)
+		}
+	}
+	for _, selector := range []string{"artifact:example/type", "artifact:example/*"} {
+		t.Run(selector, func(t *testing.T) {
+			entry.Grants = []Grant{{selector, []string{"raw.inspect"}}}
+			// A structurally legal custom grant is not a usable concrete read.
+			expectGrantError(t, Authorize(r, entry, binding, Access{"artifact.read", "artifact:example/type", "read"}, false), "denied_access")
+			expectGrantError(t, Authorize(r, entry, binding, Access{"artifact.read", "artifact:example/type", "raw.inspect"}, false), "invalid_input")
+			expectGrantError(t, ValidateRegistrationGrants(r, entry), "denied_access")
+		})
+	}
+	for _, grant := range []Grant{{"artifact:example/type", []string{"read"}}, {"artifact:example/*", []string{"read"}}, {"artifact:opaque", []string{"raw.inspect"}}} {
+		entry.Grants = []Grant{grant}
+		if err := ValidateRegistrationGrants(r, entry); err != nil {
+			t.Fatalf("applicable grant %+v: %v", grant, err)
+		}
+	}
+}
+
+func TestGrantMethodSelectorActionMatrix(t *testing.T) {
+	// Each row comes from the 14-row host-v1.md section 4 table. Broad grants
+	// deliberately eliminate absent-grant refusals so cross-pairings must fail
+	// at the method boundary, including all seven actions for every selector.
+	rows := []struct {
+		method                           string
+		native, identity, custom, opaque []string
+	}{
+		{"capabilities.list", nil, nil, nil, nil},
+		{"identity.public", nil, []string{"read"}, nil, nil},
+		{"resource.read", []string{"read"}, nil, nil, nil},
+		{"resource.mutate", []string{"create", "revise", "resolve"}, nil, nil, nil},
+		{"resource.operation", []string{"read"}, nil, nil, nil},
+		{"artifact.read", nil, nil, []string{"read"}, []string{"raw.inspect"}},
+		{"artifact.mutate", nil, nil, []string{"create", "revise", "resolve"}, nil},
+		{"artifact.operation", nil, nil, []string{"read"}, nil},
+		{"artifact.search", nil, nil, []string{"read"}, nil},
+		{"artifact.type.read", nil, nil, []string{"read"}, nil},
+		{"artifact.type.publish", nil, nil, []string{"type.publish"}, nil},
+		{"changes.capture", []string{"read", "observe"}, nil, []string{"read", "observe"}, nil},
+		{"changes.page", []string{"read", "observe"}, nil, []string{"read", "observe"}, nil},
+		{"changes.since", []string{"read", "observe"}, nil, []string{"read", "observe"}, nil},
+	}
+	capabilities := []string{}
+	for _, row := range rows {
+		capabilities = append(capabilities, row.method)
+	}
+	r, binding := grantMatrixRegistration(t, capabilities)
+	families := []string{"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"}
+	selectors := []string{"", "native:identity", "artifact:example/type", "artifact:opaque"}
+	grants := []Grant{{"native:identity", []string{"read"}}, {"artifact:example/type", []string{"read", "observe", "create", "revise", "resolve", "type.publish", "raw.inspect"}}, {"artifact:opaque", []string{"raw.inspect"}}}
+	for _, family := range families {
+		selectors = append(selectors, "native:"+family)
+		grants = append(grants, Grant{"native:" + family, []string{"read", "observe", "create", "revise", "resolve"}})
+	}
+	entry := EnablementEntry{r.RegistrationID, binding.RepositoryID, binding.Epoch, true, grants}
+	for _, row := range rows {
+		t.Run(row.method, func(t *testing.T) {
+			for _, selector := range selectors {
+				for _, action := range []string{"", "read", "observe", "create", "revise", "resolve", "type.publish", "raw.inspect"} {
+					allowed := []string{}
+					switch {
+					case selector == "native:identity":
+						allowed = row.identity
+					case strings.HasPrefix(selector, "native:"):
+						allowed = row.native
+					case selector == "artifact:opaque":
+						allowed = row.opaque
+					case selector == "artifact:example/type":
+						allowed = row.custom
+					}
+					want := row.method == "capabilities.list" && selector == "" && action == ""
+					for _, value := range allowed {
+						if value == action {
+							want = true
+						}
+					}
+					access := Access{row.method, selector, action}
+					err := Authorize(r, entry, binding, access, false)
+					if want {
+						if err != nil {
+							t.Errorf("supported %+v: %v", access, err)
+						}
+					} else {
+						expectGrantError(t, err, "invalid_input")
+					}
+				}
+			}
+		})
+	}
+	// Every method's supported scopes still require their exact grant. Observe
+	// alone and read alone cannot authorize a complete changes request.
+	for _, row := range rows {
+		if row.method == "capabilities.list" {
+			continue
+		}
+		t.Run(row.method+"_missing_grant", func(t *testing.T) {
+			selector, action := "artifact:example/type", "read"
+			if len(row.native) > 0 {
+				selector, action = "native:issue", row.native[0]
+			} else if len(row.identity) > 0 {
+				selector, action = "native:identity", row.identity[0]
+			} else {
+				action = row.custom[0]
+			}
+			access := Access{row.method, selector, action}
+			missing := entry
+			missing.Grants = []Grant{}
+			expectGrantError(t, Authorize(r, missing, binding, access, false), "denied_access")
+			if strings.HasPrefix(row.method, "changes.") {
+				for _, single := range []string{"read", "observe"} {
+					missing.Grants = []Grant{{selector, []string{single}}}
+					expectGrantError(t, Authorize(r, missing, binding, Access{row.method, selector, single}, false), "denied_access")
+				}
+			}
+		})
+	}
+	for _, method := range []string{"memory.mutate", "proposal", "review", "decide", "merge", "policy.mutate", "identity.mutate", "run", "runner", "audit", "automerge", "sync.apply", "migration.apply"} {
+		expectGrantError(t, Authorize(r, entry, binding, Access{method, "native:issue", "read"}, false), "unsupported_capability")
+	}
+	// Namespace grants match only their exact namespace, never opaque objects
+	// or a similarly prefixed namespace/type name.
+	entry.Grants = []Grant{{"artifact:example/*", []string{"read"}}}
+	if err := Authorize(r, entry, binding, Access{"artifact.read", "artifact:example/other", "read"}, false); err != nil {
+		t.Fatal(err)
+	}
+	for _, selector := range []string{"artifact:examples/type", "artifact:other/type"} {
+		expectGrantError(t, Authorize(r, entry, binding, Access{"artifact.read", selector, "read"}, false), "denied_access")
+	}
+}
 
 func TestGrantClosedScopesAndRawAuthorization(t *testing.T) {
 	r, registry := registrationFixture(t)

@@ -11,6 +11,122 @@ import (
 	"testing"
 )
 
+func TestExtensionArtifactReadGrantCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	home, repo := t.TempDir(), t.TempDir()
+	config := filepath.Join(home, "config")
+	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
+	git := exec.Command("git", "init", "-q", repo)
+	git.Env = env
+	if out, err := git.CombinedOutput(); err != nil {
+		t.Fatalf("Git fixture: %v %s", err, out)
+	}
+	module, manifest, marker := filepath.Join(repo, "module"), filepath.Join(repo, "manifest.json"), filepath.Join(repo, "started")
+	if err := os.WriteFile(module, []byte("#!/bin/sh\nprintf forbidden > '"+marker+"'\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(manifest, []byte(`{"protocol":"hn.extension-manifest/1","module_id":"example.inventory/tool","module_version":"1","host_protocol":"hn.extension/1","capabilities":["artifact.read"]}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	invoke := func(code string, args ...string) extensionCLIResult {
+		t.Helper()
+		cmd := exec.Command(binary, append([]string{"extension"}, args...)...)
+		cmd.Dir, cmd.Env = repo, env
+		var out, stderr bytes.Buffer
+		cmd.Stdout, cmd.Stderr = &out, &stderr
+		err := cmd.Run()
+		var result extensionCLIResult
+		if json.Unmarshal(out.Bytes(), &result) != nil {
+			t.Fatalf("%v: %v %s %s", args, err, &out, &stderr)
+		}
+		if code == "" {
+			if err != nil || !result.OK {
+				t.Fatalf("%v: %v %s %s", args, err, &out, &stderr)
+			}
+		} else {
+			if err == nil || result.OK || result.Data != nil || result.Error.Origin != "host" || result.Error.Code != code || result.Error.Recovery != "do_not_retry" {
+				t.Fatalf("%v: want host/%s do_not_retry, got %v %s %s", args, code, err, &out, &stderr)
+			}
+			var envelope struct {
+				Error map[string]json.RawMessage `json:"error"`
+			}
+			if json.Unmarshal(out.Bytes(), &envelope) != nil || len(envelope.Error) != 5 || string(envelope.Error["operation"]) != "null" {
+				t.Fatalf("closed refusal: %s", &out)
+			}
+		}
+		return result
+	}
+	inspect := func(want string) {
+		t.Helper()
+		result := invoke("", "inspect", "example.inventory/tool", "--json")
+		var modules []map[string]json.RawMessage
+		if json.Unmarshal(result.Data["modules"], &modules) != nil || len(modules) != 1 || string(modules[0]["enabled"]) != "true" || string(modules[0]["grants"]) != want {
+			t.Fatalf("inspect grants: %v", modules)
+		}
+	}
+	invoke("", "register", "--manifest", manifest, "--executable", module, "--json")
+	publicBefore := extensionPrivateSnapshot(t, repo)
+	invoke("", "enable", "example.inventory/tool", "--grant", "artifact:example/type=read", "--json")
+	readGrant := `[{"selector":"artifact:example/type","actions":["read"]}]`
+	inspect(readGrant)
+	registryPath := filepath.Join(config, "hubnot", "extensions", "registry.json")
+	registryBefore, err := os.ReadFile(registryPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, grant := range []string{"artifact:example/type=raw.inspect", "artifact:example/*=raw.inspect"} {
+		before := extensionPrivateSnapshot(t, repo)
+		invoke("denied_access", "enable", "example.inventory/tool", "--grant", grant, "--json")
+		if !reflect.DeepEqual(before, extensionPrivateSnapshot(t, repo)) {
+			t.Fatal("unsupported grant changed enablement, signing state, journals, objects or refs")
+		}
+		registryAfter, err := os.ReadFile(registryPath)
+		if err != nil || !bytes.Equal(registryBefore, registryAfter) {
+			t.Fatal("unsupported grant changed registration")
+		}
+		inspect(readGrant)
+	}
+	invoke("", "enable", "example.inventory/tool", "--grant", "artifact:opaque=raw.inspect", "--json")
+	inspect(`[{"selector":"artifact:opaque","actions":["raw.inspect"]}]`)
+	publicAfter := extensionPrivateSnapshot(t, repo)
+	for path := range publicAfter {
+		if strings.HasPrefix(path, "/.git/hn/extensions/") {
+			delete(publicAfter, path)
+		}
+	}
+	if !reflect.DeepEqual(publicBefore, publicAfter) {
+		t.Fatal("management changed public/private native state")
+	}
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatal("grant management launched module")
+	}
+	// A real private intent and a real public object/ref write must trip the
+	// exact detector used for the refused operations above.
+	controlBefore := extensionPrivateSnapshot(t, repo)
+	intent := filepath.Join(repo, ".git", "hn", "artifacts", "intents", "control.json")
+	if err := os.MkdirAll(filepath.Dir(intent), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(intent, []byte("PRIVATE_INTENT_CONTROL"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	object := exec.Command("git", "hash-object", "-w", "--stdin")
+	object.Dir, object.Env, object.Stdin = repo, env, strings.NewReader("PUBLIC_OBJECT_CONTROL")
+	oid, err := object.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ref := exec.Command("git", "update-ref", "refs/hn/artifacts/detector", strings.TrimSpace(string(oid)))
+	ref.Dir, ref.Env = repo, env
+	if out, err := ref.CombinedOutput(); err != nil {
+		t.Fatalf("ref detector control: %v %s", err, out)
+	}
+	controlAfter := extensionPrivateSnapshot(t, repo)
+	if reflect.DeepEqual(controlBefore, controlAfter) || controlAfter["/.git/hn/artifacts/intents/control.json"] == "" || controlAfter["/.git/refs/hn/artifacts/detector"] == "" {
+		t.Fatal("intent/publication detector missed deliberate effects")
+	}
+}
+
 func TestExtensionEnablementCLI(t *testing.T) {
 	binary := extensionTestBinary(t)
 	home, repo := t.TempDir(), t.TempDir()

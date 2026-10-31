@@ -144,7 +144,10 @@ func methodAllows(access Access) bool {
 			}
 		}
 	case "artifact.read":
-		return custom && (access.Action == "read" && access.Selector != "artifact:opaque" || access.Action == "raw.inspect")
+		if access.Selector == "artifact:opaque" {
+			return access.Action == "raw.inspect"
+		}
+		return custom && access.Action == "read"
 	case "artifact.operation", "artifact.search", "artifact.type.read":
 		return custom && access.Selector != "artifact:opaque" && access.Action == "read"
 	case "artifact.mutate":
