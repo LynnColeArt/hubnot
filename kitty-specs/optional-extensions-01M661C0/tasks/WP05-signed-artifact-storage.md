@@ -33,6 +33,7 @@ create_intent:
 - artifact_store.go
 - artifact_read.go
 - artifact_store_test.go
+- artifact_read_test.go
 - artifact_store_commands.go
 - artifact_store_commands_test.go
 - internal/artifact/canonical_export.go
@@ -41,6 +42,7 @@ owned_files:
 - artifact_store.go
 - artifact_read.go
 - artifact_store_test.go
+- artifact_read_test.go
 - artifact_store_commands.go
 - artifact_store_commands_test.go
 - internal/artifact/canonical_export.go
@@ -242,8 +244,3 @@ Read canonical status/review references before implementation. Address every rej
 ## Activity log
 
 - 2026-10-30T09:50:45Z — planner-priti — Draft authored; root has not finalized tasks or authorized branch operations.
-
-
-### Prospective final-test maintenance transfer — 2026-10-31
-
-The original implementation and independent review of `artifact_read_test.go` remain historical evidence of this WP. Root assigns future edits to those test files exclusively to WP25 for the bounded config-path/private-state detector repairs described in `WP25-exact-package-qualification/integration-config-path-maintenance.md`. The historical ownership list in this body describes original delivery; the current frontmatter is the exclusive prospective write scope. No product source, requirement, dependency, prior verdict, signed data or test assertion is removed. WP25 must fix and independently qualify the tests before actual native platform acceptance.
