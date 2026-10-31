@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -353,5 +354,149 @@ func TestSessionInvocationIdentity(t *testing.T) {
 		if target["session_id"] != "caller-selected" {
 			t.Fatalf("missing actual override control %s", data)
 		}
+	}
+}
+
+// A real child consumes each complete, correlated successful response before
+// sending the next business request through the existing Run/Dispatch seam.
+func TestSessionSequentialResponses(t *testing.T) {
+	for _, mode := range []string{"sequential-response", "sequential-exit"} {
+		t.Run(mode, func(t *testing.T) {
+			cfg, pid := sessionFixture(t, mode)
+			calls := []string{}
+			cfg.Dispatch = func(ctx context.Context, call Invocation) (any, error) {
+				if err := AuthorizeRequest(call); err != nil {
+					return nil, err
+				}
+				calls = append(calls, call.Request.ID)
+				return map[string]any{"items": []any{}, "source_cut": testID, "next_cursor": nil}, nil
+			}
+			result, err := Run(context.Background(), cfg)
+			want := []string{"sequence-0", "sequence-1", "sequence-2", "sequence-3"}
+			if mode == "sequential-exit" {
+				want = want[:1]
+			}
+			if err != nil || result.CompletedRequests != len(want) || result.Outcome != "completed" || !reflect.DeepEqual(calls, want) {
+				t.Fatalf("sequential peer refused: result=%#v calls=%v error=%v", result, calls, err)
+			}
+			assertSessionPIDGone(t, pid)
+			data, err := os.ReadFile(pid + ".responses")
+			if err != nil {
+				t.Fatal(err)
+			}
+			var responses []map[string]any
+			if json.Unmarshal(data, &responses) != nil || len(responses) != len(want) {
+				t.Fatalf("missing complete child response observations: %s", data)
+			}
+			for i, response := range responses {
+				if response["request_id"] != want[i] || response["ok"] != true {
+					t.Fatalf("uncorrelated or failed response %d: %v", i, response)
+				}
+			}
+		})
+	}
+}
+
+func TestSessionPrematureSecondHasOnlyOneWriter(t *testing.T) {
+	cfg, pid := sessionFixture(t, "premature-second")
+	calls := 0
+	settled := make(chan struct{})
+	cfg.Dispatch = func(ctx context.Context, call Invocation) (any, error) {
+		calls++
+		<-ctx.Done()
+		defer close(settled)
+		return nil, ctx.Err()
+	}
+	_, err := Run(context.Background(), cfg)
+	var public *Error
+	if !errors.As(err, &public) || public.Code != "uncertain_operation" || public.Recovery != "inspect_operation" || !reflect.DeepEqual(public.Operation, map[string]any{"protocol": "hn/0", "actor": repeatActor(), "operation": "actual-key"}) {
+		t.Fatalf("lost premature mutation uncertainty: %v", err)
+	}
+	if calls != 1 {
+		t.Fatalf("premature second dispatched %d writers", calls)
+	}
+	select {
+	case <-settled:
+	default:
+		t.Fatal("writer did not settle")
+	}
+	assertSessionPIDGone(t, pid)
+}
+
+func TestSessionBlockedResponseControls(t *testing.T) {
+	for _, mode := range []string{"cancel", "wrong-cancel", "second", "timeout", "eof"} {
+		t.Run(mode, func(t *testing.T) {
+			cfg, pid := sessionFixture(t, "blocked-response-"+mode)
+			calls := 0
+			cfg.Dispatch = func(ctx context.Context, call Invocation) (any, error) {
+				calls++
+				comments := make([]any, 32)
+				for i := range comments {
+					comments[i] = map[string]any{"id": testID, "actor": repeatActor(), "body": strings.Repeat("x", 65536)}
+				}
+				item := map[string]any{"protocol": "hn/0", "family": "issue", "id": testID, "creator": repeatActor(), "heads": []any{}, "conflict": false, "state": nil, "comments": comments}
+				return map[string]any{"items": []any{item}, "source_cut": testID, "next_cursor": nil}, nil
+			}
+			started := time.Now()
+			_, err := Run(context.Background(), cfg)
+			code := "cancelled"
+			if mode == "second" || mode == "wrong-cancel" {
+				code = "invalid_input"
+			}
+			if mode == "eof" {
+				code = "unavailable_module"
+			}
+			expectGrantError(t, err, code)
+			if calls != 1 {
+				t.Fatalf("response control dispatched %d writers", calls)
+			}
+			if time.Since(started) > 4*time.Second {
+				t.Fatal("blocked response lost finite budget/cleanup")
+			}
+			assertSessionPIDGone(t, pid)
+		})
+	}
+}
+
+func TestSessionMutationLossAndSettledRefusal(t *testing.T) {
+	for _, mode := range []string{"response-loss", "refusal-response-loss", "unclassified-response-loss", "interrupted-refusal"} {
+		t.Run(mode, func(t *testing.T) {
+			asset := "lost-response"
+			if mode == "interrupted-refusal" {
+				asset = "premature-second"
+			}
+			cfg, pid := sessionFixture(t, asset)
+			calls := 0
+			known := &Error{Origin: "native", Code: "concurrent_update", Message: "native writer refused", Recovery: "retry_identical"}
+			cfg.Dispatch = func(ctx context.Context, call Invocation) (any, error) {
+				calls++
+				if mode == "interrupted-refusal" {
+					<-ctx.Done()
+					return nil, known
+				}
+				if mode == "refusal-response-loss" {
+					return nil, known
+				}
+				if mode == "unclassified-response-loss" {
+					return nil, errors.New("unclassified dispatch failure")
+				}
+				return mutationFixture(), nil
+			}
+			_, err := Run(context.Background(), cfg)
+			if mode == "interrupted-refusal" || mode == "refusal-response-loss" {
+				if err != known {
+					t.Fatalf("definitive refusal replaced: %v", err)
+				}
+			} else {
+				var public *Error
+				if !errors.As(err, &public) || public.Code != "uncertain_operation" || public.Recovery != "inspect_operation" || !reflect.DeepEqual(public.Operation, map[string]any{"protocol": "hn/0", "actor": repeatActor(), "operation": "actual-key"}) {
+					t.Fatalf("response loss discarded mutation identity: %v", err)
+				}
+			}
+			if calls != 1 {
+				t.Fatalf("expected one writer, got %d", calls)
+			}
+			assertSessionPIDGone(t, pid)
+		})
 	}
 }
