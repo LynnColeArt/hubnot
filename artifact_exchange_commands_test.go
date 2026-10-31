@@ -1023,3 +1023,125 @@ func TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI(t *testing.T) {
 	negative.call("", "verification_failure", "artifact", "import", "--input", exchangeWrite(t, bad), "--preserve-opaque", "--json")
 	negative.unchanged(snapshot)
 }
+
+// A symbolic accepted destination is a Git ref, not a filesystem symlink.
+// Publication must address that exact name even if another local writer makes
+// it symbolic immediately before the transaction. All fixture data is public.
+func TestArtifactExchangeNamedAcceptedRefIsolationCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			src := exchangeDestination(t, &artifactCLIFixture{binary: artifactStoreBinary(t)}, format)
+			first := artifactRawCommit(t, src, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			local := artifactFrozenRef(t, src)
+			actor, _ := parseArtifactRef(local)
+			sourceRef := "refs/hn/remotes/public-source/artifacts/" + actor + "/" + strings.TrimPrefix(artifactStream(actor), "sha256:")
+			src.git("update-ref", sourceRef, first)
+			initial, _ := exchangeExport(src, artifactVectorID)
+			nextID := eventID([]byte(artifactSecondVector))
+			next := artifactRawCommit(t, src, artifactSecondVector, artifactSecondSignature, first, "hn artifact "+nextID, false)
+			src.git("update-ref", sourceRef, next)
+			incoming, _ := exchangeExport(src, nextID)
+			sourceBefore := src.snapshot()
+			for _, mode := range []string{"direct", "symbolic", "symbolic-at-transaction"} {
+				t.Run(mode, func(t *testing.T) {
+					dst := exchangeDestination(t, src, format)
+					dst.call("", "", "artifact", "import", "--input", initial, "--json")
+					accepted := "refs/hn/remotes/imported/artifacts/" + actor + "/" + strings.TrimPrefix(artifactStream(actor), "sha256:")
+					sentinel := "refs/public-sentinels/wp10-import"
+					dst.git("update-ref", sentinel, first)
+					readBody := func(ref string) []byte {
+						t.Helper()
+						cmd := exec.Command("git", "cat-file", "commit", ref)
+						cmd.Dir = dst.repo
+						cmd.Env = operationalTestEnvironment(dst.home)
+						body, e := cmd.Output()
+						if e != nil {
+							t.Fatal(e)
+						}
+						return body
+					}
+					oldBody := readBody(sentinel)
+					if mode == "symbolic" {
+						dst.git("symbolic-ref", accepted, sentinel)
+					}
+					overrides := map[string]string{}
+					marker := ""
+					if mode == "symbolic-at-transaction" {
+						actualGit, e := exec.LookPath("git")
+						if e != nil {
+							t.Fatal(e)
+						}
+						wrap := t.TempDir()
+						marker = filepath.Join(t.TempDir(), "alias-installed")
+						script := "#!/bin/sh\ntarget=0;update=0\nfor arg do\n [ \"$arg\" = \"--git-dir=$HN_WP10_NAMESPACE_DEST\" ] && target=1\n [ \"$arg\" = update-ref ] && update=1\ndone\nif [ \"$target$update\" = 11 ];then\n '" + actualGit + "' --git-dir=\"$HN_WP10_NAMESPACE_DEST\" symbolic-ref \"$HN_WP10_NAMESPACE_ACCEPTED\" \"$HN_WP10_NAMESPACE_SENTINEL\" || exit 89\n : > \"$HN_WP10_NAMESPACE_MARKER\"\nfi\nexec '" + actualGit + "' \"$@\"\n"
+						if e = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); e != nil {
+							t.Fatal(e)
+						}
+						overrides = map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP10_NAMESPACE_DEST": filepath.Join(dst.repo, ".git"), "HN_WP10_NAMESPACE_ACCEPTED": accepted, "HN_WP10_NAMESPACE_SENTINEL": sentinel, "HN_WP10_NAMESPACE_MARKER": marker}
+					}
+					before := dst.snapshot()
+					cmd := exec.Command(dst.binary, "artifact", "import", "--input", incoming, "--json")
+					cmd.Dir = dst.repo
+					cmd.Env = operationalTestEnvironmentWith(dst.home, overrides)
+					var stderr bytes.Buffer
+					cmd.Stderr = &stderr
+					raw, callErr := cmd.Output()
+					var result map[string]any
+					if e := json.Unmarshal(raw, &result); e != nil {
+						t.Fatal(e, string(raw))
+					}
+					sentinelAfter := dst.git("rev-parse", sentinel)
+					newBody := readBody(sentinel)
+					acceptedAfter := dst.git("rev-parse", accepted)
+					if marker != "" {
+						if _, e := os.Stat(marker); e != nil {
+							t.Fatal("transaction-time symbolic-ref control never ran", e)
+						}
+					}
+					if evidence := os.Getenv("HN_WP10_NAMESPACE_EVIDENCE_DIR"); evidence != "" {
+						name := strings.ReplaceAll(t.Name(), "/", "-")
+						v, _ := json.MarshalIndent(map[string]any{"before": before, "after": dst.snapshot(), "response": result, "stderr": stderr.String(), "mode": mode, "format": format, "sentinel_ref": sentinel, "old_oid": first, "sentinel_after": sentinelAfter, "old_body": string(oldBody), "sentinel_body_after": string(newBody), "accepted_ref": accepted, "accepted_after": acceptedAfter, "proposed_oid": next}, "", "  ")
+						if e := os.WriteFile(filepath.Join(evidence, name+".json"), v, 0600); e != nil {
+							t.Fatal(e)
+						}
+					}
+					if sentinelAfter != first || !bytes.Equal(oldBody, newBody) {
+						t.Fatalf("import escaped named accepted ref and changed unrelated public sentinel: old=%s actual=%s response=%s", first, sentinelAfter, raw)
+					}
+					if callErr != nil {
+						if mode == "direct" {
+							t.Fatalf("ordinary direct destination must import: %v %s", callErr, raw)
+						}
+						artifactErrorShape(t, result, "artifact", "concurrent_update", "retry_identical", nil)
+						if result["ok"] != false || result["data"] != nil || acceptedAfter != first {
+							t.Fatal("refusal changed accepted destination", result, acceptedAfter)
+						}
+					} else {
+						if result["ok"] != true || acceptedAfter != next {
+							t.Fatal("accepted destination did not receive exact proposed prefix", result, acceptedAfter)
+						}
+						sym := exec.Command("git", "symbolic-ref", "--quiet", accepted)
+						sym.Dir = dst.repo
+						sym.Env = operationalTestEnvironment(dst.home)
+						if e := sym.Run(); e == nil {
+							t.Fatal("successful update must replace only the named accepted ref directly")
+						}
+						data := result["data"].(map[string]any)
+						if !reflect.DeepEqual(data["accepted_refs"], []any{map[string]any{"ref": accepted, "oid": next}}) || data["source_cut"] == "" {
+							t.Fatal(data)
+						}
+						if !reflect.DeepEqual(closureItems(dst, nextID), closureItems(src, nextID)) {
+							t.Fatal("namespace-safe import changed public signed history")
+						}
+					}
+					for _, path := range []string{dst.home, filepath.Join(dst.repo, ".hn"), filepath.Join(dst.repo, ".git", "hn")} {
+						if _, e := os.Stat(path); !os.IsNotExist(e) {
+							t.Fatal("public import created private identity or extension state", path, e)
+						}
+					}
+					src.unchanged(sourceBefore)
+				})
+			}
+		})
+	}
+}
