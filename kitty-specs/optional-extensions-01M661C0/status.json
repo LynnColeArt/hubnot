@@ -1,7 +1,7 @@
 {
-  "event_count": 113,
-  "last_event_id": "01M67XXQ0TQP136DFV9CRYASDN",
-  "materialized_at": "2026-10-31T02:51:49.658295+00:00",
+  "event_count": 114,
+  "last_event_id": "01M67XZB576WN9QAS94QHTAEYG",
+  "materialized_at": "2026-10-31T02:52:43.047142+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 16
   },
   "work_packages": {
@@ -194,18 +194,18 @@
     "WP06": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M67XXQ0TQP136DFV9CRYASDN",
-      "last_transition_at": "2026-10-31T02:51:49.658295+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M67XZB576WN9QAS94QHTAEYG",
+      "last_transition_at": "2026-10-31T02:52:43.047142+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: live successor CLI/catalog; tested ec99da3c; both exact variants, focused race/vet, public IDs/cuts and immutable candidate controls passed. Evidence optional-extensions-WP06/handoff.json."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 22770,
       "shell_pid_created_at": "1793287708.21",
       "subtasks": {
