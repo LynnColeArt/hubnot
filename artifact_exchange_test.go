@@ -26,21 +26,19 @@ func TestArtifactExchangePublishedBudget(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
 		initial artifactExchangeBudget
-		kind    string
 		n       int
 		message string
 	}{
-		{"objects", artifactExchangeBudget{objects: 4095}, "blob", 0, "object count"},
-		{"records", artifactExchangeBudget{records: 2047}, "commit", 0, "signed record count"},
-		{"decoded", artifactExchangeBudget{decoded: 33554431}, "blob", 1, "decoded aggregate"},
+		{"objects", artifactExchangeBudget{objects: 4095}, 0, "object count"},
+		{"decoded", artifactExchangeBudget{decoded: 33554431}, 1, "decoded aggregate"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			b := tc.initial
-			if e := b.charge(ctx, tc.kind, tc.n); e != nil {
+			if e := b.charge(ctx, tc.n); e != nil {
 				t.Fatal("equality refused", e)
 			}
 			before := b
-			e := b.charge(ctx, tc.kind, 1)
+			e := b.charge(ctx, 1)
 			revisionError(t, e, "resource_limit")
 			if !strings.Contains(e.Error(), tc.message) || b != before {
 				t.Fatal("wrong bound or charged refused input", e, b)
@@ -50,10 +48,19 @@ func TestArtifactExchangePublishedBudget(t *testing.T) {
 	cancelled, cancel := context.WithCancel(ctx)
 	cancel()
 	b := artifactExchangeBudget{}
-	revisionError(t, b.charge(cancelled, "blob", 0), "cancelled")
+	revisionError(t, b.charge(cancelled, 0), "cancelled")
 	if b != (artifactExchangeBudget{}) {
 		t.Fatal("cancelled input charged")
 	}
+	if e := artifactExchangeCheckRecords(ctx, 2048); e != nil {
+		t.Fatal("verified signed-record equality refused", e)
+	}
+	e := artifactExchangeCheckRecords(ctx, 2049)
+	revisionError(t, e, "resource_limit")
+	if !strings.Contains(e.Error(), "signed record count") {
+		t.Fatal(e)
+	}
+	revisionError(t, artifactExchangeCheckRecords(cancelled, 2048), "cancelled")
 	if artifactExchangeStage != 30*time.Second {
 		t.Fatal("stage ceiling drift")
 	}

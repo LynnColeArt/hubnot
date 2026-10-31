@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -962,5 +963,63 @@ func TestArtifactExchangeUnreachableObjectsCLI(t *testing.T) {
 	if !strings.Contains(v["error"].(map[string]any)["message"].(string), "hash") {
 		t.Fatal(v)
 	}
+	negative.unchanged(snapshot)
+}
+
+func TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI(t *testing.T) {
+	src := artifactCLI(t)
+	dst := exchangeDestination(t, src, "sha1")
+	objects := []artifactExchangeObject{}
+	for i := 0; i < 4096; i++ {
+		body := []byte(fmt.Sprintf("unverified public raw commit %d\n", i))
+		hash := sha1.Sum(append([]byte(fmt.Sprintf("commit %d\x00", len(body))), body...))
+		objects = append(objects, artifactExchangeObject{OID: hex.EncodeToString(hash[:]), Type: "commit", Data: base64.RawStdEncoding.EncodeToString(body), body: body})
+	}
+	input := exchangeWrite(t, exchangeBundle(objects...))
+	before := dst.snapshot()
+	cmd := exec.Command(dst.binary, "artifact", "import", "--input", input, "--preserve-opaque", "--json")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironment(dst.home)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	raw, callErr := cmd.Output()
+	var response map[string]any
+	if e := json.Unmarshal(raw, &response); e != nil {
+		t.Fatal(e, string(raw))
+	}
+	if evidence := os.Getenv("HN_WP10_EVIDENCE_DIR"); evidence != "" {
+		v, _ := json.MarshalIndent(map[string]any{"before": before, "after": dst.snapshot(), "response": response, "stderr": stderr.String(), "raw_objects": 4096, "verified_signed_records": 0}, "", "  ")
+		if e := os.WriteFile(filepath.Join(evidence, "raw-commit-observation.json"), v, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if callErr != nil || response["ok"] != true {
+		dst.unchanged(before)
+		t.Fatalf("4096raw opaque commit objects are not2048verified signed records: %v %s", callErr, raw)
+	}
+	data := response["data"].(map[string]any)
+	if data["mode"] != "opaque" || len(data["opaque_ids"].([]any)) != 4096 || len(data["imported_ids"].([]any)) != 0 || len(data["accepted_refs"].([]any)) != 0 {
+		t.Fatal("raw opaque objects became accepted signed records", data)
+	}
+	id := artifactOpaqueID(objects[4095])
+	view := dst.call("", "", "artifact", "inspect", "--opaque", "--opaque-id", id, "--json")["data"].(map[string]any)
+	if view["id"] != nil || view["validation"] != "opaque" || view["raw"].(map[string]any)["data"] != objects[4095].Data {
+		t.Fatal(view)
+	}
+	output := filepath.Join(t.TempDir(), "opaque-public.json")
+	exported := dst.call("", "", "artifact", "export", "--opaque", "--opaque-id", id, "--output", output, "--json")["data"].(map[string]any)
+	if exported["records"] != float64(0) || exported["objects"] != float64(1) {
+		t.Fatal("opaque export claimed signed records", exported)
+	}
+	// Aggregate object/hash guards remain mandatory regardless of record validity.
+	before = dst.snapshot()
+	over := exchangeWrite(t, exchangeBundle(exchangeObject("blob", []byte("4097th raw object"))))
+	dst.call("", "resource_limit", "artifact", "import", "--input", over, "--preserve-opaque", "--json")
+	dst.unchanged(before)
+	bad := exchangeBundle(objects[0])
+	bad.Objects[0].Data = base64.RawStdEncoding.EncodeToString([]byte("changed body"))
+	negative := exchangeDestination(t, src, "sha1")
+	snapshot := negative.snapshot()
+	negative.call("", "verification_failure", "artifact", "import", "--input", exchangeWrite(t, bad), "--preserve-opaque", "--json")
 	negative.unchanged(snapshot)
 }

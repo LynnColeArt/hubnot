@@ -47,25 +47,31 @@ type artifactExchange struct {
 	Refs     []artifactSource         `json:"refs"`
 	Objects  []artifactExchangeObject `json:"objects"`
 }
-type artifactExchangeBudget struct{ objects, records, decoded int }
+type artifactExchangeBudget struct{ objects, decoded int }
 
-func (b *artifactExchangeBudget) charge(ctx context.Context, kind string, n int) error {
+func (b *artifactExchangeBudget) charge(ctx context.Context, n int) error {
 	if ctx.Err() != nil {
 		return artifactFailure("cancelled", "artifact exchange cancelled")
 	}
 	if b.objects >= artifactExchangeObjects {
 		return artifactFailure("resource_limit", "exchange object count exceeds 4096")
 	}
-	if kind == "commit" && b.records >= artifactExchangeRecords {
-		return artifactFailure("resource_limit", "exchange signed record count exceeds 2048")
-	}
 	if n < 0 || n > artifactExchangeDecoded-b.decoded {
 		return artifactFailure("resource_limit", "exchange decoded aggregate exceeds 33554432 bytes")
 	}
 	b.objects++
 	b.decoded += n
-	if kind == "commit" {
-		b.records++
+	return nil
+}
+
+// A raw Git commit body is not a verified signed artifact. Charge this guard
+// only from the shared reader/closure results, never from opaque object types.
+func artifactExchangeCheckRecords(ctx context.Context, count int) error {
+	if ctx.Err() != nil {
+		return artifactFailure("cancelled", "artifact exchange cancelled")
+	}
+	if count > artifactExchangeRecords {
+		return artifactFailure("resource_limit", "exchange signed record count exceeds 2048")
 	}
 	return nil
 }
@@ -209,7 +215,7 @@ func decodeArtifactExchange(ctx context.Context, raw []byte, oidLength int) (*ar
 		// Charge the decoded size before allocating its buffer. Strict unpadded
 		// Base64 plus re-encoding disallows padding, ignored newlines and spare bits.
 		n := base64.RawStdEncoding.DecodedLen(len(o.Data))
-		if e = budget.charge(ctx, o.Type, n); e != nil {
+		if e = budget.charge(ctx, n); e != nil {
 			return e
 		}
 		o.body, e = base64.RawStdEncoding.Strict().DecodeString(o.Data)
@@ -355,6 +361,9 @@ func artifactExchangeWrite(ctx context.Context, path string, raw []byte) error {
 	return nil
 }
 func artifactExchangeObjectsFromClosure(ctx context.Context, h *artifactHistory, c *artifactClosure) ([]artifactExchangeObject, error) {
+	if e := artifactExchangeCheckRecords(ctx, len(c.Items)); e != nil {
+		return nil, e
+	}
 	reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, seen: map[string]bool{}}
 	out := []artifactExchangeObject{}
 	budget := artifactExchangeBudget{}
@@ -371,7 +380,7 @@ func artifactExchangeObjectsFromClosure(ctx context.Context, h *artifactHistory,
 		if e != nil {
 			return nil, e
 		}
-		if e = budget.charge(ctx, kind, len(body)); e != nil {
+		if e = budget.charge(ctx, len(body)); e != nil {
 			return nil, e
 		}
 		out = append(out, artifactExchangeObject{oid, kind, base64.RawStdEncoding.EncodeToString(body), body})
@@ -424,7 +433,7 @@ func artifactExchangeAncestry(ctx context.Context, b *artifactExchange) error {
 func artifactExchangeCopy(ctx context.Context, dir string, objects []artifactExchangeObject) error {
 	budget := artifactExchangeBudget{}
 	for _, o := range objects {
-		if e := budget.charge(ctx, o.Type, len(o.body)); e != nil {
+		if e := budget.charge(ctx, len(o.body)); e != nil {
 			return e
 		}
 		if !artifactExchangeObjectTypes[o.Type] || !validGitOID(o.OID) || o.OID != artifactExchangeHash(o.Type, o.body, len(o.OID)) {
@@ -519,6 +528,9 @@ func validateArtifactExchange(ctx context.Context, b *artifactExchange, format i
 	}
 	h, e := loadArtifactHistoryFromSources(ctx, dir, b.Refs)
 	if e != nil {
+		return failed(e)
+	}
+	if e = artifactExchangeCheckRecords(ctx, len(h.ByID)); e != nil {
 		return failed(e)
 	}
 	roots := []string{}
@@ -785,7 +797,7 @@ func preserveArtifactExchange(ctx context.Context, b *artifactExchange) (map[str
 	merged := &artifactExchange{Protocol: artifactExchangeProtocol, Mode: "opaque", Refs: []artifactSource{}, Objects: []artifactExchangeObject{}}
 	budget := artifactExchangeBudget{}
 	for _, o := range objects {
-		if e = budget.charge(copyCtx, o.Type, len(o.body)); e != nil {
+		if e = budget.charge(copyCtx, len(o.body)); e != nil {
 			return nil, e
 		}
 		merged.Objects = append(merged.Objects, o)
