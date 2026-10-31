@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"hash"
 	"hubnot/internal/artifact"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -312,6 +313,9 @@ func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []a
 	if e := artifactCheckSourceWitnesses(ctx, dir, sources); e != nil {
 		return nil, e
 	}
+	if e := artifactPreflightRecordCount(ctx, dir, sources, oidLength); e != nil {
+		return nil, e
+	}
 	h := &artifactHistory{Sources: sources, ByID: map[string]*storedArtifact{}, Chains: map[string][]*storedArtifact{}}
 	reader := artifactObjectReader{ctx: ctx, dir: dir, seen: map[string]bool{}}
 	cache := map[string]*storedArtifact{}
@@ -400,6 +404,101 @@ func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []a
 	}
 	h.gitDir, h.readBytes, h.readObjects = dir, reader.total, reader.seen
 	return h, nil
+}
+
+// This is only an early ceiling check over captured immutable tips. Admission
+// grants no trust: the raw-object reader still verifies the entire graph.
+// Git's shallow/graft views can hide raw parents, so those views use the
+// original reader. Failed or malformed traversal never admits a partial count.
+func artifactPreflightRecordCount(ctx context.Context, dir string, sources []artifactSource, oidLength int) error {
+	if len(sources) == 0 {
+		return nil
+	}
+	readError := func() error {
+		if ctx.Err() != nil {
+			return artifactFailure("cancelled", "artifact read cancelled")
+		}
+		return artifactFailure("verification_failure", "accepted artifact object unavailable; no fetch attempted")
+	}
+	shallow, e := projectGit(ctx, dir, nil, 16, "rev-parse", "--is-shallow-repository")
+	if e != nil {
+		return readError()
+	}
+	switch string(shallow) {
+	case "true\n":
+		return nil // Full raw-parent verification, including hidden parents.
+	case "false\n":
+	default:
+		return readError()
+	}
+	graftPath, e := projectGit(ctx, dir, nil, 65536, "rev-parse", "--path-format=absolute", "--git-path", "info/grafts")
+	if e != nil {
+		return readError()
+	}
+	path := strings.TrimSuffix(string(graftPath), "\n")
+	if !filepath.IsAbs(path) {
+		return readError()
+	}
+	if _, e = os.Lstat(path); e == nil {
+		return nil // Grafts never substitute for the signed raw-parent stream.
+	} else if !os.IsNotExist(e) {
+		return readError()
+	}
+	var tips bytes.Buffer
+	for _, source := range sources {
+		tips.WriteString(source.OID)
+		tips.WriteByte('\n')
+	}
+	// A sole-parent stream needs at most two OIDs per row. Allow a third to
+	// diagnose a merge, but cap traversal and transport at one past the ceiling.
+	// Larger malformed rows fail closed within that same transport bound.
+	raw, e := projectGit(ctx, dir, tips.Bytes(), int64((oidLength+1)*3*(artifactReadEntries+1)), "-c", "core.commitGraph=false", "rev-list", "--parents", "--max-count="+strconv.Itoa(artifactReadEntries+1), "--stdin")
+	if e != nil {
+		return readError()
+	}
+	if len(raw) == 0 || raw[len(raw)-1] != '\n' {
+		return readError()
+	}
+	seen := map[string]bool{}
+	parents := []string{}
+	for _, line := range strings.Split(string(raw[:len(raw)-1]), "\n") {
+		if ctx.Err() != nil {
+			return artifactFailure("cancelled", "artifact read cancelled")
+		}
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			return readError()
+		}
+		for _, oid := range fields {
+			if len(oid) != oidLength || !validGitOID(oid) || oid != strings.ToLower(oid) {
+				return readError()
+			}
+		}
+		if seen[fields[0]] {
+			return readError()
+		}
+		seen[fields[0]] = true
+		if len(fields) > 2 {
+			return artifactFailure("actor_stream_conflict", "artifact stream has multiple Git parents")
+		}
+		if len(fields) == 2 {
+			parents = append(parents, fields[1])
+		}
+		if len(seen) > artifactReadEntries {
+			return artifactFailure("resource_limit", "selected artifact record limit exceeded")
+		}
+	}
+	for _, parent := range parents {
+		if !seen[parent] {
+			return readError()
+		}
+	}
+	for _, source := range sources {
+		if !seen[source.OID] {
+			return readError()
+		}
+	}
+	return nil
 }
 
 // Ref metadata is checked independently of object availability so a retained

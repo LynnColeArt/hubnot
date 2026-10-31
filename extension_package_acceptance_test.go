@@ -271,6 +271,8 @@ var wp25PublicJourneys = []wp25Journey{
 	{"TestArtifactStoreOpeningReplayObservesImportedHeadsCLI", TestArtifactStoreOpeningReplayObservesImportedHeadsCLI},
 	{"TestArtifactStoreExplicitPublicSources", TestArtifactStoreExplicitPublicSources},
 	{"TestArtifactStoreSourceChangesDuringRead", TestArtifactStoreSourceChangesDuringRead},
+	{"TestArtifactStoreCountPreflightGraphCLI", TestArtifactStoreCountPreflightGraphCLI},
+	{"TestArtifactStoreCountPreflightCancellationCLI", TestArtifactStoreCountPreflightCancellationCLI},
 	{"TestArtifactClosureCausalRefusalsCLI", TestArtifactClosureCausalRefusalsCLI},
 	{"TestArtifactClosureMissingGitObjectCLI", TestArtifactClosureMissingGitObjectCLI},
 	{"TestArtifactClosurePublicOnlyReconstructionCLI", TestArtifactClosurePublicOnlyReconstructionCLI},
@@ -3820,8 +3822,15 @@ func wp25ArtifactRecordCountLimit(t *testing.T) {
 		ledgerHash   string
 	}{{100000, atTip, atID, ledgerAtBytes, ledgerAtHash}, {100001, fullTip, overID, ledgerBytes, fmt.Sprintf("sha256:%x", ledgerHash.Sum(nil))}} {
 		f.git("update-ref", ref, row.tip)
+		// A distinct accepted remote selects the overlapping prefix. The count
+		// is of unique immutable commits, not the sum of per-ref chain lengths.
+		prefixRef := strings.Replace(ref, "refs/hn/", "refs/hn/remotes/count-prefix/", 1)
+		prefixTip := f.git("rev-parse", row.tip+"~1")
+		f.git("update-ref", prefixRef, prefixTip)
 		inventory := wp25RecordCountInventory(t, f, row.tip, row.count, filepath.Join(evidence, fmt.Sprintf("objects-%d.txt", row.count)))
 		inventory["records"] = row.count
+		inventory["overlapping_selected_ref"] = prefixRef
+		inventory["overlapping_selected_tip"] = prefixTip
 		inventory["type_publications"] = 1
 		inventory["record_opens"] = row.count - 1
 		inventory["tip"] = row.tip
@@ -3842,7 +3851,7 @@ func wp25ArtifactRecordCountLimit(t *testing.T) {
 		cancel()
 		after := f.snapshot()
 		afterRaw, _ := json.Marshal(after)
-		observation := map[string]any{"control": "R02-real-stage-dominates-record-count", "binary": binary, "args": cmd.Args[1:], "cwd": repo, "source_assisted_construction_only": true, "source_cut_tip": row.tip, "source_records": row.count, "stdout_raw": stdout.String(), "stderr_raw": stderr.String(), "elapsed_ns": elapsed.Nanoseconds(), "process_error": fmt.Sprint(runErr), "watchdog_error": fmt.Sprint(watchdogErr), "protected_before_sha256": wp25RecordCountHash(beforeRaw), "protected_after_sha256": wp25RecordCountHash(afterRaw), "successful_at_cap_admission_claimed": false}
+		observation := map[string]any{"control": "R02-public-count-boundary", "binary": binary, "args": cmd.Args[1:], "cwd": repo, "source_assisted_construction_only": true, "source_cut_tip": row.tip, "source_records": row.count, "stdout_raw": stdout.String(), "stderr_raw": stderr.String(), "elapsed_ns": elapsed.Nanoseconds(), "process_error": fmt.Sprint(runErr), "watchdog_error": fmt.Sprint(watchdogErr), "protected_before_sha256": wp25RecordCountHash(beforeRaw), "protected_after_sha256": wp25RecordCountHash(afterRaw), "successful_at_cap_admission_claimed": false}
 		wp25Record(t, observation)
 		if watchdogErr != nil {
 			t.Fatal("R02 watchdog killed candidate before its normal30s stage settled")
@@ -3880,17 +3889,20 @@ func wp25ArtifactRecordCountLimit(t *testing.T) {
 			t.Fatalf("R02 refusal identity:%s", &stdout)
 		}
 		code, _ := problem["code"].(string)
+		if row.count == 100001 && (code != "resource_limit" || problem["message"] != "selected artifact record limit exceeded") {
+			t.Fatalf("R02 actual first-over must reach the selected record-count guard: %s", &stdout)
+		}
 		switch code {
 		case "cancelled":
 			if elapsed < 29*time.Second || elapsed >= 90*time.Second || problem["message"] != "artifact read cancelled" {
 				t.Fatalf("R02 cancellation is not actual enclosing30s read stage:%v %s", elapsed, &stdout)
 			}
-			inventory["observed_classification"] = "enclosing normal30s read deadline dominates the record count; no at-cap admission proved"
+			inventory["observed_classification"] = "count ceiling admitted equality; subsequent normal30s full verification cancelled; causal threshold proof is a separate mutation observation"
 		case "resource_limit":
 			if row.count != 100001 || problem["message"] != "selected artifact record limit exceeded" {
 				t.Fatalf("R02 unexpected earlier limit:%s", &stdout)
 			}
-			inventory["observed_classification"] = "actual first-over record guard observed; no at-cap admission proved"
+			inventory["observed_classification"] = "actual first-over preflight record guard observed; unchanged protected state"
 		default:
 			t.Fatalf("R02 wrong bounded cause:%s", &stdout)
 		}
@@ -3909,7 +3921,7 @@ func wp25ArtifactRecordCountLimit(t *testing.T) {
 		}
 		wp25Record(t, map[string]any{"control": "R02-source-assistance-map", "map": inventory, "source_assistance_json": filepath.Join(evidence, "R02-source-assistance.json")})
 	}
-	t.Log("R02 count100000/+1 uses complete independent signed corpus/object maps. Actual enclosing30s cancellation is not a successful at-cap admission or an inferred record-limit refusal.")
+	t.Log("R02 count100000/+1 uses complete independent signed corpus/object maps. Equality may pass the count gate then cancel during full verification; complete history success is not inferred. Local threshold99999/removal public controls separately establish causality.")
 }
 func wp25RecordCountHash(raw []byte) string {
 	sum := sha256.Sum256(raw)

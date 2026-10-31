@@ -257,7 +257,7 @@ write(output/'tool-identities.json',tool_hashes)
 compiler=run(['go','version']).decode().strip();assert compiler=='go version go1.26.4 linux/amd64'
 assert platform.system()=='Linux' and platform.machine()=='x86_64'
 inputs={p:sha(source/p) for p in run(['git','ls-files']).decode().splitlines() if p.endswith('.go') or p in ['go.mod','go.sum']}
-assert set(inputs)==set(approved_inputs)|{'extension_default_acceptance_test.go','extension_default_performance_test.go','optional_bootstrap.go','optional_bootstrap_test.go','internal/extension/vocabulary_test.go'}
+assert set(inputs)==set(approved_inputs)|{'extension_default_acceptance_test.go','extension_default_performance_test.go','optional_bootstrap.go','optional_bootstrap_test.go','internal/extension/vocabulary_test.go','extension_package_acceptance_test.go'}
 assert all(inputs[p]==identity for p,identity in approved_inputs.items()),'approved dependency source drift'
 write(output/'source-inputs.json',inputs);write(output/'approved-dependency-proof.json',approved_proof)
 read_inputs={str(p.relative_to(source)):sha(p) for folder in [source/'testdata/compatibility',source/'docs/qualification/optional-extensions/baseline'] for p in folder.rglob('*') if p.is_file()};write(output/'read-inputs.json',read_inputs)

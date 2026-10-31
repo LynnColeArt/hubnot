@@ -30,6 +30,15 @@ pin each fixture environment and retain causal actual-registry controls. The
 replication detector excludes the source actor's real private key while preserving
 the destination's legitimate keyring bytes. They change no production Go bytes.
 
+The authorized bounded record-count correction adds a preflight over captured
+immutable tips, with raw-parent fallback for shallow/grafted views and unchanged
+full verification. The intermediate source100000/100001 calls both cancelled and
+remain historical. New development controls distinguish count admission/refusal
+from subsequent verification cancellation; independent source review, final
+source attestation and all eight actual package observations remain pending.
+Production changes require a fresh complete4320-observation default/performance
+capture under unchanged budgets. Historical WP24 reports remain source-specific.
+
 A08 preparation incorrectly described the prior large-context fixture as1024
 parents; it actually used30 siblings. The new direct test constructs1025 genuine
 signed sibling heads, observes the over-limit refusal with unchanged protected

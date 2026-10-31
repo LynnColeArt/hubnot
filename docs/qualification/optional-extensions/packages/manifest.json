@@ -17,10 +17,12 @@
     "fixture_construction": "source-assisted signed public graphs and hostile peers are not shipped binary admission evidence"
   },
   "performance_reuse": {
-    "status": "PENDING complete non-test Go/module/embedded equivalence proof",
+    "status": "INVALIDATED by authorized artifact_read.go production correction; historical source-specific result retained",
     "approved_source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1",
     "observations": 4320,
-    "budgets_changed": false
+    "budgets_changed": false,
+    "fresh_required_observations": 4320,
+    "historical_reports_unchanged": true
   },
   "assets": [],
   "source_checks": [],
@@ -1033,9 +1035,9 @@
           "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
         }
       ],
-      "assessment": "Constructive100000/100001 full independently signed corpus, raw fast-import wire/ledger and closed object maps implemented. Actual supplied ordinary CLI requires observed30s cancellation at count equality; first-over may show exact same deadline or specifically selected-record guard. No successful at-cap admission claimed. Catalog100001 remains precluded by loader100000.",
+      "assessment": "Genuine independently signed100000/100001 corpus with complete wire/ledger/object maps. Authorized immutable-tip bounded preflight must admit100000 at the count gate and refuse100001 with exact selected artifact record limit exceeded. Threshold99999 and preflight-removal source-overlay public controls establish causality separately; later ordinary30s verification cancellation is not whole-history success.",
       "remaining_gaps": [
-        "Current runtime result pending; static9 subprocesses/record and byte-fit proof are not observed time domination. Host mutation240s is a distinct caller route and is not covered by an ordinaryCLI30s cancellation claim."
+        "Independent correction review, final clean source attestation, fixed-source and all eight actual native package observations remain required."
       ],
       "legacy_preparation_tests": [
         "TestArtifactCatalogCancellationAndBound"
@@ -1043,11 +1045,12 @@
       "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS",
       "code_reviewed_ceiling": {
         "path": "artifact_read.go",
-        "line": 342,
+        "line": 346,
         "condition": "len(cache) >= artifactReadEntries immediately before reader.commit; limit100000",
         "classification": "source-reviewed count ceiling; distinct from runtime observation"
       },
-      "live_coverage_limitation": "The actual100000 and100001 valid public corpus development calls both cancelled at the enclosing30s read deadline. Neither whole-operation at-cap success nor count-guard crossing was observed. Final frozen/native results must preserve their actual outcomes."
+      "live_coverage_limitation": "Intermediate0886 both-cancel observations remain historical. New-source development count-gate admission/refusal and causal controls are not frozen-source/native qualification or a complete100000-record read.",
+      "superseded_intermediate_observation": "The actual100000 and100001 valid public corpus development calls both cancelled at the enclosing30s read deadline. Neither whole-operation at-cap success nor count-guard crossing was observed. Final frozen/native results must preserve their actual outcomes."
     },
     {
       "id": "R03",
@@ -2384,9 +2387,9 @@
           "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
         }
       ],
-      "assessment": "WP24 independent4320 observation performance result is reusable only after exact all non-test Go/module/embedded-input equality to approved6b75d9fe; no remeasurement here.",
+      "assessment": "Authorized production correction invalidates equivalence reuse of historical WP24. Require a fresh unchanged complete4320-observation paired capture on independently reviewed/root-attested new source; preserve all old reports and failed attempts.",
       "remaining_gaps": [
-        "Final frozen-source equivalence and honest evidence source/metadata identities must be attached; no new performance pass inferred."
+        "New-source affected default/history/failure/no-effect/no-registry checks and complete unchanged paired capture pending after independent correction review/freeze."
       ],
       "legacy_preparation_tests": [],
       "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
@@ -3107,9 +3110,9 @@
     }
   ],
   "blockers": [
-    "Frozen full source checks and eight actual native platform/variant rows are pending.",
-    "Native syscall instrumentation and all required positive controls are pending.",
-    "R02 live record-count guard and successful whole-operation count equality are not observed; source-reviewed ceiling and actual bounded cancellation remain separate for contract/readiness review."
+    "Independent bounded-count correction review and new317-input/311-inherited root attestation are pending.",
+    "Frozen full source checks, fresh default/performance capture and eight actual native platform/variant rows are pending.",
+    "Native syscall instrumentation and all required actual Go/descendant positive controls are pending."
   ],
   "closed_inventories": {
     "classification": "independent literal mirrors and current caller controls; runtime results pending",
@@ -4788,5 +4791,13 @@
       "conclusion": "2048/2049 verified signed-record admission is structurally unreachable under4096 raw objects. Keep source counter bound and real ordinary accepted exchange; never manufacture at-cap success."
     }
   },
-  "R02_evidence_scope": "Actual100000/100001 record corpus results must distinguish count-guard observation, deadline cancellation and whole-operation success. No throughput promise or success is inferred from a timeout."
+  "R02_evidence_scope": "Actual100000/100001 record corpus results must distinguish count-guard observation, deadline cancellation and whole-operation success. No throughput promise or success is inferred from a timeout.",
+  "intermediate_evidence": {
+    "source": "0886fe80d8de29a5df3b880cf5e8cc6864ce3afd",
+    "workflow_run_id": 41252152635,
+    "run_attempt": 1,
+    "classification": "immutable intermediate source-specific evidence; not final new-source qualification",
+    "native_jobs": "all four failed before journey execution because preinstalled test2json was absent; zero native package passes",
+    "tracing": "Linux scoped controls succeeded; Darwin actual Go registry-read positive was not observed; descendant/negative proof unavailable there"
+  }
 }

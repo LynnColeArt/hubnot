@@ -597,3 +597,178 @@ func TestArtifactStoreSourceChangesDuringRead(t *testing.T) {
 		})
 	}
 }
+
+// These controls exercise the actual public reader. Git-only graph construction
+// and a bounded Git peer isolate traversal from the subsequent signed verifier.
+func TestArtifactStoreCountPreflightGraphCLI(t *testing.T) {
+	f := wp25ArtifactCLI(t)
+	ref := artifactFrozenRef(t, f)
+	root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+	f.git("update-ref", ref, root)
+	check := func(t *testing.T, code, message string) {
+		t.Helper()
+		f.t = t
+		before := f.snapshot()
+		result := wp25ArtifactCall(f, "", code, "artifact", "type", "show", artifactVectorID, "--json")
+		if code != "" {
+			problem := result["error"].(map[string]any)
+			if len(problem) != 5 || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil || problem["message"] != message {
+				t.Fatal("graph refusal identity", result)
+			}
+		} else {
+			items := result["data"].(map[string]any)["items"].([]any)
+			if len(items) != 1 || items[0].(map[string]any)["id"] != artifactVectorID {
+				t.Fatal("graph traversal lost signed public identity", result)
+			}
+		}
+		wp25Unchanged(f, before)
+	}
+	check(t, "", "")
+	// A real optional commit-graph is neither count authority nor required
+	// storage. The command-local raw-parent mode works with it present and with
+	// an independently corrupted header, without changing repository config.
+	f.git("commit-graph", "write", "--reachable")
+	graphPath := filepath.Join(f.repo, ".git", "objects", "info", "commit-graph")
+	graph, err := os.ReadFile(graphPath)
+	if err != nil || len(graph) < 8 || string(graph[:4]) != "CGPH" {
+		t.Fatal("real Git commit-graph control unavailable", err)
+	}
+	check(t, "", "")
+	f.git("-c", "core.commitGraph=true", "commit-graph", "verify")
+	corrupt := append([]byte(nil), graph...)
+	copy(corrupt[:4], "BAD!")
+	// Git creates this owned fixture cache read-only. Make only the test's
+	// temporary copy writable before introducing the deliberate corruption.
+	if err := os.Chmod(graphPath, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(graphPath, corrupt, 0600); err != nil {
+		t.Fatal(err)
+	}
+	wp25Record(t, map[string]any{"control": "count-preflight-real-commit-graph", "path": graphPath, "valid_sha256": wp25RecordCountHash(graph), "corrupt_sha256": wp25RecordCountHash(corrupt), "corruption": "replace CGPH header with BAD!; remaining bytes exact", "argv_config": "-c core.commitGraph=false"})
+	verify := exec.Command("git", "-C", f.repo, "-c", "core.commitGraph=true", "commit-graph", "verify")
+	verify.Env = operationalTestEnvironmentWith(f.home, f.overrides)
+	verifyRaw, verifyErr := verify.CombinedOutput()
+	wp25Record(t, map[string]any{"control": "count-preflight-corrupt-graph-detector", "argv": verify.Args, "stdout_stderr_raw": string(verifyRaw), "process_error": fmt.Sprint(verifyErr)})
+	if verifyErr == nil {
+		t.Fatal("commit-graph corruption control was not real", string(verifyRaw))
+	}
+	check(t, "", "")
+	if err := os.Remove(graphPath); err != nil {
+		t.Fatal(err)
+	}
+	// Duplicate immutable tips in distinct accepted refs count once.
+	alias := strings.Replace(ref, "refs/hn/", "refs/hn/remotes/overlap/", 1)
+	f.git("update-ref", alias, root)
+	check(t, "", "")
+	f.git("update-ref", "-d", alias)
+	child := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, root, "hn artifact "+artifactVectorID, false)
+	for _, view := range []string{"shallow", filepath.Join("info", "grafts")} {
+		t.Run(view, func(t *testing.T) {
+			f.git("update-ref", ref, child)
+			path := filepath.Join(f.repo, ".git", view)
+			// Git sees a root; the original raw-parent reader must still see the
+			// forbidden parent of this signed genesis and refuse it.
+			if err := os.WriteFile(path, []byte(child+"\n"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			defer os.Remove(path)
+			check(t, "invalid_history", "actor stream predecessor mismatch")
+			if err := os.Remove(path); err != nil {
+				t.Fatal(err)
+			}
+		})
+		f.t = t
+	}
+	f.git("update-ref", ref, root)
+	other := f.git("-c", "user.name=Other", "-c", "user.email=fixture@example.invalid", "commit-tree", f.git("rev-parse", root+"^{tree}"), "-m", "hn artifact "+artifactVectorID)
+	merge := f.git("-c", "user.name=Merge", "-c", "user.email=fixture@example.invalid", "commit-tree", f.git("rev-parse", root+"^{tree}"), "-p", root, "-p", other, "-m", "hn artifact "+artifactVectorID)
+	f.git("update-ref", ref, merge)
+	check(t, "actor_stream_conflict", "artifact stream has multiple Git parents")
+	f.git("update-ref", ref, root)
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseOverrides := f.overrides
+	for _, mode := range []string{"failure", "empty", "unterminated", "malformed", "duplicate", "missing-parent", "omitted-tip"} {
+		t.Run(mode, func(t *testing.T) {
+			wrapper := t.TempDir()
+			marker := filepath.Join(wrapper, "observed")
+			body := "exit 71"
+			switch mode {
+			case "empty":
+				body = "exit 0"
+			case "unterminated":
+				body = "printf '" + root + "'"
+			case "omitted-tip":
+				body = "printf '" + other + "\\n'"
+			case "malformed":
+				body = "printf 'not-an-oid\\n'"
+			case "duplicate":
+				body = "printf '" + root + "\\n" + root + "\\n'"
+			case "missing-parent":
+				body = "printf '" + root + " " + strings.Repeat("f", 40) + "\\n'"
+			}
+			script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = rev-list ]; then\n  printf observed > '" + marker + "'\n  " + body + "\n  exit 0\n fi\ndone\nexec '" + git + "' \"$@\"\n"
+			if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
+				t.Fatal(err)
+			}
+			wp25Record(t, map[string]any{"control": "count-preflight-graph-peer", "mode": mode, "script_raw": script, "real_git": git})
+			f.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH"), "XDG_CONFIG_HOME": baseOverrides["XDG_CONFIG_HOME"]}
+			check(t, "verification_failure", "accepted artifact object unavailable; no fetch attempted")
+			if raw, err := os.ReadFile(marker); err != nil || string(raw) != "observed" {
+				t.Fatal("graph peer was not actually consumed", err)
+			}
+			f.overrides = baseOverrides
+			check(t, "", "")
+		})
+		f.t = t
+	}
+}
+
+func TestArtifactStoreCountPreflightCancellationCLI(t *testing.T) {
+	f := wp25ArtifactCLI(t)
+	ref := artifactFrozenRef(t, f)
+	commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+	f.git("update-ref", ref, commit)
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrapper := t.TempDir()
+	pidPath := filepath.Join(wrapper, "child.pid")
+	noFetch := filepath.Join(wrapper, "forbidden-fetch")
+	script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = fetch ]; then printf forbidden > '" + noFetch + "'; fi\n if [ \"$arg\" = rev-list ]; then if [ \"$GIT_NO_LAZY_FETCH\" != 1 ]; then printf forbidden > '" + noFetch + "'; fi; printf '%s' \"$$\" > '" + pidPath + "'; exec /bin/sleep 60; fi\ndone\nexec '" + git + "' \"$@\"\n"
+	if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	before := f.snapshot()
+	baseOverrides := f.overrides
+	f.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH"), "XDG_CONFIG_HOME": baseOverrides["XDG_CONFIG_HOME"]}
+	started := time.Now()
+	result := wp25ArtifactCall(f, "", "cancelled", "artifact", "type", "show", artifactVectorID, "--json")
+	elapsed := time.Since(started)
+	problem := result["error"].(map[string]any)
+	if elapsed < 29*time.Second || elapsed > 45*time.Second || len(problem) != 5 || problem["message"] != "artifact read cancelled" || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil {
+		t.Fatal("preflight normal30s cancellation identity", elapsed, result)
+	}
+	rawPID, err := os.ReadFile(pidPath)
+	if err != nil {
+		t.Fatal("preflight child was never run", err)
+	}
+	// The Git wrapper execs sleep at the same PID, so no detached grandchild is
+	// introduced by this control. ps sees that exact process only.
+	ps := exec.Command("ps", "-p", string(rawPID), "-o", "pid=,ppid=,comm=")
+	psRaw, psErr := ps.CombinedOutput()
+	wp25Record(t, map[string]any{"control": "count-preflight-cancellation-reaping", "script_raw": script, "real_git": git, "child_pid": string(rawPID), "elapsed_ns": elapsed.Nanoseconds(), "ps_argv": ps.Args, "ps_stdout_stderr_raw": string(psRaw), "ps_error": fmt.Sprint(psErr)})
+	if psErr == nil || len(bytes.TrimSpace(psRaw)) != 0 {
+		t.Fatal("cancelled preflight child remains observable", psErr, string(psRaw))
+	}
+	if raw, err := os.ReadFile(noFetch); !os.IsNotExist(err) {
+		t.Fatal("preflight fetched or admitted lazy fetch", err, string(raw))
+	}
+	f.overrides = baseOverrides
+	wp25Unchanged(f, before)
+	wp25ArtifactCall(f, "", "", "artifact", "type", "show", artifactVectorID, "--json")
+}
