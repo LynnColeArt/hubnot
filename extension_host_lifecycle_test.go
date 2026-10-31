@@ -563,9 +563,9 @@ func TestExtensionRunCrashCleansPipeOwningDescendantCLI(t *testing.T) {
 	// it must have exited and cannot retain stdio or execute application code.
 	pid := waitHostMarker(t, f.marker+".descendant")
 	if e := syscall.Kill(pid, 0); e != syscall.ESRCH {
-		data, readErr := os.ReadFile(filepath.Join("/proc", strconv.Itoa(pid), "stat"))
-		if readErr != nil || !bytes.Contains(data, []byte(") Z ")) {
-			t.Fatalf("descendant %d still running: %v %s", pid, e, data)
+		state, readErr := exec.Command("ps", "-o", "stat=", "-p", strconv.Itoa(pid)).Output()
+		if syscall.Kill(pid, 0) != syscall.ESRCH && (readErr != nil || !strings.HasPrefix(strings.TrimSpace(string(state)), "Z")) {
+			t.Fatalf("descendant %d still running: %v %s", pid, e, state)
 		}
 	}
 }
