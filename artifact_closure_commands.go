@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-func init() { artifactCommands["inspect"] = artifactClosureCommand }
-
 func artifactClosureCommand(args []string) error {
 	machine := hasJSON(args)
 	id := ""

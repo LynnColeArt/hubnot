@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-func init() { artifactCommands["operation"] = cmdArtifactOperation }
-
 func cmdArtifactOperation(args []string) error {
 	machine := hasJSON(args)
 	values := map[string]string{}

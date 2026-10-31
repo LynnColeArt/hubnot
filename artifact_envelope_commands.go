@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-func init() { artifactCommands["envelope"] = cmdArtifactEnvelope }
-
 // Envelope inspection is an explicit file-only integrity check. It never loads
 // identity, registry, accepted history or a specialized executable.
 func cmdArtifactEnvelope(args []string) error {

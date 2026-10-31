@@ -15,12 +15,6 @@ import (
 	"time"
 )
 
-func init() {
-	artifactCommands["list"] = cmdArtifactList
-	artifactCommands["help"] = cmdArtifactHelp
-	artifactCommands["--help"] = cmdArtifactHelp
-}
-
 // This help is local to the explicit artifact command. Registration performs no
 // I/O and leaves the ordinary native startup/help path untouched.
 const artifactLocalHelp = `hn artifact type publish --input FILE|- --actor ACTOR --operation KEY [--json]

@@ -7,14 +7,6 @@ import (
 	"time"
 )
 
-func init() {
-	artifactCommands["revise"] = func(args []string) error { return artifactSuccessorCommand("record.revise", args) }
-	artifactCommands["resolve"] = func(args []string) error { return artifactSuccessorCommand("record.resolve", args) }
-	artifactCommands["convert"] = func(args []string) error { return artifactSuccessorCommand("record.convert", args) }
-	for _, mode := range []string{"show", "heads", "history"} {
-		artifactCommands[mode] = func(args []string) error { return artifactCatalogCommand(mode, args) }
-	}
-}
 func artifactSuccessorCommand(kind string, args []string) error {
 	machine := hasJSON(args)
 	values := map[string]string{}

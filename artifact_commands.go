@@ -8,11 +8,11 @@ import (
 	"os"
 )
 
-// Compiled artifact slices register handlers without registry/repository I/O.
-var artifactCommands = map[string]func([]string) error{}
+// Optional handlers are installed together on explicit dispatch, without I/O.
+var artifactCommands map[string]func([]string) error
 
-func init() { localCommands["artifact"] = cmdArtifact }
 func cmdArtifact(args []string) error {
+	ensureOptionalBootstrap()
 	if len(args) > 0 {
 		if handler, ok := artifactCommands[args[0]]; ok {
 			return handler(args[1:])

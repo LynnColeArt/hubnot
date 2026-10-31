@@ -15,12 +15,6 @@ import (
 	"unicode/utf8"
 )
 
-func init() {
-	artifactCommands["search"] = cmdArtifactSearch
-	artifactCommands["help"] = cmdArtifactSearchHelp
-	artifactCommands["--help"] = cmdArtifactSearchHelp
-}
-
 func cmdArtifactSearchHelp(args []string) error {
 	if err := cmdArtifactHelp(args); err != nil {
 		return err

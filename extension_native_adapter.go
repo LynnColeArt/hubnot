@@ -16,11 +16,6 @@ import (
 )
 
 // Registration is inert. Native commands never inspect extension state.
-func init() {
-	for _, method := range []string{"identity.public", "resource.read", "resource.mutate", "resource.operation"} {
-		extensionHostMethods[method] = extensionNativeDispatch
-	}
-}
 func extensionNativeHostError(code, message, recovery string) error {
 	return &extension.Error{Origin: "host", Code: code, Message: message, Recovery: recovery}
 }

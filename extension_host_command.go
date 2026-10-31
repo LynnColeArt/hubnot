@@ -11,11 +11,12 @@ import (
 	"hubnot/internal/extension"
 )
 
-// Adapters register a synchronous typed dispatcher here from their static init.
-// The current host honestly refuses methods whose adapters are not installed.
-var extensionHostMethods = map[string]extension.Dispatch{}
+// The optional bootstrap installs synchronous typed adapters before dispatch.
+// The current host honestly refuses methods without a compiled adapter.
+var extensionHostMethods map[string]extension.Dispatch
 
 func extensionHostDispatch(ctx context.Context, call extension.Invocation) (any, error) {
+	ensureOptionalBootstrap()
 	request := call.Request
 	if handler, ok := extensionHostMethods[request.Method]; ok {
 		return handler(ctx, call)
@@ -26,13 +27,6 @@ func extensionHostDispatch(ctx context.Context, call extension.Invocation) (any,
 	return nil, &extension.Error{Origin: "host", Code: "unsupported_capability", Message: "method adapter is unavailable in this host", Recovery: "do_not_retry"}
 }
 
-func init() {
-	extensionSubcommands["run"] = extensionRun
-	extensionSubcommands["enable"] = extensionEnableAndCleanup
-	extensionSubcommands["disable"] = extensionDisableAndCleanup
-	extensionSubcommands["remove"] = extensionRemoveAndCleanup
-	localCommands["extension"] = extensionHostCommand
-}
 func extensionHostCommand(args []string) error {
 	if len(args) == 0 || args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
 		fmt.Println("Usage: hn extension register --manifest FILE --executable PATH [--arg VALUE] --json\n       hn extension inspect [MODULE_ID] --json\n       hn extension list --json\n       hn extension enable MODULE_ID --grant SELECTOR=ACTION[,ACTION] --json\n       hn extension disable MODULE_ID --json\n       hn extension remove MODULE_ID --json\n       hn extension run MODULE_ID --json\n       hn extension frame inspect --input FILE|- --kind hello|ready|request|response|cancel [--expected-request-id ID] [--method METHOD] [--timeout-ms MS] --json")

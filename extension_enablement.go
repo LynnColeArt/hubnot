@@ -9,16 +9,6 @@ import (
 	"hubnot/internal/extension"
 )
 
-func init() {
-	// Static registration only. No repository, registry or enablement access is
-	// performed until an explicit extension management command is dispatched.
-	extensionSubcommands["enable"] = extensionEnable
-	extensionSubcommands["disable"] = extensionDisable
-	extensionSubcommands["inspect"] = extensionInspectEnablement
-	extensionSubcommands["list"] = extensionInspectEnablement
-	extensionSubcommands["remove"] = extensionRemoveEnablement
-}
-
 type extensionEnablementResult struct {
 	ModuleID        string            `json:"module_id"`
 	RegistrationID  string            `json:"registration_id"`

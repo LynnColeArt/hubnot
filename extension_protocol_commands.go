@@ -12,8 +12,6 @@ import (
 	"hubnot/internal/extension"
 )
 
-func init() { extensionSubcommands["frame"] = extensionFrame }
-
 func extensionFrame(args []string) (any, error) {
 	if len(args) == 0 || args[0] != "inspect" {
 		return nil, extensionInput("expected frame inspect")

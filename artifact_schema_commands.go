@@ -9,15 +9,11 @@ import (
 	"time"
 )
 
-// Later compiled publish/show slices extend this map, preserving one dispatcher.
-var artifactTypeCommands = map[string]func([]string) error{"validate": cmdArtifactTypeValidate}
+// The optional bootstrap installs the complete type dispatcher on explicit use.
+var artifactTypeCommands map[string]func([]string) error
 
-func init() {
-	artifactCommands["type"] = cmdArtifactType
-	artifactCommands["schema"] = cmdArtifactSchema
-	artifactCommands["record"] = cmdArtifactRecord
-}
 func cmdArtifactType(args []string) error {
+	ensureOptionalBootstrap()
 	if len(args) > 0 {
 		if handler, ok := artifactTypeCommands[args[0]]; ok {
 			return handler(args[1:])

@@ -16,11 +16,6 @@ import (
 )
 
 // Static registration is inert on every ordinary native/artifact command path.
-func init() {
-	for _, method := range []string{"artifact.read", "artifact.search", "artifact.type.read", "artifact.mutate", "artifact.type.publish", "artifact.operation"} {
-		extensionHostMethods[method] = extensionArtifactDispatch
-	}
-}
 
 func extensionArtifactScope(call extension.Invocation, typeID, action string) error {
 	return extension.Authorize(call.Registration, call.Enablement, call.Binding, extension.Access{Method: call.Request.Method, Selector: "artifact:" + typeID, Action: action}, false)

@@ -14,11 +14,6 @@ import (
 	"time"
 )
 
-func init() {
-	artifactCommands["fetch"] = func(args []string) error { return artifactGitCommand("fetch", args) }
-	artifactCommands["push"] = func(args []string) error { return artifactGitCommand("push", args) }
-}
-
 func artifactGitCommand(action string, args []string) error {
 	machine := hasJSON(args)
 	remote := ""

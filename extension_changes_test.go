@@ -206,6 +206,7 @@ func TestExtensionChangesErrorMappingPreservesDiagnostics(t *testing.T) {
 	changesUnitError(t, extensionChangesError(context.Canceled, call), "cancelled")
 }
 func TestExtensionChangesRegisteredMethodSet(t *testing.T) {
+	ensureOptionalBootstrap()
 	got := []string{}
 	for _, method := range []string{"changes.capture", "changes.page", "changes.since"} {
 		if extensionHostMethods[method] != nil {

@@ -11,11 +11,6 @@ import (
 	"time"
 )
 
-func init() {
-	artifactTypeCommands["publish"] = cmdArtifactTypePublish
-	artifactTypeCommands["show"] = cmdArtifactTypeShow
-	artifactCommands["open"] = cmdArtifactOpen
-}
 func cmdArtifactTypePublish(args []string) error {
 	return artifactMutationCommand("type.publish", args)
 }

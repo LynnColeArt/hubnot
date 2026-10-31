@@ -11,20 +11,14 @@ import (
 	"hubnot/internal/extension"
 )
 
-// Extension command owners add dispatch functions here from their own init
-// functions. This static seam, like localCommands, performs no registry I/O.
-var extensionSubcommands = map[string]func([]string) (any, error){
-	"register": extensionRegister,
-	"inspect":  extensionInspect,
-	"list":     extensionInspect,
-	"remove":   extensionRemove,
-}
+// Explicit extension use installs all optional dispatchers without registry I/O.
+var extensionSubcommands map[string]func([]string) (any, error)
 
-func init() { localCommands["extension"] = cmdExtension }
 func extensionInput(message string) error {
 	return &extension.Error{Origin: "host", Code: "invalid_input", Message: message, Recovery: "do_not_retry"}
 }
 func cmdExtension(args []string) error {
+	ensureOptionalBootstrap()
 	if len(args) == 0 || args[0] == "help" || args[0] == "--help" {
 		fmt.Println("Usage: hn extension register --manifest FILE --executable PATH [--arg VALUE] --json\n       hn extension inspect [MODULE_ID] --json\n       hn extension list --json\n       hn extension remove MODULE_ID --json")
 		return nil

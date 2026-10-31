@@ -36,12 +36,6 @@ const extensionChangeCacheCount = 16
 const extensionChangeCheckpointCount = 64
 const extensionChangeCheckpointBytes = 128 << 20
 
-func init() {
-	for _, method := range []string{"changes.capture", "changes.page", "changes.since"} {
-		extensionHostMethods[method] = extensionChangesDispatch
-	}
-}
-
 type extensionChangeSelection struct {
 	Families []string `json:"families"`
 	Types    []string `json:"types"`

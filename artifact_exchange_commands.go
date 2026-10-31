@@ -11,12 +11,6 @@ import (
 	"strings"
 )
 
-func init() {
-	artifactCommands["export"] = artifactExchangeExportCommand
-	artifactCommands["import"] = artifactExchangeImportCommand
-	artifactCommands["inspect"] = artifactExchangeInspectCommand
-}
-
 type artifactExchangeFlags struct {
 	input, output             string
 	ids, opaqueIDs            []string
