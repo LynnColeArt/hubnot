@@ -592,6 +592,36 @@ func TestExtensionFakeTrackerConcurrentEditsRefuseWithoutResolution(t *testing.T
 		t.Fatal("external conflict changed state or checkpoint")
 	}
 	f.assertOnlyNewCaptureDescriptor(before)
+	// Authenticate that exact delivered checkpoint through its actual public
+	// caller. A corrupted token refuses with no new capture/native effects.
+	completed := nativeOK(t, f.lastResponse())
+	checkpoint := completed["checkpoint"].(string)
+	unchangedJournal, err := os.ReadFile(f.journalPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	externalBefore := f.serviceState()
+	authBefore := hostNativeSnapshot(t, f.repo)
+	f.trackerRun(map[string]any{"action": "raw", "request": nativeRequest("changes.since", map[string]any{"checkpoint": checkpoint, "selection": completed["selection"], "limit": 200})})
+	authenticated := nativeOK(t, f.lastResponse())
+	for _, field := range []string{"snapshot_id", "selection", "selection_digest", "source_cut", "items"} {
+		if !reflect.DeepEqual(completed[field], authenticated[field]) {
+			t.Fatal("checkpoint did not authenticate exact accepted descriptor", field)
+		}
+	}
+	f.assertOnlyNewCaptureDescriptor(authBefore)
+	corrupt := checkpoint[:len(checkpoint)-1] + "0"
+	if corrupt == checkpoint {
+		corrupt = checkpoint[:len(checkpoint)-1] + "1"
+	}
+	authBefore = hostNativeSnapshot(t, f.repo)
+	f.trackerRun(map[string]any{"action": "raw", "request": nativeRequest("changes.since", map[string]any{"checkpoint": corrupt, "selection": completed["selection"], "limit": 200})})
+	nativeDenial(t, f.lastResponse(), "host", "checkpoint_invalidated", "rescan_required")
+	nativeSnapshotEqual(t, f.nativeHostFixture, authBefore)
+	journalAfter, err := os.ReadFile(f.journalPath)
+	if err != nil || !bytes.Equal(unchangedJournal, journalAfter) || !reflect.DeepEqual(externalBefore, f.serviceState()) {
+		t.Fatal("checkpoint authentication controls changed connector/external state", err)
+	}
 	if f.command("issue", "show", id, "--json")["data"].(map[string]any)["state"].(map[string]any)["title"] != "independent native edit" {
 		t.Fatal("silent native conflict resolution")
 	}
@@ -810,6 +840,20 @@ func (f *fakeTrackerTestFixture) assertOnlyNewCaptureDescriptor(before map[strin
 		}
 		if _, err := hex.DecodeString(strings.TrimSuffix(name, ".json")); err != nil {
 			f.t.Fatal("invalid checkpoint descriptor identity")
+		}
+		page := nativeOK(f.t, f.lastResponse())
+		if page["complete"] != true || page["checkpoint"] == nil {
+			f.t.Fatal("no completed page authorizes this descriptor")
+		}
+		descriptor := fakeRead(f.t, filepath.Join(f.repo, strings.TrimPrefix(path, "/")))
+		for _, field := range []string{"selection", "selection_digest", "source_cut", "snapshot_id"} {
+			if !reflect.DeepEqual(descriptor[field], page[field]) {
+				f.t.Fatal("private descriptor differs from exact completed page", field)
+			}
+		}
+		hello := fakeRead(f.t, f.report)["hello"].(map[string]any)["hello"].(map[string]any)
+		if descriptor["repository"] != hello["repository_id"] || descriptor["registration"] != hello["registration_id"] {
+			f.t.Fatal("private descriptor differs from authenticated session binding")
 		}
 		added++
 	}
