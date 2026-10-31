@@ -885,7 +885,7 @@ func TestExtensionArtifactPostProjectionSourceRecheckRawCLI(t *testing.T) {
 	marker := filepath.Join(wrapper, "changed")
 	// The shared loader has completed both coherent full enumerations; change the
 	// third (post-projection) observation. An ordinary snapshot-only reader misses it.
-	script := "#!/bin/sh\nfor arg do if [ \"$arg\" = for-each-ref ]; then n=0; [ -f \"$HN_WP18_COUNT\" ] && n=$(cat \"$HN_WP18_COUNT\"); n=$((n+1)); echo \"$n\" > \"$HN_WP18_COUNT\"; if [ \"$n\" = 3 ]; then '" + git + "' -c core.logAllRefUpdates=false update-ref \"$HN_WP18_REF\" \"$HN_WP18_PRIOR\" || exit $?; : > \"$HN_WP18_CHANGED\"; fi; fi; done\nexec '" + git + "' \"$@\"\n"
+	script := "#!/bin/sh\nscan=0; local_scope=0; remote_scope=0\nfor arg do [ \"$arg\" = for-each-ref ] && scan=1; [ \"$arg\" = 'refs/hn/artifacts/' ] && local_scope=1; [ \"$arg\" = 'refs/hn/remotes/*/artifacts/*/*' ] && remote_scope=1; done\nif [ \"$scan:$local_scope:$remote_scope\" = 1:1:1 ]; then n=0; [ -f \"$HN_WP18_COUNT\" ] && n=$(cat \"$HN_WP18_COUNT\"); n=$((n+1)); echo \"$n\" > \"$HN_WP18_COUNT\"; if [ \"$n\" = 3 ]; then '" + git + "' -c core.logAllRefUpdates=false update-ref \"$HN_WP18_REF\" \"$HN_WP18_PRIOR\" || exit $?; : > \"$HN_WP18_CHANGED\"; fi; fi\nexec '" + git + "' \"$@\"\n"
 	if err = os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
 		t.Fatal(err)
 	}
