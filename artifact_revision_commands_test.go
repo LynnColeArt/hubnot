@@ -365,3 +365,61 @@ func TestArtifactRevisionEnvelopeBytesCLI(t *testing.T) {
 	}
 	f.unchanged(before)
 }
+
+func TestArtifactRevisionResumeOriginalCandidateCLI(t *testing.T) {
+	f := artifactCLI(t)
+	schema := revisionEvent(f.publish(artifactStoreType, "type", ""))
+	opening := revisionEvent(revisionCall(f, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, "opening")), "open", ""))
+	input := revisionInput(t, opening, []string{opening}, revisionPayload(schema, "original candidate 雪 e\u0301"))
+	original := revisionEvent(revisionCall(f, "revise", input, "resume", ""))
+	path := filepath.Join(f.repo, ".git", "hn", "artifacts", "intents", f.actor, strings.TrimPrefix(eventID([]byte("resume")), "sha256:")+".json")
+	raw, e := os.ReadFile(path)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var intent map[string]any
+	if e = json.Unmarshal(raw, &intent); e != nil {
+		t.Fatal(e)
+	}
+	candidate := intent["candidate"].(map[string]any)
+	commit := candidate["commit"].(string)
+	public := f.git("show", commit+":artifact.json")
+	signature := f.git("show", commit+":signature")
+	// Recreate a lost publication acknowledgement with its exact durable candidate
+	// already present, but no public ref yet. Only fixture state is fault-injected.
+	f.git("update-ref", artifactRef(f.actor), intent["expected_oid"].(string), commit)
+	intent["stage"] = "publishing"
+	intent["result"] = nil
+	raw, e = json.Marshal(intent)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = os.WriteFile(path, raw, 0600); e != nil {
+		t.Fatal(e)
+	}
+	objects := f.git("cat-file", "--batch-all-objects", "--batch-check=%(objectname)")
+	got := revisionCall(f, "revise", input, "resume", "")["data"].(map[string]any)
+	if got["event_id"] != original || f.git("rev-parse", artifactRef(f.actor)) != commit {
+		t.Fatal("original candidate witness replaced", got)
+	}
+	if f.git("show", commit+":artifact.json") != public || f.git("show", commit+":signature") != signature || f.git("cat-file", "--batch-all-objects", "--batch-check=%(objectname)") != objects {
+		t.Fatal("candidate resume signed or wrote new objects")
+	}
+	raw, e = os.ReadFile(path)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var completed map[string]any
+	if e = json.Unmarshal(raw, &completed); e != nil {
+		t.Fatal(e)
+	}
+	if !reflect.DeepEqual(completed["candidate"], candidate) || completed["expected_oid"] != intent["expected_oid"] || !reflect.DeepEqual(completed["semantic_request"], intent["semantic_request"]) || completed["stage"] != "published" {
+		t.Fatal("immutable witness changed", completed)
+	}
+	before := f.snapshot()
+	again := revisionCall(f, "revise", input, "resume", "")["data"].(map[string]any)
+	if again["event_id"] != original || again["replayed"] != true {
+		t.Fatal(again)
+	}
+	f.unchanged(before)
+}
