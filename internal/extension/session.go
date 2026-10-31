@@ -200,6 +200,11 @@ func (reader *sessionReader) read() frameEvent {
 	reader.applyDeadline()
 	reader.mu.Unlock()
 	if err != nil {
+		// Only deadlines are cancellation here. Preserve clean EOF for normal
+		// child completion and other I/O errors for their existing callers.
+		if errors.Is(err, os.ErrDeadlineExceeded) {
+			err = sessionReadError(err)
+		}
 		return frameEvent{sequence: sequence, first: first, err: err}
 	}
 	if n != 1 {

@@ -1,19 +1,19 @@
 {
-  "event_count": 281,
-  "last_event_id": "01M69CGVMYY7S0DA8C4WJT5S95",
-  "materialized_at": "2026-10-31T16:26:11.486325+00:00",
+  "event_count": 286,
+  "last_event_id": "01M69EX2WW8TW98NJJB8JWQKVK",
+  "materialized_at": "2026-10-31T17:07:49.276285+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 23,
+    "approved": 22,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 1,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 2
   },
   "work_packages": {
@@ -563,10 +563,10 @@
       "agent": "codex",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
-      "force_count": 4,
-      "lane": "approved",
-      "last_event_id": "01M693G7EDMQZKZFKWN5V6FF2N",
-      "last_transition_at": "2026-10-31T13:48:33.613322+00:00",
+      "force_count": 5,
+      "lane": "in_review",
+      "last_event_id": "01M69EX2WW8TW98NJJB8JWQKVK",
+      "last_transition_at": "2026-10-31T17:07:49.276285+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods.",
@@ -582,19 +582,21 @@
         "Independent session handoff review passed: source0e728734a156,242 mapa10e82a135c9958 verified; all239 other inputs exact, removing field+initializer reconstructs approvede434 shutdown production. Current real Run callback identity equals actual hello/caps/result and differs across same-binding sessions; both raw overrides refuse before extra dispatch. Old-source runtime RED reproduced once, current race GREEN,8 selected supplied CLI test events per standard/combined variant0fail/skip with correct13/16binary envs, vet/diff checks pass. All8 anti-patterns PASS, closed inventories unchanged with exact retained evidence. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16/session-identity-review/report.md. No17/18 WIP or capture implementation imported; LinuxAMD64 only, original lifecycle provenance retained, Python no_coverage unavailable, final qualification pending.",
         "Administrative integration rework: WP21 observed unexplained uncertainty during valid sequential standalone publication. Investigate suspected response-completion channel race causally; preserve earlier exact-source approvals and strict one-outstanding/cancel/uncertainty semantics. No downstream acceptance over unresolved concern.",
         "Ready for independent review: exact ae5e4f8b; bounded final-byte/join/frontier repair, precise refusal cleanup priority; std/combined/race lifecycle and causal controls pass. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16-response-completion/final-handoff.md",
-        "Independent WP16 response-completion repair review passed for exact ae5e4f8b, 242-input SHA256 2df732d780d3f02c93c3fad83977d3a0007096542daf623da65b6c02317ea329. All eight anti-pattern checks PASS. Fresh uninstrumented race session checks, independent full-reader completion-publication barrier plus meaningful causal rejection mutant, audited frontier/cleanup race and actual supplied CLI race controls passed. No product edits. Report: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16-response-completion-review/review.md. All owned commands exited and 377 retained PID observations gone. Explicit coordinated approved dependency test and WP02 contract merges retained. No downstream, platform, beta, main or release acceptance claimed."
+        "Independent WP16 response-completion repair review passed for exact ae5e4f8b, 242-input SHA256 2df732d780d3f02c93c3fad83977d3a0007096542daf623da65b6c02317ea329. All eight anti-pattern checks PASS. Fresh uninstrumented race session checks, independent full-reader completion-publication barrier plus meaningful causal rejection mutant, audited frontier/cleanup race and actual supplied CLI race controls passed. No product edits. Report: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16-response-completion-review/review.md. All owned commands exited and 377 retained PID observations gone. Explicit coordinated approved dependency test and WP02 contract merges retained. No downstream, platform, beta, main or release acceptance claimed.",
+        "New post-approval maintenance finding from actual WP24 native-only blocked-startup control: first-byte OS deadline bypasses typed cancellation normalization and select can emit unavailable_module. Root independently inspected source and frozen cancellation contract; exact binary/log/source evidence in feedback10. Previous cycle9 approval remains history; targeted owner correction and fresh independent review required before WP24 measurement freeze. No timeout/guard relaxation or source edit by root.",
+        "Ready for independent review: a0fcbd72 first-byte OS deadline cancellation; causal RED retained, EOF and partial-frame distinctions preserved; supplied std/combined/race lifecycle and retained frontier/cleanup regressions pass. Evidence optional-extensions-WP16-startup-deadline/report.md."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-9.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-9.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-10.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-10.md",
         "reviewer": "codex",
-        "verdict": "approved"
+        "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "shell_pid": 266009,
+      "shell_pid_created_at": "1793466465.44",
       "subtasks": {
         "T064": "done",
         "T065": "done",
