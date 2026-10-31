@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -41,9 +42,14 @@ type Manifest struct {
 	Capabilities  []string `json:"capabilities"`
 }
 
-var modulePattern = regexp.MustCompile(`^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`)
+// Native commands register extension dispatch without constructing its validator.
+var modulePattern *regexp.Regexp
+var modulePatternOnce sync.Once
 
 func ValidModuleID(id string) bool {
+	modulePatternOnce.Do(func() {
+		modulePattern = regexp.MustCompile(`^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`)
+	})
 	return modulePattern.MatchString(id) && !strings.HasPrefix(id, "hn/") && !strings.HasPrefix(id, "hubnot/")
 }
 
