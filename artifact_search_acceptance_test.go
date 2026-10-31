@@ -294,13 +294,32 @@ func TestArtifactSearchInertConsumerControlCLI(t *testing.T) {
 		t.Fatal("process marker detector missed deliberate start", err)
 	}
 	t.Log("process marker control detected deliberate consumer start")
+	if err := os.Remove(marker); err != nil {
+		t.Fatal(err)
+	}
 	// Subsequent native issue and memory reads still use the original pathways.
 	f.call("", "", "issue", "open", "--operation", "native-after-search", "--json", "Native after search")
 	f.call("", "", "issue", "list", "--json")
 	f.git("-c", "user.name=Search test", "-c", "user.email=search@example.test", "commit", "--allow-empty", "-qm", "memory anchor")
-	cmd := exec.Command(f.binary, "memory", "recall", "--at", "HEAD", "--include-untrusted", "--json")
-	cmd.Dir, cmd.Env = f.repo, operationalTestEnvironmentWith(f.home, f.overrides)
-	if out, err := cmd.CombinedOutput(); err != nil || !json.Valid(out) {
-		t.Fatalf("native memory recall %v %s", err, out)
+	for _, args := range [][]string{
+		{"memory", "record", "--kind", "observation", "--at", "HEAD", "--applies", "exact", "--content", "native-memory-after-search", "--json"},
+		{"memory", "recall", "--at", "HEAD", "--include-untrusted", "--query", "native-memory-after-search", "--json"},
+		{"memory", "grep", "--at", "HEAD", "--include-untrusted", "--json", "native-memory-after-search"},
+	} {
+		cmd := exec.Command(f.binary, args...)
+		cmd.Dir, cmd.Env = f.repo, operationalTestEnvironmentWith(f.home, f.overrides)
+		out, err := cmd.CombinedOutput()
+		if err != nil || !json.Valid(out) {
+			t.Fatalf("native memory %v: %v %s", args, err, out)
+		}
+		if args[1] != "record" {
+			var result MemoryRecallEnvelopeV0
+			if err := json.Unmarshal(out, &result); err != nil || result.Returned != 1 || result.Memories[0].Data.Content != "native-memory-after-search" {
+				t.Fatalf("native memory did not retain its data: %v %s", err, out)
+			}
+		}
+	}
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatal("native journey started consumer", err)
 	}
 }
