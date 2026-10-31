@@ -32,6 +32,14 @@ read limits and synchronous request ownership. Future change capture must reuse
 the same current native projection/fingerprint semantics rather than invent a
 parallel feed or timestamp ordering.
 
+WP19 preparation confirmed the current projection retained only the final Cut
+hash while its verified arrays were local. Retain a typed Cut-input value in that
+same projection and make the EXISTING current single-family hash assembly consume
+it. This is reuse of actual accepted witnesses/selection/authority/view inputs,
+not a new multi-family API or unused parallel projection. Preserve exact current
+Cut bytes and prove them independently. A later capture can then combine coherent
+verified inputs rather than reverse-engineering a digest or copying this reducer.
+
 Independent review must recompute the fingerprint inputs and test both a normal
 selected change and the cross-family shared-stream/key case. This is clarification
 of current native source selection, not permission to export ungranted history.
