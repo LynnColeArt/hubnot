@@ -49,6 +49,7 @@ type Invocation struct {
 	Registration Registration
 	Enablement   EnablementEntry
 	Binding      Binding
+	SessionID    string // Host-generated identity, never supplied by a request.
 }
 type Dispatch func(context.Context, Invocation) (any, error)
 type SessionConfig struct {
@@ -604,7 +605,7 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 				if request.Method == "capabilities.list" {
 					done <- dispatchResult{capabilities(session, reg, entry), nil}
 				} else {
-					data, e := cfg.Dispatch(ctx, Invocation{Request: request, Registration: reg, Enablement: entry, Binding: binding})
+					data, e := cfg.Dispatch(ctx, Invocation{Request: request, Registration: reg, Enablement: entry, Binding: binding, SessionID: session.SessionID})
 					done <- dispatchResult{data, e}
 				}
 			}()
