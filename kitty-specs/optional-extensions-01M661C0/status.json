@@ -1,20 +1,20 @@
 {
-  "event_count": 199,
-  "last_event_id": "01M68B3C3F0YJ7MBDJPH5D6JRT",
-  "materialized_at": "2026-10-31T06:42:06.575301+00:00",
+  "event_count": 200,
+  "last_event_id": "01M68B6GFR0N6CZ14RQATBJFJR",
+  "materialized_at": "2026-10-31T06:43:49.368145+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "",
   "summary": {
     "approved": 16,
-    "blocked": 0,
+    "blocked": 1,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 1,
     "in_review": 0,
-    "planned": 9
+    "planned": 8
   },
   "work_packages": {
     "WP01": {
@@ -596,11 +596,11 @@
       "shell_pid_created_at": "1793287708.21"
     },
     "WP18": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M663XAS1B9KZPXQJ19X3ABMX",
-      "last_transition_at": "2026-10-30T09:57:59.713791+00:00"
+      "lane": "blocked",
+      "last_event_id": "01M68B6GFR0N6CZ14RQATBJFJR",
+      "last_transition_at": "2026-10-31T06:43:49.368145+00:00"
     },
     "WP19": {
       "actor": "finalize-tasks",
