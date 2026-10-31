@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
@@ -18,16 +20,21 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"hubnot/internal/artifact"
 )
 
 var defaultBinaryDir = flag.String("hn-default-binaries", "", "explicit directory containing standard and native-only non-race hn executables")
 var defaultBinaryProof = flag.String("hn-default-binary-proof", "", "collector binaries.json required with explicit default executables")
 var defaultEvidence = flag.String("hn-default-evidence", "", "external directory for raw default qualification transcripts")
 var defaultDonor = flag.String("hn-default-donor", "", "external output filename for the public-only large artifact bundle")
+var defaultDonorRepository = flag.String("hn-default-donor-repository", "", "measured repository for source-assisted full public-chain verification")
+var defaultDonorProof = flag.String("hn-default-donor-proof", "", "new external full-chain verification result")
 var defaultDetectorMutant = flag.String("hn-default-detector-mutant", "", "qualification negative control: disable one detector cause")
 
 var defaultConfigurations = []string{"absent", "disabled", "missing", "incompatible", "crashed", "malformed", "many-custom", "oversized", "EOF", "blocked", "cancelled", "malformed-custom", "opaque-custom"}
@@ -469,10 +476,31 @@ func TestExtensionDefaultPrepareCorpus(t *testing.T) {
 	if *defaultDonor == "" {
 		t.Skip("explicit external donor output required")
 	}
-	if *defaultBenchmarkBaseline == "" {
-		t.Fatal("explicit immutable baseline directory required to guard corpus output")
+	output := defaultExternalOutput(t, *defaultDonor)
+	bundle := defaultLargeBundle(t)
+	input, err := os.Open(bundle)
+	if err != nil {
+		t.Fatal(err)
 	}
-	output, err := filepath.Abs(*defaultDonor)
+	defer input.Close()
+	file, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, copyErr := io.Copy(file, input)
+	closeErr := file.Close()
+	if copyErr != nil || closeErr != nil {
+		t.Fatal(copyErr, closeErr)
+	}
+	t.Log("public-only donor retained at explicit new external output")
+}
+
+func defaultExternalOutput(t *testing.T, requested string) string {
+	t.Helper()
+	if *defaultBenchmarkBaseline == "" {
+		t.Fatal("explicit immutable baseline directory required to guard setup output")
+	}
+	output, err := filepath.Abs(requested)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -501,22 +529,278 @@ func TestExtensionDefaultPrepareCorpus(t *testing.T) {
 	if _, err = os.Lstat(output); !os.IsNotExist(err) {
 		t.Fatal("donor output must not exist; preserve every prior corpus")
 	}
-	bundle := defaultLargeBundle(t)
-	input, err := os.Open(bundle)
+	return output
+}
+
+// This source-assisted setup verifier batches Git object reads instead of
+// claiming a10000-record public query completes within its30s budget. It checks
+// every original signature/ID/schema/stream entry in the actual measured clone.
+// The separate small-prefix CLI check remains the live generic read observation.
+func TestExtensionDefaultVerifyDonor(t *testing.T) {
+	if *defaultDonorRepository == "" {
+		t.Skip("explicit measured repository required for full-chain fixture verification")
+	}
+	if *defaultDonor == "" || *defaultDonorProof == "" {
+		t.Fatal("public container and new proof output required")
+	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "config"))
+	t.Setenv("GIT_CONFIG_GLOBAL", os.DevNull)
+	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+	t.Setenv("GIT_TERMINAL_PROMPT", "0")
+	t.Setenv("GIT_NO_REPLACE_OBJECTS", "1")
+	t.Setenv("GIT_NO_LAZY_FETCH", "1")
+	output := defaultExternalOutput(t, *defaultDonorProof)
+	repo, err := filepath.Abs(*defaultDonorRepository)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer input.Close()
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	run := func(limit int64, args ...string) []byte {
+		t.Helper()
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, git, args...)
+		cmd.Dir = repo
+		var out, errors bytes.Buffer
+		cmd.Stdout = &projectBoundWriter{w: &out, left: limit}
+		cmd.Stderr = &errors
+		if err := cmd.Run(); err != nil || ctx.Err() != nil {
+			t.Fatalf("source-assisted fixture Git %q: %v deadline=%v %s", args, err, ctx.Err(), &errors)
+		}
+		return out.Bytes()
+	}
+	refsBefore := run(32<<20, "for-each-ref", "--format=%(refname) %(objectname)")
+	if _, err := os.Stat(filepath.Join(repo, ".hn", "policy.json")); !os.IsNotExist(err) {
+		t.Fatal("fixture requires the unchanged policy-free historical corpus", err)
+	}
+	selected := strings.Fields(string(run(4096, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/artifacts/")))
+	if len(selected) != 2 {
+		t.Fatal("expected one public artifact stream")
+	}
+	ref, head := selected[0], selected[1]
+	containerHeads := strings.Fields(string(run(4096, "bundle", "list-heads", *defaultDonor)))
+	if len(containerHeads) != 2 || containerHeads[0] != head || containerHeads[1] != ref {
+		t.Fatal("public container and measured stream identity differ")
+	}
+	commits := strings.Fields(string(run(2<<20, "rev-list", "--reverse", head)))
+	if len(commits) != 10001 {
+		t.Fatalf("want10000 modeled records plus one type, got%d Git commits", len(commits))
+	}
+	run(32<<20, "fsck", "--full", "--strict", "--no-reflogs")
+	format := strings.TrimSpace(string(run(64, "rev-parse", "--show-object-format")))
+	oidBytes := 20
+	if format == "sha256" {
+		oidBytes = 32
+	} else if format != "sha1" {
+		t.Fatal("unsupported fixture object format")
+	}
+	type object struct {
+		kind string
+		raw  []byte
+	}
+	objects := map[string]object{}
+	r := bufio.NewReader(bytes.NewReader(run(artifactReadTotalBytes, "cat-file", "--batch-all-objects", "--batch")))
+	for {
+		line, e := r.ReadString('\n')
+		if e == io.EOF {
+			if line != "" {
+				t.Fatal("truncated Git batch header")
+			}
+			break
+		}
+		if e != nil {
+			t.Fatal(e)
+		}
+		parts := strings.Fields(line)
+		if len(parts) != 3 {
+			t.Fatal("invalid Git batch header")
+		}
+		size, e := strconv.Atoi(parts[2])
+		if e != nil || size < 0 || size > artifactReadObjectBytes {
+			t.Fatal("invalid fixture object size")
+		}
+		raw := make([]byte, size)
+		if _, e = io.ReadFull(r, raw); e != nil {
+			t.Fatal(e)
+		}
+		delimiter, e := r.ReadByte()
+		if e != nil || delimiter != '\n' {
+			t.Fatal("invalid Git batch delimiter")
+		}
+		preimage := append([]byte(fmt.Sprintf("%s %d\x00", parts[1], size)), raw...)
+		var id string
+		if oidBytes == 20 {
+			sum := sha1.Sum(preimage)
+			id = hex.EncodeToString(sum[:])
+		} else {
+			sum := sha256.Sum256(preimage)
+			id = hex.EncodeToString(sum[:])
+		}
+		if id != parts[0] || objects[id].kind != "" {
+			t.Fatal("Git object identity mismatch or duplicate")
+		}
+		objects[id] = object{parts[1], raw}
+	}
+	h := &artifactHistory{Sources: []artifactSource{{Ref: ref, OID: head}}, ByID: map[string]*storedArtifact{}, Chains: map[string][]*storedArtifact{}}
+	var previous *artifact.Verified
+	previousCommit := ""
+	actor := ""
+	schema := ""
+	recordIDs := []string{}
+	entries := []map[string]any{}
+	artifactObjects := map[string]bool{}
+	for n, oid := range commits {
+		commit := objects[oid]
+		if commit.kind != "commit" {
+			t.Fatal("fixture commit missing")
+		}
+		headers, message, ok := bytes.Cut(commit.raw, []byte("\n\n"))
+		if !ok {
+			t.Fatal("invalid fixture commit")
+		}
+		tree, parent := "", ""
+		for _, line := range strings.Split(string(headers), "\n") {
+			if strings.HasPrefix(line, "tree ") {
+				if tree != "" {
+					t.Fatal("multiple trees")
+				}
+				tree = strings.TrimPrefix(line, "tree ")
+			}
+			if strings.HasPrefix(line, "parent ") {
+				if parent != "" {
+					t.Fatal("multiple Git parents")
+				}
+				parent = strings.TrimPrefix(line, "parent ")
+			}
+		}
+		if parent != previousCommit || objects[tree].kind != "tree" {
+			t.Fatal("Git actor chain/tree discontinuity")
+		}
+		names := map[string]string{}
+		rest := objects[tree].raw
+		for len(rest) > 0 {
+			at := bytes.IndexByte(rest, 0)
+			if at < 0 || len(rest) < at+1+oidBytes {
+				t.Fatal("invalid fixture tree")
+			}
+			mode, name, ok := strings.Cut(string(rest[:at]), " ")
+			if !ok || mode != "100644" || (name != "artifact.json" && name != "signature") || names[name] != "" {
+				t.Fatal("invalid artifact tree entry")
+			}
+			names[name] = hex.EncodeToString(rest[at+1 : at+1+oidBytes])
+			rest = rest[at+1+oidBytes:]
+		}
+		if len(names) != 2 || objects[names["artifact.json"]].kind != "blob" || objects[names["signature"]].kind != "blob" {
+			t.Fatal("fixture requires two exact public blobs")
+		}
+		raw, signature := objects[names["artifact.json"]].raw, string(objects[names["signature"]].raw)
+		verified, e := artifact.Verify(raw, signature, previous)
+		if e != nil {
+			t.Fatal("full public-chain verification", n, e)
+		}
+		if n == 0 && !verified.Genesis() {
+			t.Fatal("missing actor-stream genesis")
+		}
+		if actor == "" {
+			actor = verified.Actor()
+		}
+		if verified.Actor() != actor || ref != artifactRef(actor) || string(message) != "hn artifact "+verified.ID()+"\n" {
+			t.Fatal("actor/ref/canonical ID mismatch")
+		}
+		var envelope map[string]any
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		decoder.UseNumber()
+		if e = decoder.Decode(&envelope); e != nil {
+			t.Fatal(e)
+		}
+		if _, exists := envelope["repository_id"]; exists {
+			t.Fatal("public portable envelope unexpectedly acquired repository_id")
+		}
+		if n == 0 {
+			if verified.Kind() != "type.publish" {
+				t.Fatal("missing exact schema genesis")
+			}
+			schema = verified.ID()
+		} else {
+			if verified.Kind() != "record.open" || artifactText(envelope, "record") != "" {
+				t.Fatal("expected distinct modeled openings")
+			}
+			payload := envelope["payload"].(map[string]any)
+			if artifactText(payload, "type_revision") != schema || artifactText(payload, "type_id") != "example.default/note" {
+				t.Fatal("wrong exact schema binding")
+			}
+			recordIDs = append(recordIDs, verified.ID())
+		}
+		if h.ByID[verified.ID()] != nil {
+			t.Fatal("duplicate modeled public ID")
+		}
+		stored := &storedArtifact{ID: verified.ID(), Envelope: envelope, Signature: signature, Validation: "verified", Diagnostics: []any{}, commit: oid, verified: verified, parentCommit: parent}
+		h.ByID[stored.ID] = stored
+		h.Chains[actor] = append(h.Chains[actor], stored)
+		for _, id := range []string{oid, tree, names["artifact.json"], names["signature"]} {
+			artifactObjects[id] = true
+		}
+		entries = append(entries, map[string]any{"git_commit": oid, "git_tree": tree, "artifact_blob": names["artifact.json"], "signature_blob": names["signature"], "event_id": verified.ID(), "kind": verified.Kind(), "sequence": n + 1})
+		previous = &verified
+		previousCommit = oid
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	if err = h.validate(ctx); err != nil {
+		t.Fatal("complete model/schema/dependency validation", err)
+	}
+	if len(recordIDs) != 10000 || len(artifactObjects) != 40004 {
+		t.Fatal("record/type/object count mismatch", len(recordIDs), len(artifactObjects))
+	}
+	old, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Chdir(repo); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(old)
+	repositoryID, common, err := artifactRepositoryID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cut, err := h.sourceCut()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(refsBefore, run(32<<20, "for-each-ref", "--format=%(refname) %(objectname)")) {
+		t.Fatal("verification changed measured refs")
+	}
+	for _, p := range []string{"keyring", "identity.json", "identities", "active", "rotation.json", "artifacts/intents", "extensions"} {
+		if _, e := os.Stat(filepath.Join(common, "hn", p)); !os.IsNotExist(e) {
+			t.Fatal("private donor/extension state present in measured keyless corpus", p, e)
+		}
+	}
+	objectIDs := make([]string, 0, len(objects))
+	for id := range objects {
+		objectIDs = append(objectIDs, id)
+	}
+	sort.Strings(objectIDs)
+	bundle, err := os.ReadFile(*defaultDonor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	proof := map[string]any{"status": "valid_source_assisted_fixture", "transport": "Git-only public-object container; no bounded artifact file-exchange admission claimed", "bundle_sha256": fmt.Sprintf("%x", sha256.Sum256(bundle)), "record_count": len(recordIDs), "type_count": 1, "artifact_object_count": len(artifactObjects), "all_repository_objects": objectIDs, "entries": entries, "record_ids": recordIDs, "schema_id": schema, "ref": ref, "head": head, "actor": actor, "repository_id": repositoryID, "common_git_dir": common, "source_cut": cut, "all_refs_sha256": fmt.Sprintf("%x", sha256.Sum256(refsBefore)), "prefix_head": commits[2], "prefix_record_ids": recordIDs[:2], "public_envelope_repository_id": "absent by frozen protocol; portable original bytes retained"}
 	file, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, copyErr := io.Copy(file, input)
+	encodeErr := json.NewEncoder(file).Encode(proof)
 	closeErr := file.Close()
-	if copyErr != nil || closeErr != nil {
-		t.Fatal(copyErr, closeErr)
+	if encodeErr != nil || closeErr != nil {
+		t.Fatal(encodeErr, closeErr)
 	}
-	t.Log("public-only donor retained at explicit new external output")
+	t.Logf("source-assisted full fixture verified records=%d types=1 objects=%d original IDs/signatures retained; measured repository=%s source_cut=%s", len(recordIDs), len(artifactObjects), repositoryID, cut)
 }
 
 func TestExtensionDefaultNativeMatrix(t *testing.T) {

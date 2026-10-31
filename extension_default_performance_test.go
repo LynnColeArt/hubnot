@@ -70,7 +70,11 @@ func TestExtensionDefaultPerformanceCapture(t *testing.T) {
 	if err = os.WriteFile(script, []byte(defaultPerformanceDriver), 0600); err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("python3", script, source, *defaultBenchmarkBaseline, *defaultDonor, *defaultBenchmarkOutput, *defaultApprovedInputs)
+	verifier, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("python3", script, source, *defaultBenchmarkBaseline, *defaultDonor, *defaultBenchmarkOutput, *defaultApprovedInputs, verifier)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err = cmd.Run(); err != nil {
@@ -209,8 +213,8 @@ if len(sys.argv)>1 and sys.argv[1]=='--parent':
     amount=int(sys.argv[2]);allocation=bytearray(amount*1024*1024)
     for n in range(0,len(allocation),4096):allocation[n]=1
     v=json.loads(pathlib.Path(sys.argv[3]).read_text());r=measure(v['binary'],v['args'],v['repo'],v['env'],v['prefix']);r.update(parent_allocated_mib=amount,parent_high_water_kib=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss);print(json.dumps(r));sys.exit(0)
-source,baseline,donor,output,approved=map(pathlib.Path,sys.argv[1:])
-source=source.resolve(strict=True);baseline=baseline.resolve(strict=True);donor=donor.resolve(strict=True);approved=approved.resolve(strict=True);output=output.resolve()
+source,baseline,donor,output,approved,verifier=map(pathlib.Path,sys.argv[1:])
+source=source.resolve(strict=True);baseline=baseline.resolve(strict=True);donor=donor.resolve(strict=True);approved=approved.resolve(strict=True);verifier=verifier.resolve(strict=True);output=output.resolve()
 assert not any(output==p or output.is_relative_to(p) for p in [source,baseline]),'output must be outside source and immutable assets'
 assert not donor.is_relative_to(source) and not donor.is_relative_to(baseline),'donor must be separate public-only evidence'
 assert not any(os.environ.get(k) for k in ['GIT_DIR','GIT_WORK_TREE']),'build-only Git selectors must not be inherited by corpus commands'
@@ -302,9 +306,33 @@ for state in ['absent','large-unrelated']:
     refs[state]=run(['git','for-each-ref','--format=%(refname) %(objectname)'],repo,env).decode().strip().splitlines();corpora[state]=repo;environments[state]=env
     assert [r for r in refs[state] if not r.startswith('refs/hn/artifacts/')]==initial
     for p in ['identity.json','identities','active','rotation.json','keyring']:assert not (repo/'.git/hn'/p).exists()
-# Prove the large donor is a genuine signed stream through the live generic reader.
-large=run([binaries[('frozen-cgo1','candidate','standard')],'artifact','list','--type','example.default/note','--limit','1','--json'],corpora['large-unrelated'],environments['large-unrelated']);page=json.loads(large);assert page['ok'] and len(page['data']['items'])==1 and page['data']['next_cursor']
-write(output/'corpora.json',{'refs':refs,'environments':environments,'public_bundle_sha256':sha(fixture/'public.bundle'),'large_bundle_sha256':donor_hash,'large_records':10000,'generic_live_read_sha256':hashlib.sha256(large).hexdigest()})
+# Full signed/model/schema verification uses batched public-object reads in the
+# actual measured clone. This is source-assisted setup, not a claim that a10000
+# record public query or over-limit bounded file exchange completes/admitted.
+stage='full-chain-source-assisted-setup'
+verifier_hash=sha(verifier);retained_verifier=output/'fixture-verifier';shutil.copy2(verifier,retained_verifier);assert sha(retained_verifier)==verifier_hash
+run([retained_verifier,'-test.run=^TestExtensionDefaultVerifyDonor$','-test.v','-test.timeout=5m','-hn-default-baseline-assets',baseline,'-hn-default-donor',donor,'-hn-default-donor-repository',corpora['large-unrelated'],'-hn-default-donor-proof',output/'full-chain-proof.json'],source,environments['large-unrelated'])
+full=json.loads((output/'full-chain-proof.json').read_text());assert full['status']=='valid_source_assisted_fixture' and full['bundle_sha256']==donor_hash
+assert full['record_count']==10000 and full['type_count']==1 and full['artifact_object_count']==40004 and len(full['record_ids'])==10000 and len(full['entries'])==10001
+assert full['ref']+' '+full['head'] in refs['large-unrelated']
+assert run(['git','for-each-ref','--format=%(refname) %(objectname)'],corpora['large-unrelated'],environments['large-unrelated']).decode().strip().splitlines()==refs['large-unrelated']
+# Exercise a small exact original prefix through the real generic CLI in a
+# separate fresh validation clone. Measured refs/objects are never replaced.
+stage='separate-small-prefix-live-cli'
+validation=output/'validation-prefix';validation_home=output/'home-validation-prefix';validation_home.mkdir();validation_env=dict(environments['absent'],HOME=str(validation_home))
+run(['git','-c','maintenance.auto=false','-c','gc.auto=0','clone','-q',fixture/'public.bundle',validation],output,validation_env)
+run(['git','fetch','--no-write-fetch-head',fixture/'public.bundle','+refs/hn/*:refs/hn/*'],validation,validation_env)
+run(['git','fetch','--no-write-fetch-head',donor,'+refs/hn/artifacts/*:refs/hn/artifacts/*'],validation,validation_env)
+run(['git','update-ref',full['ref'],full['prefix_head'],full['head']],validation,validation_env)
+pages=[];seen=[];cursor=None
+for n in range(2):
+    argv=[binaries[('frozen-cgo1','candidate','standard')],'artifact','list','--type','example.default/note','--limit','1','--json']
+    if cursor:argv+=['--cursor',cursor]
+    raw=run(argv,validation,validation_env);(output/('prefix-live-page-'+str(n)+'.json')).write_bytes(raw);page=json.loads(raw);assert page['ok'] and len(page['data']['items'])==1
+    pages.append(hashlib.sha256(raw).hexdigest());seen.append(page['data']['items'][0]['id']);cursor=page['data']['next_cursor']
+assert seen==sorted(full['prefix_record_ids']) and cursor is None
+assert run(['git','for-each-ref','--format=%(refname) %(objectname)'],corpora['large-unrelated'],environments['large-unrelated']).decode().strip().splitlines()==refs['large-unrelated']
+write(output/'corpora.json',{'refs':refs,'environments':environments,'public_bundle_sha256':sha(fixture/'public.bundle'),'large_bundle_sha256':donor_hash,'large_records':10000,'full_chain_proof_sha256':sha(output/'full-chain-proof.json'),'verifier_sha256':verifier_hash,'measured_repository_id':full['repository_id'],'measured_source_cut':full['source_cut'],'prefix_validation':{'scope':'separate public-prefix CLI observation, not whole-chain admission/query availability','record_ids':seen,'schema_id':full['schema_id'],'head':full['prefix_head'],'pages_sha256':pages},'transport':'Git-only public-object container; no bounded artifact file-exchange admission claimed'})
 def subset(w,g,path=''):
     if isinstance(w,dict):
         assert isinstance(g,dict),path
@@ -371,7 +399,7 @@ assert inputs=={p:sha(source/p) for p in inputs}
 assert read_inputs=={p:sha(source/p) for p in read_inputs}
 assert immutable=={p:sha(p) for p in immutable}
 assert executable_hashes=={p:sha(p) for p in executable_hashes}
-assert sha(__file__)==driver_hash and sha(approved)==approved_hash and sha(donor)==donor_hash
+assert sha(__file__)==driver_hash and sha(approved)==approved_hash and sha(donor)==donor_hash and sha(verifier)==verifier_hash
 assert sha('/usr/bin/time')==manifest['measurement']['launcher']['sha256']
 assert all(sha(v['path'])==v['sha256'] for v in tool_hashes.values())
 assert run(['git','rev-parse','HEAD']).decode().strip()==head and run(['git','rev-parse','HEAD^{tree}']).decode().strip()==tree
