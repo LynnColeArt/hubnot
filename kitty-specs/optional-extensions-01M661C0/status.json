@@ -1,7 +1,7 @@
 {
-  "event_count": 138,
-  "last_event_id": "01M6814SWJBHNZGN7E5CWQ88W1",
-  "materialized_at": "2026-10-31T03:48:07.697943+00:00",
+  "event_count": 142,
+  "last_event_id": "01M6826TMKRY4SVHR45Z4XB5FR",
+  "materialized_at": "2026-10-31T04:06:42.579433+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
@@ -13,8 +13,8 @@
     "done": 0,
     "for_review": 0,
     "in_progress": 1,
-    "in_review": 0,
-    "planned": 13
+    "in_review": 1,
+    "planned": 12
   },
   "work_packages": {
     "WP01": {
@@ -295,24 +295,45 @@
     "WP09": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M6814SWJBHNZGN7E5CWQ88W1",
-      "last_transition_at": "2026-10-31T03:48:07.697943+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M6826TMKRY4SVHR45Z4XB5FR",
+      "last_transition_at": "2026-10-31T04:06:42.579433+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Selected artifact Git transfer implemented; exact public CLI/bare-remote reconstruction and refusal/boundary controls, std/native binary execution, focused race and native compatibility pass. Source ebc5074994cfa0b025ee25630a38125dd509db3e; external evidence optional-extensions-WP09; budget decision18db2d22."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "reviewer",
+      "shell_pid": 22770,
+      "shell_pid_created_at": "1793287708.21",
+      "subtasks": {
+        "T036": "done",
+        "T037": "done",
+        "T038": "done",
+        "T039": "done"
+      }
+    },
+    "WP10": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
+      "assignee": "codex",
+      "force_count": 0,
+      "lane": "in_progress",
+      "last_event_id": "01M68185X31QVTM56YAC3V82MJ",
+      "last_transition_at": "2026-10-31T03:49:58.307066+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Allocator planning conflict resolved by normal exact recorded-planning merge; sole conflict contained only generated WP09 base metadata, archived byte proof; resume canonical implementation."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 22770,
       "shell_pid_created_at": "1793287708.21"
-    },
-    "WP10": {
-      "actor": "finalize-tasks",
-      "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M663WWWBT6K5PXCBYW1W6410",
-      "last_transition_at": "2026-10-30T09:57:45.483839+00:00"
     },
     "WP11": {
       "actor": "finalize-tasks",
