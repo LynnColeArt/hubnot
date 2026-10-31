@@ -1,7 +1,7 @@
 {
-  "event_count": 54,
-  "last_event_id": "01M67MQJ5RXXERRFND05TSP11E",
-  "materialized_at": "2026-10-31T00:11:10.904742+00:00",
+  "event_count": 55,
+  "last_event_id": "01M67MTNGCGKKED6EJ1QV75QHK",
+  "materialized_at": "2026-10-31T00:12:52.620790+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
-    "in_progress": 1,
+    "for_review": 2,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 22
   },
@@ -90,9 +90,9 @@
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 1,
-      "lane": "in_progress",
-      "last_event_id": "01M67MH152VJN2XTYQ1A6MAP6W",
-      "last_transition_at": "2026-10-31T00:07:36.855468+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M67MTNGCGKKED6EJ1QV75QHK",
+      "last_transition_at": "2026-10-31T00:12:52.620790+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: source cecac403 canonical verifier/inert CLI; generated metadata reconciled; focused race/goldens/vet and both exact binaries qualified; evidence external optional-extensions-WP03/handoff.json",
@@ -110,10 +110,10 @@
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
-        "T012": "planned",
-        "T013": "planned",
-        "T014": "planned",
-        "T015": "planned"
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done"
       }
     },
     "WP04": {
