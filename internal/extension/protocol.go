@@ -617,7 +617,7 @@ func unsupportedNames() []string {
 	return protocolInventories["unsupported"]
 }
 func changePageRule() wireRule {
-	return closed(map[string]wireRule{"capture": tokenRule, "snapshot_id": idRule, "selection": selectionRule(), "selection_digest": idRule, "source_cut": idRule, "mode": literal("replace"), "items": sequence(closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "revision_ids": idsRule, "value": either(nativeViewRule(), recordViewRule())}, nil), 0, 200, false, false), "next_cursor": nullable(tokenRule), "complete": booleanRule, "checkpoint": nullable(tokenRule), "expires_at": timestampRule}, nil)
+	return closed(map[string]wireRule{"capture": tokenRule, "snapshot_id": idRule, "selection": selectionRule(), "selection_digest": idRule, "source_cut": idRule, "mode": literal("replace"), "items": sequence(closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "revision_ids": sequence(idRule, 0, FrameLimit, true, true), "value": either(nativeViewRule(), recordViewRule())}, nil), 0, 200, false, false), "next_cursor": nullable(tokenRule), "complete": booleanRule, "checkpoint": nullable(tokenRule), "expires_at": timestampRule}, nil)
 }
 func nativeViewRule() wireRule {
 	return func(v any) error {

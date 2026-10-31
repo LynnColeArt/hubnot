@@ -158,6 +158,85 @@ func resultFixtures() map[string]map[string]any {
 		"changes.capture":    change, "changes.page": change, "changes.since": change,
 	}
 }
+
+func changeRevisionFixture(count int) (map[string]any, []any) {
+	ids := make([]any, count)
+	for i := range ids {
+		ids[i] = fmt.Sprintf("sha256:%064x", i+1)
+	}
+	comments := make([]any, 0, count-1)
+	for _, id := range ids[1:] {
+		comments = append(comments, obj("id", id, "actor", testActor, "body", "comment"))
+	}
+	state := nativeFixture("issue")
+	view := obj("protocol", "hn/0", "family", "issue", "id", ids[0], "creator", testActor, "heads", []any{obj("id", ids[0], "actor", testActor, "state", state)}, "conflict", false, "state", state, "comments", comments)
+	entry := obj("protocol", "hn/0", "family", "issue", "type_id", nil, "resource_id", ids[0], "revision_ids", ids, "value", view)
+	data := resultFixtures()["changes.capture"]
+	data["items"] = []any{entry}
+	return obj("protocol", "hn.extension/1", "request_id", "r", "ok", true, "data", data, "error", nil), ids
+}
+
+func TestProtocolChangeRevisionIdentities(t *testing.T) {
+	for _, method := range []string{"changes.capture", "changes.page", "changes.since"} {
+		t.Run(method, func(t *testing.T) {
+			for _, count := range []int{1024, 1025} {
+				t.Run(fmt.Sprint(count), func(t *testing.T) {
+					response, ids := changeRevisionFixture(count)
+					raw := encode(response)
+					if len(raw) >= FrameLimit {
+						t.Fatal("revision fixture must fit the published frame bound")
+					}
+					if _, err := InspectMessage(raw, "response", "r", method); err != nil {
+						t.Fatalf("complete issue view with %d revision identities (%d bytes): %v", count, len(raw), err)
+					}
+					last := ids[count-1]
+					for control, bad := range map[string]any{"malformed": "sha256:invalid", "unsorted": "sha256:" + strings.Repeat("0", 64), "duplicate": ids[count-2], "wrong_type": nil} {
+						t.Run(control, func(t *testing.T) {
+							ids[count-1] = bad
+							_, err := InspectMessage(encode(response), "response", "r", method)
+							requireCode(t, err, "invalid_input")
+							ids[count-1] = last
+						})
+					}
+				})
+			}
+		})
+	}
+	// Complete change responses retain the same byte bound even when their
+	// revision list legitimately exceeds the artifact parent-array limit.
+	t.Run("frame_bound", func(t *testing.T) {
+		response, _ := changeRevisionFixture(1025)
+		raw := encode(response)
+		raw = append(raw, bytes.Repeat([]byte(" "), FrameLimit-len(raw))...)
+		if _, err := InspectMessage(raw, "response", "r", "changes.capture"); err != nil {
+			t.Fatal(err)
+		}
+		_, err := InspectMessage(append(raw, ' '), "response", "r", "changes.capture")
+		requireCode(t, err, "resource_limit")
+	})
+}
+
+func TestProtocolArtifactIDArrayBoundsUnchanged(t *testing.T) {
+	for _, method := range []string{"artifact.mutate", "artifact.type.publish"} {
+		t.Run(method, func(t *testing.T) {
+			for _, count := range []int{1024, 1025} {
+				_, ids := changeRevisionFixture(count)
+				params := paramFixtures()[method]
+				params["parents"] = ids
+				request := obj("protocol", "hn.extension/1", "request_id", "r", "method", method, "params", params)
+				_, err := InspectMessage(encode(request), "request", "", "")
+				if count == 1024 {
+					if err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					requireCode(t, err, "resource_limit")
+				}
+			}
+		})
+	}
+}
+
 func TestProtocolAllTypedMethods(t *testing.T) {
 	for method, params := range paramFixtures() {
 		t.Run(method, func(t *testing.T) {
