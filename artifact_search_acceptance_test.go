@@ -71,6 +71,7 @@ func TestArtifactSearchPublicCLI(t *testing.T) {
 	for _, args := range [][]string{{"--literal", "é"}, {"--regex", `needle[42]`}, {"--regex", `(?s)Revision data.*雪`}, {"--literal", "missing-token"}} {
 		artifactSearchWant(t, artifactSearchCall(f, "", append(args, "--limit", "200")...))
 	}
+	artifactSearchWant(t, artifactSearchCall(f, "", "--regex", strings.Repeat("😀", 1024), "--limit", "1"))
 	f.unchanged(before)
 	// Generic structured data and public type metadata have the same behavior
 	// for unrelated inventory and charter-like application names.
@@ -166,12 +167,21 @@ func TestArtifactSearchEntireSelectionBudgetCLI(t *testing.T) {
 	f := artifactCLI(t)
 	schema := revisionEvent(f.publish(artifactStoreType, "type", ""))
 	pattern := strings.Repeat("a", 4094) // Exactly 4096 compiled instructions.
-	id := revisionEvent(revisionCall(f, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, pattern)), "early-match", ""))
+	// Independent frozen public text accounting: two full IDs, type, shape,
+	// actor, exact schema, title, content and canonical fields. 16384 bytes at
+	// 4096 instructions is exactly 67108864; a new revision adds just one byte.
+	overhead := 2*71 + len("example.test/note") + len("document") + len(f.actor) + len(schema) + len("Revision data") + len("{}")
+	content := pattern + strings.Repeat("b", 16384-overhead-len(pattern))
+	id := revisionEvent(revisionCall(f, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, content)), "early-match", ""))
 	artifactSearchWant(t, artifactSearchCall(f, "", "--regex", pattern, "--limit", "1"), id)
+	revisionCall(f, "revise", revisionInput(t, id, []string{id}, revisionPayload(schema, content+"b")), "work-one-over", "")
+	before := f.snapshot()
+	artifactSearchCall(f, "resource_limit", "--regex", pattern, "--limit", "1")
+	f.unchanged(before)
 	// A non-matching record alone exhausts work. It must not be hidden by the
 	// first matching page, and the complete error envelope contains no results.
 	revisionCall(f, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, strings.Repeat("b", 17000))), "late-expensive", "")
-	before := f.snapshot()
+	before = f.snapshot()
 	artifactSearchCall(f, "resource_limit", "--regex", pattern, "--limit", "1")
 	artifactSearchWant(t, artifactSearchCall(f, "", "--literal", pattern, "--limit", "1"), id)
 	f.unchanged(before)
@@ -183,6 +193,23 @@ func TestArtifactSearchEntireSelectionBudgetCLI(t *testing.T) {
 	before = f.snapshot()
 	artifactSearchWant(t, artifactSearchCall(f, "", "--type", "other.test/note", "--regex", pattern, "--limit", "1"), otherID)
 	artifactSearchCall(f, "resource_limit", "--regex", pattern, "--limit", "1")
+	f.unchanged(before)
+}
+
+func TestArtifactSearchOversizedPageCLI(t *testing.T) {
+	f := artifactCLI(t)
+	schema := revisionEvent(f.publish(artifactStoreType, "type", ""))
+	content := "complete-large-state " + strings.Repeat("x", 900000)
+	for i := 0; i < 5; i++ {
+		revisionCall(f, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, content)), fmt.Sprint("large-", i), "")
+	}
+	before := f.snapshot()
+	artifactSearchCall(f, "resource_limit", "--literal", "complete-large-state", "--limit", "200")
+	page := artifactPage(t, artifactSearchCall(f, "", "--literal", "complete-large-state", "--limit", "1"))
+	item := page["items"].([]any)[0].(map[string]any)
+	if item["state"].(map[string]any)["content"] != content || page["next_cursor"] == nil {
+		t.Fatal("page silently truncated state or matches")
+	}
 	f.unchanged(before)
 }
 
