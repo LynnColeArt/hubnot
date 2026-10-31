@@ -215,7 +215,7 @@ func projectExpectedState(family, id string, expected []string) (json.RawMessage
 	if err != nil {
 		return nil, err
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +336,7 @@ func projectItemAdd(args []string) (any, error) {
 		}
 	}
 	if state.ProjectRevision == "" {
-		cat, err := BuildResourceCatalog(events)
+		cat, err := buildGovernedResourceCatalog(events)
 		if err != nil {
 			return nil, err
 		}
@@ -402,7 +402,7 @@ func projectItemList(args []string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	cat, err := BuildResourceCatalog(events)
+	cat, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return nil, err
 	}
