@@ -106,6 +106,8 @@ No other WP owns these paths. Existing foundation surfaces are dependencies, not
 **Implementation guidance**:
 Before mutation, durably record actual selected actor, protocol, canonical repository, key and complete immutable typed request digest including schema/parents/content. Keep private descriptor outside public refs and exports; grants must precede this stage in callers.
 
+Consume and verify the already-live WP05 mutation-attempt and strict eleven-field intent boundary, also used by WP06 successors. Do not create a second persistence/publication implementation or modify earlier owners. This package exposes the read-only operation/status surface and proves restart/recovery behavior through those same live callers. Status classification must not create an operation lock, initialize/read a signer unnecessarily, repair private state, or mistake verification/repository failure for public absence.
+
 **Observable acceptance**:
 Journal failure leaves no published mutation; changed request using the same actor/key refuses before mutation.
 
