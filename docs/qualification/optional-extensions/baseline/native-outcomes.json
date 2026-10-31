@@ -1,0 +1,563 @@
+{
+  "current_native_journeys": [
+    {
+      "covers": "init, issue create/read/revise/comment/conflict",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestOperationalRichIssues/Consumer",
+        "TestOperationalRichIssues/HumanLifecycleAndReplay",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/0",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/1",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/2",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/3",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/4",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/5",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/6",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/7",
+        "TestOperationalRichIssues/StrictJSONAndRefInvariants/8"
+      ],
+      "source_file": "issue_acceptance_test.go",
+      "source_file_sha256": "5d74505c04a737b787a89a4f6c955b16da2932ee09fcc07cf21a58dcbc824967",
+      "test": "TestOperationalRichIssues"
+    },
+    {
+      "covers": "issue local Git exchange",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestOperationalRichIssueReplication/ConflictArrivalReverse=false",
+        "TestOperationalRichIssueReplication/ConflictArrivalReverse=true",
+        "TestOperationalRichIssueReplication/DistributedGraphCycles",
+        "TestOperationalRichIssueReplication/ExactSupplierAdmissionRecovery"
+      ],
+      "source_file": "issue_acceptance_test.go",
+      "source_file_sha256": "5d74505c04a737b787a89a4f6c955b16da2932ee09fcc07cf21a58dcbc824967",
+      "test": "TestOperationalRichIssueReplication"
+    },
+    {
+      "covers": "public project/item, discussion/reply, memory recall/grep, selected public bundle exchange and archive import/export",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [],
+      "source_file": "beta_scale_test.go",
+      "source_file_sha256": "60cd60b0321b837adbab9959cf6b3e082ccd02647b738d0eacf5ea5b13b29f33",
+      "test": "TestBetaScaleSmoke"
+    },
+    {
+      "covers": "inert native workflow definitions without provider",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [],
+      "source_file": "workflow_commands_test.go",
+      "source_file_sha256": "9715660df9857fad3bef90a0a9af136c1ed1d38a4b2ae3b2f342cf493e3eab06",
+      "test": "TestWorkflowPublicCLIWithoutProvider"
+    },
+    {
+      "covers": "public record/recall/grep/lifecycle and authority semantics",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [],
+      "source_file": "memory_acceptance_test.go",
+      "source_file_sha256": "1248b77052b3cc8f65c5265bf24b22ba7ad5b17fcf0ca3901dfd6e12dfdb6d39",
+      "test": "TestOperationalAgentMemory"
+    },
+    {
+      "covers": "public proposal, review, CI, decision and merge",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestOperationalSelfHostingAlpha/max-attachment-bytes",
+        "TestOperationalSelfHostingAlpha/max-events",
+        "TestOperationalSelfHostingAlpha/max-object-bytes",
+        "TestOperationalSelfHostingAlpha/max-objects",
+        "TestOperationalSelfHostingAlpha/max-total-bytes"
+      ],
+      "source_file": "operational_acceptance_test.go",
+      "source_file_sha256": "bcfdb8a8ea742f39bca35e1bbcf463c512bd132cde859a59b27cc607ae9b3bf6",
+      "test": "TestOperationalSelfHostingAlpha"
+    },
+    {
+      "covers": "public governed workflow, unsafe-host/default-off refusals, import/export and independent reader",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestPortableCollaborationIntegratedPublicVariants/tags=",
+        "TestPortableCollaborationIntegratedPublicVariants/tags=noforge",
+        "TestPortableCollaborationIntegratedPublicVariants/tags=nogithub"
+      ],
+      "source_file": "portable_collaboration_acceptance_test.go",
+      "source_file_sha256": "755fbc2c870fc168636e7b335a6c5fae8be850b0a658cadad4a789ddb1b31e59",
+      "test": "TestPortableCollaborationIntegratedPublicVariants"
+    },
+    {
+      "covers": "standard/combined native-only admission, visibility, moderation, unsafe-host refusals and exact interrupted operation recovery",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestBetaContributionPublicVariants/native-only",
+        "TestBetaContributionPublicVariants/native-only/concurrent-moderation-revocation-and-disable",
+        "TestBetaContributionPublicVariants/native-only/contributor-maintainer-keyless-observer",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/receive/corrupt-retained",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/receive/durable",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/receive/missing-retained",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/restore-selected/corrupt-retained",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/restore-selected/durable",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/restore-selected/missing-retained",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/restore-unselected/corrupt-retained",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/restore-unselected/durable",
+        "TestBetaContributionPublicVariants/native-only/interrupted-status-with-source-fault-fixture/restore-unselected/missing-retained",
+        "TestBetaContributionPublicVariants/native-only/signed-spam-and-durable-aggregate-accounting",
+        "TestBetaContributionPublicVariants/standard",
+        "TestBetaContributionPublicVariants/standard/concurrent-moderation-revocation-and-disable",
+        "TestBetaContributionPublicVariants/standard/contributor-maintainer-keyless-observer",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/receive/corrupt-retained",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/receive/durable",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/receive/missing-retained",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/restore-selected/corrupt-retained",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/restore-selected/durable",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/restore-selected/missing-retained",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/restore-unselected/corrupt-retained",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/restore-unselected/durable",
+        "TestBetaContributionPublicVariants/standard/interrupted-status-with-source-fault-fixture/restore-unselected/missing-retained",
+        "TestBetaContributionPublicVariants/standard/signed-spam-and-durable-aggregate-accounting"
+      ],
+      "source_file": "beta_contribution_acceptance_test.go",
+      "source_file_sha256": "23d552723175c64efd97ac2f3b78002b33b9b8730f92b6a6eb717ae62d4861f9",
+      "test": "TestBetaContributionPublicVariants"
+    },
+    {
+      "covers": "public/private recovery and refusal ordering",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestBetaRecoveryJourneys/native-only",
+        "TestBetaRecoveryJourneys/native-only/divergent",
+        "TestBetaRecoveryJourneys/native-only/divergent/actor-refusal",
+        "TestBetaRecoveryJourneys/native-only/divergent/memory-refusal",
+        "TestBetaRecoveryJourneys/native-only/explicit-role-amendment",
+        "TestBetaRecoveryJourneys/native-only/linked-worktree-boundary",
+        "TestBetaRecoveryJourneys/native-only/lost-sole-authority",
+        "TestBetaRecoveryJourneys/native-only/missing",
+        "TestBetaRecoveryJourneys/native-only/missing/actor-refusal",
+        "TestBetaRecoveryJourneys/native-only/missing/memory-refusal",
+        "TestBetaRecoveryJourneys/native-only/stale",
+        "TestBetaRecoveryJourneys/native-only/stale/actor-refusal",
+        "TestBetaRecoveryJourneys/native-only/stale/memory-refusal",
+        "TestBetaRecoveryJourneys/native-only/unsafe-private-state",
+        "TestBetaRecoveryJourneys/standard",
+        "TestBetaRecoveryJourneys/standard/divergent",
+        "TestBetaRecoveryJourneys/standard/divergent/actor-refusal",
+        "TestBetaRecoveryJourneys/standard/divergent/memory-refusal",
+        "TestBetaRecoveryJourneys/standard/explicit-role-amendment",
+        "TestBetaRecoveryJourneys/standard/linked-worktree-boundary",
+        "TestBetaRecoveryJourneys/standard/lost-sole-authority",
+        "TestBetaRecoveryJourneys/standard/missing",
+        "TestBetaRecoveryJourneys/standard/missing/actor-refusal",
+        "TestBetaRecoveryJourneys/standard/missing/memory-refusal",
+        "TestBetaRecoveryJourneys/standard/stale",
+        "TestBetaRecoveryJourneys/standard/stale/actor-refusal",
+        "TestBetaRecoveryJourneys/standard/stale/memory-refusal",
+        "TestBetaRecoveryJourneys/standard/unsafe-private-state"
+      ],
+      "source_file": "beta_recovery_test.go",
+      "source_file_sha256": "9105912b855c78f797ac33ea858cf2ffa4ea1739c64ca35e1f71e00135915bf0",
+      "test": "TestBetaRecoveryJourneys"
+    },
+    {
+      "covers": "released signed golden bytes, IDs, refs, continuation and malicious future-version refusal",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestBetaReleasedWriterCompatibility/native-only",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.1-dev",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.1-dev/future-protocol",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.1-dev/future-resource",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.2-dev",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.2-dev/future-protocol",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.2-dev/future-resource",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.2-dev/hn.project-archive/999",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.2-dev/hn.project-snapshot/999",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.3-dev",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.3-dev/future-protocol",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.3-dev/future-resource",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.3-dev/hn.project-archive/999",
+        "TestBetaReleasedWriterCompatibility/native-only/0.0.3-dev/hn.project-snapshot/999",
+        "TestBetaReleasedWriterCompatibility/standard",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.1-dev",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.1-dev/future-protocol",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.1-dev/future-resource",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.2-dev",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.2-dev/future-protocol",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.2-dev/future-resource",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.2-dev/hn.project-archive/999",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.2-dev/hn.project-snapshot/999",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.3-dev",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.3-dev/future-protocol",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.3-dev/future-resource",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.3-dev/hn.project-archive/999",
+        "TestBetaReleasedWriterCompatibility/standard/0.0.3-dev/hn.project-snapshot/999"
+      ],
+      "source_file": "beta_compatibility_test.go",
+      "source_file_sha256": "fa47966baf95980c66650119e886a70c8d1cedde5de247e203fe73644774a9ac",
+      "test": "TestBetaReleasedWriterCompatibility"
+    },
+    {
+      "covers": "all three released-writer corpora through actual standard and combined native-only public readers",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestExtensionDefaultBaselineHistorical/native-only",
+        "TestExtensionDefaultBaselineHistorical/native-only/0.0.1-dev",
+        "TestExtensionDefaultBaselineHistorical/native-only/0.0.2-dev",
+        "TestExtensionDefaultBaselineHistorical/native-only/0.0.3-dev",
+        "TestExtensionDefaultBaselineHistorical/standard",
+        "TestExtensionDefaultBaselineHistorical/standard/0.0.1-dev",
+        "TestExtensionDefaultBaselineHistorical/standard/0.0.2-dev",
+        "TestExtensionDefaultBaselineHistorical/standard/0.0.3-dev"
+      ],
+      "source_file": "extension_default_baseline_test.go",
+      "source_file_sha256": "0c3445d1c1809f0910e5fae402630c669cdf3930e4964e682ac8ca1bf901a902",
+      "test": "TestExtensionDefaultBaselineHistorical"
+    },
+    {
+      "covers": "native success/state control in full race; registry/start/connect exact controls in frozen focused strace invocation",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [
+        "TestExtensionDefaultBaselineForbiddenEffects/native-only",
+        "TestExtensionDefaultBaselineForbiddenEffects/standard"
+      ],
+      "source_file": "extension_default_baseline_test.go",
+      "source_file_sha256": "0c3445d1c1809f0910e5fae402630c669cdf3930e4964e682ac8ca1bf901a902",
+      "test": "TestExtensionDefaultBaselineForbiddenEffects"
+    },
+    {
+      "covers": "direct corrupt-ID and corrupt physical-inventory refusals",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [],
+      "source_file": "replication_borrow_test.go",
+      "source_file_sha256": "c53eb01c43bb4e94582e9ec2deb1b73e9b787d28f77aa3e12e87db03d5159eca",
+      "test": "TestGitObjectsPresentCorruptObjectFailsClosed"
+    },
+    {
+      "covers": "healthy present/absent physical inventory with unchanged storage/no fetch",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [],
+      "source_file": "replication_borrow_test.go",
+      "source_file_sha256": "c53eb01c43bb4e94582e9ec2deb1b73e9b787d28f77aa3e12e87db03d5159eca",
+      "test": "TestGitStoredObjectsPresentHealthyInventory"
+    },
+    {
+      "covers": "promised absence, present commit, noncanonical-ID refusal, unchanged storage and no fetch",
+      "observed": "pass in full uncached race suite",
+      "passed_subtests": [],
+      "source_file": "replication_borrow_test.go",
+      "source_file_sha256": "c53eb01c43bb4e94582e9ec2deb1b73e9b787d28f77aa3e12e87db03d5159eca",
+      "test": "TestGitObjectsPresentMissingPromisedBlobDoesNotLazyFetch"
+    }
+  ],
+  "detector": {
+    "actual_instrument": "/usr/bin/strace",
+    "controls": [
+      "registry-read",
+      "module-start",
+      "provider-connect",
+      "extension-state-write"
+    ],
+    "focused_observation": "pass; exact-cause negative controls observed",
+    "future_module_matrix": "pending host implementation",
+    "native_cases": 6,
+    "test": "TestExtensionDefaultBaselineForbiddenEffects",
+    "trap": "provisional repo path; parameterized, requires actual WP02/WP13 path rebind in WP24",
+    "variants": [
+      "standard",
+      "nogithub,noforge"
+    ]
+  },
+  "journey_execution": {
+    "assertions": "Original public-boundary assertions and refusal state checks retained; exact command fixtures/expected semantics are bound by listed test-source digests. JSON event log retained externally. These are implementer automated observations, not independent user adoption.",
+    "race_log_sha256": "235e804818cd6a7054ed1d25f25c4ad2fc63ea9584e97866549d42a545d47b2c",
+    "source_commit": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c",
+    "source_tree": "126dc1374f6c34cb310e68f1cae3d860ea45bb46"
+  },
+  "measurement_cycle_2": {
+    "controls_sha256": "741901b14e0087d354ba3eb3511e7bcc08c42cafdb9cb3c97f3ef5c1a89b086e",
+    "launcher_sha256": "3b11dec50514a8473e9f6efa7a34d584d0657538c09988f61b72d38ad4991a10",
+    "metrics_sha256": "860228199811f08e88454cb87378a781e4c41b38c1ebe53e27fbc8417890d6ee",
+    "observations": 540,
+    "original_full_Go_evidence_reused": true,
+    "samples_per_case_variant": 30,
+    "source_commit": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c",
+    "variant_binary_hashes": {
+      "native-only": "2fcae86be7aebe34bc57a59b85626528a6003a46dc730149af47e316f7383542",
+      "standard": "4594590270657b1ce3274964a6d6e822ede58c02c570eb902ac1192e2344ef81"
+    }
+  },
+  "measurement_scope": "The 9 timing cases are frozen historical read commands only, remeasured in cycle2 using validated native GNU Time RSS and a monotonic elapsed bracket including wrapper overhead. These do not replace live mutation/conflict/exchange/governance/refusal tests.",
+  "release_binary_observations": [
+    {
+      "argv": [
+        "issue",
+        "show",
+        "sha256:1415cf2d081520783c3b91acd6d732f7ef3bf4abdb49824c83cc6554622eeb19",
+        "--json"
+      ],
+      "case": "issue",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "55ba70031309f9aa911d4291fa97be13bb7edbcd23458d6b31ac9aa4504d9849",
+      "observed": "pass",
+      "observed_output_sha256": "e62a901432bc1169f5427dd1cb5123cfd89c1e9f4bdd0bdb287213b8bbce4e96",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "issue",
+        "show",
+        "sha256:1415cf2d081520783c3b91acd6d732f7ef3bf4abdb49824c83cc6554622eeb19",
+        "--json"
+      ],
+      "case": "issue",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "55ba70031309f9aa911d4291fa97be13bb7edbcd23458d6b31ac9aa4504d9849",
+      "observed": "pass",
+      "observed_output_sha256": "e62a901432bc1169f5427dd1cb5123cfd89c1e9f4bdd0bdb287213b8bbce4e96",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "project",
+        "show",
+        "sha256:0df42c730cf73c66020ab1affd6fabac573b9f73b8183f5aa3dce9c6fc0194a2",
+        "--json"
+      ],
+      "case": "project",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "b29a34c1e2cd4f4c4cd51fc00fe102924104db4470e8add9b10c2006cd415561",
+      "observed": "pass",
+      "observed_output_sha256": "17644fffad07c2cf36c4fbf1c554304e1ab9d9ebf8d3997c596300c93ecd9b0f",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "project",
+        "show",
+        "sha256:0df42c730cf73c66020ab1affd6fabac573b9f73b8183f5aa3dce9c6fc0194a2",
+        "--json"
+      ],
+      "case": "project",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "b29a34c1e2cd4f4c4cd51fc00fe102924104db4470e8add9b10c2006cd415561",
+      "observed": "pass",
+      "observed_output_sha256": "17644fffad07c2cf36c4fbf1c554304e1ab9d9ebf8d3997c596300c93ecd9b0f",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "project-item",
+        "show",
+        "sha256:c57ea6f7dd047e5b4fffaf797624fb24bda4f089d8bfb33dfce2f20bc27250fc",
+        "--json"
+      ],
+      "case": "project-item",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "e203413ed453e243a30fa69ffd3afa40e083fd39410931339ea8cc26aa91c349",
+      "observed": "pass",
+      "observed_output_sha256": "7b8563deb299d3ec533d81c7e8d5e4909981516ba2dee21c06b8247a6497b384",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "project-item",
+        "show",
+        "sha256:c57ea6f7dd047e5b4fffaf797624fb24bda4f089d8bfb33dfce2f20bc27250fc",
+        "--json"
+      ],
+      "case": "project-item",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "e203413ed453e243a30fa69ffd3afa40e083fd39410931339ea8cc26aa91c349",
+      "observed": "pass",
+      "observed_output_sha256": "7b8563deb299d3ec533d81c7e8d5e4909981516ba2dee21c06b8247a6497b384",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "discussion",
+        "show",
+        "sha256:1def7dd76819968143fbc5dda86a7934ef89919f081ed24aa03522231457397c",
+        "--json"
+      ],
+      "case": "discussion",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "23fd83749dc202fa3466168582050ad4e5d75f10f0637cefa36606deb9a995a8",
+      "observed": "pass",
+      "observed_output_sha256": "a332b2db6b26812829bfa275e9356088ba4f310fe19b5ce3cad159b69684f9d6",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "discussion",
+        "show",
+        "sha256:1def7dd76819968143fbc5dda86a7934ef89919f081ed24aa03522231457397c",
+        "--json"
+      ],
+      "case": "discussion",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "23fd83749dc202fa3466168582050ad4e5d75f10f0637cefa36606deb9a995a8",
+      "observed": "pass",
+      "observed_output_sha256": "a332b2db6b26812829bfa275e9356088ba4f310fe19b5ce3cad159b69684f9d6",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "discussion-reply",
+        "show",
+        "sha256:b2228d3c46b49185b6ae9e7e34097fd43412bddcbc06c16ecf896901bb8d6f34",
+        "--json"
+      ],
+      "case": "discussion-reply",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "c828daabf2921a34883e95d7e5a9c7c8fe6574b4c0fd6489db2616d40146c011",
+      "observed": "pass",
+      "observed_output_sha256": "5b5bef9c852610cd6332df1028ad081abba8cba797399abdb54385e38c28898a",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "discussion-reply",
+        "show",
+        "sha256:b2228d3c46b49185b6ae9e7e34097fd43412bddcbc06c16ecf896901bb8d6f34",
+        "--json"
+      ],
+      "case": "discussion-reply",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "c828daabf2921a34883e95d7e5a9c7c8fe6574b4c0fd6489db2616d40146c011",
+      "observed": "pass",
+      "observed_output_sha256": "5b5bef9c852610cd6332df1028ad081abba8cba797399abdb54385e38c28898a",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "workflow",
+        "show",
+        "sha256:7b69446a595afa6262c6b34bc4880f28e7ab9d0a15bfae422cae9a53561742a0",
+        "--json"
+      ],
+      "case": "workflow",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "6052c3465b71726b754bb32a75cbe1664695f5bff96b30efa9216a6730fd6db6",
+      "observed": "pass",
+      "observed_output_sha256": "0362dc7ea12647d5762d97f6ec68fa50625617b8e6db03d55971afa2d249711f",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "workflow",
+        "show",
+        "sha256:7b69446a595afa6262c6b34bc4880f28e7ab9d0a15bfae422cae9a53561742a0",
+        "--json"
+      ],
+      "case": "workflow",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "6052c3465b71726b754bb32a75cbe1664695f5bff96b30efa9216a6730fd6db6",
+      "observed": "pass",
+      "observed_output_sha256": "0362dc7ea12647d5762d97f6ec68fa50625617b8e6db03d55971afa2d249711f",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "memory",
+        "show",
+        "sha256:f58ae62c0cd34abcd6e9b2bd72e71be4325ef9a008e6a94f5d7684d7758d9936",
+        "--json"
+      ],
+      "case": "memory",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "807cc2a09edf28a2ea6e4cc090e64892f011609e3155b7cb3a1ff808e3ee1853",
+      "observed": "pass",
+      "observed_output_sha256": "4b8c26314b1962fea5f7ed40423ccd37b19d0bf7bb9864d26b468536ee06260a",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "memory",
+        "show",
+        "sha256:f58ae62c0cd34abcd6e9b2bd72e71be4325ef9a008e6a94f5d7684d7758d9936",
+        "--json"
+      ],
+      "case": "memory",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "807cc2a09edf28a2ea6e4cc090e64892f011609e3155b7cb3a1ff808e3ee1853",
+      "observed": "pass",
+      "observed_output_sha256": "4b8c26314b1962fea5f7ed40423ccd37b19d0bf7bb9864d26b468536ee06260a",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "memory",
+        "recall",
+        "--at",
+        "HEAD",
+        "--include-untrusted",
+        "--lifecycle",
+        "all",
+        "--json"
+      ],
+      "case": "recall",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "af2d099b5f40ea7cd7dab28f32b038439352a942bb68fef60d3d11e85df5fbf6",
+      "observed": "pass",
+      "observed_output_sha256": "b016df31d06108fe0f21047345874f6629de73aac00621778d083bbed269373f",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "memory",
+        "recall",
+        "--at",
+        "HEAD",
+        "--include-untrusted",
+        "--lifecycle",
+        "all",
+        "--json"
+      ],
+      "case": "recall",
+      "expected": "exact historical semantic subset",
+      "input_sha256": "af2d099b5f40ea7cd7dab28f32b038439352a942bb68fef60d3d11e85df5fbf6",
+      "observed": "pass",
+      "observed_output_sha256": "b016df31d06108fe0f21047345874f6629de73aac00621778d083bbed269373f",
+      "variant": "native-only"
+    },
+    {
+      "argv": [
+        "memory",
+        "grep",
+        "--at",
+        "HEAD",
+        "--include-untrusted",
+        "--lifecycle",
+        "all",
+        "--json",
+        "[Hh]istorical"
+      ],
+      "case": "grep",
+      "expected": "two historical matches, untruncated",
+      "input_sha256": "de41ff6836b5b8ecafb35f7d0ce99154f270a535f58023240b340bd523e7101e",
+      "observed": "pass",
+      "observed_output_sha256": "da695221e819f3b8837baba1695878808e490ea19a3d11961162a832a89d6031",
+      "variant": "standard"
+    },
+    {
+      "argv": [
+        "memory",
+        "grep",
+        "--at",
+        "HEAD",
+        "--include-untrusted",
+        "--lifecycle",
+        "all",
+        "--json",
+        "[Hh]istorical"
+      ],
+      "case": "grep",
+      "expected": "two historical matches, untruncated",
+      "input_sha256": "de41ff6836b5b8ecafb35f7d0ce99154f270a535f58023240b340bd523e7101e",
+      "observed": "pass",
+      "observed_output_sha256": "da695221e819f3b8837baba1695878808e490ea19a3d11961162a832a89d6031",
+      "variant": "native-only"
+    }
+  ],
+  "source_commit": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c",
+  "source_tree": "126dc1374f6c34cb310e68f1cae3d860ea45bb46"
+}
