@@ -81,7 +81,7 @@ func TestExtensionFrameInspectCLI(t *testing.T) {
 	inspect := exec.CommandContext(ctx, binary, "extension", "inspect", "--json")
 	inspect.Dir = repo
 	inspect.Env = env
-	output, inspectErr := inspect.CombinedOutput()
+	output, inspectErr := inspect.Output()
 	var registryResult extensionCLIResult
 	if ctx.Err() != nil || inspectErr == nil || json.Unmarshal(output, &registryResult) != nil || registryResult.OK || registryResult.Data != nil || registryResult.Error.Origin != "host" || registryResult.Error.Code != "invalid_input" || registryResult.Error.Recovery != "do_not_retry" {
 		t.Fatalf("malformed registry control: %v %s", inspectErr, output)
