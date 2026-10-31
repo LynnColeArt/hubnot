@@ -405,10 +405,15 @@ func TestInventoryStandalonePublicJourney(t *testing.T) {
 	dst := artifactCLI(t)
 	dstConfig := inventoryConfig(dst)
 	dst.git("remote", "add", "public", remote)
+	// Select the complete known final public model in one transaction. A
+	// single earlier converted record can select an old B dependency prefix
+	// after the shared remote has all three concurrent edits, which must refuse
+	// to rewind. These are the original explicit IDs, never latest-head guesses.
+	selection := []string{"--id", converted["item"], "--id", converted["maintenance"], "--id", converted["stock"], "--json"}
+	a.call("", "", append([]string{"artifact", "push", "--remote", "public"}, selection...)...)
+	dst.call("", "", append([]string{"artifact", "fetch", "--remote", "public"}, selection...)...)
 	for _, model := range []string{"item", "maintenance", "stock"} {
 		id := converted[model]
-		inventoryRemote(a.artifactCLIFixture, "push", id)
-		inventoryRemote(dst, "fetch", id)
 		if !reflect.DeepEqual(closureItems(a.artifactCLIFixture, id), closureItems(dst, id)) {
 			t.Fatal("public signed closure changed", model)
 		}
