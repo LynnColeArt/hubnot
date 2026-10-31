@@ -1,7 +1,7 @@
 {
-  "event_count": 299,
-  "last_event_id": "01M69K7SPFKZDFZ84B5N9MPPYA",
-  "materialized_at": "2026-10-31T18:23:34.607139+00:00",
+  "event_count": 300,
+  "last_event_id": "01M69K8V12FY4WK142AJ1V6210",
+  "materialized_at": "2026-10-31T18:24:08.738596+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 2,
+    "for_review": 1,
     "in_progress": 2,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 3
   },
   "work_packages": {
@@ -445,12 +445,12 @@
     "WP13": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 4,
-      "lane": "for_review",
-      "last_event_id": "01M69K6SVZ58465KW253VHXTMR",
-      "last_transition_at": "2026-10-31T18:23:02.015839+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M69K8V12FY4WK142AJ1V6210",
+      "last_transition_at": "2026-10-31T18:24:08.738596+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Root codex normal blocked-to-in_progress recovery: allocator planning-merge blocker resolved by fa420df6 in canonical lane-l, recorded d33 ancestry and exact approved source verified. No implementation yet; canonical implement action will resume and establish codex implementer-ivan identity before dispatch.",
@@ -472,9 +472,9 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 1455160,
+      "shell_pid_created_at": "1793457455.46",
       "subtasks": {
         "T052": "done",
         "T053": "done",
