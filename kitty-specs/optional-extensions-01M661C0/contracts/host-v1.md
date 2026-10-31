@@ -22,13 +22,23 @@ authority. Manifest inspection reads bounded JSON and starts/probes nothing.
 
 User-local registry: os.UserConfigDir()/hubnot/extensions/registry.json.
 Its object is {"protocol":"hn.extension-registry/1","registrations":[REG]}.
-REG has exactly registration_id, manifest, manifest_digest, executable,
-executable_digest, argv. executable is the operator-selected physically resolved
-absolute regular executable path, not a shell; argv is a UTF-8 string array
-with no NUL bytes. A manifest
-does not choose either. Digests are D(C(manifest)) and D(executable bytes).
+REG has exactly registration_id, registration_instance, manifest, manifest_digest,
+executable, executable_digest, argv. registration_instance is exactly 32 lower-case
+hex digits encoding 16 bytes from the operating system cryptographic random source.
+It is private local lifecycle state, never selected by a manifest or caller.
+executable is the operator-selected physically resolved absolute regular executable
+path, not a shell; argv is a UTF-8 string array with no NUL bytes. A manifest does
+not choose either. Digests are D(C(manifest)) and D(executable bytes).
 registration_id = D(C(object containing argv, executable, executable_digest,
-manifest_digest)). Re-resolve/re-hash before launch; symlink/replacement/content or
+manifest_digest, registration_instance)). An exact duplicate of an existing
+registration preserves its registration_instance and registration_id. A new
+registration, including re-registration after removal with identical manifest,
+executable and argv, draws a fresh registration_instance; never reconstruct it
+from the module descriptor or reuse a removed instance. Random-source failure
+returns host/repository_error with recovery=do_not_retry before registry or
+enablement replacement. A malformed/missing instance or a registration_id that
+does not match this preimage makes the private registry invalid; do not synthesize
+or repair it. Re-resolve/re-hash before launch; symlink/replacement/content or
 argv/manifest changes invalidate the registration binding and require re-enablement.
 Do not execute the binary to inspect its version.
 
@@ -470,7 +480,7 @@ oversized complete state cannot be silently truncated.
 Host-origin codes are exactly denied_access, incompatible_version,
 unavailable_module, unsupported_capability, resource_limit, cancelled,
 uncertain_operation, checkpoint_invalidated, verification_failure, invalid_input,
-repository_error.
+not_found, repository_error.
 
 Native-origin codes observed in integrated issue/resource entry points are exactly
 actor_mismatch, admission_pending, admission_refused, ambiguous_id, concurrent_update,
@@ -543,6 +553,10 @@ No startup hook, background daemon, package downloader, shell argv bridge or imp
 provider sync. register/inspect/enable/disable/remove never execute a module;
 run alone launches. Removing registration revokes enablement and stops owned
 sessions through the same disable path; it never deletes signed artifacts.
+Enablement entries in other repositories may remain on disk, but name the removed
+registration_id and cannot authorize a new registration instance. Re-registering
+the same module therefore requires explicit enablement in every repository before
+it can run; no search of all repositories or restoration of old grants is implied.
 Management and parent run JSON use the artifact CLI success/error envelope;
 the registered MODULE's private stdin/stdout are the framed protocol. Parent hn
 stdout is one bounded management result, never duplicate module traffic or mixed
@@ -558,7 +572,9 @@ Management success data is closed:
   executable_digest,repository_id:ID|null,enabled:boolean,compatible:boolean,
   availability:"not_probed"|"unavailable",grants:[Grant],
   status:"registered"|"missing"|"changed"|"incompatible"}],unsupported:[Unsupported]}.
-  inspect never launches; a missing explicit module is not_found.
+  inspect never launches; a missing explicit module returns host/not_found with
+  recovery=do_not_retry and operation=null. This is a management lookup miss, not
+  a native or artifact lookup failure.
 - enable/disable: {module_id,registration_id,repository_id,epoch,enabled,
   grants:[Grant],stopped_sessions:[SessionID],cleanup:"not_needed"|"verified"}.
   A new epoch also revokes prior sessions; success requires their verified cleanup.

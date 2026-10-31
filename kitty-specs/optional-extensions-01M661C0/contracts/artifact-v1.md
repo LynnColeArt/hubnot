@@ -364,3 +364,34 @@ JSON success is {"ok":true,"data":VALUE,"error":null}; failure has ok=false,data
 and the host error object defined in host-v1.md; exit 0 or 1 respectively. Human
 rendering is descriptive; machine contracts are the typed data in host-v1.md.
 No registry or specialized renderer is needed for these commands.
+
+### 7.1 Inert envelope-validation slice
+
+The WP03 envelope utility is a read-only input-verification slice, distinct from
+store-backed `hn artifact inspect --id`. Its command grammar is:
+
+- `hn artifact envelope validate --input FILE|- --signature RAW_BASE64 [--previous-input FILE --previous-signature RAW_BASE64] [--json]`
+- `hn artifact envelope inspect --input FILE|- --signature RAW_BASE64 [--previous-input FILE --previous-signature RAW_BASE64] [--json]`
+
+RAW_BASE64 is the canonical unpadded native Base64 encoding of the 64-byte public
+signature; these commands do not receive a signing key. Input is the exact bounded
+canonical payload bytes. Both predecessor flags must occur together or neither;
+two simultaneous stdin selections refuse invalid_input. Each payload independently
+has the envelope's 1MiB bound. Existing frozen parse/signature/error rules apply.
+
+The ordinary section7 success/error JSON wrapper and exit codes apply. Validate
+success data is exactly {id:ID,actor:Actor,kind:Kind,integrity:"verified",
+semantic_validation:"not_checked",continuity:Continuity}. Inspect adds the exact
+decoded `envelope` object to those fields. Continuity is "genesis" for sequence1
+with previous="", "predecessor_verified" after an explicitly supplied verified
+adjacent same-actor/same-stream predecessor matches sequence and previous ID, and
+"not_checked" when a non-genesis envelope has no supplied predecessor. Genesis
+and predecessor_verified do not assert uniqueness or completeness of the whole
+actor history. Full contextual schema, record lineage, conflict and closure
+validation remains not_checked in this slice; integrity alone cannot admit data.
+
+The utility works without a module or registry and performs no signing, public
+publication/ref update or module startup. The existing native outer command-lock
+semantics, including selected-contribution private lock bookkeeping, remain intact;
+this utility does not introduce a lock bypass. Human rendering is descriptive;
+--json is the stable machine surface.
