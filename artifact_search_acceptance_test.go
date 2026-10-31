@@ -101,7 +101,7 @@ func TestArtifactSearchPublicCLI(t *testing.T) {
 	// for unrelated inventory and charter-like application names.
 	for _, name := range []string{"inventory.test/part", "planning.test/directive"} {
 		typeInput := strings.ReplaceAll(artifactStoreType, "example.test/note", name)
-		typeInput = strings.Replace(typeInput, `"properties":{}`, `"properties":{"label":{"type":"string"}}`, 1)
+		typeInput = strings.Replace(typeInput, `"properties":{}`, `"properties":{"label":{"type":"string","maxBytes":64}}`, 1)
 		typeID := revisionEvent(f.publish(typeInput, name+"-type", ""))
 		p := revisionPayload(typeID, "Same inert generic text")
 		p["type_id"], p["fields"] = name, map[string]any{"label": "part-雪"}
