@@ -548,7 +548,34 @@ func inventoryRemoveAndNative(t *testing.T, f *inventoryFixture, ids map[string]
 	inventoryGenericReads(t, f.artifactCLIFixture, ids)
 	f.call("", "", "issue", "open", "--operation", "inventory-native-issue", "--json", "Ordinary ticket after removal")
 	f.git("-c", "user.name=Inventory fixture", "-c", "user.email=inventory@example.test", "commit", "--allow-empty", "--quiet", "-m", "native anchor")
-	f.call("", "", "memory", "record", "--kind", "observation", "--at", "HEAD", "--applies", "exact", "--content", "Ordinary memory after removal", "--json")
+	// Native memory retains its own hn-memory/0 JSON envelope. Do not route
+	// it through the artifact/issue ok/data fixture or change native semantics.
+	nativeMemory := func(args ...string) map[string]any {
+		cmd := exec.Command(f.binary, args...)
+		cmd.Dir = f.repo
+		cmd.Env = operationalTestEnvironmentWith(f.home, f.overrides)
+		raw, err := cmd.Output()
+		var result map[string]any
+		if err != nil || json.Unmarshal(raw, &result) != nil || result["version"] != float64(0) {
+			t.Fatalf("native memory after actual removal: %v %s", err, raw)
+		}
+		return result
+	}
+	created := nativeMemory("memory", "record", "--kind", "observation", "--at", "HEAD", "--applies", "exact", "--content", "Ordinary memory after removal", "--json")
+	memoryID, ok := created["memoryId"].(string)
+	if !ok || !regexp.MustCompile(`^sha256:[0-9a-f]{64}$`).MatchString(memoryID) || created["actor"] != f.actor {
+		t.Fatal("native memory lost its original public identity", created)
+	}
+	beforeRead := f.snapshot()
+	shown := nativeMemory("memory", "show", memoryID, "--json")
+	envelope, envelopeOK := shown["envelope"].(map[string]any)
+	projection, projectionOK := shown["projection"].(map[string]any)
+	data, dataOK := projection["data"].(map[string]any)
+	if shown["memoryId"] != memoryID || !envelopeOK || envelope["protocol"] != "hn-memory/0" || envelope["actor"] != f.actor || !projectionOK || !dataOK || data["kind"] != "observation" || data["content"] != "Ordinary memory after removal" {
+		t.Fatal("native exact memory readback changed after removal", shown)
+	}
+	f.unchanged(beforeRead)
+	t.Log("native memory identity/readback after actual removal", memoryID)
 	if err := inventoryInactive(marker); err != nil {
 		t.Fatal(err)
 	}
