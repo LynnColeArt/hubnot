@@ -305,3 +305,9 @@ incomplete required closure refuse accepted transfer. They do not become empty
 success or relax native `hn/0`/`hn-memory/0` readers. Private identity keys, grants,
 registration, mutation intents and journals are excluded from the public inventory.
 Opaque file preservation is a separate explicitly selected exchange operation.
+
+The fixed custom limits are independent of saved native `hn replication select`
+selectors and budgets. A lower saved native budget still governs native sync;
+custom transfer neither loads nor changes that private selection. The custom
+ceilings above are stricter than the native default ceilings, without claiming to
+apply arbitrary lower native settings to a separate artifact ID selection.

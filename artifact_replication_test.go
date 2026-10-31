@@ -492,3 +492,47 @@ func TestArtifactGitDispatchedPushFailureIsUncertainCLI(t *testing.T) {
 		t.Fatal("rejecting remote control published", got)
 	}
 }
+
+func TestArtifactGitIndependentNativeSelectionBudgetCLI(t *testing.T) {
+	src, dst := artifactCLI(t), artifactCLI(t)
+	id := revisionEvent(src.publish(artifactStoreType, "schema", ""))
+	remote := filepath.Join(t.TempDir(), "public.git")
+	src.git("init", "--bare", "--quiet", remote)
+	src.git("remote", "add", "public", remote)
+	dst.git("remote", "add", "public", remote)
+	native := func(f *artifactCLIFixture, wantFailure bool, args ...string) string {
+		t.Helper()
+		cmd := exec.Command(f.binary, args...)
+		cmd.Dir = f.repo
+		cmd.Env = operationalTestEnvironment(f.home)
+		b, e := cmd.CombinedOutput()
+		if (e != nil) != wantFailure {
+			t.Fatalf("native command %v: %v %s", args, e, b)
+		}
+		return string(b)
+	}
+	native(src, false, "issue", "open", "Native budget control")
+	src.git("push", "--quiet", remote, actorRef(src.actor))
+	native(dst, false, "replication", "select", "public", "--actor", src.actor, "--max-objects", "1")
+	selection := filepath.Join(dst.repo, ".git", "hn", "replication", "selections", "cHVibGlj.json")
+	before, e := os.ReadFile(selection)
+	if e != nil {
+		t.Fatal(e)
+	}
+	src.call("", "", "artifact", "push", "--remote", "public", "--id", id, "--json")
+	dst.call("", "", "artifact", "fetch", "--remote", "public", "--id", id, "--json")
+	after, e := os.ReadFile(selection)
+	if e != nil || string(before) != string(after) {
+		t.Fatal("custom transport changed native selection", e)
+	}
+	result := native(dst, true, "sync", "public")
+	if !strings.Contains(result, "max-objects budget") {
+		t.Fatal("native lower budget was not enforced", result)
+	}
+	if got := dst.git("for-each-ref", "--format=%(refname)", acceptedActorRef("public", src.actor)); got != "" {
+		t.Fatal("native over-budget root promoted", got)
+	}
+	if !reflect.DeepEqual(closureItemIDs(t, closureItems(dst, id)), []string{id}) {
+		t.Fatal("native refusal altered custom accepted data")
+	}
+}
