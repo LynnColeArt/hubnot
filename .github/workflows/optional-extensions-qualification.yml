@@ -217,6 +217,8 @@ jobs:
           git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source-inputs.before.sha256"
           printf '%s\n' 'go test -race -c -o "$RUNNER_TEMP/qualification-harness" .' > "$evidence/harness-command.txt"
           go test -race -c -o "$RUNNER_TEMP/qualification-harness" .
+          "$RUNNER_TEMP/qualification-harness" -test.list '^TestExtensionPackageQualification$' > "$evidence/harness-required-tests.txt"
+          test "$(cat "$evidence/harness-required-tests.txt")" = TestExtensionPackageQualification
           shasum -a 256 "$RUNNER_TEMP/qualification-harness" > "$evidence/harness.sha256"
           go version -m "$RUNNER_TEMP/qualification-harness" > "$evidence/harness.buildinfo"
           printf 'TEST2JSON=%s/test2json\n' "$(go env GOTOOLDIR)" >> "$GITHUB_ENV"
@@ -359,6 +361,8 @@ jobs:
             printf '%s\n' 'qualification-harness -test.run ^TestExtensionPackageQualification$ -test.timeout 90m -hn-package-dir unpacked -hn-package-bundle candidate -hn-package-version 0.0.0-optional-extensions-qualification.1 -hn-package-compiler go1.26.4' > "$HN_WP25_EVIDENCE/command.txt"
             row=0
             "$TEST2JSON" -t -p hubnot "$RUNNER_TEMP/qualification-harness" -test.v=test2json -test.count=1 -test.timeout=90m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/qualification-assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.jsonl" || row=$?
+            if ! jq -s -e '([.[] | select(.Action == "pass" and .Test == "TestExtensionPackageQualification")] | length) == 1 and ([.[] | select(.Action == "fail" or .Action == "skip")] | length) == 0' "$HN_WP25_EVIDENCE/results.jsonl" > "$HN_WP25_EVIDENCE/execution-events-validated.txt"; then row=1; fi
+            test -s "$HN_WP25_EVIDENCE/$variant-row.json" || row=1
             printf '%s\n' "$row" > "$HN_WP25_EVIDENCE/exit"
             date -u > "$HN_WP25_EVIDENCE/finished"
             if [ "$row" != 0 ] || [ -e "$HN_WP25_GO_TRAP" ]; then result=1; fi
