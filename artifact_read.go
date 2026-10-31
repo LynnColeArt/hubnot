@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"hash"
 	"hubnot/internal/artifact"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -247,6 +248,70 @@ func loadArtifactHistory(ctx context.Context) (*artifactHistory, error) {
 	if e != nil {
 		return nil, e
 	}
+	h, e := loadArtifactHistoryFromSources(ctx, dir, sources)
+	if e != nil {
+		return nil, e
+	}
+	// Discovery owns the complete accepted selection, including additions/removals.
+	after, e := artifactSources(ctx, dir)
+	if e != nil {
+		return nil, e
+	}
+	a, _ := json.Marshal(sources)
+	b, _ := json.Marshal(after)
+	if !bytes.Equal(a, b) {
+		return nil, artifactFailure("concurrent_update", "artifact sources changed while reading")
+	}
+	h.Cut, e = h.sourceCut()
+	return h, e
+}
+
+// loadArtifactHistoryFromSources verifies only an explicit public source set in
+// an application-selected absolute Git directory. It does not discover sources,
+// select policy or borrow repository identity from cwd. Cut stays empty: this is
+// internal verification data, never a public accepted-view query result. A caller
+// must keep the supplied objects available while using its budgeted reader.
+func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []artifactSource) (*artifactHistory, error) {
+	if ctx.Err() != nil {
+		return nil, artifactFailure("cancelled", "artifact read cancelled")
+	}
+	if !filepath.IsAbs(dir) {
+		return nil, artifactFailure("repository_error", "explicit artifact Git directory must be absolute")
+	}
+	if len(sources) > artifactReadEntries {
+		return nil, artifactFailure("resource_limit", "selected artifact ref limit exceeded")
+	}
+	format, e := projectGit(ctx, dir, nil, 32, "rev-parse", "--show-object-format")
+	if e != nil {
+		if ctx.Err() != nil {
+			return nil, artifactFailure("cancelled", "artifact read cancelled")
+		}
+		return nil, artifactFailure("repository_error", "cannot identify explicit artifact Git repository")
+	}
+	oidLength := 40
+	switch strings.TrimSpace(string(format)) {
+	case "sha1":
+	case "sha256":
+		oidLength = 64
+	default:
+		return nil, artifactFailure("repository_error", "unsupported explicit artifact Git object format")
+	}
+	sources = append([]artifactSource{}, sources...)
+	sort.Slice(sources, func(i, j int) bool { return sources[i].Ref < sources[j].Ref })
+	for i, source := range sources {
+		if ctx.Err() != nil {
+			return nil, artifactFailure("cancelled", "artifact read cancelled")
+		}
+		if _, ok := parseArtifactRef(source.Ref); !ok || !validGitOID(source.OID) || len(source.OID) != oidLength || source.OID != strings.ToLower(source.OID) {
+			return nil, artifactFailure("invalid_history", "invalid explicit artifact source")
+		}
+		if i > 0 && sources[i-1].Ref == source.Ref {
+			return nil, artifactFailure("invalid_history", "duplicate explicit artifact source")
+		}
+	}
+	if e := artifactCheckSourceWitnesses(ctx, dir, sources); e != nil {
+		return nil, e
+	}
 	h := &artifactHistory{Sources: sources, ByID: map[string]*storedArtifact{}, Chains: map[string][]*storedArtifact{}}
 	reader := artifactObjectReader{ctx: ctx, dir: dir, seen: map[string]bool{}}
 	cache := map[string]*storedArtifact{}
@@ -330,18 +395,58 @@ func loadArtifactHistory(ctx context.Context) (*artifactHistory, error) {
 	if e = h.validate(ctx); e != nil {
 		return nil, e
 	}
-	after, e := artifactSources(ctx, dir)
-	if e != nil {
+	if e = artifactCheckSourceWitnesses(ctx, dir, sources); e != nil {
 		return nil, e
 	}
-	a, _ := json.Marshal(sources)
-	b, _ := json.Marshal(after)
-	if !bytes.Equal(a, b) {
-		return nil, artifactFailure("concurrent_update", "artifact sources changed while reading")
-	}
-	h.Cut, e = h.sourceCut()
 	h.gitDir, h.readBytes, h.readObjects = dir, reader.total, reader.seen
-	return h, e
+	return h, nil
+}
+
+// Ref metadata is checked independently of object availability so a retained
+// witness with a missing object reaches the normal no-fetch object refusal.
+func artifactCheckSourceWitnesses(ctx context.Context, dir string, sources []artifactSource) error {
+	if ctx.Err() != nil {
+		return artifactFailure("cancelled", "artifact read cancelled")
+	}
+	if len(sources) == 0 {
+		return nil
+	}
+	var input strings.Builder
+	wanted := make(map[string]string, len(sources))
+	for _, source := range sources {
+		input.WriteString(source.Ref)
+		input.WriteByte('\n')
+		wanted[source.Ref] = source.OID
+	}
+	raw, e := projectGit(ctx, dir, []byte(input.String()), 32*1024*1024, "for-each-ref", "--count=100001", "--format=%(refname) %(objectname)", "--stdin")
+	if e != nil {
+		if ctx.Err() != nil {
+			return artifactFailure("cancelled", "artifact read cancelled")
+		}
+		return artifactFailure("verification_failure", "cannot verify selected artifact source witnesses")
+	}
+	if bytes.Count(raw, []byte("\n")) >= 100001 {
+		return artifactFailure("resource_limit", "selected source witness enumeration exceeds read limit")
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+		if line == "" {
+			continue
+		}
+		p := strings.Fields(line)
+		if len(p) != 2 {
+			return artifactFailure("verification_failure", "invalid selected artifact source witness")
+		}
+		if oid, selected := wanted[p[0]]; selected {
+			if p[1] != oid {
+				return artifactFailure("concurrent_update", "artifact source witness changed while reading")
+			}
+			delete(wanted, p[0])
+		}
+	}
+	if len(wanted) != 0 {
+		return artifactFailure("concurrent_update", "artifact source witness missing while reading")
+	}
+	return nil
 }
 func (h *artifactHistory) validate(ctx context.Context) error {
 	ops := map[string]bool{}
