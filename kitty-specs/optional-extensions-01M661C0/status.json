@@ -1,12 +1,12 @@
 {
-  "event_count": 188,
-  "last_event_id": "01M68A9JDJDT5FCP2M4R22987E",
-  "materialized_at": "2026-10-31T06:28:01.074939+00:00",
+  "event_count": 189,
+  "last_event_id": "01M68AB6319MCR9G86HS3APEZ3",
+  "materialized_at": "2026-10-31T06:28:53.985180+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "",
   "summary": {
-    "approved": 15,
+    "approved": 14,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 1,
     "in_review": 0,
-    "planned": 10
+    "planned": 11
   },
   "work_packages": {
     "WP01": {
@@ -534,10 +534,10 @@
       "agent": "codex",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
-      "force_count": 0,
-      "lane": "approved",
-      "last_event_id": "01M67VMK5ZP1KQSMANCBD4TEAE",
-      "last_transition_at": "2026-10-31T02:11:53.663740+00:00",
+      "force_count": 1,
+      "lane": "planned",
+      "last_event_id": "01M68AB6319MCR9G86HS3APEZ3",
+      "last_transition_at": "2026-10-31T06:28:53.985180+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods.",
@@ -545,10 +545,10 @@
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-1.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-1.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-2.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-2.md",
         "reviewer": "codex",
-        "verdict": "approved"
+        "verdict": "changes_requested"
       },
       "role": "reviewer",
       "shell_pid": 22770,
