@@ -1,6 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"crypto/ed25519"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -173,12 +178,49 @@ func closureItemIDs(t *testing.T, items []any) []string {
 		if len(v) != 5 || v["validation"] != "verified" || v["envelope"] == nil || v["signature"] == "" {
 			t.Fatal("inspect returned a non-public or incomplete SignedArtifact", v)
 		}
+		for _, key := range []string{"id", "envelope", "signature", "validation", "diagnostics"} {
+			if _, exists := v[key]; !exists {
+				t.Fatal("missing frozen SignedArtifact field", key)
+			}
+		}
+		env := v["envelope"].(map[string]any)
+		raw := closurePublicJSON(t, env)
+		digest := sha256.Sum256(raw)
+		if v["id"] != "sha256:"+hex.EncodeToString(digest[:]) {
+			t.Fatal("independent artifact digest mismatch", v["id"])
+		}
+		key, e := base64.RawStdEncoding.DecodeString(env["public_key"].(string))
+		if e != nil || len(key) != ed25519.PublicKeySize {
+			t.Fatal("invalid public key", e)
+		}
+		actor := sha256.Sum256(key)
+		if env["actor"] != hex.EncodeToString(actor[:]) {
+			t.Fatal("independent actor digest mismatch")
+		}
+		sig, e := base64.RawStdEncoding.DecodeString(v["signature"].(string))
+		if e != nil || !ed25519.Verify(ed25519.PublicKey(key), append([]byte("hn-artifact/1\x00"), raw...), sig) {
+			t.Fatal("independent public signature verification failed", e)
+		}
 		ids = append(ids, v["id"].(string))
 	}
 	if !sort.StringsAreSorted(ids) {
 		t.Fatal("closure IDs are not deterministic", ids)
 	}
 	return ids
+}
+
+// The fixtures use finite public JSON values. Canonical byte construction here
+// is independent of the production artifact package and verifies every returned
+// signed object before the independent public reconstruction consumes it.
+func closurePublicJSON(t *testing.T, value any) []byte {
+	t.Helper()
+	var b bytes.Buffer
+	e := json.NewEncoder(&b)
+	e.SetEscapeHTML(false)
+	if err := e.Encode(value); err != nil {
+		t.Fatal(err)
+	}
+	return bytes.TrimSuffix(b.Bytes(), []byte("\n"))
 }
 
 func TestArtifactClosureSelectedPrefixCLI(t *testing.T) {

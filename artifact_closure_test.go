@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -82,6 +83,7 @@ func TestArtifactClosureExactGitInventory(t *testing.T) {
 	}
 	// Copy the exact public prefix OID into an independently initialized clone.
 	// Fetching the OID preserves every Git body; no transport commit is rewritten.
+	quarantineSources := []artifactSource{}
 	for _, source := range closure.Sources {
 		actor, ok := parseArtifactRef(source.Ref)
 		if !ok {
@@ -89,6 +91,7 @@ func TestArtifactClosureExactGitInventory(t *testing.T) {
 		}
 		remoteRef := "refs/hn/remotes/selected/artifacts/" + actor + "/" + strings.TrimPrefix(artifactStream(actor), "sha256:")
 		dst.git("fetch", "--no-write-fetch-head", f.repo, "+"+source.OID+":"+remoteRef)
+		quarantineSources = append(quarantineSources, artifactSource{remoteRef, source.OID})
 		if dst.git("rev-parse", remoteRef) != source.OID {
 			t.Fatal("transport changed exact Git tip")
 		}
@@ -102,6 +105,18 @@ func TestArtifactClosureExactGitInventory(t *testing.T) {
 	sort.Strings(objects)
 	if !reflect.DeepEqual(objects, lines) {
 		t.Fatal("Git transport changed public object bodies")
+	}
+	// The explicit source core must verify the isolated public repository even
+	// while ambient cwd remains the source. Its empty Cut is internal evidence,
+	// never an accepted-view identity borrowed from the source/destination.
+	quarantineDir := filepath.Join(dst.repo, ".git")
+	quarantine, e := loadArtifactHistoryFromSources(context.Background(), quarantineDir, quarantineSources)
+	if e != nil || quarantine.Cut != "" || quarantine.gitDir != quarantineDir {
+		t.Fatal("explicit public verification borrowed accepted authority", quarantine, e)
+	}
+	verifiedClosure, e := selectArtifactClosure(context.Background(), quarantine, []string{opening})
+	if e != nil || !reflect.DeepEqual(verifiedClosure.IDs, want) || !reflect.DeepEqual(verifiedClosure.Objects, lines) {
+		t.Fatal("quarantine verifier disagrees with live producer", verifiedClosure, e)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
