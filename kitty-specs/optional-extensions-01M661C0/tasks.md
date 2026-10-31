@@ -283,7 +283,7 @@ T023 Prove storage using real Git and history integrity (WP05)
 
 **Implementation sketch**: Write additive actor streams with native signer mediation → Load verified selected artifact histories under read budgets → Refuse unsupported contribution writes before private/public effects → Prove storage using real Git and history integrity.
 
-**Ownership**: `artifact_store.go`, `artifact_read.go`, `artifact_store_test.go`, `artifact_read_test.go`, `artifact_store_commands.go`, `artifact_store_commands_test.go`.
+**Ownership**: `artifact_store.go`, `artifact_read.go`, `artifact_store_test.go`, `artifact_read_test.go`, `artifact_store_commands.go`, `artifact_store_commands_test.go`, `internal/artifact/canonical_export.go`. The last path is a minimal strict canonicalization wrapper used by the current writer/CLI; WP03 parser source remains unchanged.
 
 **Parallel opportunities**: Only after listed approvals and within disjoint declared file ownership; computed lanes are authoritative. No package may begin merely because a dependency prompt exists.
 
@@ -305,7 +305,7 @@ T027 Implement explicit type conversion as a new revision (WP06)
 
 **Implementation sketch**: Build logical record views from verified exact histories → Implement expected-head revise and explicit all-head resolution → Validate bounded collection and link reconstruction → Implement explicit type conversion as a new revision.
 
-**Ownership**: `artifact_catalog.go`, `artifact_revision.go`, `artifact_catalog_test.go`, `artifact_revision_test.go`, `artifact_revision_commands.go`, `artifact_revision_commands_test.go`.
+**Ownership**: `artifact_catalog.go`, `artifact_revision.go`, `artifact_catalog_test.go`, `artifact_revision_test.go`, `artifact_revision_commands.go`, `artifact_revision_commands_test.go`, `internal/artifact/revision_export.go`, `internal/artifact/revision_export_test.go`.
 
 **Parallel opportunities**: Only after listed approvals and within disjoint declared file ownership; computed lanes are authoritative. No package may begin merely because a dependency prompt exists.
 
@@ -771,3 +771,7 @@ T107 Reconcile final readiness without beta release or main changes (WP26)
 All 24 functional requirements, eight NFRs and ten constraints are referenced in WP frontmatter. These references are registered canonical inputs; validate-only and finalization must succeed before implementation. WP01 then imports the approved foundation in its assigned lane. Do not manually create lanes.json or mutate status/event logs.
 
 Suggested sequence for root: inspect integrated foundation and this ownership map; independent task/contract review; resolve findings; requirement refs already registered (remap only if refs change); finalize-tasks --validate-only; canonical finalize; mission analyze readiness; begin WP01 with independent implement/review agents. All later WP claims remain blocked until WP01 approval.
+
+Execution integration clarification: WP05 owns the currently-used strict intent/evidence reader, lock-owning mutation attempt and sole append/finish boundary required by its existing type/open retries. WP06 reuses it for successors and owns its narrow unsigned-successor payload bridge. WP07 exposes read-only status and proves recovery through those same callers; it does not introduce another writer or edit earlier owners. This preserves non-overlapping execution scopes and the existing 26 lane identities.
+
+- 2026-10-31 root maintenance amendment: WP25 T101–T103 additionally own the eight existing test files enumerated in its dated integration-config-path-maintenance record. Ownership is exclusive and prospective; original authorship/reviews remain historical, every production owner and dependency remains unchanged, and all 26 lane identities/107 subtasks must survive normal finalization. Actual OS path/causal detectors and source-private-key checks must be repaired before the eight native package rows.

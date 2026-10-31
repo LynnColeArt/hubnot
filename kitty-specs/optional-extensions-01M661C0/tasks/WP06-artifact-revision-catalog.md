@@ -31,6 +31,8 @@ create_intent:
 - artifact_revision_test.go
 - artifact_revision_commands.go
 - artifact_revision_commands_test.go
+- internal/artifact/revision_export.go
+- internal/artifact/revision_export_test.go
 execution_mode: code_change
 owned_files:
 - artifact_catalog.go
@@ -39,6 +41,8 @@ owned_files:
 - artifact_revision_test.go
 - artifact_revision_commands.go
 - artifact_revision_commands_test.go
+- internal/artifact/revision_export.go
+- internal/artifact/revision_export_test.go
 priority: P1
 role: implementer
 tags: []
@@ -100,6 +104,8 @@ This work is complete only when the observable outcomes below are demonstrated a
 - `artifact_revision_test.go` (planned new or dependency-created; create_intent)
 - `artifact_revision_commands.go` (planned new or dependency-created; create_intent)
 - `artifact_revision_commands_test.go` (planned new or dependency-created; create_intent)
+- `internal/artifact/revision_export.go` (planned new; create_intent): the current successor writer's narrow pre-sign payload bridge over existing private validation logic, with explicit successor kind and parent-count/order checks before payloadEnvelope and exact declaration/schema checks. No copied validator or signed-candidate prerequisite.
+- `internal/artifact/revision_export_test.go` (planned new; create_intent): exact current successor payload positives, causal refusal controls and cancellation/bounds.
 
 No other WP owns these paths. Existing foundation surfaces are dependencies, not permission to recreate them. If a small out-of-map edit is indispensable, coordinate root first with exact path/rationale and preserve the no-overlap execution invariant.
 

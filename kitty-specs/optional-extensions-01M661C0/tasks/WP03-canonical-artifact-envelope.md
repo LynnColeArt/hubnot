@@ -14,6 +14,9 @@ requirement_refs:
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
 branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-optional-extensions-01M661C0
+base_commit: 3a72f2aa20b124a912e9ea224333636db7b9a748
+created_at: '2026-10-30T23:34:52.719451+00:00'
 subtasks:
 - T012
 - T013
@@ -33,7 +36,6 @@ create_intent:
 - internal/artifact/canonical_test.go
 - artifact_commands.go
 - artifact_envelope_commands.go
-- artifact_envelope_commands_test.go
 execution_mode: code_change
 owned_files:
 - internal/artifact/envelope.go
@@ -42,7 +44,6 @@ owned_files:
 - internal/artifact/canonical_test.go
 - artifact_commands.go
 - artifact_envelope_commands.go
-- artifact_envelope_commands_test.go
 priority: P1
 role: implementer
 tags: []
@@ -239,3 +240,8 @@ Read canonical status/review references before implementation. Address every rej
 ## Activity log
 
 - 2026-10-30T09:50:45Z — planner-priti — Draft authored; root has not finalized tasks or authorized branch operations.
+
+
+### Prospective final-test maintenance transfer — 2026-10-31
+
+The original implementation and independent review of `artifact_envelope_commands_test.go` remain historical evidence of this WP. Root assigns future edits to those test files exclusively to WP25 for the bounded config-path/private-state detector repairs described in `WP25-exact-package-qualification/integration-config-path-maintenance.md`. The historical ownership list in this body describes original delivery; the current frontmatter is the exclusive prospective write scope. No product source, requirement, dependency, prior verdict, signed data or test assertion is removed. WP25 must fix and independently qualify the tests before actual native platform acceptance.

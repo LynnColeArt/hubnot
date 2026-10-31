@@ -29,6 +29,14 @@ history:
 agent_profile: implementer-ivan
 authoritative_surface: extension_package_acceptance_test.go
 create_intent:
+- artifact_envelope_commands_test.go
+- artifact_schema_commands_test.go
+- artifact_read_test.go
+- artifact_replication_test.go
+- artifact_search_acceptance_test.go
+- extension_enablement_test.go
+- extension_changes_acceptance_test.go
+- extension_charter_acceptance_test.go
 - extension_package_acceptance_test.go
 - docs/qualification/optional-extensions/packages/manifest.json
 - docs/qualification/optional-extensions/packages/platform-matrix.json
@@ -36,6 +44,14 @@ create_intent:
 - .github/workflows/optional-extensions-qualification.yml
 execution_mode: code_change
 owned_files:
+- artifact_envelope_commands_test.go
+- artifact_schema_commands_test.go
+- artifact_read_test.go
+- artifact_replication_test.go
+- artifact_search_acceptance_test.go
+- extension_enablement_test.go
+- extension_changes_acceptance_test.go
+- extension_charter_acceptance_test.go
 - extension_package_acceptance_test.go
 - docs/qualification/optional-extensions/packages/manifest.json
 - docs/qualification/optional-extensions/packages/platform-matrix.json
@@ -241,3 +257,8 @@ Read canonical status/review references before implementation. Address every rej
 ## Exact-package qualification workflow ownership
 
 Use the already registered `portability.yml` manual entrypoint at the reviewed feature ref to explicitly select extension qualification and call the new reusable workflow at the same commit. The selector defaults to existing beta behavior; extension selection suppresses all beta manual candidate validation/build/reuse/native jobs. Preserve existing PR/push behavior. No default-branch registration or main change is part of this mission. Verify actual dispatch inputs and record caller/workflow SHA separately from candidate source SHA. Execute all eight actual platform/variant candidate binaries without source-build fallback, with separately supplied exact-source target-bound reference executables. Retain source/toolchain/archive/executable/asset identities for each row. The same Go/Git journeys must remain callable outside hosted CI; no module or compiler becomes a native-user runtime dependency.
+
+
+## Mandatory test-only maintenance before final qualification — 2026-10-31
+
+Root exclusively transfers the following existing lane test files into this WP’s future maintenance scope: `artifact_envelope_commands_test.go`, `artifact_schema_commands_test.go`, `artifact_read_test.go`, `artifact_replication_test.go`, `artifact_search_acceptance_test.go`, `extension_enablement_test.go`, `extension_changes_acceptance_test.go`, `extension_charter_acceptance_test.go`. Their original authorship and independent reviews remain intact. `create_intent` permits integrating these paths absent from the primary planning checkout; it does not claim this WP originally created them. Read `WP25-exact-package-qualification/integration-config-path-maintenance.md` before editing. Fix actual OS config isolation, causal registry detectors and the stale source-identity absence assertion without changing production bytes, weakening refusals or overwriting prior evidence. Verify affected standard/combined/race source tests and all eight actual native package rows. No prior Linux result substitutes for the corrected Mac checks. These repairs are mandatory T101–T103 work, not a gate waiver.

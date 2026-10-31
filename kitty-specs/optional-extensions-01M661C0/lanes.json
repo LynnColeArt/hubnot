@@ -176,7 +176,8 @@
         "artifact_store.go",
         "artifact_store_commands.go",
         "artifact_store_commands_test.go",
-        "artifact_store_test.go"
+        "artifact_store_test.go",
+        "internal/artifact/canonical_export.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -227,7 +228,9 @@
         "artifact_revision.go",
         "artifact_revision_commands.go",
         "artifact_revision_commands_test.go",
-        "artifact_revision_test.go"
+        "artifact_revision_test.go",
+        "internal/artifact/revision_export.go",
+        "internal/artifact/revision_export_test.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -385,7 +388,9 @@
         "contribution_moderation.go",
         "extension_native_acceptance_test.go",
         "extension_native_adapter.go",
-        "extension_native_adapter_test.go"
+        "extension_native_adapter_test.go",
+        "issue_commands.go",
+        "resource_engine.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -565,6 +570,8 @@
         "WP25"
       ],
       "write_scope": [
+        ".github/workflows/optional-extensions-qualification.yml",
+        ".github/workflows/portability.yml",
         "docs/qualification/optional-extensions/packages/checks.md",
         "docs/qualification/optional-extensions/packages/manifest.json",
         "docs/qualification/optional-extensions/packages/platform-matrix.json",
@@ -604,10 +611,10 @@
       "parallel_group": 16
     }
   ],
-  "computed_at": "2026-10-30T09:58:15.848193+00:00",
+  "computed_at": "2026-10-31T12:41:10.163244+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [
     "WP02"
   ],
-  "planning_commit_sha": "fb6055982c0756e63f33ca7e3a32d5022234dc85"
+  "planning_commit_sha": "c7cbb28b93f364970a0c349aa831b649d9f5dc34"
 }

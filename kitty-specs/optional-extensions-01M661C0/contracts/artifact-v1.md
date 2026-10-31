@@ -364,3 +364,118 @@ JSON success is {"ok":true,"data":VALUE,"error":null}; failure has ok=false,data
 and the host error object defined in host-v1.md; exit 0 or 1 respectively. Human
 rendering is descriptive; machine contracts are the typed data in host-v1.md.
 No registry or specialized renderer is needed for these commands.
+
+### 7.1 Inert envelope-validation slice
+
+The WP03 envelope utility is a read-only input-verification slice, distinct from
+store-backed `hn artifact inspect --id`. Its command grammar is:
+
+- `hn artifact envelope validate --input FILE|- --signature RAW_BASE64 [--previous-input FILE --previous-signature RAW_BASE64] [--json]`
+- `hn artifact envelope inspect --input FILE|- --signature RAW_BASE64 [--previous-input FILE --previous-signature RAW_BASE64] [--json]`
+
+RAW_BASE64 is the canonical unpadded native Base64 encoding of the 64-byte public
+signature; these commands do not receive a signing key. Input is the exact bounded
+canonical payload bytes. Both predecessor flags must occur together or neither;
+two simultaneous stdin selections refuse invalid_input. Each payload independently
+has the envelope's 1MiB bound. Existing frozen parse/signature/error rules apply.
+
+The ordinary section7 success/error JSON wrapper and exit codes apply. Validate
+success data is exactly {id:ID,actor:Actor,kind:Kind,integrity:"verified",
+semantic_validation:"not_checked",continuity:Continuity}. Inspect adds the exact
+decoded `envelope` object to those fields. Continuity is "genesis" for sequence1
+with previous="", "predecessor_verified" after an explicitly supplied verified
+adjacent same-actor/same-stream predecessor matches sequence and previous ID, and
+"not_checked" when a non-genesis envelope has no supplied predecessor. Genesis
+and predecessor_verified do not assert uniqueness or completeness of the whole
+actor history. Full contextual schema, record lineage, conflict and closure
+validation remains not_checked in this slice; integrity alone cannot admit data.
+
+The utility works without a module or registry and performs no signing, public
+publication/ref update or module startup. The existing native outer command-lock
+semantics, including selected-contribution private lock bookkeeping, remain intact;
+this utility does not introduce a lock bypass. Human rendering is descriptive;
+--json is the stable machine surface.
+
+### 7.2 Inert schema and record-payload validation slice
+
+WP04 registers these literal subcommands through the compiled artifactCommands
+map, with no initialization-time I/O. WP04 defines the statically populated
+artifactTypeCommands map and the sole artifactCommands["type"] dispatcher;
+type validate registers in that nested map. Later type publish/show slices add
+entries to artifactTypeCommands rather than replacing the type dispatcher.
+Schema/record validation register their own root handlers in artifactCommands.
+No empty public SDK or runtime registration mechanism is introduced:
+
+- `hn artifact type validate --input FILE|- [--json]`
+- `hn artifact schema validate --input FILE|- [--json]`
+- `hn artifact record validate --input FILE|- [--json]`
+
+FILE is one explicit local file; the literal `-` selects stdin, consumed once.
+No path expansion, embedded file reference, registry lookup or repository lookup
+is performed. Exactly one --input is required. Duplicate flags, unknown flags,
+positionals, duplicate/unknown object keys, null in place of a required object or
+array, or trailing input refuse invalid_input. All commands use section7's ordinary
+success/error envelope and exit0/exit1; errors have origin=artifact,
+recovery=do_not_retry,operation=null. Human rendering is descriptive only.
+
+Type input is exactly TypePayload from section2. Schema input is exactly its
+{language,root} schema object, not a JSON Schema superset. Validate the complete
+finite schema and supported language, never normalize defaults or execute a
+validator. Type success data is exactly
+{type_id:TypeID,schema_version:integer,shape:Shape,schema_validation:"verified",
+integrity:"not_checked",type_lineage:"not_checked"}.
+Schema success data is exactly {language:"hn.schema/1",
+schema_validation:"verified",integrity:"not_applicable"}.
+Neither result asserts that a declaration is signed, published or authorized.
+
+Record input is exactly {artifact:SignedArtifact,type:SignedArtifact,
+parents:[SignedArtifact],opening:SignedArtifact|null}. These use the normal
+nonopaque SignedArtifact shape from host-v1 section4; input validation must be
+"verified" and diagnostics=[] but those labels are assertions to recheck, never
+trusted evidence. Recompute every supplied artifact ID and verify every supplied
+signature over C(envelope) using the existing envelope verifier. Embedded JSON
+need not have canonical spacing/key order; the signed preimage remains the exact
+canonical C encoding. No predecessor context is inferred or read. The artifact
+must have a record.* kind; type must have kind=type.publish and its recomputed ID
+must equal artifact.payload.type_revision. Validate the exact supplied TypePayload
+and the full RecordPayload against that declaration, including equality of type_id
+and shape. Do not resolve a name or schema_version to a latest declaration.
+
+parents contains exactly one verified artifact for each ID in artifact.envelope.
+parents, in the same increasing order, with no extras or duplicates. For an open,
+parents=[] and opening=null. For every successor, opening is a verified record.open
+whose ID equals artifact.envelope.record. Each supplied parent must be record.open
+at that same opening ID or a successor naming that opening; all must keep the same
+type_id and shape. Apply all section3 immediate operation rules: revise keeps the
+parent's exact type_revision and has no conversion_sources; convert changes it
+and has exactly that parent's ID as conversion_sources; resolve uses exactly the
+supplied parent set and conversion_sources is exactly those supplied parents with
+a different type_revision. This compares verified parent declarations of schema
+identity, but does not claim their historical payloads were validated against
+schemas that were not supplied. The new candidate's entire payload always passes
+its selected exact schema, including for old schemas and mixed-schema resolution.
+No conversion algorithm, partial patch, implicit migration or activation runs.
+
+Record success data is exactly {id:ID,type_revision:ID,integrity:"verified",
+schema_validation:"verified",record_rules:"verified_from_supplied_context",
+actor_history:"not_checked",type_lineage:"not_checked",
+current_heads:"not_checked",dependency_closure:"not_checked"}.
+The immediate supplied-parent checks do not prove complete actor/record ancestry,
+type evolution history, local current-head completeness, absence of additional
+forks, linked-target existence/semantics or accepted-view closure. They do not
+admit or promote the artifact. Missing explicitly required supplied parent/opening
+context is incomplete_dependency; invalid immediate operation/content/schema
+structure is invalid_input; unknown schema language/version is unsupported_schema;
+signature/ID mismatch is verification_failure; bounds are resource_limit.
+These remain the existing artifact-origin codes, not new error categories.
+
+Consume type/schema input under the existing type/schema raw and canonical byte
+caps (131072/65536 respectively). For the composite record input, the existing
+16MiB exchange-wire cap is also the aggregate inert-input cap, checked while
+consuming bytes; every individual canonical envelope still has its 1MiB cap.
+The existing parent count1024, type/schema limits, modeled depth8, field/member/
+relationship limits and 30-second validation-stage cancellation budget apply
+before expansion or recursive work; none is raised. Whitespace counts toward the
+raw input cap. No signer, custom intent, public object/ref, module or transport
+is accessed. Existing native outer-lock bookkeeping remains as specified in7.1;
+this slice introduces no lock bypass or default native work.
