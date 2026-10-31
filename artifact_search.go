@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"os"
 	"slices"
 	"sort"
 	"strconv"
@@ -13,7 +15,24 @@ import (
 	"unicode/utf8"
 )
 
-func init() { artifactCommands["search"] = cmdArtifactSearch }
+func init() {
+	artifactCommands["search"] = cmdArtifactSearch
+	artifactCommands["help"] = cmdArtifactSearchHelp
+	artifactCommands["--help"] = cmdArtifactSearchHelp
+}
+
+func cmdArtifactSearchHelp(args []string) error {
+	if err := cmdArtifactHelp(args); err != nil {
+		return err
+	}
+	_, err := fmt.Fprintln(os.Stdout, `hn artifact search [--type TYPE_ID] --literal TEXT|--regex PATTERN --limit 1..200 [--cursor TOKEN] [--json]
+Search current heads' title/content, canonical fields and public identity metadata.
+Regex uses Go syntax, at most 4096 UTF-8 pattern bytes/expanded-compiled instructions
+and 67108864 instruction-bytes over the entire type-filtered selection. A changed
+query or source cut invalidates continuation; restart without --cursor. Reduce
+--limit for a page exceeding 8 MiB. Matching content remains inert data.`)
+	return err
+}
 
 type artifactSearchOptions struct {
 	typeID, mode, text, cursor string
@@ -201,6 +220,19 @@ func readArtifactSearch(ctx context.Context, o artifactSearchOptions) (artifactL
 		return page, err
 	}
 	query := eventID(queryBytes)
+	start := 0
+	if o.cursor != "" {
+		raw, e := base64.RawURLEncoding.DecodeString(o.cursor)
+		var token artifactSearchCursor
+		if e != nil || len(o.cursor) > 4096 || json.Unmarshal(raw, &token) != nil {
+			return page, artifactListCheckpoint()
+		}
+		canonical, e := json.Marshal(token)
+		if e != nil || !bytes.Equal(raw, canonical) || base64.RawURLEncoding.EncodeToString(raw) != o.cursor || token.Version != 1 || token.TypeID != o.typeID || token.Shape != "" || token.Query != query || token.Cut != h.Cut || token.Offset <= 0 || token.Offset >= len(ids) {
+			return page, artifactListCheckpoint()
+		}
+		start = token.Offset
+	}
 	// Preflight the ENTIRE filtered selection before matching or paging. A late
 	// expensive non-match cannot turn an otherwise valid first page into success.
 	work := uint64(0)
@@ -225,19 +257,6 @@ func readArtifactSearch(ctx context.Context, o artifactSearchOptions) (artifactL
 				}
 			}
 		}
-	}
-	start := 0
-	if o.cursor != "" {
-		raw, e := base64.RawURLEncoding.DecodeString(o.cursor)
-		var token artifactSearchCursor
-		if e != nil || len(o.cursor) > 4096 || json.Unmarshal(raw, &token) != nil {
-			return page, artifactListCheckpoint()
-		}
-		canonical, e := json.Marshal(token)
-		if e != nil || !bytes.Equal(raw, canonical) || base64.RawURLEncoding.EncodeToString(raw) != o.cursor || token.Version != 1 || token.TypeID != o.typeID || token.Shape != "" || token.Query != query || token.Cut != h.Cut || token.Offset <= 0 || token.Offset >= len(ids) {
-			return page, artifactListCheckpoint()
-		}
-		start = token.Offset
 	}
 	end := start
 	for end < len(ids) {

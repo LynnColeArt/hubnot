@@ -43,6 +43,30 @@ func artifactSearchWant(t *testing.T, response map[string]any, wanted ...string)
 	}
 }
 
+func TestArtifactSearchHelpAndPublicOnlyReaderCLI(t *testing.T) {
+	f := artifactCLI(t)
+	// Explicit artifact help exposes the complete live search usage in both forms.
+	// Running against a public-only empty reader must not initialize an identity.
+	empty := exchangeDestination(t, f, "sha1")
+	before := empty.snapshot()
+	const usage = "hn artifact search [--type TYPE_ID] --literal TEXT|--regex PATTERN --limit 1..200 [--cursor TOKEN] [--json]"
+	for _, name := range []string{"help", "--help"} {
+		cmd := exec.Command(empty.binary, "artifact", name)
+		cmd.Dir, cmd.Env = empty.repo, operationalTestEnvironment(empty.home)
+		raw, err := cmd.Output()
+		if err != nil || strings.Count(string(raw), usage) != 1 || !strings.Contains(string(raw), "hn artifact list") || !strings.Contains(string(raw), "inert") {
+			t.Fatalf("combined artifact %s help: %v %s", name, err, raw)
+		}
+	}
+	for _, mode := range []string{"--literal", "--regex"} {
+		artifactSearchWant(t, artifactSearchCall(empty, "", mode, "", "--limit", "1"))
+	}
+	empty.unchanged(before)
+	if _, err := os.Stat(empty.home); !os.IsNotExist(err) {
+		t.Fatal("public-only search/help initialized private home", err)
+	}
+}
+
 func TestArtifactSearchPublicCLI(t *testing.T) {
 	f := artifactCLI(t)
 	binaryBytes, err := os.ReadFile(f.binary)
@@ -87,6 +111,25 @@ func TestArtifactSearchPublicCLI(t *testing.T) {
 			artifactSearchWant(t, artifactSearchCall(f, "", "--type", name, "--literal", text, "--limit", "200"), wanted)
 		}
 		artifactSearchWant(t, artifactSearchCall(f, "", "--type", "example.test/note", "--literal", "part-雪", "--limit", "1"))
+		f.unchanged(before)
+	}
+	for _, shape := range []string{"list", "ticket"} {
+		typeName := "example.test/" + shape
+		typeInput := strings.ReplaceAll(artifactStoreType, "example.test/note", typeName)
+		typeInput = strings.Replace(typeInput, `"shape":"document"`, `"shape":"`+shape+`"`, 1)
+		typeRevision := revisionEvent(f.publish(typeInput, shape+"-type", ""))
+		p := revisionPayload(typeRevision, "shape-independent-token")
+		p["type_id"], p["shape"] = typeName, shape
+		missing := "sha256:" + strings.Repeat("d", 64)
+		p["relationships"] = []any{map[string]any{"relation": "example.test/points", "target": missing, "target_mode": "revision", "required": false}}
+		id := revisionEvent(revisionCall(f, "open", revisionInput(t, nil, []string{}, p), shape+"-open", ""))
+		before = f.snapshot()
+		page := artifactPage(t, artifactSearchCall(f, "", "--type", typeName, "--literal", "shape-independent-token", "--limit", "1"))
+		view := page["items"].([]any)[0].(map[string]any)
+		diagnostics := view["diagnostics"].([]any)
+		if view["id"] != id || view["shape"] != shape || len(diagnostics) != 1 || diagnostics[0].(map[string]any)["code"] != "missing_optional" || diagnostics[0].(map[string]any)["id"] != missing || !reflect.DeepEqual(view, revisionReadView(f, id)) {
+			t.Fatal("search omitted full state or validation diagnostics", view)
+		}
 		f.unchanged(before)
 	}
 }
@@ -194,6 +237,17 @@ func TestArtifactSearchEntireSelectionBudgetCLI(t *testing.T) {
 	artifactSearchWant(t, artifactSearchCall(f, "", "--type", "other.test/note", "--regex", pattern, "--limit", "1"), otherID)
 	artifactSearchCall(f, "resource_limit", "--regex", pattern, "--limit", "1")
 	f.unchanged(before)
+	// A changed cut invalidates continuation explicitly, even when the changed
+	// selection would now exceed the regex budget. The caller must rescan.
+	revisionCall(f, "open", revisionInput(t, nil, []string{}, p), "filtered-second", "")
+	first := artifactPage(t, artifactSearchCall(f, "", "--type", "other.test/note", "--regex", pattern, "--limit", "1"))
+	cursor := first["next_cursor"].(string)
+	p["content"] = strings.Repeat("b", 17000)
+	revisionCall(f, "open", revisionInput(t, nil, []string{}, p), "filtered-changed-cut", "")
+	before = f.snapshot()
+	artifactSearchCall(f, "checkpoint_invalidated", "--type", "other.test/note", "--regex", pattern, "--limit", "1", "--cursor", cursor)
+	artifactSearchCall(f, "resource_limit", "--type", "other.test/note", "--regex", pattern, "--limit", "1")
+	f.unchanged(before)
 }
 
 func TestArtifactSearchOversizedPageCLI(t *testing.T) {
@@ -257,14 +311,21 @@ func TestArtifactSearchInertConsumerControlCLI(t *testing.T) {
 	schema := revisionEvent(f.publish(artifactStoreType, "type", ""))
 	content := "$(" + consumer + ")\n<script>throw 1</script>\n\x1b[31m inert-consumer-token"
 	id := revisionEvent(revisionCall(f, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, content)), "inert", ""))
-	// Exercise both an absent registry and malformed private consumer state. The
+	// Exercise absent, disabled, crashing and malformed private consumer state. The
 	// trap names the actual host registry path; no registrar is needed for reads.
-	for _, malformed := range []bool{false, true} {
-		if malformed {
+	for _, state := range []string{"absent", "disabled", "crashing", "malformed"} {
+		if state != "absent" {
 			if err := os.MkdirAll(filepath.Dir(registry), 0700); err != nil {
 				t.Fatal(err)
 			}
-			if err := os.WriteFile(registry, []byte(`{"disabled":true,"executable":"`+consumer+`","privateCredential":"PRIVATE-WP12"`), 0600); err != nil {
+			raw, err := json.Marshal(map[string]any{"disabled": state == "disabled", "executable": consumer, "privateCredential": "PRIVATE-WP12"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if state == "malformed" {
+				raw = raw[:len(raw)-1]
+			}
+			if err := os.WriteFile(registry, raw, 0600); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -318,6 +379,18 @@ func TestArtifactSearchInertConsumerControlCLI(t *testing.T) {
 				t.Fatalf("native memory did not retain its data: %v %s", err, out)
 			}
 		}
+	}
+	before := f.snapshot()
+	for _, args := range [][]string{
+		{"--help"}, {"issue", "list", "--json"},
+		{"memory", "recall", "--at", "HEAD", "--include-untrusted", "--query", "native-memory-after-search", "--json"},
+		{"memory", "grep", "--at", "HEAD", "--include-untrusted", "--json", "native-memory-after-search"},
+	} {
+		trace := extensionBaselineTraceRun(t, operationalTestEnvironmentWith(f.home, f.overrides), f.repo, f.binary, args...)
+		if strings.Contains(trace, registry) || strings.Contains(trace, consumer) || strings.Contains(trace, "connect(") {
+			t.Fatal("native command read registry, started consumer or connected provider", args, trace)
+		}
+		f.unchanged(before)
 	}
 	if _, err := os.Stat(marker); !os.IsNotExist(err) {
 		t.Fatal("native journey started consumer", err)
