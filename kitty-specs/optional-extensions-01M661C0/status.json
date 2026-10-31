@@ -369,6 +369,9 @@
       "last_event_id": "01M685SPF5JQ9SB18AV0AYPMBW",
       "last_transition_at": "2026-10-31T05:09:26.629201+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: generic list and public recovery CLI; exact source 6b3c5cee, metadata-only delivery ec2ad388, 265-input binding, both supplied release variants plus race and vet pass; external optional-extensions-WP11 evidence retains initial RED and all causes"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 22770,
