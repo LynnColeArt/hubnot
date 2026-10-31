@@ -382,7 +382,31 @@ jobs:
             # Record exec-path differences without concealing them with Git env
             # overrides. The actual native positive is required under this PATH.
             diff -u "$root/original-git-exec-path.txt" "$work/copied-git-exec-path.txt" > "$work/git-exec-path-difference.txt" || true
-            "$binary" issue open --body 'Owned diagnostic Git-copy fixture' 'WP25 tracing positive' > "$work/copied-git-native-positive.out" 2> "$work/copied-git-native-positive.err" || relocation=1
+            # A successful relocated Git process is insufficient: bind a real
+            # accepted native issue, the actor-ref change and public readback.
+            git for-each-ref '--format=%(refname) %(objectname)' refs/hn/actors > "$work/copied-git-accepted-refs.before" 2> "$work/copied-git-accepted-refs.before.err" || relocation=1
+            "$binary" identity show --json > "$work/copied-git-identity.json" 2> "$work/copied-git-identity.err" || relocation=1
+            "$binary" issue open --body 'Owned diagnostic Git-copy fixture' --json 'WP25 tracing positive' > "$work/copied-git-native-positive.out" 2> "$work/copied-git-native-positive.err" || relocation=1
+            positive_actor="$(jq -r '.data.actor // empty' "$work/copied-git-identity.json")" || relocation=1
+            positive_issue="$(jq -r '.data.issue_id // empty' "$work/copied-git-native-positive.out")" || relocation=1
+            positive_event="$(jq -r '.data.event_id // empty' "$work/copied-git-native-positive.out")" || relocation=1
+            if ! [[ "$positive_actor" =~ ^[0-9a-f]{64}$ && "$positive_issue" =~ ^sha256:[0-9a-f]{64}$ && "$positive_event" =~ ^sha256:[0-9a-f]{64}$ ]]; then relocation=1; fi
+            jq -e '.schema == "hn.identity/1" and .ok == true and .error == null' "$work/copied-git-identity.json" > "$work/copied-git-identity.validated" || relocation=1
+            jq -e '.schema == "hn.issue/1" and .ok == true and .error == null and .data.replayed == false and .data.conflict == false and .data.head_count == 1' "$work/copied-git-native-positive.out" > "$work/copied-git-native-positive.validated" || relocation=1
+            git for-each-ref '--format=%(refname) %(objectname)' refs/hn/actors > "$work/copied-git-accepted-refs.after" 2> "$work/copied-git-accepted-refs.after.err" || relocation=1
+            if cmp -s "$work/copied-git-accepted-refs.before" "$work/copied-git-accepted-refs.after"; then relocation=1; fi
+            diff -u "$work/copied-git-accepted-refs.before" "$work/copied-git-accepted-refs.after" > "$work/copied-git-accepted-refs.diff" || true
+            positive_ref="refs/hn/actors/$positive_actor"
+            positive_tip="$(git rev-parse --verify "$positive_ref" 2> "$work/copied-git-accepted-tip.err")" || relocation=1
+            if ! [[ "$positive_tip" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]; then relocation=1; fi
+            git cat-file blob "$positive_tip:event.json" > "$work/copied-git-accepted-event.json" 2> "$work/copied-git-accepted-event.err" || relocation=1
+            accepted_event="sha256:$(shasum -a 256 "$work/copied-git-accepted-event.json" | cut -d ' ' -f1)"
+            if [ "$accepted_event" != "$positive_event" ] || [ "$positive_issue" != "$positive_event" ]; then relocation=1; fi
+            "$binary" issue show "$positive_issue" --json > "$work/copied-git-issue-show.json" 2> "$work/copied-git-issue-show.err" || relocation=1
+            jq -e --arg issue "$positive_issue" --arg event "$positive_event" --arg actor "$positive_actor" '.schema == "hn.issue/1" and .ok == true and .data.id == $issue and .data.creator == $actor and .data.state.title == "WP25 tracing positive" and .data.state.body == "Owned diagnostic Git-copy fixture" and .data.head_ids == [$event] and .data.head_count == 1 and .data.conflict == false' "$work/copied-git-issue-show.json" > "$work/copied-git-issue-show.validated" || relocation=1
+            "$binary" issue list --json > "$work/copied-git-issue-list.json" 2> "$work/copied-git-issue-list.err" || relocation=1
+            jq -e --arg issue "$positive_issue" '.schema == "hn.issue/1" and .ok == true and .data.total == 1 and (.data.items | length == 1) and .data.items[0].id == $issue and .data.items[0].title == "WP25 tracing positive" and .data.items[0].head_count == 1 and .data.items[0].conflict == false' "$work/copied-git-issue-list.json" > "$work/copied-git-issue-list.validated" || relocation=1
+            jq -n --arg actor "$positive_actor" --arg issue "$positive_issue" --arg event "$positive_event" --arg ref "$positive_ref" --arg tip "$positive_tip" --arg accepted_event "$accepted_event" --arg status "$relocation" '{actor:$actor,issue_id:$issue,event_id:$event,accepted_ref:$ref,accepted_tip:$tip,accepted_event_blob_sha256:$accepted_event,diagnostic_positive_exit:$status,scope:"byte-identical relocated Git with unchanged argv/env under fixture PATH; accepted write/show/list proof does not assert universal relocation/helper equivalence"}' > "$work/copied-git-native-positive-binding.json"
             test -s "$work/git-process-identities.log" || relocation=1
             printf '%s\n' "$relocation" > "$work/relocation-positive.exit"
             if [ "$relocation" != 0 ]; then printf 'BLOCKING diagnostic relocation failure; original Git environment remains unchanged outside this fixture\n' >> "$work/instrumentation-boundary.txt"; boundary=1; fi
@@ -458,7 +482,11 @@ jobs:
               grep -F "$registry" "$stem.trace" > "$stem.registry-events" || return 1
               case "${stem##*/}" in
                 strace-*) grep -E 'open(at)?\(.*O_RDONLY' "$stem.registry-events" > "$stem.registry-read-events" ;;
-                *) grep -Ei '(^|[[:space:]])(open|open_nocancel|read|read_nocancel|pread|pread_nocancel|RdData|PAGE_IN|CACHE_HIT)([[:space:](]|$)' "$stem.registry-events" > "$stem.registry-read-events" ;;
+                # Match explicit open/openat and read/pread spellings,
+                # including their nocancel variants. These names are detector
+                # vocabulary, not evidence any syscall occurred: only raw
+                # positive-controlled per-runner events qualify the mode.
+                *) grep -Ei '(^|[[:space:]])(open|open_nocancel|openat|openat_nocancel|read|read_nocancel|readv|readv_nocancel|pread|pread_nocancel|RdData|PAGE_IN|CACHE_HIT)([[:space:](]|$)' "$stem.registry-events" > "$stem.registry-read-events" ;;
               esac
             }
             qualified=0
