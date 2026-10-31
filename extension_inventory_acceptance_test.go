@@ -423,7 +423,16 @@ func TestInventoryStandalonePublicJourney(t *testing.T) {
 		dst.call("", "", "artifact", "type", "show", types[model], "--json")
 		dst.call("", "", "artifact", "history", opening[model], "--json")
 	}
-	inventoryHostShapeSearch(t, remote, converted)
+	// The independent raw host fixture registers a test process; it must not
+	// share the plugin-free clone's config merely through an inherited XDG.
+	beforeRawHost := dst.snapshot()
+	t.Run("independent-host-shape-search", func(t *testing.T) {
+		inventoryHostShapeSearch(t, remote, converted)
+	})
+	dst.unchanged(beforeRawHost)
+	if err := inventoryAbsent(filepath.Join(dstConfig, "hubnot", "extensions", "registry.json")); err != nil {
+		t.Fatal("raw host fixture contaminated plugin-free clone", err)
+	}
 	inventoryGenericReads(t, dst, converted)
 	inventoryCombinedCorpora(t, a.artifactCLIFixture, dst, []byte(inventoryApprovedCharterBundle), "sha256:24f344ba260b8a75b28e8c7a7cdcc5a083ab3a1f027e53b9872beda8af95d954")
 	if a.git("rev-parse", "HEAD") != policyCommit {
@@ -828,6 +837,11 @@ func inventoryCombinedCorpora(t *testing.T, src, dst *artifactCLIFixture, public
 // raw TEST-only caller exercises the frozen host's shape filter directly.
 func inventoryHostShapeSearch(t *testing.T, remote string, ids map[string]string) {
 	t.Helper()
+	// This caller owns a separate local registration. The inherited raw helper
+	// explicitly isolates HOME but otherwise inherits XDG_CONFIG_HOME on Linux.
+	// Bound that environment before its first registration, then subtest cleanup
+	// restores the parent environment. Darwin uses its isolated HOME instead.
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(t.TempDir(), "raw-host-config"))
 	if host := os.Getenv("HN_WP22_BINARY"); host != "" {
 		t.Setenv("HN_WP18_BINARY", host)
 	}
