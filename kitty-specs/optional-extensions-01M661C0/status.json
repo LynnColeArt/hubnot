@@ -1,19 +1,19 @@
 {
-  "event_count": 254,
-  "last_event_id": "01M691FDKHMRFHR9DBNG1J62V5",
-  "materialized_at": "2026-10-31T13:13:09.980990+00:00",
+  "event_count": 259,
+  "last_event_id": "01M6934RCVC81J8BBF9RDV859Z",
+  "materialized_at": "2026-10-31T13:42:17.755089+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 17,
+    "approved": 18,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 5,
-    "in_review": 0,
+    "in_progress": 3,
+    "in_review": 1,
     "planned": 4
   },
   "work_packages": {
@@ -516,13 +516,13 @@
     "WP15": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "assignee": "codex",
       "force_count": 4,
-      "lane": "in_progress",
-      "last_event_id": "01M691FDKHMRFHR9DBNG1J62V5",
-      "last_transition_at": "2026-10-31T13:13:09.980990+00:00",
+      "lane": "approved",
+      "last_event_id": "01M6924QYM5R1CR5ZY61FKYCVM",
+      "last_transition_at": "2026-10-31T13:24:48.724513+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Administrative allocation recovery only: canonical next selected WP15, normal action and retry retained lane-n after dependency merge conflict. Followed printed exact approved WP13 lane-l merge; only WP03 task generated base_branch/base_commit/created_at differed with identical authored body. All stages/diffs/hashes external lane-n-planning-recovery; chose exact recorded 8aa copy, normal merge cd8ce1f1, staged226Go equal approved WP13. No WP15 implementation/tests. Resume proper codex implementer-ivan action claim next.",
@@ -536,35 +536,37 @@
         "Administrative integration rework: WP19 real 1025-revision capture exposes inherited parent-array cap in changePageRule; preserve earlier approvals and fix only frozen complete-observation response fidelity.",
         "Ready for independent review: source c1f5807f, metadata delivery b9f6efea; complete frame-bounded revision_ids only. Retained causal RED then standard/combined protocol race GREEN, vet,34 exact supplied-binary frame controls and preserved artifact1024 limits; all230 other inputs unchanged. T060-T063 restored using accepted unchanged cycle4 evidence plus narrow current correction. Evidence optional-extensions-WP15-observation-array; actual signed producer/raw changes regression remains WP19.",
         "Independent review passed: source c1f5807fbeeaca4e39563eea891aa8a2ce6aab0f, metadata b9f6efea9ad2c405bf11dec7bd5b086a3bf69f12, 232-input map 1d000169ccd9ea8fa3bcda6c570ccadf52b4c8098d77d7e1e9c6af411502347c verified; 84 supplied-binary exact CLI controls and fresh protocol race PASS; in-scope literal roundtrip and closed-set mirrors PASS; all eight anti-patterns PASS. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP15-observation-array-review/review.md SHA256 211b9b672c0f7c0511e3fea4d002d741787f693c63b216be67c6f1d270113f18. Root decision 51d72b01 coordinates WP19 response seam; sole inherited WP19 prompt generated-field cleanup uses execution brief standing exact-path authority. Actual WP19 signed producer regression remains WP19 and must pass after approved dependency integration. Inert WP15 slice only; no platform/performance/final-suite claim.",
-        "Root narrow test-only protocol malformed-registry trap correction under9071bdba; actual OS config directory under isolated fixture, production and wire bytes unchanged; no Mac runtime pass inferred."
+        "Root narrow test-only protocol malformed-registry trap correction under9071bdba; actual OS config directory under isolated fixture, production and wire bytes unchanged; no Mac runtime pass inferred.",
+        "Test-only OS config fixture correction at 62759dd4144d85c44975fef8ae7b313976113c2a; approved WP13 helper resolves actual registry path, explicit invalid_input detector rejects wrong-path mutant. Original frame/bounds/malformed/no-effect controls unchanged. Standard+combined focused CLI, protocol/frame race, vet, 250+182+84 supplied-binary controls pass. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP15-config-fixture/. Linux actual; Darwin source-only pending WP25.",
+        "Review passed: independent codex/reviewer-renata approves only WP15 OS-config fixture repair 62759dd4 (+12/-1 root protocol test). All232 Go/module inputs verified; production/modules unchanged from approved c1f5807f. Standard/combined actual supplied CLI frame strict controls, causal malformed registry/valid/missing/wrong-argument controls, intended wrong-path mutant failures, internal race and vet pass; all8 anti-pattern checks PASS. Normal gate01M691TDWWGW303YWH3VDTZ17Q no_coverage/missingframework is not Go qualification. Darwin runtime pendingWP25. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP15-config-fixture-review/review.md SHA256 4f036b74f65e1ed922bdd59f6d1fd6adb474aac5e0b807a08ca79f8e87ec10ec"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP15-extension-framing/review-cycle-7.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP15-extension-framing/review-cycle-7.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP15-extension-framing/review-cycle-8.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP15-extension-framing/review-cycle-8.md",
         "reviewer": "codex",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 22770,
+      "shell_pid_created_at": "1793287708.21",
       "subtasks": {
-        "T060": "planned",
-        "T061": "planned",
-        "T062": "planned",
-        "T063": "planned"
+        "T060": "done",
+        "T061": "done",
+        "T062": "done",
+        "T063": "done"
       }
     },
     "WP16": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 4,
-      "lane": "in_progress",
-      "last_event_id": "01M68XQRKP87FQN9EYDVP0A1RM",
-      "last_transition_at": "2026-10-31T12:07:49.095470+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M6934RCVC81J8BBF9RDV859Z",
+      "last_transition_at": "2026-10-31T13:42:17.755089+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods.",
@@ -578,7 +580,8 @@
         "Administrative bounded value-object/dispatch handoff: expose actual existing host SessionID internally for session-bound WP19 capture, no wire or grant change; active17/18 preserve source evidence before normal refresh.",
         "WP16 bounded actual SessionID handoff source0e728734. Live Invocation receives existing host-generated session ID; deterministic missing-field RED and actual two same-binding distinct sessions/hello/capabilities equality/strict raw override controls pass. Full approved shutdown code reconstructs exactly except field/initializer,239 other inputs exact. Fresh stamped std+combined binaries, focused session race/current CLI/static checks pass. Evidence optional-extensions-WP16/session-identity-handoff/report.md.",
         "Independent session handoff review passed: source0e728734a156,242 mapa10e82a135c9958 verified; all239 other inputs exact, removing field+initializer reconstructs approvede434 shutdown production. Current real Run callback identity equals actual hello/caps/result and differs across same-binding sessions; both raw overrides refuse before extra dispatch. Old-source runtime RED reproduced once, current race GREEN,8 selected supplied CLI test events per standard/combined variant0fail/skip with correct13/16binary envs, vet/diff checks pass. All8 anti-patterns PASS, closed inventories unchanged with exact retained evidence. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16/session-identity-review/report.md. No17/18 WIP or capture implementation imported; LinuxAMD64 only, original lifecycle provenance retained, Python no_coverage unavailable, final qualification pending.",
-        "Administrative integration rework: WP21 observed unexplained uncertainty during valid sequential standalone publication. Investigate suspected response-completion channel race causally; preserve earlier exact-source approvals and strict one-outstanding/cancel/uncertainty semantics. No downstream acceptance over unresolved concern."
+        "Administrative integration rework: WP21 observed unexplained uncertainty during valid sequential standalone publication. Investigate suspected response-completion channel race causally; preserve earlier exact-source approvals and strict one-outstanding/cancel/uncertainty semantics. No downstream acceptance over unresolved concern.",
+        "Ready for independent review: exact ae5e4f8b; bounded final-byte/join/frontier repair, precise refusal cleanup priority; std/combined/race lifecycle and causal controls pass. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16-response-completion/final-handoff.md"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -588,14 +591,14 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 22770,
+      "shell_pid_created_at": "1793287708.21",
       "subtasks": {
-        "T064": "planned",
-        "T065": "planned",
-        "T066": "planned",
-        "T067": "planned"
+        "T064": "done",
+        "T065": "done",
+        "T066": "done",
+        "T067": "done"
       }
     },
     "WP17": {
