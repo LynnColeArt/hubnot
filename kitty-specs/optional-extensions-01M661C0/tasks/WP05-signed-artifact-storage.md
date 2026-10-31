@@ -120,6 +120,8 @@ No other WP owns these paths. Existing foundation surfaces are dependencies, not
 **Implementation guidance**:
 Use exact hn-artifact/1 ref grammar and existing local identity/key mediation. Append signed type/opening/revision objects on separate actor refs using expected-old CAS; no native or memory event kind/ref modification. Do not initialize identity on reads.
 
+The current type/open callers must use one complete shared mutation-attempt boundary: noncreating strict descriptor/public-history classification; one lock-owning request reconciliation before replay and mutable-head checks; and the same append/finish path with durable candidate before CAS and durable result before acknowledgement. Validate the exact eleven descriptor fields and their raw types before effects, including required nullable fields. These are current retry obligations, not dormant future hooks. WP06 reuses this live boundary for successors; WP07 adds read-only status and interruption proof without another writer or edits to this file.
+
 **Observable acceptance**:
 Actual Git refs and signed objects verify independently; CAS failure does not replace another actor head or corrupt native history.
 
