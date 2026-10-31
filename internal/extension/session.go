@@ -415,6 +415,9 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 			case <-child.overflow:
 				cause = failure("resource_limit", "module diagnostics exceed byte limit")
 			case <-childDone:
+				if child.closing.Load() {
+					return
+				}
 				childDone = nil
 				if child.err != nil {
 					cause = failure("unavailable_module", "module exited unsuccessfully")

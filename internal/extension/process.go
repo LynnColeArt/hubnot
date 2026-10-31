@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -190,6 +191,7 @@ type childProcess struct {
 	err           error
 	once          sync.Once
 	cleanupErr    error
+	closing       atomic.Bool
 }
 
 func startChild(r Registration, directory string) (*childProcess, error) {
@@ -253,6 +255,7 @@ func startChild(r Registration, directory string) (*childProcess, error) {
 }
 func (p *childProcess) close() error {
 	p.once.Do(func() {
+		p.closing.Store(true)
 		_ = p.input.Close()
 		_ = p.output.Close()
 		// Signal only the group created by this handle, including descendants after
