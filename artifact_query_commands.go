@@ -52,7 +52,17 @@ func cmdArtifactHelp(args []string) error {
 	return err
 }
 
-var artifactListShapes = map[string]bool{"document": true, "list": true, "ticket": true}
+func artifactListShapeVocabulary() [3]string {
+	return [3]string{"document", "list", "ticket"}
+}
+func validArtifactListShape(value string) bool {
+	for _, candidate := range artifactListShapeVocabulary() {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
+}
 
 type artifactListOptions struct {
 	typeID, shape, cursor string
@@ -99,7 +109,7 @@ func cmdArtifactList(args []string) error {
 			}
 			o.typeID = value
 		case "--shape":
-			if !artifactListShapes[value] {
+			if !validArtifactListShape(value) {
 				return invalid("requires document, list or ticket shape")
 			}
 			o.shape = value

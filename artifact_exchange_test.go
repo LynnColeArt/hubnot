@@ -139,6 +139,16 @@ func TestArtifactExchangeConsumptionCancellation(t *testing.T) {
 	revisionError(t, artifactExchangeCopy(ctx, dir, []artifactExchangeObject{exchangeObject("blob", []byte("public"))}), "cancelled")
 }
 func TestArtifactExchangeContractMirror(t *testing.T) {
+	artifactExchangeModes := map[string]bool{}
+	for _, value := range artifactExchangeModeVocabulary() {
+		artifactExchangeModes[value] = true
+	}
+
+	artifactExchangeObjectTypes := map[string]bool{}
+	for _, value := range artifactExchangeObjectTypeVocabulary() {
+		artifactExchangeObjectTypes[value] = true
+	}
+
 	if !reflect.DeepEqual(artifactExchangeModes, map[string]bool{"accepted": true, "opaque": true}) || !reflect.DeepEqual(artifactExchangeObjectTypes, map[string]bool{"blob": true, "tree": true, "commit": true}) || artifactExchangeProtocol != "hn-artifact-exchange/1" {
 		t.Fatal("exchange closed inventories drifted")
 	}

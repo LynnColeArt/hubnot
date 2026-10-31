@@ -102,10 +102,10 @@ type extensionChangeCapture struct {
 	checkpoint               string
 }
 
-var extensionChanges = struct {
+var extensionChanges struct {
 	sync.Mutex
 	captures map[string]*extensionChangeCapture
-}{captures: map[string]*extensionChangeCapture{}}
+}
 
 func extensionChangesInvalid() error {
 	return extensionNativeHostError("checkpoint_invalidated", "capture or checkpoint is unavailable or no longer verifiable; discard incomplete staging and capture the exact selection again", "rescan_required")
@@ -531,6 +531,9 @@ func extensionChangesRetain(capture *extensionChangeCapture) {
 		}
 		total -= oldest.bytes
 		delete(extensionChanges.captures, oldest.token)
+	}
+	if extensionChanges.captures == nil {
+		extensionChanges.captures = make(map[string]*extensionChangeCapture)
 	}
 	extensionChanges.captures[capture.token] = capture
 }

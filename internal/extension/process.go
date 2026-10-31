@@ -36,14 +36,24 @@ type slotIdentity struct {
 	Cleanup        string `json:"cleanup"`
 }
 
-var ownerStates = map[string]bool{"owned": true, "verified": true, "failed": true}
+func ownerStateVocabulary() [3]string {
+	return [3]string{"owned", "verified", "failed"}
+}
+func validOwnerState(value string) bool {
+	for _, candidate := range ownerStateVocabulary() {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
+}
 
 func readOwner(file *os.File) (slotIdentity, error) {
 	var id slotIdentity
 	data, err := io.ReadAll(io.NewSectionReader(file, 0, 1025))
 	value, shapeErr := strictJSON(data, 1024)
 	object, ok := value.(map[string]any)
-	if err != nil || shapeErr != nil || !ok || !exactFields(object, "session_id", "registration_id", "epoch", "cleanup") || len(data) > 1024 || json.Unmarshal(data, &id) != nil || !validHex(id.SessionID, 32) || !validDigest(id.RegistrationID) || !validHex(id.Epoch, 32) || !ownerStates[id.Cleanup] {
+	if err != nil || shapeErr != nil || !ok || !exactFields(object, "session_id", "registration_id", "epoch", "cleanup") || len(data) > 1024 || json.Unmarshal(data, &id) != nil || !validHex(id.SessionID, 32) || !validDigest(id.RegistrationID) || !validHex(id.Epoch, 32) || !validOwnerState(id.Cleanup) {
 		return id, failure("repository_error", "cannot verify session ownership")
 	}
 	return id, nil

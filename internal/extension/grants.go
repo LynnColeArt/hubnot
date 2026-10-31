@@ -45,12 +45,32 @@ type Access struct {
 	Action   string `json:"action"`
 }
 
-var nativeFamilies = map[string]bool{"issue": true, "project": true, "project-item": true, "discussion": true, "discussion-reply": true, "workflow": true}
-var grantActions = map[string]bool{"read": true, "observe": true, "create": true, "revise": true, "resolve": true, "type.publish": true, "raw.inspect": true}
+func nativeFamilyVocabulary() [6]string {
+	return [6]string{"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"}
+}
+func validNativeFamily(value string) bool {
+	for _, candidate := range nativeFamilyVocabulary() {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
+}
+func grantActionVocabulary() [7]string {
+	return [7]string{"read", "observe", "create", "revise", "resolve", "type.publish", "raw.inspect"}
+}
+func validGrantAction(value string) bool {
+	for _, candidate := range grantActionVocabulary() {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
+}
 
 func validSelector(selector string, wildcard bool) bool {
 	if family, ok := strings.CutPrefix(selector, "native:"); ok {
-		return nativeFamilies[family] || family == "identity"
+		return validNativeFamily(family) || family == "identity"
 	}
 	typeID, ok := strings.CutPrefix(selector, "artifact:")
 	if !ok {
@@ -80,7 +100,7 @@ func ValidateGrants(grants []Grant) error {
 		seen[grant.Selector] = true
 		actions := map[string]bool{}
 		for _, action := range grant.Actions {
-			if !grantActions[action] || actions[action] {
+			if !validGrantAction(action) || actions[action] {
 				return failure("invalid_input", "unknown or duplicate grant action")
 			}
 			actions[action] = true
@@ -106,7 +126,7 @@ func ParseGrant(value string) (Grant, error) {
 
 // NativeAction pins the existing native intents; comment is issue create.
 func NativeAction(family, intent string) (string, error) {
-	if !nativeFamilies[family] {
+	if !validNativeFamily(family) {
 		return "", failure("invalid_input", "unknown native family")
 	}
 	switch intent {
@@ -193,7 +213,7 @@ func Authorize(registration Registration, entry EnablementEntry, binding Binding
 	if registration.Manifest.HostProtocol != HostProtocol {
 		return failure("incompatible_version", "unsupported host protocol")
 	}
-	if !methods[access.Method] {
+	if !validMethod(access.Method) {
 		return failure("unsupported_capability", "method is not supported")
 	}
 	if access.Method != "capabilities.list" && !validSelector(access.Selector, false) || !methodAllows(access) {

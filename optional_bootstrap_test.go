@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -69,6 +70,17 @@ func optionalBootstrapCold(t *testing.T) {
 	t.Helper()
 	if artifactCommands != nil || artifactTypeCommands != nil || extensionSubcommands != nil || extensionHostMethods != nil {
 		t.Fatal("ordinary native startup constructed optional dispatch tables")
+	}
+	if extensionChanges.captures != nil {
+		t.Fatal("ordinary native startup constructed capture cache")
+	}
+	for _, name := range []string{"artifact", "extension"} {
+		if _, present := localCommands[name]; present {
+			t.Fatalf("optional lookup grew native map: %s", name)
+		}
+	}
+	if len(localCommands) != 8 {
+		t.Fatalf("native map keys changed: %d", len(localCommands))
 	}
 }
 func TestOptionalBootstrapColdNative(t *testing.T) {
@@ -280,11 +292,222 @@ func optionalBootstrapBindingError() error {
 			return fmt.Errorf("extensionHostMethods: wrong final handler for%s", name)
 		}
 	}
-	if got := localCommands["artifact"]; got == nil || reflect.ValueOf(got).Pointer() != reflect.ValueOf(cmdArtifact).Pointer() {
+	if got, present := lookupLocalCommand("artifact"); !present || got == nil || reflect.ValueOf(got).Pointer() != reflect.ValueOf(cmdArtifact).Pointer() {
 		return fmt.Errorf("native router artifact drift")
 	}
-	if got := localCommands["extension"]; got == nil || reflect.ValueOf(got).Pointer() != reflect.ValueOf(extensionHostCommand).Pointer() {
+	if got, present := lookupLocalCommand("extension"); !present || got == nil || reflect.ValueOf(got).Pointer() != reflect.ValueOf(extensionHostCommand).Pointer() {
 		return fmt.Errorf("native router extension drift")
 	}
 	return nil
+}
+
+func TestOptionalBootstrapZeroStartup(t *testing.T) {
+	if os.Getenv("HN_OPTIONAL_BOOTSTRAP_CHILD") != "zero-startup" {
+		optionalBootstrapChild(t, "TestOptionalBootstrapZeroStartup", "zero-startup", false)
+		return
+	}
+	optionalBootstrapCold(t)
+	if extensionChanges.captures != nil {
+		t.Error("cold optional capture cache was constructed")
+	}
+	for _, name := range []string{"artifact", "extension"} {
+		if _, present := localCommands[name]; present {
+			t.Errorf("cold optional router %s grew native registration map", name)
+		}
+	}
+}
+
+func optionalBootstrapOutput(t *testing.T, call func()) string {
+	t.Helper()
+	out, err := os.CreateTemp(t.TempDir(), "output")
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := os.Stdout
+	os.Stdout = out
+	func() { defer func() { os.Stdout = original }(); call() }()
+	if err = out.Close(); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(out.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(raw)
+}
+func TestOptionalBootstrapLookupAndHelp(t *testing.T) {
+	if os.Getenv("HN_OPTIONAL_BOOTSTRAP_CHILD") != "lookup" {
+		optionalBootstrapChild(t, "TestOptionalBootstrapLookupAndHelp", "lookup", false)
+		return
+	}
+	optionalBootstrapCold(t)
+	before := len(localCommands)
+	for name, want := range map[string]any{"artifact": cmdArtifact, "extension": extensionHostCommand, "audit": cmdAudit} {
+		got, present := lookupLocalCommand(name)
+		if !present || got == nil || reflect.ValueOf(got).Pointer() != reflect.ValueOf(want).Pointer() {
+			t.Fatal("lookup drift", name)
+		}
+	}
+	if got, present := lookupLocalCommand("unknown-local"); present || got != nil {
+		t.Fatal("unknown local command appeared")
+	}
+	expected := []string{"artifact", "audit", "contribution", "discussion", "discussion-reply", "extension", "migrate", "project", "project-item", "workflow"}
+	names := localCommandNames()
+	sort.Strings(names)
+	if !reflect.DeepEqual(names, expected) {
+		t.Fatal(names)
+	}
+	output := optionalBootstrapOutput(t, printUsage)
+	suffix := "\nNative resource commands:\n"
+	for _, name := range expected {
+		suffix += "  hn " + name + " help\n"
+	}
+	if !strings.HasSuffix(output, suffix) {
+		t.Fatal("sorted public help drift")
+	}
+	for _, name := range []string{"artifact", "extension", "generic-test"} {
+		localCommands[name] = nil
+		nilCount := 0
+		for _, entry := range localCommandNames() {
+			if entry == name {
+				nilCount++
+			}
+		}
+		if nilCount != 1 {
+			t.Fatal("nil override missing or duplicated in help", name, nilCount)
+		}
+		got, present := lookupLocalCommand(name)
+		if !present || got != nil {
+			t.Fatal("nil override fell through", name)
+		}
+		invoked := false
+		override := func(args []string) error { invoked = reflect.DeepEqual(args, []string{"one", "two"}); return nil }
+		localCommands[name] = override
+		got, present = lookupLocalCommand(name)
+		if !present || got == nil || got([]string{"one", "two"}) != nil || !invoked {
+			t.Fatal("generic override/arguments drift", name)
+		}
+		count := 0
+		for _, entry := range localCommandNames() {
+			if entry == name {
+				count++
+			}
+		}
+		if count != 1 {
+			t.Fatal("duplicate or missing help name", name, count)
+		}
+		delete(localCommands, name)
+	}
+	if len(localCommands) != before {
+		t.Fatal("lookup/help grew native map")
+	}
+	if err := run([]string{"artifact", "help"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := run([]string{"extension", "help"}); err != nil {
+		t.Fatal(err)
+	}
+	if len(localCommands) != before {
+		t.Fatal("explicit optional use grew native map")
+	}
+	for _, name := range []string{"artifact", "extension"} {
+		if _, present := localCommands[name]; present {
+			t.Fatal("optional key inserted", name)
+		}
+	}
+}
+func TestOptionalBootstrapMainVocabularies(t *testing.T) {
+	for _, bad := range []string{"Accepted", "accepted ", "accepted\x00", "unknown"} {
+		raw, _ := json.Marshal(map[string]any{"protocol": artifactExchangeProtocol, "mode": bad, "refs": []any{}, "objects": []any{}})
+		_, err := decodeArtifactExchange(context.Background(), raw, 40)
+		revisionError(t, err, "invalid_input")
+	}
+
+	check := func(values, want []string, valid func(string) bool) {
+		t.Helper()
+		if len(values) != len(want) {
+			t.Fatal("vocabulary size")
+		}
+		seen := map[string]bool{}
+		expected := map[string]bool{}
+		for _, v := range want {
+			expected[v] = true
+		}
+		for _, v := range values {
+			if seen[v] || !expected[v] || !valid(v) {
+				t.Fatal("duplicate/unknown/rejected value", v)
+			}
+			seen[v] = true
+			for _, bad := range []string{"", strings.ToUpper(v), v + " ", " " + v, v + "\x00", "prefix" + v, v + "suffix"} {
+				if !expected[bad] && valid(bad) {
+					t.Fatal("near miss admitted", bad)
+				}
+			}
+		}
+	}
+	modes := artifactExchangeModeVocabulary()
+	objects := artifactExchangeObjectTypeVocabulary()
+	shapes := artifactListShapeVocabulary()
+	check(modes[:], []string{"accepted", "opaque"}, validArtifactExchangeMode)
+	check(objects[:], []string{"blob", "tree", "commit"}, validArtifactExchangeObjectType)
+	check(shapes[:], []string{"document", "list", "ticket"}, validArtifactListShape)
+	modes[0] = "changed"
+	objects[0] = "changed"
+	shapes[0] = "changed"
+	if artifactExchangeModeVocabulary()[0] != "accepted" || artifactExchangeObjectTypeVocabulary()[0] != "blob" || artifactListShapeVocabulary()[0] != "document" {
+		t.Fatal("returned arrays alias")
+	}
+	for _, bad := range []string{"document ", "Document", "document\x00", "unknown"} {
+		if err := cmdArtifactList([]string{"--shape", bad, "--json"}); err == nil {
+			t.Fatal("invalid shape reached repository", bad)
+		}
+	}
+	repo := t.TempDir()
+	object := exchangeObject("blob", []byte("public"))
+	object.Type = "tag"
+	revisionError(t, artifactExchangeCopy(context.Background(), repo, []artifactExchangeObject{object}), "verification_failure")
+	if entries, err := os.ReadDir(repo); err != nil || len(entries) != 0 {
+		t.Fatal("unsupported object copied before refusal", entries, err)
+	}
+}
+func TestOptionalBootstrapCaptureFirstUse(t *testing.T) {
+	if os.Getenv("HN_OPTIONAL_BOOTSTRAP_CHILD") != "capture-first" {
+		optionalBootstrapChild(t, "TestOptionalBootstrapCaptureFirstUse", "capture-first", false)
+		return
+	}
+	optionalBootstrapCold(t)
+	extensionChangesForget("missing")
+	extensionChanges.Lock()
+	missing := extensionChanges.captures["missing"]
+	stillNil := extensionChanges.captures == nil
+	extensionChanges.Unlock()
+	if missing != nil || !stillNil {
+		t.Fatal("missing read/delete constructed cache")
+	}
+	start := make(chan struct{})
+	var wait sync.WaitGroup
+	for n := range 64 {
+		wait.Add(1)
+		go func() {
+			defer wait.Done()
+			<-start
+			ensureOptionalBootstrap()
+			if !validArtifactListShape("document") || !validArtifactExchangeMode("accepted") || !validArtifactExchangeObjectType("blob") {
+				t.Error("mixed vocabulary drift")
+			}
+			extensionChangesRetain(&extensionChangeCapture{token: fmt.Sprint(n), bytes: 1, created: time.Now()})
+		}()
+	}
+	close(start)
+	wait.Wait()
+	extensionChanges.Lock()
+	defer extensionChanges.Unlock()
+	if extensionChanges.captures == nil || len(extensionChanges.captures) != extensionChangeCacheCount {
+		t.Fatal("first retain/eviction incomplete", len(extensionChanges.captures))
+	}
+	for token, capture := range extensionChanges.captures {
+		if capture == nil || capture.token != token || capture.bytes != 1 {
+			t.Fatal("partially published capture")
+		}
+	}
 }

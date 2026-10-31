@@ -84,7 +84,7 @@ func run(args []string) error {
 	case "log":
 		return cmdLog(args[1:])
 	default:
-		if command, ok := localCommands[args[0]]; ok {
+		if command, ok := lookupLocalCommand(args[0]); ok {
 			return command(args[1:])
 		}
 		return fmt.Errorf("unknown command %q; run 'hn help'", args[0])
@@ -144,10 +144,7 @@ Usage:
   hn log
   hn version
 `)
-	names := make([]string, 0, len(localCommands))
-	for name := range localCommands {
-		names = append(names, name)
-	}
+	names := localCommandNames()
 	sort.Strings(names)
 	if len(names) > 0 {
 		fmt.Println("\nNative resource commands:")

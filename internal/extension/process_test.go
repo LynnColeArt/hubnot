@@ -273,6 +273,11 @@ func fmtSessionID(n int) string {
 }
 
 func TestSessionCleanupFailureCannotBecomeManagementSuccess(t *testing.T) {
+	ownerStates := map[string]bool{}
+	for _, value := range ownerStateVocabulary() {
+		ownerStates[value] = true
+	}
+
 	if !reflect.DeepEqual(ownerStates, map[string]bool{"owned": true, "verified": true, "failed": true}) {
 		t.Fatal("closed private ownership states drifted")
 	}

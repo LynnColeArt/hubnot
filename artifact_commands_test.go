@@ -227,6 +227,11 @@ func TestArtifactListExactPageBoundCLI(t *testing.T) {
 }
 
 func TestArtifactListFrozenShapeInventory(t *testing.T) {
+	artifactListShapes := map[string]bool{}
+	for _, value := range artifactListShapeVocabulary() {
+		artifactListShapes[value] = true
+	}
+
 	// artifact-v1 section 2 and host-v1 section 4 define this closed family.
 	expected := map[string]bool{"document": true, "list": true, "ticket": true}
 	if !reflect.DeepEqual(artifactListShapes, expected) {

@@ -79,7 +79,7 @@ func InspectMessage(payload []byte, kind, expected, method string) (MessageInspe
 		if !ok {
 			return result, invalidShape()
 		}
-		if !methods[selected] {
+		if !validMethod(selected) {
 			return result, failure("unsupported_capability", "unsupported host method")
 		}
 		shape = closed(map[string]wireRule{"protocol": literal(HostProtocol), "request_id": requestIDRule, "method": literal(selected), "params": paramsRule(selected)}, map[string]wireRule{"timeout_ms": integer(1, 240000, false)})
@@ -112,7 +112,7 @@ func InspectMessage(payload []byte, kind, expected, method string) (MessageInspe
 			if method == "" {
 				return result, invalidShape()
 			}
-			if !methods[method] {
+			if !validMethod(method) {
 				return result, failure("unsupported_capability", "unsupported host method")
 			}
 			dataRule = resultRule(method)
@@ -681,10 +681,8 @@ func capabilitiesRule() wireRule {
 	}
 }
 func methodNames() []string {
-	names := make([]string, 0, len(methods))
-	for name := range methods {
-		names = append(names, name)
-	}
+	values := methodVocabulary()
+	names := append([]string(nil), values[:]...)
 	sort.Strings(names)
 	return names
 }

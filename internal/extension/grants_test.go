@@ -15,6 +15,16 @@ import (
 // These are literal mirrors of host-v1.md sections 1 and 4. Comparing complete
 // sets catches additions as well as removals, independently of the matrix below.
 func TestGrantClosedContractSets(t *testing.T) {
+	nativeFamilies := map[string]bool{}
+	for _, value := range nativeFamilyVocabulary() {
+		nativeFamilies[value] = true
+	}
+
+	grantActions := map[string]bool{}
+	for _, value := range grantActionVocabulary() {
+		grantActions[value] = true
+	}
+
 	wantFamilies := map[string]bool{"issue": true, "project": true, "project-item": true, "discussion": true, "discussion-reply": true, "workflow": true}
 	wantActions := map[string]bool{"read": true, "observe": true, "create": true, "revise": true, "resolve": true, "type.publish": true, "raw.inspect": true}
 	if !reflect.DeepEqual(nativeFamilies, wantFamilies) {

@@ -5,12 +5,6 @@ import (
 	"sync"
 )
 
-// Native dispatch needs only these two inert router bindings at startup.
-func init() {
-	localCommands["artifact"] = cmdArtifact
-	localCommands["extension"] = extensionHostCommand
-}
-
 var optionalBootstrapOnce sync.Once
 
 // Every optional map reader crosses the same completion barrier. Construction
@@ -71,4 +65,33 @@ func ensureOptionalBootstrap() {
 			"resource.read":         extensionNativeDispatch,
 		}
 	})
+}
+
+// Existing native registrations, including nil overrides, retain precedence.
+func lookupLocalCommand(name string) (func([]string) error, bool) {
+	if command, present := localCommands[name]; present {
+		return command, true
+	}
+	switch name {
+	case "artifact":
+		return cmdArtifact, true
+	case "extension":
+		return extensionHostCommand, true
+	default:
+		return nil, false
+	}
+}
+
+// Help includes effective optional commands without growing the native map.
+func localCommandNames() []string {
+	names := make([]string, 0, len(localCommands)+2)
+	for name := range localCommands {
+		names = append(names, name)
+	}
+	for _, name := range [2]string{"artifact", "extension"} {
+		if _, present := localCommands[name]; !present {
+			names = append(names, name)
+		}
+	}
+	return names
 }

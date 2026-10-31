@@ -32,8 +32,28 @@ const (
 )
 const artifactExchangeProtocol = "hn-artifact-exchange/1"
 
-var artifactExchangeModes = map[string]bool{"accepted": true, "opaque": true}
-var artifactExchangeObjectTypes = map[string]bool{"blob": true, "tree": true, "commit": true}
+func artifactExchangeModeVocabulary() [2]string {
+	return [2]string{"accepted", "opaque"}
+}
+func validArtifactExchangeMode(value string) bool {
+	for _, candidate := range artifactExchangeModeVocabulary() {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
+}
+func artifactExchangeObjectTypeVocabulary() [3]string {
+	return [3]string{"blob", "tree", "commit"}
+}
+func validArtifactExchangeObjectType(value string) bool {
+	for _, candidate := range artifactExchangeObjectTypeVocabulary() {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
+}
 
 type artifactExchangeObject struct {
 	OID  string `json:"oid"`
@@ -164,7 +184,7 @@ func decodeArtifactExchange(ctx context.Context, raw []byte, oidLength int) (*ar
 	if e != nil {
 		return nil, e
 	}
-	if protocol != artifactExchangeProtocol || !artifactExchangeModes[mode] {
+	if protocol != artifactExchangeProtocol || !validArtifactExchangeMode(mode) {
 		return nil, artifactFailure("invalid_input", "unsupported exchange wrapper")
 	}
 	b := &artifactExchange{Protocol: protocol, Mode: mode, Refs: []artifactSource{}, Objects: []artifactExchangeObject{}}
@@ -209,7 +229,7 @@ func decodeArtifactExchange(ctx context.Context, raw []byte, oidLength int) (*ar
 		if o.Data, e = artifactExchangeString(v["data"]); e != nil {
 			return e
 		}
-		if !validGitOID(o.OID) || len(o.OID) != oidLength || o.OID != strings.ToLower(o.OID) || seen[o.OID] || !artifactExchangeObjectTypes[o.Type] {
+		if !validGitOID(o.OID) || len(o.OID) != oidLength || o.OID != strings.ToLower(o.OID) || seen[o.OID] || !validArtifactExchangeObjectType(o.Type) {
 			return artifactFailure("invalid_input", "invalid or duplicate exchange Git object")
 		}
 		// Charge the decoded size before allocating its buffer. Strict unpadded
@@ -373,7 +393,7 @@ func artifactExchangeObjectsFromClosure(ctx context.Context, h *artifactHistory,
 			return nil, artifactExchangeGitError(ctx, "verification_failure", "cannot inspect selected exchange object")
 		}
 		kind := strings.TrimSpace(string(meta))
-		if !artifactExchangeObjectTypes[kind] {
+		if !validArtifactExchangeObjectType(kind) {
 			return nil, artifactFailure("verification_failure", "unsupported exchange object type")
 		}
 		body, e := reader.object(oid, kind, artifactReadObjectBytes)
@@ -436,7 +456,7 @@ func artifactExchangeCopy(ctx context.Context, dir string, objects []artifactExc
 		if e := budget.charge(ctx, len(o.body)); e != nil {
 			return e
 		}
-		if !artifactExchangeObjectTypes[o.Type] || !validGitOID(o.OID) || o.OID != artifactExchangeHash(o.Type, o.body, len(o.OID)) {
+		if !validArtifactExchangeObjectType(o.Type) || !validGitOID(o.OID) || o.OID != artifactExchangeHash(o.Type, o.body, len(o.OID)) {
 			return artifactFailure("verification_failure", "invalid raw exchange object before copy")
 		}
 		// Commit metadata is unsigned transport data. Git's ordinary object
