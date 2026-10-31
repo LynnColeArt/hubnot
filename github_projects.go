@@ -1748,6 +1748,9 @@ func githubProjectValidatePlan(ctx context.Context, g *githubForge, cp githubPro
 	}
 	return nil
 }
+
+// This is an exact raw publication/checkpoint proof, not current export
+// selection. New ordinary exports pass the shared governed snapshot seam.
 func githubProjectAlreadyNative(p githubapi.ProjectV2) error {
 	_, proof, ok := githubParseProjectBody(p.Readme)
 	if !ok {
