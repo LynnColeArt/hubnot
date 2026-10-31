@@ -25,16 +25,26 @@ type artifactOperationResult struct {
 	Reason     *string                 `json:"reason"`
 }
 
-var artifactOperationType *regexp.Regexp
-var artifactOperationTypeOnce sync.Once
+// Keep all shared MatchString callers lazy, including list/search readers that
+// do not inspect an operation first.
+var artifactOperationType artifactOperationTypeMatcher
+
+type artifactOperationTypeMatcher struct {
+	once    sync.Once
+	pattern *regexp.Regexp
+}
+
+func (m *artifactOperationTypeMatcher) MatchString(value string) bool {
+	m.once.Do(func() {
+		m.pattern = regexp.MustCompile(`^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`)
+	})
+	return m.pattern.MatchString(value)
+}
 
 // inspectArtifactOperation is a read, not a mutation preflight: no policy write
 // check, signer, creating lock, intent repair or implicit retry is permitted.
 func inspectArtifactOperation(ctx context.Context, typeID, actor, operation string) (artifactOperationResult, error) {
 	var result artifactOperationResult
-	artifactOperationTypeOnce.Do(func() {
-		artifactOperationType = regexp.MustCompile(`^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`)
-	})
 	if !artifactOperationType.MatchString(typeID) || strings.HasPrefix(typeID, "hn/") || strings.HasPrefix(typeID, "hubnot/") {
 		return result, artifactFailure("invalid_input", "requires a valid custom type ID")
 	}

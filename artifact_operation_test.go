@@ -28,7 +28,7 @@ func TestArtifactOperationValidatorLazyStartup(t *testing.T) {
 		}
 		return
 	}
-	if artifactOperationType != nil {
+	if artifactOperationType.pattern != nil {
 		t.Fatal("artifact operation regexp constructed before any operation inspection")
 	}
 	// Valid selectors reach the actor/key check; invalid selectors must retain
@@ -47,13 +47,14 @@ func TestArtifactOperationValidatorLazyStartup(t *testing.T) {
 		{"hn/n", false}, {"hubnot/n", false},
 	}
 	type observation struct {
-		typeID, message string
-		err             error
+		typeID, message  string
+		err              error
+		match, wantMatch bool
 	}
 	const callers = 32
 	start := make(chan struct{})
 	results := make(chan observation, callers*len(tests))
-	for range callers {
+	for caller := range callers {
 		go func() {
 			<-start
 			for _, test := range tests {
@@ -61,20 +62,34 @@ func TestArtifactOperationValidatorLazyStartup(t *testing.T) {
 				if test.valid {
 					message = "requires full actor and bounded operation key"
 				}
-				_, err := inspectArtifactOperation(context.Background(), test.typeID, "", "")
-				results <- observation{test.typeID, message, err}
+				var err error
+				var match bool
+				// Both the shared matcher (used by list/search) and inspector
+				// must safely perform the very first lookup concurrently.
+				if caller%2 == 0 {
+					match = artifactOperationType.MatchString(test.typeID)
+					_, err = inspectArtifactOperation(context.Background(), test.typeID, "", "")
+				} else {
+					_, err = inspectArtifactOperation(context.Background(), test.typeID, "", "")
+					match = artifactOperationType.MatchString(test.typeID)
+				}
+				wantMatch := test.valid || test.typeID == "hn/n" || test.typeID == "hubnot/n"
+				results <- observation{test.typeID, message, err, match, wantMatch}
 			}
 		}()
 	}
 	close(start)
 	for range callers * len(tests) {
 		result := <-results
+		if result.match != result.wantMatch {
+			t.Fatalf("selector %q: matcher acceptance = %v, want %v", result.typeID, result.match, result.wantMatch)
+		}
 		failure, ok := result.err.(*artifact.Error)
 		if !ok || failure.Code != "invalid_input" || failure.Message != result.message {
 			t.Fatalf("selector %q: want invalid_input %q, got %v", result.typeID, result.message, result.err)
 		}
 	}
-	if artifactOperationType == nil {
+	if artifactOperationType.pattern == nil {
 		t.Fatal("operation inspection did not construct its validator")
 	}
 }
