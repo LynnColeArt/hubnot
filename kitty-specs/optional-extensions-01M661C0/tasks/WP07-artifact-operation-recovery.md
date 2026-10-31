@@ -12,9 +12,6 @@ requirement_refs:
 planning_base_branch: feature/optional-extensions
 merge_target_branch: feature/optional-extensions
 branch_strategy: Planning artifacts for this mission were generated on feature/optional-extensions. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feature/optional-extensions unless the human explicitly redirects the landing branch.
-base_branch: kitty/mission-optional-extensions-01M661C0
-base_commit: 29486d8595db741423404e6a32a5f92cb9c7af93
-created_at: '2026-10-31T02:58:42.748851+00:00'
 subtasks:
 - T028
 - T029
