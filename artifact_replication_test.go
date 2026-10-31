@@ -702,3 +702,259 @@ func TestArtifactGitFrozenRawBodiesCLI(t *testing.T) {
 	}
 	broken.unchanged(missingBefore)
 }
+
+// This fixture contains only inert public type declarations from the frozen
+// corpus. It never initializes a signer or handles private recovery material.
+type artifactNamespaceFixture struct {
+	src, dst                                     *artifactCLIFixture
+	selected, oldTip, newTip, accepted, sentinel string
+}
+
+func newArtifactNamespaceFixture(t *testing.T) artifactNamespaceFixture {
+	t.Helper()
+	keyless := func(name string) *artifactCLIFixture {
+		root := t.TempDir()
+		f := &artifactCLIFixture{t: t, binary: artifactStoreBinary(t), repo: filepath.Join(root, name), home: filepath.Join(root, "home")}
+		f.git("init", "--quiet")
+		return f
+	}
+	src, dst := keyless("public-source"), keyless("public-destination")
+	text, e := os.ReadFile("kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md")
+	if e != nil {
+		t.Fatal(e)
+	}
+	f := artifactNamespaceFixture{src: src, dst: dst, sentinel: "refs/namespace-test/public-sentinel"}
+	sourceRef := ""
+	for i, name := range []string{"type-note-v1", "type-list-v1"} {
+		_, section, ok := strings.Cut(string(text), "## Signed vector: "+name+"\n")
+		if !ok {
+			t.Fatal(name)
+		}
+		section = strings.SplitN(section, "\n## ", 2)[0]
+		blocks := regexp.MustCompile("(?s)~~~json\\n(.*?)\\n~~~").FindAllStringSubmatch(section, -1)
+		if len(blocks) != 2 {
+			t.Fatal(name)
+		}
+		var meta map[string]any
+		if e = json.Unmarshal([]byte(blocks[1][1]), &meta); e != nil {
+			t.Fatal(e)
+		}
+		g := meta["git_sha1"].(map[string]any)
+		raw, e := hex.DecodeString(meta["canonical_utf8_hex"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		payload, e := hex.DecodeString(g["payload_blob"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		signature, e := hex.DecodeString(g["signature_blob"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		tree := append(append(append([]byte("100644 artifact.json\x00"), payload...), []byte("100644 signature\x00")...), signature...)
+		objects := []struct {
+			kind, oid string
+			raw       []byte
+		}{{"blob", g["payload_blob"].(string), raw}, {"blob", g["signature_blob"].(string), []byte(meta["signature"].(string))}, {"tree", g["tree"].(string), tree}, {"commit", g["commit"].(string), []byte(g["commit_body"].(string))}}
+		for _, o := range objects {
+			if got := src.gitInput(string(o.raw), "hash-object", "-w", "--literally", "-t", o.kind, "--stdin"); got != o.oid {
+				t.Fatal("public literal OID changed", got, o.oid)
+			}
+		}
+		sourceRef = meta["local_ref"].(string)
+		if i == 0 {
+			f.oldTip = g["commit"].(string)
+		} else {
+			f.newTip = g["commit"].(string)
+			f.selected = meta["id"].(string)
+		}
+	}
+	src.git("update-ref", sourceRef, f.newTip)
+	remote := filepath.Join(t.TempDir(), "public.git")
+	src.git("init", "--bare", "--quiet", remote)
+	src.git("--git-dir="+remote, "fetch", "--no-tags", "--no-write-fetch-head", src.repo, sourceRef+":"+sourceRef)
+	dst.git("remote", "add", "public", remote)
+	dst.git("fetch", "--no-tags", "--no-write-fetch-head", src.repo, f.oldTip+":"+f.sentinel)
+	f.accepted = strings.Replace(sourceRef, "refs/hn/", "refs/hn/remotes/public/", 1)
+	dst.git("update-ref", f.accepted, f.oldTip)
+	return f
+}
+
+func namespacePublicBody(t *testing.T, f *artifactCLIFixture, ref string) []byte {
+	t.Helper()
+	cmd := exec.Command("git", "cat-file", "commit", ref)
+	cmd.Dir = f.repo
+	cmd.Env = operationalTestEnvironment(f.home)
+	b, e := cmd.Output()
+	if e != nil {
+		t.Fatal(e)
+	}
+	return b
+}
+
+func assertArtifactNamespaceResult(t *testing.T, f artifactNamespaceFixture, before []byte) {
+	t.Helper()
+	sentinelOID := f.dst.git("rev-parse", f.sentinel)
+	after := namespacePublicBody(t, f.dst, f.sentinel)
+	accepted := f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/")
+	t.Logf("public sentinel before=%s after=%s body_before=%x body_after=%x accepted_after=%q", f.oldTip, sentinelOID, before, after, accepted)
+	if sentinelOID != f.oldTip || !bytes.Equal(before, after) {
+		t.Fatal("artifact fetch advanced unrelated public sentinel", f.sentinel)
+	}
+	if accepted != f.accepted+" "+f.newTip {
+		t.Fatal("fetch did not publish only the exact named direct accepted ref", accepted)
+	}
+	if got := f.dst.git("for-each-ref", "--format=%(refname)", "refs/hn/artifacts/"); got != "" {
+		t.Fatal("public fixture acquired local artifact roots", got)
+	}
+	if _, e := os.Stat(f.dst.home); !os.IsNotExist(e) {
+		t.Fatal("public fixture created private identity state", e)
+	}
+}
+
+func TestArtifactGitFetchNamedAcceptedNamespaceCLI(t *testing.T) {
+	for _, symbolic := range []bool{false, true} {
+		name := "direct-positive"
+		if symbolic {
+			name = "preexisting-public-alias"
+		}
+		t.Run(name, func(t *testing.T) {
+			f := newArtifactNamespaceFixture(t)
+			if symbolic {
+				f.dst.git("symbolic-ref", f.accepted, f.sentinel)
+			}
+			before := namespacePublicBody(t, f.dst, f.sentinel)
+			t.Log("accepted_before", f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/"))
+			f.dst.call("", "", "artifact", "fetch", "--remote", "public", "--id", f.selected, "--json")
+			assertArtifactNamespaceResult(t, f, before)
+		})
+	}
+}
+
+func TestArtifactGitFetchNamedNamespaceRace(t *testing.T) {
+	f := newArtifactNamespaceFixture(t)
+	before := namespacePublicBody(t, f.dst, f.sentinel)
+	t.Chdir(f.dst.repo)
+	replicationBeforePromoteHook = func() error { f.dst.git("symbolic-ref", f.accepted, f.sentinel); return nil }
+	t.Cleanup(func() { replicationBeforePromoteHook = nil })
+	_, e := replicateArtifacts(context.Background(), "fetch", "public", []string{f.selected})
+	if e != nil {
+		t.Fatal(e)
+	}
+	assertArtifactNamespaceResult(t, f, before)
+}
+
+func TestArtifactGitNamedTransactionStaleOldIsAtomic(t *testing.T) {
+	f := newArtifactNamespaceFixture(t)
+	// Make only the verified public successor objects available; publication is
+	// still exclusively the transaction under test, with one deliberately stale
+	// expected value. The unrelated sentinel is public data throughout.
+	f.dst.git("fetch", "--no-tags", "--no-write-fetch-head", f.src.repo, f.newTip)
+	other := strings.Replace(f.accepted, "/public/", "/other/", 1)
+	f.dst.git("symbolic-ref", f.accepted, f.sentinel)
+	f.dst.git("update-ref", other, f.oldTip)
+	before := f.dst.snapshot()
+	t.Chdir(f.dst.repo)
+	e := promoteReplicationRefs([]replicationPromotion{{Ref: f.accepted, NewOID: f.newTip, OldOID: f.oldTip}, {Ref: other, NewOID: f.newTip, OldOID: strings.Repeat("0", len(f.oldTip))}})
+	if e == nil || !strings.Contains(e.Error(), "atomically promote accepted refs") {
+		t.Fatal("wrong expected-old refusal", e)
+	}
+	f.dst.unchanged(before)
+	if f.dst.git("rev-parse", f.sentinel) != f.oldTip || f.dst.git("symbolic-ref", f.accepted) != f.sentinel || f.dst.git("rev-parse", other) != f.oldTip {
+		t.Fatal("stale transaction partially published")
+	}
+}
+
+func TestArtifactGitFetchAcknowledgementCLI(t *testing.T) {
+	for _, tc := range []struct{ name, code, recovery string }{{"committed-error", "uncertain_operation", "inspect_operation"}, {"unavailable-witness", "uncertain_operation", "inspect_operation"}, {"stale-old", "concurrent_update", "retry_identical"}} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newArtifactNamespaceFixture(t)
+			sourceBefore := f.src.snapshot()
+			sentinelBefore := namespacePublicBody(t, f.dst, f.sentinel)
+			competing := f.dst.gitInput("public competing selected-target value", "hash-object", "-w", "--stdin")
+			realGit, e := exec.LookPath("git")
+			if e != nil {
+				t.Fatal(e)
+			}
+			wrap := t.TempDir()
+			committed := filepath.Join(wrap, "committed")
+			refused := filepath.Join(wrap, "stale-refused")
+			denied := filepath.Join(wrap, "witness-denied")
+			// Only the real final local stdin transaction is faulted. Quarantine Git,
+			// raw copying and initial source/destination witnesses delegate normally.
+			script := `#!/bin/sh
+update=0; stream=0; explicit=0; witness=0
+for arg do
+ case "$arg" in update-ref) update=1 ;; --stdin) stream=1 ;; --git-dir=*) explicit=1 ;; for-each-ref) witness=1 ;; esac
+done
+if [ "$HN_WP09_ACK_MODE" = unavailable-witness ] && [ -f "$HN_WP09_ACK_COMMITTED" ] && [ "$witness" = 1 ]; then
+ : > "$HN_WP09_ACK_DENIED"
+ exit 87
+fi
+if [ "$PWD" = "$HN_WP09_ACK_REPO" ] && [ "$update$stream$explicit" = 110 ]; then
+ if [ "$HN_WP09_ACK_MODE" = stale-old ]; then
+  "$HN_WP09_ACK_GIT" update-ref --no-deref "$HN_WP09_ACK_REF" "$HN_WP09_ACK_COMPETING" "$HN_WP09_ACK_OLD" || exit 90
+  "$HN_WP09_ACK_GIT" "$@"
+  result=$?
+  [ "$result" != 0 ] || exit 91
+  : > "$HN_WP09_ACK_REFUSED"
+  exit "$result"
+ fi
+ "$HN_WP09_ACK_GIT" "$@" || exit $?
+ : > "$HN_WP09_ACK_COMMITTED"
+ exit 86
+fi
+exec "$HN_WP09_ACK_GIT" "$@"
+`
+			if e = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); e != nil {
+				t.Fatal(e)
+			}
+			cmd := exec.Command(f.dst.binary, "artifact", "fetch", "--remote", "public", "--id", f.selected, "--json")
+			cmd.Dir = f.dst.repo
+			cmd.Env = operationalTestEnvironmentWith(f.dst.home, map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP09_ACK_MODE": tc.name, "HN_WP09_ACK_GIT": realGit, "HN_WP09_ACK_REPO": f.dst.repo, "HN_WP09_ACK_REF": f.accepted, "HN_WP09_ACK_OLD": f.oldTip, "HN_WP09_ACK_COMPETING": competing, "HN_WP09_ACK_COMMITTED": committed, "HN_WP09_ACK_REFUSED": refused, "HN_WP09_ACK_DENIED": denied})
+			raw, callErr := cmd.Output()
+			var response map[string]any
+			if e = json.Unmarshal(raw, &response); e != nil {
+				t.Fatal("response", e, string(raw))
+			}
+			target := f.dst.git("rev-parse", f.accepted)
+			afterRefs := f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/")
+			sentinelAfter := namespacePublicBody(t, f.dst, f.sentinel)
+			if f.dst.git("rev-parse", f.sentinel) != f.oldTip || !bytes.Equal(sentinelBefore, sentinelAfter) {
+				t.Fatal("fetch fault changed unrelated public sentinel")
+			}
+			if tc.name == "stale-old" {
+				if _, e = os.Stat(refused); e != nil {
+					t.Fatal("control did not exercise real stale-old Git refusal", e)
+				}
+				if _, e = os.Stat(committed); !os.IsNotExist(e) || target != competing {
+					t.Fatal("stale transaction published selected successor", target, e)
+				}
+			} else {
+				if _, e = os.Stat(committed); e != nil || target != f.newTip {
+					t.Fatal("control did not commit selected successor", target, e)
+				}
+				if !bytes.Equal(namespacePublicBody(t, f.dst, f.accepted), namespacePublicBody(t, f.src, f.newTip)) {
+					t.Fatal("committed raw successor changed")
+				}
+			}
+			t.Logf("mode=%s old_target=%s selected_new=%s observed_target=%s accepted_refs=%q public_sentinel=%s sentinel_body_before=%x sentinel_body_after=%x response=%s", tc.name, f.oldTip, f.newTip, target, afterRefs, f.oldTip, sentinelBefore, sentinelAfter, raw)
+			f.src.unchanged(sourceBefore)
+			for _, p := range []string{f.dst.home, filepath.Join(f.dst.repo, ".hn"), filepath.Join(f.dst.repo, ".git", "hn")} {
+				if _, e = os.Stat(p); !os.IsNotExist(e) {
+					t.Fatal("public fault created private state", p, e)
+				}
+			}
+			if callErr == nil || response["ok"] != false || response["data"] != nil {
+				t.Fatal("failed acknowledgement became success", callErr, response)
+			}
+			artifactErrorShape(t, response, "artifact", tc.code, tc.recovery, nil)
+			if tc.name == "unavailable-witness" {
+				if _, e = os.Stat(denied); e != nil {
+					t.Fatal("control did not deny the actual post-error witness", e)
+				}
+			}
+		})
+	}
+}

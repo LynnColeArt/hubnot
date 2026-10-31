@@ -320,3 +320,66 @@ func TestArtifactCombinedOpaqueAndNativeCLI(t *testing.T) {
 		t.Fatal(string(raw))
 	}
 }
+
+// A local accepted-ref transaction can commit and still lose its acknowledgement.
+// This fixture uses only frozen public data and an unrelated public sentinel;
+// there is no signing identity, private key or signing-head recovery involved.
+func TestArtifactCombinedFetchLostAcknowledgementCLI(t *testing.T) {
+	f := newArtifactNamespaceFixture(t)
+	sourceBefore := f.src.snapshot()
+	acceptedBefore := f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/")
+	sentinelBefore := namespacePublicBody(t, f.dst, f.sentinel)
+	actualGit, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrap := t.TempDir()
+	marker := filepath.Join(t.TempDir(), "accepted-transaction-committed")
+	// Stage projection uses an explicit --git-dir and no stdin transaction. Only
+	// the real final destination transaction has cwd=destination and this shape.
+	script := "#!/bin/sh\nupdate=0;stream=0;explicit=0\nfor arg do\n case \"$arg\" in update-ref) update=1 ;; --stdin) stream=1 ;; --git-dir=*) explicit=1 ;; esac\ndone\nif [ \"$PWD\" = \"$HN_WP11_FETCH_REPO\" ] && [ \"$update$stream$explicit\" = 110 ];then\n '" + actualGit + "' \"$@\" || exit $?\n : > \"$HN_WP11_FETCH_MARKER\"\n exit 86\nfi\nexec '" + actualGit + "' \"$@\"\n"
+	if err = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	command := []string{"artifact", "fetch", "--remote", "public", "--id", f.selected, "--json"}
+	cmd := exec.Command(f.dst.binary, command...)
+	cmd.Dir = f.dst.repo
+	cmd.Env = operationalTestEnvironmentWith(f.dst.home, map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP11_FETCH_REPO": f.dst.repo, "HN_WP11_FETCH_MARKER": marker})
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	raw, callErr := cmd.Output()
+	if _, err = os.Stat(marker); err != nil {
+		t.Fatal("control did not commit the actual destination transaction", err, string(raw), stderr.String())
+	}
+	var response map[string]any
+	if err = json.Unmarshal(raw, &response); err != nil {
+		t.Fatal(err, string(raw))
+	}
+	acceptedAfter := f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/")
+	sentinelOID := f.dst.git("rev-parse", f.sentinel)
+	sentinelAfter := namespacePublicBody(t, f.dst, f.sentinel)
+	t.Logf("actual fetch accepted_before=%q accepted_after=%q public_sentinel_before=%s public_sentinel_after=%s response=%s", acceptedBefore, acceptedAfter, f.oldTip, sentinelOID, raw)
+	if evidence := os.Getenv("HN_WP11_REFRESH_EVIDENCE_DIR"); evidence != "" {
+		observed := map[string]any{"command": command, "before_accepted_refs": acceptedBefore, "after_accepted_refs": acceptedAfter, "accepted_ref": f.accepted, "expected_new_oid": f.newTip, "public_sentinel": f.sentinel, "old_oid": f.oldTip, "sentinel_after_oid": sentinelOID, "sentinel_before_body": string(sentinelBefore), "sentinel_after_body": string(sentinelAfter), "response": response, "raw_stdout": string(raw), "stderr": stderr.String(), "transaction_committed_marker": true}
+		b, e := json.MarshalIndent(observed, "", "  ")
+		if e != nil {
+			t.Fatal(e)
+		}
+		if e = os.WriteFile(filepath.Join(evidence, "local-fetch-lost-ack.json"), b, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if acceptedAfter != f.accepted+" "+f.newTip || sentinelOID != f.oldTip || !bytes.Equal(sentinelBefore, sentinelAfter) {
+		t.Fatal("wrong committed/public-namespace witness", acceptedAfter, sentinelOID)
+	}
+	f.src.unchanged(sourceBefore)
+	for _, p := range []string{f.dst.home, filepath.Join(f.dst.repo, ".hn"), filepath.Join(f.dst.repo, ".git", "hn")} {
+		if _, err = os.Stat(p); !os.IsNotExist(err) {
+			t.Fatal("public fetch created private identity or extension state", p, err)
+		}
+	}
+	if callErr == nil || response["ok"] != false || response["data"] != nil {
+		t.Fatal("lost acknowledgement became success", callErr, response)
+	}
+	artifactErrorShape(t, response, "artifact", "uncertain_operation", "inspect_operation", nil)
+}

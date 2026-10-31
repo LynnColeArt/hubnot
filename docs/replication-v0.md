@@ -286,8 +286,10 @@ canonical prefix refs with expected-old leases. Fetch downloads advertised custo
 sources into an application-owned quarantine, verifies their exact ref witnesses,
 selects the requested closure, verifies the projected destination view and copies
 only its public inventory. Atomic expected-old promotion writes only
-`refs/hn/remotes/REMOTE/artifacts/ACTOR/STREAMHEX`. Existing local signing roots
-are preserved. An older/divergent selection cannot rewind an accepted prefix or a
+`refs/hn/remotes/REMOTE/artifacts/ACTOR/STREAMHEX`. Artifact promotion disables symbolic-ref dereferencing in the atomic transaction:
+a symbolic accepted entry is replaced at that exact name, while its unrelated
+referent remains unchanged, including if an alias appears after validation.
+Existing local signing roots are preserved. An older/divergent selection cannot rewind an accepted prefix or a
 remote publication. The returned fetch source_cut is the destination's actual
 accepted view after promotion, with a nonempty physical-repository-bound Cut.
 
@@ -298,7 +300,12 @@ accepted. Ordinary inspect retains its 100000-record, 8 MiB-object, 256 MiB-tota
 bounds. Git network download has no pre-download byte quota. Synchronous I/O may
 outlast cancellation; processes are waited before returning. A failed atomic CAS
 may leave unreachable public object bytes, but never a partially promoted selected
-ref transaction. A post-promotion acknowledgement failure reports uncertain_operation.
+ref transaction. A post-promotion acknowledgement failure reports uncertain_operation. A local
+Git error alone does not prove non-publication: fetch retains
+`uncertain_operation`/`inspect_operation` when a selected successor is visible or
+its bounded target witnesses cannot settle the outcome. A confirmed stale-old
+refusal retains `concurrent_update`/`retry_identical`. Transport never invents a
+mutation actor/key or retries the selected intent automatically.
 
 Unknown protocols, missing/corrupt objects, bad signatures, unsupported schemas and
 incomplete required closure refuse accepted transfer. They do not become empty
