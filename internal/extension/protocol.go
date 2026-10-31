@@ -134,38 +134,48 @@ func InspectMessage(payload []byte, kind, expected, method string) (MessageInspe
 // protocolInventories are the private closed wire vocabularies frozen by the
 // host/artifact contracts. Every typed enum below consumes these same values;
 // protocol_test.go mirrors them against independent literal contract copies.
-var protocolInventories = map[string][]string{
-	"families":                {"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"},
-	"shapes":                  {"document", "list", "ticket"},
-	"operation_protocols":     {"hn/0", "hn-artifact/1"},
-	"recoveries":              {"do_not_retry", "retry_identical", "inspect_operation", "rescan_required"},
-	"artifact_read_modes":     {"view", "heads", "history", "inspect"},
-	"artifact_mutation_kinds": {"record.open", "record.revise", "record.resolve", "record.convert"},
-	"diagnostic_codes":        {"incomplete_dependency", "unsupported_schema", "target_conflict", "missing_optional", "invalid_history", "opaque_unverified"},
-	"native_admission":        {"admitted", "pending", "hidden"},
-	"operation_statuses":      {"found", "verified_absent", "uncertain"},
-	"operation_reasons":       {"incomplete_selection", "unavailable_history", "private_intent_pending", "visibility_restricted", "publication_unconfirmed"},
-	"availability":            {"observed", "not_probed", "unavailable"},
-	"signed_validation":       {"verified", "unsupported", "incomplete"},
-	"artifact_envelope_kinds": {"type.publish", "record.open", "record.revise", "record.resolve", "record.convert"},
-	"target_modes":            {"logical", "revision"},
-	"schema_node_types":       {"object", "array", "string", "integer", "boolean", "null"},
-	"native_statuses":         {"open", "closed"},
-	"native_relation_kinds":   {"blocks", "related", "parent"},
-	"project_value_types":     {"text", "number", "date", "single_select"},
-	"project_layouts":         {"table", "board"},
-	"project_target_kinds":    {"issue", "proposal", "discussion", "draft", "external"},
-	"message_kinds":           {"hello", "ready", "request", "response", "cancel"},
-	"native_intents":          {"open", "revise", "resolve"},
-	"issue_intents":           {"open", "revise", "resolve", "comment"},
-	"error_origins":           {"host", "native", "artifact"},
-	"host_error_codes":        {"denied_access", "incompatible_version", "unavailable_module", "unsupported_capability", "resource_limit", "cancelled", "uncertain_operation", "checkpoint_invalidated", "verification_failure", "invalid_input", "not_found", "repository_error"},
-	"native_error_codes":      {"actor_mismatch", "admission_pending", "admission_refused", "ambiguous_id", "concurrent_update", "invalid_cursor", "invalid_history", "invalid_input", "issue_conflict", "not_found", "operation_conflict", "permission_denied", "repository_error", "resource_conflict", "resource_limit", "stale_cursor", "stale_revision"},
-	"artifact_error_codes":    {"invalid_input", "resource_limit", "verification_failure", "invalid_history", "incomplete_dependency", "unsupported_schema", "actor_stream_conflict", "operation_conflict", "stale_revision", "resource_conflict", "concurrent_update", "not_found", "repository_error", "cancelled", "uncertain_operation"},
-	"unsupported":             {"memory.mutate", "proposal", "review", "decide", "merge", "policy.mutate", "identity.mutate", "run", "runner", "audit", "automerge", "sync.apply", "migration.apply"},
+var protocolInventoryCache struct {
+	once   sync.Once
+	values map[string][]string
 }
 
-func inventoryRule(name string) wireRule { return enumeration(protocolInventories[name]...) }
+func protocolInventories() map[string][]string {
+	protocolInventoryCache.once.Do(func() {
+		protocolInventoryCache.values = map[string][]string{
+			"families":                {"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"},
+			"shapes":                  {"document", "list", "ticket"},
+			"operation_protocols":     {"hn/0", "hn-artifact/1"},
+			"recoveries":              {"do_not_retry", "retry_identical", "inspect_operation", "rescan_required"},
+			"artifact_read_modes":     {"view", "heads", "history", "inspect"},
+			"artifact_mutation_kinds": {"record.open", "record.revise", "record.resolve", "record.convert"},
+			"diagnostic_codes":        {"incomplete_dependency", "unsupported_schema", "target_conflict", "missing_optional", "invalid_history", "opaque_unverified"},
+			"native_admission":        {"admitted", "pending", "hidden"},
+			"operation_statuses":      {"found", "verified_absent", "uncertain"},
+			"operation_reasons":       {"incomplete_selection", "unavailable_history", "private_intent_pending", "visibility_restricted", "publication_unconfirmed"},
+			"availability":            {"observed", "not_probed", "unavailable"},
+			"signed_validation":       {"verified", "unsupported", "incomplete"},
+			"artifact_envelope_kinds": {"type.publish", "record.open", "record.revise", "record.resolve", "record.convert"},
+			"target_modes":            {"logical", "revision"},
+			"schema_node_types":       {"object", "array", "string", "integer", "boolean", "null"},
+			"native_statuses":         {"open", "closed"},
+			"native_relation_kinds":   {"blocks", "related", "parent"},
+			"project_value_types":     {"text", "number", "date", "single_select"},
+			"project_layouts":         {"table", "board"},
+			"project_target_kinds":    {"issue", "proposal", "discussion", "draft", "external"},
+			"message_kinds":           {"hello", "ready", "request", "response", "cancel"},
+			"native_intents":          {"open", "revise", "resolve"},
+			"issue_intents":           {"open", "revise", "resolve", "comment"},
+			"error_origins":           {"host", "native", "artifact"},
+			"host_error_codes":        {"denied_access", "incompatible_version", "unavailable_module", "unsupported_capability", "resource_limit", "cancelled", "uncertain_operation", "checkpoint_invalidated", "verification_failure", "invalid_input", "not_found", "repository_error"},
+			"native_error_codes":      {"actor_mismatch", "admission_pending", "admission_refused", "ambiguous_id", "concurrent_update", "invalid_cursor", "invalid_history", "invalid_input", "issue_conflict", "not_found", "operation_conflict", "permission_denied", "repository_error", "resource_conflict", "resource_limit", "stale_cursor", "stale_revision"},
+			"artifact_error_codes":    {"invalid_input", "resource_limit", "verification_failure", "invalid_history", "incomplete_dependency", "unsupported_schema", "actor_stream_conflict", "operation_conflict", "stale_revision", "resource_conflict", "concurrent_update", "not_found", "repository_error", "cancelled", "uncertain_operation"},
+			"unsupported":             {"memory.mutate", "proposal", "review", "decide", "merge", "policy.mutate", "identity.mutate", "run", "runner", "audit", "automerge", "sync.apply", "migration.apply"},
+		}
+	})
+	return protocolInventoryCache.values
+}
+
+func inventoryRule(name string) wireRule { return enumeration(protocolInventories()[name]...) }
 
 type wireRule func(any) error
 
@@ -178,9 +188,6 @@ func predicate(test func(any) bool) wireRule {
 		return nil
 	}
 }
-
-var nullRule = predicate(func(v any) bool { return v == nil })
-var booleanRule = predicate(func(v any) bool { _, ok := v.(bool); return ok })
 
 func literal(want any) wireRule { return predicate(func(v any) bool { return v == want }) }
 func literalNumber(n int64) wireRule {
@@ -322,58 +329,121 @@ func matches(pattern string) wireRule {
 	return predicate(func(v any) bool { s, ok := v.(string); return ok && r().MatchString(s) })
 }
 
-var idRule = matches(`^sha256:[0-9a-f]{64}$`)
-var actorRule = matches(`^[0-9a-f]{64}$`)
-var sessionIDRule = matches(`^[0-9a-f]{32}$`)
-var requestIDRule = matches(`^[!-~]{1,128}$`)
-var moduleVersionRule = matches(`^[!-~]{1,64}$`)
-var typeIDRule = predicate(func(v any) bool { s, ok := v.(string); return ok && ValidModuleID(s) })
-var familyRule = inventoryRule("families")
-var shapeRule = inventoryRule("shapes")
-var protocolRule = inventoryRule("operation_protocols")
-var recoveryRule = inventoryRule("recoveries")
-var tokenRule = text(0, 4096)
-var decimalPattern = sync.OnceValue(func() *regexp.Regexp {
-	return regexp.MustCompile(`^-?(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$`)
-})
-var decimalRule = predicate(func(v any) bool {
-	s, ok := v.(string)
-	return ok && len(s) <= 64 && s != "-0" && decimalPattern().MatchString(s)
-})
-var dateRule = predicate(func(v any) bool {
-	s, ok := v.(string)
-	if !ok || len(s) != 10 {
-		return false
-	}
-	d, err := time.Parse("2006-01-02", s)
-	return err == nil && d.Year() > 0 && d.Format("2006-01-02") == s
-})
-var urlRule = predicate(func(v any) bool {
-	s, ok := v.(string)
-	if !ok || len(s) > 4096 {
-		return false
-	}
-	u, err := url.Parse(s)
-	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && u.User == nil
-})
-var pageLimit = integer(1, 200, true)
-var idsRule = sequence(idRule, 0, 1024, true, true)
-var nativeIdentifierPattern = sync.OnceValue(func() *regexp.Regexp {
-	return regexp.MustCompile(`^[A-Za-z0-9_.-]{1,64}$`)
-})
-var nativeIdentifier = predicate(func(v any) bool {
-	s, ok := v.(string)
-	return ok && s != "." && s != ".." && nativeIdentifierPattern().MatchString(s)
-})
-var fieldNameRule = matches(`^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`)
-var timestampRule = predicate(func(v any) bool {
-	s, ok := v.(string)
-	if !ok || len(s) != 20 {
-		return false
-	}
-	t, e := time.Parse("2006-01-02T15:04:05Z", s)
-	return e == nil && t.Year() > 0 && t.Format("2006-01-02T15:04:05Z") == s
-})
+// Separate zero-value caches let direct inventory and rule callers initialize
+// independently. Rule construction may read inventories, never the rule cache.
+var protocolRuleCache struct {
+	once  sync.Once
+	rules protocolRuleSet
+}
+
+type protocolRuleSet struct {
+	nullRule          wireRule
+	booleanRule       wireRule
+	idRule            wireRule
+	actorRule         wireRule
+	sessionIDRule     wireRule
+	requestIDRule     wireRule
+	moduleVersionRule wireRule
+	typeIDRule        wireRule
+	familyRule        wireRule
+	shapeRule         wireRule
+	protocolRule      wireRule
+	recoveryRule      wireRule
+	tokenRule         wireRule
+	decimalRule       wireRule
+	dateRule          wireRule
+	urlRule           wireRule
+	pageLimit         wireRule
+	idsRule           wireRule
+	nativeIdentifier  wireRule
+	fieldNameRule     wireRule
+	timestampRule     wireRule
+}
+
+func protocolRules() *protocolRuleSet {
+	protocolRuleCache.once.Do(func() {
+		decimalPattern := sync.OnceValue(func() *regexp.Regexp {
+			return regexp.MustCompile(`^-?(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$`)
+		})
+		nativeIdentifierPattern := sync.OnceValue(func() *regexp.Regexp {
+			return regexp.MustCompile(`^[A-Za-z0-9_.-]{1,64}$`)
+		})
+		protocolRuleCache.rules = protocolRuleSet{
+			nullRule:          predicate(func(v any) bool { return v == nil }),
+			booleanRule:       predicate(func(v any) bool { _, ok := v.(bool); return ok }),
+			idRule:            matches(`^sha256:[0-9a-f]{64}$`),
+			actorRule:         matches(`^[0-9a-f]{64}$`),
+			sessionIDRule:     matches(`^[0-9a-f]{32}$`),
+			requestIDRule:     matches(`^[!-~]{1,128}$`),
+			moduleVersionRule: matches(`^[!-~]{1,64}$`),
+			typeIDRule:        predicate(func(v any) bool { s, ok := v.(string); return ok && ValidModuleID(s) }),
+			familyRule:        inventoryRule("families"),
+			shapeRule:         inventoryRule("shapes"),
+			protocolRule:      inventoryRule("operation_protocols"),
+			recoveryRule:      inventoryRule("recoveries"),
+			tokenRule:         text(0, 4096),
+			decimalRule: predicate(func(v any) bool {
+				s, ok := v.(string)
+				return ok && len(s) <= 64 && s != "-0" && decimalPattern().MatchString(s)
+			}),
+			dateRule: predicate(func(v any) bool {
+				s, ok := v.(string)
+				if !ok || len(s) != 10 {
+					return false
+				}
+				d, err := time.Parse("2006-01-02", s)
+				return err == nil && d.Year() > 0 && d.Format("2006-01-02") == s
+			}),
+			urlRule: predicate(func(v any) bool {
+				s, ok := v.(string)
+				if !ok || len(s) > 4096 {
+					return false
+				}
+				u, err := url.Parse(s)
+				return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && u.User == nil
+			}),
+			pageLimit: integer(1, 200, true),
+			idsRule:   sequence(idRule, 0, 1024, true, true),
+			nativeIdentifier: predicate(func(v any) bool {
+				s, ok := v.(string)
+				return ok && s != "." && s != ".." && nativeIdentifierPattern().MatchString(s)
+			}),
+			fieldNameRule: matches(`^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`),
+			timestampRule: predicate(func(v any) bool {
+				s, ok := v.(string)
+				if !ok || len(s) != 20 {
+					return false
+				}
+				t, e := time.Parse("2006-01-02T15:04:05Z", s)
+				return e == nil && t.Year() > 0 && t.Format("2006-01-02T15:04:05Z") == s
+			}),
+		}
+	})
+	return &protocolRuleCache.rules
+}
+
+// Static wrappers keep every direct rule entrypoint safe on its own first use.
+func nullRule(v any) error          { return protocolRules().nullRule(v) }
+func booleanRule(v any) error       { return protocolRules().booleanRule(v) }
+func idRule(v any) error            { return protocolRules().idRule(v) }
+func actorRule(v any) error         { return protocolRules().actorRule(v) }
+func sessionIDRule(v any) error     { return protocolRules().sessionIDRule(v) }
+func requestIDRule(v any) error     { return protocolRules().requestIDRule(v) }
+func moduleVersionRule(v any) error { return protocolRules().moduleVersionRule(v) }
+func typeIDRule(v any) error        { return protocolRules().typeIDRule(v) }
+func familyRule(v any) error        { return protocolRules().familyRule(v) }
+func shapeRule(v any) error         { return protocolRules().shapeRule(v) }
+func protocolRule(v any) error      { return protocolRules().protocolRule(v) }
+func recoveryRule(v any) error      { return protocolRules().recoveryRule(v) }
+func tokenRule(v any) error         { return protocolRules().tokenRule(v) }
+func decimalRule(v any) error       { return protocolRules().decimalRule(v) }
+func dateRule(v any) error          { return protocolRules().dateRule(v) }
+func urlRule(v any) error           { return protocolRules().urlRule(v) }
+func pageLimit(v any) error         { return protocolRules().pageLimit(v) }
+func idsRule(v any) error           { return protocolRules().idsRule(v) }
+func nativeIdentifier(v any) error  { return protocolRules().nativeIdentifier(v) }
+func fieldNameRule(v any) error     { return protocolRules().fieldNameRule(v) }
+func timestampRule(v any) error     { return protocolRules().timestampRule(v) }
 
 func sessionFields(protocol bool) wireRule {
 	fields := map[string]wireRule{"session_id": sessionIDRule, "repository_id": idRule, "module_id": typeIDRule, "module_version": moduleVersionRule, "registration_id": idRule}
@@ -462,9 +532,9 @@ func nativeMutationRule() wireRule {
 		if !ok {
 			return invalidShape()
 		}
-		intents := protocolInventories["native_intents"]
+		intents := protocolInventories()["native_intents"]
 		if family == "issue" {
-			intents = protocolInventories["issue_intents"]
+			intents = protocolInventories()["issue_intents"]
 		}
 		if err := closed(map[string]wireRule{"family": familyRule, "intent": enumeration(intents...), "id": nullable(idRule), "expected": sequence(idRule, 0, 200, true, true), "actor": actorRule, "operation": requestIDRule, "state": nullable(nativeStateRule(family)), "comment": text(0, 65536)}, nil)(v); err != nil {
 			return err
@@ -499,7 +569,7 @@ func errorShape() wireRule {
 		if err := inventoryRule("error_origins")(origin); err != nil {
 			return err
 		}
-		codes := protocolInventories[origin+"_error_codes"]
+		codes := protocolInventories()[origin+"_error_codes"]
 
 		return closed(map[string]wireRule{"origin": literal(origin), "code": enumeration(codes...), "message": text(0, 4096), "recovery": recoveryRule, "operation": nullable(closed(map[string]wireRule{"protocol": protocolRule, "actor": actorRule, "operation": requestIDRule}, nil))}, nil)(v)
 	}
@@ -619,7 +689,7 @@ func methodNames() []string {
 	return names
 }
 func unsupportedNames() []string {
-	return protocolInventories["unsupported"]
+	return protocolInventories()["unsupported"]
 }
 func changePageRule() wireRule {
 	return closed(map[string]wireRule{"capture": tokenRule, "snapshot_id": idRule, "selection": selectionRule(), "selection_digest": idRule, "source_cut": idRule, "mode": literal("replace"), "items": sequence(closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "revision_ids": sequence(idRule, 0, FrameLimit, true, true), "value": either(nativeViewRule(), recordViewRule())}, nil), 0, 200, false, false), "next_cursor": nullable(tokenRule), "complete": booleanRule, "checkpoint": nullable(tokenRule), "expires_at": timestampRule}, nil)
