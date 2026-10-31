@@ -1,0 +1,59 @@
+{
+  "artifactCommands": {
+    "--help": "cmdArtifactSearchHelp",
+    "convert": "artifactSuccessorCommand(record.convert)",
+    "envelope": "cmdArtifactEnvelope",
+    "export": "artifactExchangeExportCommand",
+    "fetch": "artifactGitCommand(fetch)",
+    "heads": "artifactCatalogCommand(heads)",
+    "help": "cmdArtifactSearchHelp",
+    "history": "artifactCatalogCommand(history)",
+    "import": "artifactExchangeImportCommand",
+    "inspect": "artifactExchangeInspectCommand",
+    "list": "cmdArtifactList",
+    "open": "cmdArtifactOpen",
+    "operation": "cmdArtifactOperation",
+    "push": "artifactGitCommand(push)",
+    "record": "cmdArtifactRecord",
+    "resolve": "artifactSuccessorCommand(record.resolve)",
+    "revise": "artifactSuccessorCommand(record.revise)",
+    "schema": "cmdArtifactSchema",
+    "search": "cmdArtifactSearch",
+    "show": "artifactCatalogCommand(show)",
+    "type": "cmdArtifactType"
+  },
+  "artifactTypeCommands": {
+    "publish": "cmdArtifactTypePublish",
+    "show": "cmdArtifactTypeShow",
+    "validate": "cmdArtifactTypeValidate"
+  },
+  "extensionHostMethods": {
+    "artifact.mutate": "extensionArtifactDispatch",
+    "artifact.operation": "extensionArtifactDispatch",
+    "artifact.read": "extensionArtifactDispatch",
+    "artifact.search": "extensionArtifactDispatch",
+    "artifact.type.publish": "extensionArtifactDispatch",
+    "artifact.type.read": "extensionArtifactDispatch",
+    "changes.capture": "extensionChangesDispatch",
+    "changes.page": "extensionChangesDispatch",
+    "changes.since": "extensionChangesDispatch",
+    "identity.public": "extensionNativeDispatch",
+    "resource.mutate": "extensionNativeDispatch",
+    "resource.operation": "extensionNativeDispatch",
+    "resource.read": "extensionNativeDispatch"
+  },
+  "extensionSubcommands": {
+    "disable": "extensionDisableAndCleanup",
+    "enable": "extensionEnableAndCleanup",
+    "frame": "extensionFrame",
+    "inspect": "extensionInspectEnablement",
+    "list": "extensionInspectEnablement",
+    "register": "extensionRegister",
+    "remove": "extensionRemoveAndCleanup",
+    "run": "extensionRun"
+  },
+  "nativeRouters": {
+    "artifact": "cmdArtifact",
+    "extension": "extensionHostCommand"
+  }
+}

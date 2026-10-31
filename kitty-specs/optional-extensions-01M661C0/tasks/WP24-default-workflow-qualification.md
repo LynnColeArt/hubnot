@@ -40,6 +40,8 @@ create_intent:
 - docs/qualification/optional-extensions/default/matrix.json
 - docs/qualification/optional-extensions/default/metrics.csv
 - docs/qualification/optional-extensions/default/historical-hashes.json
+- optional_bootstrap.go
+- optional_bootstrap_test.go
 execution_mode: code_change
 owned_files:
 - extension_default_acceptance_test.go
@@ -48,6 +50,8 @@ owned_files:
 - docs/qualification/optional-extensions/default/matrix.json
 - docs/qualification/optional-extensions/default/metrics.csv
 - docs/qualification/optional-extensions/default/historical-hashes.json
+- optional_bootstrap.go
+- optional_bootstrap_test.go
 priority: P1
 role: implementer
 tags: []
@@ -243,3 +247,11 @@ Read canonical status/review references before implementation. Address every rej
 ## Activity log
 
 - 2026-10-30T09:50:45Z — planner-priti — Draft authored; root has not finalized tasks or authorized branch operations.
+
+## Bounded lazy-bootstrap integration amendment — 2026-10-31
+
+Root/architect-alphonso authorizes the region-specific integration correction documented in `WP24-default-workflow-qualification/integration-lazy-bootstrap.md`. The first three complete performance captures remain failures (12,960 observations); the latest has only two native-only CGO0 issue RSS groups over the unchanged budget. All original handler bindings and application semantics remain required.
+
+WP24 now creates `optional_bootstrap.go` and `optional_bootstrap_test.go`. The nineteen explicitly named old-path exceptions in that record permit only eighteen optional init removals, four typed-nil map declarations, four first-statement ensure barriers, directly caused comments/import cleanup and one existing test initialization fixture. Original file ownership and authoritative surfaces remain unchanged; all original owners are approved and inactive, and WP24 is the sole executor. Stop and coordinate root for any additional region or semantic change. This uses the existing small out-of-map coordination clause; it does not grant whole-file ownership or change guard policy. Preserve transparent normal warnings and all gates.
+
+T096/T099 additionally prove cold native optional state stays unconstructed, exact final binding/closure semantics, safe concurrent first use, and live explicit CLI/host behavior. Before new measurements, obtain an independent source-only correction review and root input attestation; this is not WP24 approval. Final normal WP24 review occurs only after every original functional/history/fault/detector/budget/race and full paired-performance requirement passes. No threshold, build setting, public wire contract, source data, supported capability, default user setup, dependency or release/target change is authorized.

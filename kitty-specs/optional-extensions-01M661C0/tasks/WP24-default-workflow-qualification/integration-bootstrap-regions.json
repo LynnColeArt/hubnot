@@ -1,0 +1,200 @@
+[
+  {
+    "file": "artifact_closure_commands.go",
+    "line": 10,
+    "end": 10,
+    "kind": "initializer",
+    "source": "func init() { artifactCommands[\"inspect\"] = artifactClosureCommand }",
+    "original_owners": [
+      "WP08"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_commands.go",
+    "line": 14,
+    "end": 14,
+    "kind": "initializer",
+    "source": "func init() { localCommands[\"artifact\"] = cmdArtifact }",
+    "original_owners": [
+      "WP03"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_envelope_commands.go",
+    "line": 11,
+    "end": 11,
+    "kind": "initializer",
+    "source": "func init() { artifactCommands[\"envelope\"] = cmdArtifactEnvelope }",
+    "original_owners": [
+      "WP03"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_exchange_commands.go",
+    "line": 14,
+    "end": 18,
+    "kind": "initializer",
+    "source": "func init() {\n\tartifactCommands[\"export\"] = artifactExchangeExportCommand\n\tartifactCommands[\"import\"] = artifactExchangeImportCommand\n\tartifactCommands[\"inspect\"] = artifactExchangeInspectCommand\n}",
+    "original_owners": [
+      "WP10"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_operation_commands.go",
+    "line": 9,
+    "end": 9,
+    "kind": "initializer",
+    "source": "func init() { artifactCommands[\"operation\"] = cmdArtifactOperation }",
+    "original_owners": [
+      "WP07"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_query_commands.go",
+    "line": 18,
+    "end": 22,
+    "kind": "initializer",
+    "source": "func init() {\n\tartifactCommands[\"list\"] = cmdArtifactList\n\tartifactCommands[\"help\"] = cmdArtifactHelp\n\tartifactCommands[\"--help\"] = cmdArtifactHelp\n}",
+    "original_owners": [
+      "WP11"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_replication.go",
+    "line": 17,
+    "end": 20,
+    "kind": "initializer",
+    "source": "func init() {\n\tartifactCommands[\"fetch\"] = func(args []string) error { return artifactGitCommand(\"fetch\", args) }\n\tartifactCommands[\"push\"] = func(args []string) error { return artifactGitCommand(\"push\", args) }\n}",
+    "original_owners": [
+      "WP09"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_revision_commands.go",
+    "line": 10,
+    "end": 17,
+    "kind": "initializer",
+    "source": "func init() {\n\tartifactCommands[\"revise\"] = func(args []string) error { return artifactSuccessorCommand(\"record.revise\", args) }\n\tartifactCommands[\"resolve\"] = func(args []string) error { return artifactSuccessorCommand(\"record.resolve\", args) }\n\tartifactCommands[\"convert\"] = func(args []string) error { return artifactSuccessorCommand(\"record.convert\", args) }\n\tfor _, mode := range []string{\"show\", \"heads\", \"history\"} {\n\t\tartifactCommands[mode] = func(args []string) error { return artifactCatalogCommand(mode, args) }\n\t}\n}",
+    "original_owners": [
+      "WP06"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_schema_commands.go",
+    "line": 15,
+    "end": 19,
+    "kind": "initializer",
+    "source": "func init() {\n\tartifactCommands[\"type\"] = cmdArtifactType\n\tartifactCommands[\"schema\"] = cmdArtifactSchema\n\tartifactCommands[\"record\"] = cmdArtifactRecord\n}",
+    "original_owners": [
+      "WP04"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_search.go",
+    "line": 18,
+    "end": 22,
+    "kind": "initializer",
+    "source": "func init() {\n\tartifactCommands[\"search\"] = cmdArtifactSearch\n\tartifactCommands[\"help\"] = cmdArtifactSearchHelp\n\tartifactCommands[\"--help\"] = cmdArtifactSearchHelp\n}",
+    "original_owners": [
+      "WP12"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "artifact_store_commands.go",
+    "line": 14,
+    "end": 18,
+    "kind": "initializer",
+    "source": "func init() {\n\tartifactTypeCommands[\"publish\"] = cmdArtifactTypePublish\n\tartifactTypeCommands[\"show\"] = cmdArtifactTypeShow\n\tartifactCommands[\"open\"] = cmdArtifactOpen\n}",
+    "original_owners": [
+      "WP05"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "extension_artifact_adapter.go",
+    "line": 19,
+    "end": 23,
+    "kind": "initializer",
+    "source": "func init() {\n\tfor _, method := range []string{\"artifact.read\", \"artifact.search\", \"artifact.type.read\", \"artifact.mutate\", \"artifact.type.publish\", \"artifact.operation\"} {\n\t\textensionHostMethods[method] = extensionArtifactDispatch\n\t}\n}",
+    "original_owners": [
+      "WP18"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "extension_changes.go",
+    "line": 39,
+    "end": 43,
+    "kind": "initializer",
+    "source": "func init() {\n\tfor _, method := range []string{\"changes.capture\", \"changes.page\", \"changes.since\"} {\n\t\textensionHostMethods[method] = extensionChangesDispatch\n\t}\n}",
+    "original_owners": [
+      "WP19"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "extension_commands.go",
+    "line": 23,
+    "end": 23,
+    "kind": "initializer",
+    "source": "func init() { localCommands[\"extension\"] = cmdExtension }",
+    "original_owners": [
+      "WP13"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "extension_enablement.go",
+    "line": 12,
+    "end": 20,
+    "kind": "initializer",
+    "source": "func init() {\n\n\textensionSubcommands[\"enable\"] = extensionEnable\n\textensionSubcommands[\"disable\"] = extensionDisable\n\textensionSubcommands[\"inspect\"] = extensionInspectEnablement\n\textensionSubcommands[\"list\"] = extensionInspectEnablement\n\textensionSubcommands[\"remove\"] = extensionRemoveEnablement\n}",
+    "original_owners": [
+      "WP14"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "extension_host_command.go",
+    "line": 29,
+    "end": 35,
+    "kind": "initializer",
+    "source": "func init() {\n\textensionSubcommands[\"run\"] = extensionRun\n\textensionSubcommands[\"enable\"] = extensionEnableAndCleanup\n\textensionSubcommands[\"disable\"] = extensionDisableAndCleanup\n\textensionSubcommands[\"remove\"] = extensionRemoveAndCleanup\n\tlocalCommands[\"extension\"] = extensionHostCommand\n}",
+    "original_owners": [
+      "WP16"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "extension_native_adapter.go",
+    "line": 19,
+    "end": 23,
+    "kind": "initializer",
+    "source": "func init() {\n\tfor _, method := range []string{\"identity.public\", \"resource.read\", \"resource.mutate\", \"resource.operation\"} {\n\t\textensionHostMethods[method] = extensionNativeDispatch\n\t}\n}",
+    "original_owners": [
+      "WP17"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  },
+  {
+    "file": "extension_protocol_commands.go",
+    "line": 15,
+    "end": 15,
+    "kind": "initializer",
+    "source": "func init() { extensionSubcommands[\"frame\"] = extensionFrame }",
+    "original_owners": [
+      "WP15"
+    ],
+    "proposed_action": "remove entire registration initializer; preserve final effective bindings in new private lazy bootstrap"
+  }
+]
