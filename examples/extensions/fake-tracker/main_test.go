@@ -632,3 +632,44 @@ func TestClientClosedLookupStatusesAndCorrelationBounds(t *testing.T) {
 		}
 	}
 }
+
+func TestClientClosedErrorInventoryMatchesPublicContract(t *testing.T) {
+	// Independent literal mirror of host-v1 section 6: size and every member,
+	// including shared code strings under their separate origins.
+	expected := map[string][]string{
+		"host":     {"denied_access", "incompatible_version", "unavailable_module", "unsupported_capability", "resource_limit", "cancelled", "uncertain_operation", "checkpoint_invalidated", "verification_failure", "invalid_input", "not_found", "repository_error"},
+		"native":   {"actor_mismatch", "admission_pending", "admission_refused", "ambiguous_id", "concurrent_update", "invalid_cursor", "invalid_history", "invalid_input", "issue_conflict", "not_found", "operation_conflict", "permission_denied", "repository_error", "resource_conflict", "resource_limit", "stale_cursor", "stale_revision"},
+		"artifact": {"invalid_input", "resource_limit", "verification_failure", "invalid_history", "incomplete_dependency", "unsupported_schema", "actor_stream_conflict", "operation_conflict", "stale_revision", "resource_conflict", "concurrent_update", "not_found", "repository_error", "cancelled", "uncertain_operation"},
+	}
+	if len(wireErrorCodes) != len(expected) {
+		t.Fatal("closed error origins drifted")
+	}
+	for origin, want := range expected {
+		actual := strings.Fields(wireErrorCodes[origin])
+		sort.Strings(actual)
+		sort.Strings(want)
+		if !reflect.DeepEqual(actual, want) {
+			t.Fatal("closed public error inventory drifted", origin, actual, want)
+		}
+		for _, code := range want {
+			e := map[string]any{"origin": origin, "code": code, "message": "public refusal", "recovery": "do_not_retry", "operation": nil}
+			if !wireError(e) {
+				t.Fatal("known code not accepted under exact origin", origin, code)
+			}
+		}
+	}
+	for _, recovery := range []string{"do_not_retry", "retry_identical", "inspect_operation", "rescan_required"} {
+		if !wireRecovery(recovery) {
+			t.Fatal("closed recovery member missing", recovery)
+		}
+	}
+	if wireRecovery("retry_everything") {
+		t.Fatal("invented recovery accepted")
+	}
+	for _, origin := range []string{"host", "native", "artifact", "connector"} {
+		e := map[string]any{"origin": origin, "code": "invented_code", "message": "public refusal", "recovery": "do_not_retry", "operation": nil}
+		if wireError(e) {
+			t.Fatal("unknown origin/code accepted", origin)
+		}
+	}
+}

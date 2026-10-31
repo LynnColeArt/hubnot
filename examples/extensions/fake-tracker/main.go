@@ -360,17 +360,15 @@ type externalComment struct {
 	ID     string `json:"id"`
 	Body   string `json:"body"`
 	Author string `json:"author"`
-	Time   string `json:"time"
-	"unicode/utf8"`
+	Time   string `json:"time"`
 }
 type externalItem struct {
-	ID      string `json:"id"`
-	Version int    `json:"version"`
-	Title   string `json:"title"`
-	Body    string `json:"body"`
-	Author  string `json:"author"`
-	Time    string `json:"time"
-	"unicode/utf8"`
+	ID       string            `json:"id"`
+	Version  int               `json:"version"`
+	Title    string            `json:"title"`
+	Body     string            `json:"body"`
+	Author   string            `json:"author"`
+	Time     string            `json:"time"`
 	Comments []externalComment `json:"comments"`
 }
 
@@ -964,6 +962,13 @@ func validHello(v any) bool {
 func wireRecovery(v any) bool {
 	return wireEnum("do_not_retry", "retry_identical", "inspect_operation", "rescan_required")(v)
 }
+
+var wireErrorCodes = map[string]string{
+	"host":     "denied_access incompatible_version unavailable_module unsupported_capability resource_limit cancelled uncertain_operation checkpoint_invalidated verification_failure invalid_input not_found repository_error",
+	"native":   "actor_mismatch admission_pending admission_refused ambiguous_id concurrent_update invalid_cursor invalid_history invalid_input issue_conflict not_found operation_conflict permission_denied repository_error resource_conflict resource_limit stale_cursor stale_revision",
+	"artifact": "invalid_input resource_limit verification_failure invalid_history incomplete_dependency unsupported_schema actor_stream_conflict operation_conflict stale_revision resource_conflict concurrent_update not_found repository_error cancelled uncertain_operation",
+}
+
 func wireError(v any) bool {
 	if !wireObject(map[string]wireCheck{
 		"origin": wireEnum("host", "native", "artifact"), "code": wireString(1, 4096), "message": wireString(0, 4096), "recovery": wireRecovery,
@@ -972,12 +977,8 @@ func wireError(v any) bool {
 		return false
 	}
 	m := v.(map[string]any)
-	codes := map[string]string{
-		"host":     "denied_access incompatible_version unavailable_module unsupported_capability resource_limit cancelled uncertain_operation checkpoint_invalidated verification_failure invalid_input not_found repository_error",
-		"native":   "actor_mismatch admission_pending admission_refused ambiguous_id concurrent_update invalid_cursor invalid_history invalid_input issue_conflict not_found operation_conflict permission_denied repository_error resource_conflict resource_limit stale_cursor stale_revision",
-		"artifact": "invalid_input resource_limit verification_failure invalid_history incomplete_dependency unsupported_schema actor_stream_conflict operation_conflict stale_revision resource_conflict concurrent_update not_found repository_error cancelled uncertain_operation",
-	}
-	return strings.Contains(" "+codes[m["origin"].(string)]+" ", " "+m["code"].(string)+" ")
+
+	return strings.Contains(" "+wireErrorCodes[m["origin"].(string)]+" ", " "+m["code"].(string)+" ")
 }
 func wireMutation(v any) bool {
 	return wireObject(map[string]wireCheck{
