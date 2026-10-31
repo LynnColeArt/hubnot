@@ -442,7 +442,7 @@
     "WP13": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 3,
       "lane": "planned",
@@ -454,7 +454,8 @@
         "Administrative reset of never-started implementation after allocation recovery; initial blocked recovery was implicitly assigned user. Actual codex will now use normal implementation claim. No WP13 code or review occurred, no test bypass.",
         "Ready for independent review: inert registration and explicit inspect/list/remove, strict bounded private instance identities, exact duplicate no-entropy control, native syscall/no-process controls; fixed source 8f68d66a and external WP13 final-source bindings, both variants focused race/CLI/vet/build pass.",
         "Review feedback 2 fixed: raw stored argv string-array validation before typed decoding; null element refuses inspect/register/remove without repair, empty argument and duplicate no-entropy preserved. Frozen source b37261cb, focused race, both exact binary CLI/native traces, vet/build pass; external WP13/cycle2 bindings.",
-        "Independent corrected-source review passed at b37261cb7642474daca093660334bd12f714d00e: null argv now refuses inspect/register/remove without repair; both exact supplied variants pass 48 malformed controls, valid empty-argument/lifecycle controls and focused native-read/race checks; all eight anti-pattern checks PASS. Scoped report external optional-extensions-WP13/cycle2/reviewer/review.md; future grant/session/full-mission qualification remains pending."
+        "Independent corrected-source review passed at b37261cb7642474daca093660334bd12f714d00e: null argv now refuses inspect/register/remove without repair; both exact supplied variants pass 48 malformed controls, valid empty-argument/lifecycle controls and focused native-read/race checks; all eight anti-pattern checks PASS. Scoped report external optional-extensions-WP13/cycle2/reviewer/review.md; future grant/session/full-mission qualification remains pending.",
+        "Root test-only portability correction decision6047396b; static audit, no Mac runtime pass; no production semantics changes."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -464,14 +465,14 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T052": "done",
-        "T053": "done",
-        "T054": "done",
-        "T055": "done"
+        "T052": "planned",
+        "T053": "planned",
+        "T054": "planned",
+        "T055": "planned"
       }
     },
     "WP14": {
