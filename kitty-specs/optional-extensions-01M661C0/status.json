@@ -303,23 +303,25 @@
       "last_transition_at": "2026-10-31T04:16:09.091382+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Selected artifact Git transfer implemented; exact public CLI/bare-remote reconstruction and refusal/boundary controls, std/native binary execution, focused race and native compatibility pass. Source ebc5074994cfa0b025ee25630a38125dd509db3e; external evidence optional-extensions-WP09; budget decision18db2d22."
+        "Selected artifact Git transfer implemented; exact public CLI/bare-remote reconstruction and refusal/boundary controls, std/native binary execution, focused race and native compatibility pass. Source ebc5074994cfa0b025ee25630a38125dd509db3e; external evidence optional-extensions-WP09; budget decision18db2d22.",
+        "Independent review rejected exact accepted Git-body copy restriction at artifact_replication.go:257; feedback commit2e89175a. Evidence review/review.json SHA2569f4e4cb78fa3d44e8bbb0313425b592916db9fff6985eb79c9683c5a453ee847; both supplied binary literal failures and metadata-only comparator retained; focused race passed; runtime slot released."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP09-artifact-git-replication/review-cycle-1.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP09-artifact-git-replication/review-cycle-1.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T036": "done",
-        "T037": "done",
-        "T038": "done",
-        "T039": "done"
+        "T036": "planned",
+        "T037": "planned",
+        "T038": "planned",
+        "T039": "planned"
       }
     },
     "WP10": {
