@@ -424,6 +424,9 @@ jobs:
 
   optional-extensions:
     name: Optional extension exact-package qualification
+    permissions:
+      contents: read
+      actions: read
     if: github.event_name == 'workflow_dispatch' && inputs.qualification == 'optional-extensions'
     uses: ./.github/workflows/optional-extensions-qualification.yml
     with:
