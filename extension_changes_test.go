@@ -233,3 +233,16 @@ func TestExtensionChangesExpiryAtEmission(t *testing.T) {
 		t.Fatal("expiry erased cancellation", err)
 	}
 }
+
+func TestExtensionChangesSourceRaceClassification(t *testing.T) {
+	for _, err := range []error{issueReadFailure("concurrent_update", errors.New("source changed")), issueFailure("concurrent_update", errors.New("source changed")), &artifact.Error{Code: "concurrent_update", Message: "source changed"}} {
+		if !extensionChangesSourceRace(err) {
+			t.Fatal("lost source-race cause", err)
+		}
+	}
+	for _, err := range []error{context.Canceled, issueFailure("invalid_history", errors.New("bad signature")), &artifact.Error{Code: "unsupported_schema", Message: "unsupported"}, extensionChangesInvalid(), errors.New("plain repository failure")} {
+		if extensionChangesSourceRace(err) {
+			t.Fatal("arbitrary refusal became page race", err)
+		}
+	}
+}

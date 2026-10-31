@@ -36,6 +36,15 @@ func changesFixture(t *testing.T, grants ...string) *nativeHostFixture {
 	}
 	f.command(append(args, "--json")...)
 	f.env = append(f.env, "HN_WP19_CHILD=1", "HN_WP19_INPUT="+f.input, "HN_WP19_OUTPUT="+f.output)
+	hostBytes, err := os.ReadFile(f.binary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	childBytes, err := os.ReadFile(child)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("actual supplied host SHA256 %x; actual raw consumer SHA256 %x", sha256.Sum256(hostBytes), sha256.Sum256(childBytes))
 	return f
 }
 func TestExtensionChangesRawEmptyCapture(t *testing.T) {
@@ -114,6 +123,13 @@ func TestExtensionChangesChild(t *testing.T) {
 				snapshot := data["snapshot_id"].(string)
 				if stagingSnapshot != snapshot {
 					staging = map[string]any{}
+					// A duplicate final page for an already committed identical snapshot
+					// must retain its earlier pages instead of replacing them with a suffix.
+					if prior, ok := durable[data["selection_digest"].(string)].(map[string]any); ok && prior["snapshot_id"] == snapshot {
+						for id, entry := range prior["entries"].(map[string]any) {
+							staging[id] = entry
+						}
+					}
 					stagingSnapshot = snapshot
 				}
 				for _, value := range data["items"].([]any) {
@@ -239,7 +255,20 @@ func changesRun(t *testing.T, f *nativeHostFixture, requests []map[string]any, a
 		if e != nil {
 			t.Fatal(e)
 		}
-		out.Write(raw)
+		hostBytes, e := os.ReadFile(f.binary)
+		if e != nil {
+			t.Fatal(e)
+		}
+		consumer, e := os.Executable()
+		if e != nil {
+			t.Fatal(e)
+		}
+		consumerBytes, e := os.ReadFile(consumer)
+		if e != nil {
+			t.Fatal(e)
+		}
+		evidenceRaw, _ := json.Marshal(map[string]any{"test": t.Name(), "host_binary": f.binary, "host_sha256": fmt.Sprintf("%x", sha256.Sum256(hostBytes)), "consumer_sha256": fmt.Sprintf("%x", sha256.Sum256(consumerBytes)), "transcript": json.RawMessage(raw)})
+		out.Write(evidenceRaw)
 		out.Close()
 	}
 	return result.Responses
@@ -279,12 +308,19 @@ func TestExtensionChangesPagingAndDurableNativeAppend(t *testing.T) {
 	ids := []string{changesOpenIssue(f, "first"), changesOpenIssue(f, "second"), changesOpenIssue(f, "third")}
 	sort.Strings(ids)
 	selection := changesSelection([]string{"issue"}, []string{})
-	requests := []map[string]any{changesCapture(selection, 1), changesPage("$0.capture", "$0.next_cursor", 1), changesPage("$0.capture", "$0.next_cursor", 1), changesPage("$0.capture", "$0.next_cursor", 200)}
+	requests := []map[string]any{changesCapture(selection, 1), changesPage("$0.capture", "$0.next_cursor", 1), changesPage("$0.capture", "$0.next_cursor", 1), changesPage("$0.capture", "$0.next_cursor", 200), changesPage("$0.capture", "$0.next_cursor", 200)}
 	responses := changesRun(t, f, requests, nil)
 	first, second, duplicate, final := nativeOK(t, responses[0]), nativeOK(t, responses[1]), nativeOK(t, responses[2]), nativeOK(t, responses[3])
 	if !reflect.DeepEqual(second, duplicate) {
 		t.Fatal("duplicate page changed", second, duplicate)
 	}
+	if !reflect.DeepEqual(final, nativeOK(t, responses[4])) {
+		t.Fatal("duplicate final page changed")
+	}
+	if len(changesConsumerSelection(t, f, final)["entries"].(map[string]any)) != 3 {
+		t.Fatal("duplicate final page lost previously committed page entries")
+	}
+
 	for _, page := range []map[string]any{first, second, final} {
 		if page["snapshot_id"] != first["snapshot_id"] || page["source_cut"] != first["source_cut"] || page["selection_digest"] != first["selection_digest"] {
 			t.Fatal("mixed capture")
@@ -1004,4 +1040,56 @@ func changesAssertMixedCut(t *testing.T, f *nativeHostFixture, page, selection m
 	if page["source_cut"] != expected {
 		t.Fatal("mixed selected Cut differs from independent frozen preimage", page["source_cut"], expected)
 	}
+}
+
+func TestExtensionChangesSourceRaceDuringPage(t *testing.T) {
+	f := changesFixture(t, "native:issue=read,observe")
+	actor := f.actor()
+	changesOpenIssue(f, "race one")
+	changesOpenIssue(f, "race two")
+	ref := "refs/hn/actors/" + actor
+	beforeHead := f.git("rev-parse", ref)
+	changesOpenIssue(f, "prepared future accepted source")
+	afterHead := f.git("rev-parse", ref)
+	f.git("update-ref", ref, beforeHead)
+	realGit, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	directory := t.TempDir()
+	armed := filepath.Join(directory, "armed")
+	marker := filepath.Join(directory, "actual-source-race")
+	// Source-assisted Git scheduling control. It changes a real accepted ref at
+	// the shared reader's cat-file boundary, after its initial witness discovery;
+	// the product receives no test flag or alternate clock/verifier.
+	script := "#!/bin/sh\nif [ \"$1\" = cat-file ] && [ \"$2\" = --batch ] && [ -f '" + armed + "' ]; then\n rm '" + armed + "'\n '" + realGit + "' update-ref '" + ref + "' '" + afterHead + "' '" + beforeHead + "' || exit 82\n echo actual-witness-change > '" + marker + "'\nfi\nexec '" + realGit + "' \"$@\"\n"
+	if err = os.WriteFile(filepath.Join(directory, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	for i, value := range f.env {
+		if strings.HasPrefix(value, "PATH=") {
+			f.env[i] = "PATH=" + directory + ":" + strings.TrimPrefix(value, "PATH=")
+		}
+	}
+	arm := func() {
+		if err := os.WriteFile(armed, []byte("arm"), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	selection := changesSelection([]string{"issue"}, []string{})
+	responses := changesRun(t, f, []map[string]any{changesCapture(selection, 1), changesPage("$0.capture", "$0.next_cursor", 1), changesPage("$0.capture", "$0.next_cursor", 1), changesCapture(selection, 1)}, map[int]func(){
+		0: arm,
+		1: func() {
+			if _, err := os.Stat(marker); err != nil {
+				t.Fatal("actual shared-read race did not fire", err)
+			}
+			f.git("update-ref", ref, beforeHead)
+		},
+		2: arm,
+	})
+	changesRefuse(t, responses[1], "checkpoint_invalidated")
+	// Restoring the exact prior Cut cannot revive a capture once a reader saw it
+	// race. This request uses the same still-live host SessionID.
+	changesRefuse(t, responses[2], "checkpoint_invalidated")
+	nativeDenial(t, responses[3], "native", "concurrent_update", "retry_identical")
 }

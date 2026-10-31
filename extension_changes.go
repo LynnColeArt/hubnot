@@ -388,6 +388,16 @@ func extensionChangesObserve(ctx context.Context, call extension.Invocation, sel
 	return out, nil
 }
 
+// A race detected by a shared reader while verifying an existing capture is
+// evidence that its old coherent view is lost. New capture/since reads retain
+// their native/artifact retry semantics; other refusals keep their own cause.
+func extensionChangesSourceRace(err error) bool {
+	var native *IssueReadError
+	var command *issueCommandError
+	var custom *artifact.Error
+	return errors.As(err, &native) && native.Code == "concurrent_update" || errors.As(err, &command) && command.Code == "concurrent_update" || errors.As(err, &custom) && custom.Code == "concurrent_update"
+}
+
 func extensionChangesDispatch(ctx context.Context, call extension.Invocation) (data any, err error) {
 	defer func() { err = extensionChangesError(err, call) }()
 	// Bound token lookup before any scope can be inferred from private state.
@@ -424,6 +434,10 @@ func extensionChangesDispatch(ctx context.Context, call extension.Invocation) (d
 	}
 	observation, err := extensionChangesObserve(ctx, call, selection)
 	if err != nil {
+		if capture != nil && extensionChangesSourceRace(err) {
+			extensionChangesForget(capture.token)
+			return nil, extensionChangesInvalid()
+		}
 		return nil, err
 	}
 	_, common, err := artifactRepositoryID()
