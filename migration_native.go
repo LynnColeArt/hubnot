@@ -33,7 +33,7 @@ func migrationObservationRef(sourceID string, r migration.NativeRef) (string, er
 		if e != nil {
 			return "", e
 		}
-		return "refs/hn/remotes/" + token + "/memory/" + s.Actor + "/" + s.Stream, nil
+		return acceptedMemoryRef(token, s.Actor, s.Stream)
 	case "code":
 		return "refs/hn/remotes/" + token + "/code/" + migration.Digest([]byte(r.SourceRef))[7:], nil
 	}

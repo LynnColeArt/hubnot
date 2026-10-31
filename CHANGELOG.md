@@ -5,22 +5,83 @@ experimental; alpha releases do not promise stable compatibility.
 
 ## Unreleased
 
+### Documentation
+
+- Added a [prospective beta support contract](docs/beta-support.md) covering
+  native independence, optional defaults, data/interface evolution, separate
+  public/private recovery and the provider/platform evidence needed for beta.
+  Current published releases remain alpha prereleases; qualification is pending.
+
+## [0.0.3-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev) — 2026-10-27
+
+macOS migration portability alpha prerelease, built from
+`01a152cfbb822a7be9ccbc51dac34e3caa0cf925`. The executable reports `0.0.3-dev`.
+**Native Apple Silicon rebuilds passed; testing of the exact downloadable Mac
+binaries is still pending for both Apple Silicon and Intel.**
+
 ### Fixed
 
 - Migration sessions and internal project/archive/imported-record spools share
   a path policy that handles verified macOS system temporary-directory aliases
   while retaining rejection of arbitrary symlinks and unsafe private paths.
   macOS regressions exercise literal aliases and child environments without
-  TMPDIR. Published `0.0.2-dev` packages retain the limitation in [#16](https://github.com/LynnColeArt/hubnot/issues/16).
+  TMPDIR. Published `0.0.2-dev` packages retain the limitation in
+  [#16](https://github.com/LynnColeArt/hubnot/issues/16).
 - Packager refusal fixtures build hostile committed trees directly with Git
   plumbing, including file and directory case collisions, so the same assertions
   exercise real inputs on case-insensitive filesystems.
+- Object-database immutability fixtures disable automatic Git maintenance before
+  committing, avoiding transient detached-maintenance locks without relaxing
+  the byte-for-byte assertions.
 
 ### Development
 
-- Linux/macOS PR checks run the repository-local filesystem, migration and
-  packager regression gates with normal temporary-directory environments.
-  These optional hosted checks add no runtime or provider dependency to Hubnot.
+- Linux/macOS PR checks run filesystem, migration and packager regressions with
+  normal temporary-directory environments. They build actual standard/native-only
+  candidate archives and exercise them through the public acceptance journey.
+  These hosted development checks add no runtime or provider dependency.
+
+### Downloads
+
+| Platform | Standard | Native-only |
+| --- | --- | --- |
+| Linux AMD64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_amd64_native-only.tar.gz) |
+| Linux ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_arm64_native-only.tar.gz) |
+| macOS Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_amd64_native-only.tar.gz) |
+| macOS Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_arm64_native-only.tar.gz) |
+
+[Source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_source.tar.gz),
+[SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/SHA256SUMS)
+and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/PROVENANCE.json)
+accompany the eight binary packages. Native-only excludes every network provider
+adapter while retaining native commands and local/archive migration.
+
+### Verification and distribution limits
+
+- The release source passed the full local race suite and Linux/macOS CI.
+  All eleven Go/Git-only outputs reproduced byte-for-byte with Go 1.26.4;
+  independent source/archive/executable/provenance checks passed, and published
+  downloads match the verified local bundle.
+- Exact Linux AMD64/ARM64 standard/native-only binaries passed runtime smoke
+  checks; Linux AMD64 packages also passed the integrated public journey.
+- [Native Mac verification](https://github.com/LynnColeArt/hubnot/issues/16#issuecomment-6443074382)
+  rebuilt the same source with Go 1.26.6 on macOS 26.5.1 Apple Silicon. Both
+  standard and native-only packages passed the integrated journey under the
+  race detector without path or TMPDIR workarounds. This qualifies those native
+  rebuilds, not the downloadable Go 1.26.4 Mac binaries, whose runtime testing
+  remains pending. Intel execution is also pending.
+- Both Mac architectures passed cross-compilation, archive, architecture,
+  checksum and provenance inspection. Downloads have no Apple Developer ID
+  signature or notarization.
+- The complete release package matrix ran on Linux; native Apple Silicon
+  packager execution was separately demonstrated for its native target pair.
+  Windows packager-host execution remains unverified, and Windows CLI
+  distribution is outside this matrix.
+- Prebuilt applications require Git; source builds and packaging require Go and
+  Git alone. Protected checks, automerge and independent audits remain optional
+  and independently disabled by default, with no implicit background worker.
+- Previous release tags and assets remain unchanged. Their original
+  qualification and reproduction requirements are retained below.
 
 ## [0.0.2-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev) — 2026-10-27
 
