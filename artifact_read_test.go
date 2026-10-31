@@ -9,11 +9,14 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"hubnot/internal/artifact"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -184,6 +187,14 @@ func TestArtifactStoreSelectedRefBudget(t *testing.T) {
 	if e != nil || len(sources) != artifactReadEntries {
 		t.Fatalf("selected refs at bound: %d %v", len(sources), e)
 	}
+	// Exercise the same bound through explicit witness verification, not merely
+	// enumeration. All actual packed refs share one valid public chain.
+	atBound := f.snapshot()
+	history, e := loadArtifactHistoryFromSources(ctx, filepath.Join(f.repo, ".git"), sources)
+	if e != nil || len(history.Sources) != 100000 || len(history.ByID) != 1 {
+		t.Fatalf("explicit selected refs at bound: %v", e)
+	}
+	f.unchanged(atBound)
 	fmt.Fprintf(&packed, "%s refs/hn/remotes/r%06d/%s\n", commit, artifactReadEntries, suffix)
 	if e = os.WriteFile(path, packed.Bytes(), 0600); e != nil {
 		t.Fatal(e)
@@ -388,4 +399,179 @@ func TestArtifactStoreOpeningReplayObservesImportedHeadsCLI(t *testing.T) {
 		t.Fatal("replay changed immutable identity or hid imported conflict", replayed)
 	}
 	f.unchanged(before)
+}
+
+// The explicit public reader must neither discover the caller's repository nor
+// borrow its Cut. These fixtures contain public Git data only, with no identity.
+func TestArtifactStoreExplicitPublicSources(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			root := t.TempDir()
+			f := &artifactCLIFixture{t: t, repo: filepath.Join(root, "public.git"), home: filepath.Join(root, "home")}
+			f.git("init", "--quiet", "--bare", "--object-format="+format)
+			ref := artifactFrozenRef(t, f)
+			commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			f.git("update-ref", ref, commit)
+			// An unrelated malformed accepted-looking ref is outside this explicit set.
+			f.git("update-ref", "refs/hn/artifacts/unselected", commit)
+			accepted := strings.Replace(ref, "refs/hn/", "refs/hn/remotes/origin/", 1)
+			f.git("update-ref", accepted, commit)
+			sources := []artifactSource{{Ref: accepted, OID: commit}, {Ref: ref, OID: commit}}
+			original := append([]artifactSource(nil), sources...)
+			before := f.snapshot()
+			cwd, err := os.Getwd()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if cwd == f.repo {
+				t.Fatal("fixture must remain outside selected public repository")
+			}
+			h, err := loadArtifactHistoryFromSources(context.Background(), f.repo, sources)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(h.ByID) != 1 || h.ByID[artifactVectorID] == nil || len(h.Chains) != 1 || h.gitDir != f.repo || h.readBytes <= 0 || len(h.readObjects) != 4 || h.Cut != "" {
+				t.Fatalf("explicit public result acquired ambient authority or lost verification: %+v", h)
+			}
+			if h.Sources[0].Ref != ref || !reflect.DeepEqual(sources, original) {
+				t.Fatal("sources must be copied and sorted", h.Sources, sources)
+			}
+			if string(h.ByID[artifactVectorID].verified.Bytes()) != artifactVector {
+				t.Fatal("signed identity changed")
+			}
+			if got, _ := os.Getwd(); got != cwd {
+				t.Fatal("reader changed caller cwd")
+			}
+			f.unchanged(before)
+			for _, tc := range []struct {
+				name    string
+				sources []artifactSource
+				code    string
+			}{
+				{"duplicate", []artifactSource{{ref, commit}, {ref, commit}}, "invalid_history"},
+				{"malformed-ref", []artifactSource{{"refs/hn/quarantine/artifacts/test", commit}}, "invalid_history"},
+				{"invalid-oid", []artifactSource{{ref, "not-an-oid"}}, "invalid_history"},
+				{"uppercase-oid", []artifactSource{{ref, strings.ToUpper(commit)}}, "invalid_history"},
+				{"wrong-object-format", []artifactSource{{ref, strings.Repeat("1", 104-len(commit))}}, "invalid_history"},
+				{"missing-ref", []artifactSource{{strings.Replace(accepted, "origin", "missing", 1), commit}}, "concurrent_update"},
+				{"over-ref-bound", make([]artifactSource, 100001), "resource_limit"},
+			} {
+				t.Run(tc.name, func(t *testing.T) {
+					before := f.snapshot()
+					_, err := loadArtifactHistoryFromSources(context.Background(), f.repo, tc.sources)
+					var failure *artifact.Error
+					if !errors.As(err, &failure) || failure.Code != tc.code {
+						t.Fatalf("want %s, got %v", tc.code, err)
+					}
+					f.unchanged(before)
+				})
+			}
+			// A valid alternate Git commit changes the selected witness even though its
+			// signed semantic ID is identical. It cannot satisfy the supplied old OID.
+			changed := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			if changed == commit { // commit-tree timestamps can coincide; change metadata explicitly.
+				changed = f.git("-c", "user.name=Different", "-c", "user.email=fixture@example.invalid", "commit-tree", f.git("rev-parse", commit+"^{tree}"), "-m", "hn artifact "+artifactVectorID)
+			}
+			f.git("update-ref", ref, changed)
+			before = f.snapshot()
+			_, err = loadArtifactHistoryFromSources(context.Background(), f.repo, []artifactSource{{ref, commit}})
+			var failure *artifact.Error
+			if !errors.As(err, &failure) || failure.Code != "concurrent_update" {
+				t.Fatal("changed selected witness", err)
+			}
+			f.unchanged(before)
+			f.git("update-ref", ref, commit)
+			// A matching ref cannot excuse an unavailable selected object.
+			object := filepath.Join(f.repo, "objects", commit[:2], commit[2:])
+			raw, err := os.ReadFile(object)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = os.Remove(object); err != nil {
+				t.Fatal(err)
+			}
+			before = f.snapshot()
+			_, err = loadArtifactHistoryFromSources(context.Background(), f.repo, []artifactSource{{ref, commit}})
+			if !errors.As(err, &failure) || failure.Code != "verification_failure" {
+				t.Fatal("missing selected object", err)
+			}
+			f.unchanged(before)
+			if err = os.WriteFile(object, raw, 0444); err != nil {
+				t.Fatal(err)
+			}
+			bad := artifactRawCommit(t, f, artifactVector, strings.Repeat("A", 86), "", "hn artifact "+artifactVectorID, false)
+			f.git("update-ref", ref, bad)
+			before = f.snapshot()
+			_, err = loadArtifactHistoryFromSources(context.Background(), f.repo, []artifactSource{{ref, bad}})
+			if !errors.As(err, &failure) || failure.Code != "verification_failure" {
+				t.Fatal("tampered selected signature", err)
+			}
+			f.unchanged(before)
+			_, err = loadArtifactHistoryFromSources(context.Background(), ".", nil)
+			if !errors.As(err, &failure) || failure.Code != "repository_error" {
+				t.Fatal("relative explicit directory", err)
+			}
+			_, err = loadArtifactHistoryFromSources(context.Background(), filepath.Join(root, "missing.git"), nil)
+			if !errors.As(err, &failure) || failure.Code != "repository_error" {
+				t.Fatal("missing explicit repository became empty success", err)
+			}
+			// Cancellation must be recognized even for an empty source set.
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			_, err = loadArtifactHistoryFromSources(ctx, f.repo, nil)
+			if !errors.As(err, &failure) || failure.Code != "cancelled" {
+				t.Fatal("cancelled explicit read", err)
+			}
+		})
+	}
+}
+
+func TestArtifactStoreSourceChangesDuringRead(t *testing.T) {
+	// The child Git wrapper makes an actual ref update after the initial witness
+	// observation, then delegates every read to real Git. There is no reader hook.
+	for _, action := range []string{"change", "remove", "add"} {
+		t.Run(action, func(t *testing.T) {
+			f := artifactCLI(t)
+			ref := artifactFrozenRef(t, f)
+			commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			f.git("update-ref", ref, commit)
+			alternate := f.git("-c", "user.name=Changed", "-c", "user.email=fixture@example.invalid", "commit-tree", f.git("rev-parse", commit+"^{tree}"), "-m", "hn artifact "+artifactVectorID)
+			actualGit, err := exec.LookPath("git")
+			if err != nil {
+				t.Fatal(err)
+			}
+			wrapper := t.TempDir()
+			marker := filepath.Join(wrapper, "observed")
+			target, value := ref, alternate
+			if action == "add" {
+				target = strings.Replace(ref, "refs/hn/", "refs/hn/remotes/new/", 1)
+				value = commit
+			}
+			update := "update-ref '" + target + "' '" + value + "'"
+			if action == "remove" {
+				update = "update-ref -d '" + target + "'"
+			}
+			script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = ls-tree ] && [ ! -e '" + marker + "' ]; then\n  : > '" + marker + "'\n  '" + actualGit + "' --git-dir='" + filepath.Join(f.repo, ".git") + "' " + update + " || exit 93\n fi\ndone\nexec '" + actualGit + "' \"$@\"\n"
+			if err = os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
+				t.Fatal(err)
+			}
+			before := f.snapshot()
+			f.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH")}
+			result := f.call("", "concurrent_update", "artifact", "type", "show", artifactVectorID, "--json")
+			if action == "add" && result["error"].(map[string]any)["message"] != "artifact sources changed while reading" {
+				t.Fatal("ordinary reader lost full selected-set addition check", result)
+			}
+			if _, err = os.Stat(marker); err != nil {
+				t.Fatal("mutation control never ran", err)
+			}
+			// Restore only the deliberately changed witness, then compare every object,
+			// private marker and ref to the pre-read snapshot.
+			if action == "add" {
+				f.git("update-ref", "-d", target)
+			} else {
+				f.git("update-ref", ref, commit)
+			}
+			f.unchanged(before)
+		})
+	}
 }
