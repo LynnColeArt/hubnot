@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-extensions-01M661C0
 mission_id: 01M661C0T0E4DS0AXBCXG7WCAX
-generated_at: '2026-10-30T23:33:49.137300+00:00'
+generated_at: '2026-10-31T00:17:22.821723+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -21,17 +21,17 @@ input_artifacts:
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
 verdict: ready
 issue_counts:
+  low: 0
+  high: 0
   critical: 0
   medium: 0
-  high: 0
-  low: 0
   info: 0
 findings: []
 ---
 
 ## Specification Analysis Report
 
-Fresh analysis of `optional-extensions-01M661C0` after approved WP01/WP02, committed ownership amendment `d33ef595b3215333cf9b0f6024529dd05bd7dcf9`, and canonical advance-only planning refresh `1d253f1f3702a154676e56d790d9d2bfc32c41e9`. Reviewer Renata was resolved through the canonical profile loader and the review charter applied. Canonical `check-prerequisites --include-tasks` returned valid with no warnings/errors and matching base/target/current `feature/optional-extensions`.
+Fresh analysis of `optional-extensions-01M661C0` at primary `1a859e3e6de16e91bf7ec64dd4840a15b4e642b2`, after approved WP01/WP02, ownership amendment d33ef595, independently approved supplemental contract amendments a6624d52 and 263fdae9, and a second canonical advance-only planning refresh. Prior analysis and supplemental review evidence remain preserved separately. Reviewer Renata was resolved through the canonical profile loader and the review charter applied. Canonical `check-prerequisites --include-tasks` returned valid with no warnings/errors and matching base/target/current `feature/optional-extensions`.
 
 No unresolved cross-artifact, ownership, coverage, charter or execution-order finding blocks feature implementation. This is planning/workflow readiness, not approval of unimplemented feature behavior, final platform qualification, adopter trials, beta readiness or release publication. No application, test, build or probe was run for this analysis; it uses static source/artifact reads and cryptographic hashes of existing evidence.
 
@@ -61,15 +61,27 @@ The four original P1 findings and one P2 finding, plus C1–C4 advisory correcti
 
 ### Planning provenance and approved foundation
 
-`lanes.json` now records planning SHA `d33ef595b3215333cf9b0f6024529dd05bd7dcf9`, advancing from `fb6055982c0756e63f33ca7e3a32d5022234dc85`. Independent Git ancestry checks establish the previous planning SHA, approved lane-a tip `272781341064b5e0ddcdf4d43e43afb8fd9a3530` and qualified runtime `f8c68bebbaa3845d1eaaac02e3638f30dc062bbd` as ancestors of that refreshed SHA. Incomplete beta WP09 commit `89ce723ca53e1daa5c58105e6010569d1fe73de8` is excluded.
+`lanes.json` now records planning SHA `7dd64aa738b0dcee0222a943e2d7a9e1e7f44505`, advancing from `d33ef595b3215333cf9b0f6024529dd05bd7dcf9`. Independent Git ancestry checks establish the previous planning SHA, T015 amendment `a6624d52b1c48d886a329a6be04f061cf2c8871c`, registration amendment `263fdae9b914ba2c0e0e6fe0854727d7aabafbaf`, approved lane-a tip `272781341064b5e0ddcdf4d43e43afb8fd9a3530`, original WP02 source acad3958 and qualified runtime `f8c68bebbaa3845d1eaaac02e3638f30dc062bbd` as ancestors of that refreshed SHA. Incomplete beta WP09 commit `89ce723ca53e1daa5c58105e6010569d1fe73de8` is excluded.
 
-All four contract files have exact equal bytes at approved WP02 source `acad3958`, the refreshed planning SHA and the current analyzed checkout. All 220 Go/module path digests equal approved WP01 frozen source `eb3f4932c265c0cf1b1f5c19939f212cded40e2c`; all 105 non-test Go/module inputs still equal f8. Canonical sorted path/digest JSON SHA256 is `7e77be2491cf1437b9593f7a74da84f50ba59a4f7d3bc2bd9249d950460c6a46`. Thus successor code lanes inherit the real approved foundation and contracts, not an old planning-only snapshot. No application semantic change is hidden in the metadata amendment.
+All four current contract files equal their exact bytes at the refreshed planning SHA. Original conformance/default contracts remain unchanged from approved WP02. The artifact contract retains every prior byte and appends only the independently approved T015 section; the host contract contains exactly the four independently approved registration/error corrections described below. Thus future code lanes inherit the approved native foundation and current independently reviewed contracts, rather than stale planning-only bytes.
 
-Canonical coordination readback preserves WP01 approved event `01M66767D87RQVAEF5NMB31BQK` and WP02 approved event `01M67JATY3AJWV00Y0SAB427ZM`; all 24 feature successors remain planned. This analysis neither rewrites those states nor claims a feature already implemented.
+The PRIMARY/planning baseline still has 220 Go/module inputs exactly equal to approved WP01 frozen source `eb3f4932c265c0cf1b1f5c19939f212cded40e2c`; its 105 non-test Go/module digests equal f8, canonical sorted path/digest JSON SHA256 `7e77be2491cf1437b9593f7a74da84f50ba59a4f7d3bc2bd9249d950460c6a46`. This equality is explicitly limited to the primary/planning baseline. Active feature code is present on separate branches: immutable observed WP03 source `d3e556f66d7c58c064a914ee6f4773f53949c927` has seven new owned Go paths; WP13 source `8f68d66af1aa00093e428e643625184f4958b17a` has six. Their changed Go paths fall within their own declared scopes, but their implementation is neither accepted nor qualified by this planning analysis. No whole-mission source-unchanged claim is made.
+
+At the canonical coordination snapshot read during this analysis, WP01 remains approved at `01M66767D87RQVAEF5NMB31BQK`, WP02 remains approved at `01M67JATY3AJWV00Y0SAB427ZM`, WP03 subsequently reached approved at `01M67N0T46R5BNYX9BXX1G3K2K` during the recorder retry preparation, and WP13 remains in_review at `01M67MX42717STG1JH0RGC7ZRC`; the other 22 WPs are planned. This state update records the independent package review result and does not itself perform or replace that review. Live package states may advance independently after this snapshot. This analysis does not rewrite them, waive current package review findings, claim all successors are planned, or replace their implementation reviews.
+
+### Supplemental contract amendments: independently reviewed new bytes
+
+T015 commit `a6624d52b1c48d886a329a6be04f061cf2c8871c` is byte-for-byte the original approved artifact contract plus a newline and exact approved proposal SHA256 `66a6ceccb74bd8d3bd8ab672a528ec7c9114be57f00f2617a53cf82227bb71f7`. Its independent review binding and report hashes match. The initial root draft with `previous=null` was rejected before commit; reversing only the corrected `previous=""` phrase reconstructs the preserved rejected proposal and its hash. The committed genesis rule therefore matches the frozen signed envelope and existing literal vectors.
+
+The addendum names the already planned WP03 T015 inert `hn artifact envelope validate|inspect` caller, bounded exact payload/public-signature and optional adjacent predecessor inputs, paired predecessor flags and simultaneous-stdin refusal, the existing wrapper/errors/exit codes, and explicit integrity/continuity versus `semantic_validation:not_checked`. It adds no signing, publication, schema/closure/admission authority, registry/module work, host method or native lock exemption. FILE keeps the existing stdin macro semantics. WP03's closed-error-origin/predecessor-stdin review corrections are package implementation obligations, not expansion of this contract or a reason to waive code findings.
+
+Registration commit `263fdae9b914ba2c0e0e6fe0854727d7aabafbaf` exactly applies the four supplemental reviewed replacements, each with one unique anchor. Its host SHA256 is `6ff3466337cd6c3a6d74568ae8d851059b7d4d134a52c9f7c07f57a9a704a2a5`, equal to the independently approved proposed digest. The review report/check hashes match their binding. The private cryptographic 128-bit registration instance distinguishes new registrations after removal, so retained cross-repository enablement cannot regain authority; exact active duplicate registration preserves its stored instance/ID. Entropy failure precedes replacement, malformed/mismatched private state fails closed, and explicit management inspect misses use the already promised `host/not_found`, `do_not_retry`, operation null. No host method, signed protocol, grant capability or default native dependency is added. WP13 and downstream code must still prove the actual lifecycle/denial cases.
+
+Independent static extraction/parsing confirms all 65 raw JSON example bodies are byte-identical to original WP02, including all 59 conformance examples; signed public fixtures are unchanged. Full cryptographic verifiers were not rerun for unchanged bytes. Existing prior verifier evidence remains evidence for those previously verified bytes, not new runtime behavior. Canonical coordination tracer commit `980cba9f2a83d83c6e9fc8ca3ebd70ca78260d08` explicitly records these supplemental approvals without retroactively representing the original acad3958 WP02 review as having approved new bytes.
 
 ### Ownership, DAG and current callers
 
-The refreshed manifest preserves all 26 lane IDs, WP membership, dependency edges and parallel depths compared to immutable `acad3958`. There are 26 WPs, 107 unique contiguous subtasks T001–T107, an acyclic DAG and no overlapping owned paths. Each computed write scope and dependency-lane set exactly matches WP frontmatter. Only WP02 is `planning_artifact`; late WP23/WP26 documentation deliveries remain in their prior code-change lanes/roles. Every successor transitively depends on approved WP01, and every feature successor on approved WP02. No requirement, dependency or scope was weakened.
+The refreshed manifest preserves all 26 lane IDs, WP membership, dependency edges and parallel depths compared to the previously accepted manifest at immutable `1d253f1f`. There are 26 WPs, 107 unique contiguous subtasks T001–T107, an acyclic DAG and no overlapping owned paths. Each computed write scope and dependency-lane set exactly matches WP frontmatter. Only WP02 is `planning_artifact`; late WP23/WP26 documentation deliveries remain in their prior code-change lanes/roles. Every successor transitively depends on approved WP01, and every feature successor on approved WP02. No requirement, dependency or scope was weakened; these additive contract clarifications retain the same owner and planned caller boundaries.
 
 WP25 exclusively owns the existing `.github/workflows/portability.yml` and new `.github/workflows/optional-extensions-qualification.yml`; only the new workflow is added to create_intent. Plan/tasks/WP25 agree: selector defaults preserve existing beta manual behavior; explicit extension selection suppresses all beta manual validation/build/reuse/native jobs; existing PR/push behavior remains intact. The reviewed feature-ref entrypoint delegates to the same-commit reusable workflow, with actual caller/workflow SHA separately bound from candidate source SHA. All eight Linux/macOS AMD64/ARM64 standard and combined `nogithub,noforge` candidate binaries require execution, with separately supplied exact-source target-bound reference assets and no source-build fallback. These are future WP25 deliverables, not implemented workflows or claimed dispatch success. Go/Git journeys remain usable outside CI; no hosted workflow becomes a native dependency.
 
@@ -152,12 +164,12 @@ None. Every subtask belongs to a package with explicit requirement references an
 - Unmapped tasks 0; owned-path overlaps 0; dependency cycles 0; changed lane identities/dependencies 0.
 - Open analysis findings: critical 0, high 0, medium 0, low 0; ambiguity 0; duplication 0.
 - Previous O1: resolved by approved frozen Context mechanism plus committed ownership/lane amendment.
-- Previous contract findings: four P1 and one P2, and C1–C4, independently closed at WP02 contract acceptance only; production conformance remains required.
+- Previous contract findings: four P1 and one P2, and C1–C4, independently closed at original WP02 contract acceptance only. T015 and private-registration new bytes have separate supplemental scoped approvals; production conformance remains required.
 
 ### Evidence binding and limits
 
-External `analysis-refresh/evidence.json` records current HEAD, all analyzed artifact/WP/contract/charter hashes, exact planning ancestry, 220 Go/module identity, exclusive owners, unchanged lane structure, canonical approval states and hashes of the WP02 independent-review binding. The canonical recorder computes the current input hashes, verdict and stale state and commits its wrapped report. This analysis performs no remediation or application/testing/build/probe execution. It does not infer new platform, browser, signing, adopter, beta, release or main-integration results.
+External `analysis-errata-refresh/evidence.json` records current primary HEAD, all analyzed artifact/WP/contract/charter hashes, exact refreshed planning ancestry, the primary-only 220-input baseline, active WP03/WP13 fixed sources and owned changes, exclusive owners, unchanged lane structure, observed canonical states, all 65 JSON-body digests and supplemental review-binding checks. Prior evidence is not overwritten. The canonical recorder computes current input hashes, verdict and stale state and commits its wrapped report. This analysis performs no remediation, product-code edits, test/build/application/probe execution, or cryptographic-verifier rerun. It does not infer new platform, browser, signing, adopter, beta, release or main-integration results.
 
 ### Next actions
 
-After canonical recording confirms fresh readiness, use canonical runtime claims for the available WP03 and WP13 lanes, with their actual dependency materialization and independent review. Continue all remaining work packages through the unchanged DAG and charter gates. Maintain serialized heavy execution, exact fixed-source evidence and truthful pending observations. No approval of future behavior or publication follows from this analysis.
+After canonical recording confirms fresh readiness, continue the active WP03 and WP13 independent implementation reviews and corrections, then use canonical runtime claims only when actual dependency approvals permit them. Their new branch code and current package findings remain accountable to those reviews; this planning report supplies no feature approval. Continue the unchanged DAG, serialized heavy execution, fixed-source evidence and all final default/platform/adopter gates. No publication or future behavior is approved here.
