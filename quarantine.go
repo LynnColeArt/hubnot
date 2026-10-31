@@ -1719,13 +1719,17 @@ func promoteReplicationRefs(promotions []replicationPromotion) error {
 		return nil
 	}
 	sort.Slice(promotions, func(i, j int) bool { return promotions[i].Ref < promotions[j].Ref })
+	artifactDestinations := false
 	var input strings.Builder
 	input.WriteString("start\n")
 	for _, promotion := range promotions {
 		_, _, actorDestination := parseAcceptedActorRef(promotion.Ref)
 		_, _, proposalDestination := parseAcceptedProposalRef(promotion.Ref)
 		_, _, _, memoryDestination := parseAcceptedMemoryRef(promotion.Ref)
-		if (!actorDestination && !proposalDestination && !memoryDestination) || !validGitOID(promotion.NewOID) {
+		_, artifactDestination := parseArtifactRef(promotion.Ref)
+		artifactDestination = artifactDestination && strings.HasPrefix(promotion.Ref, "refs/hn/remotes/")
+		artifactDestinations = artifactDestinations || artifactDestination
+		if (!actorDestination && !proposalDestination && !memoryDestination && !artifactDestination) || !validGitOID(promotion.NewOID) {
 			return fmt.Errorf("invalid replication promotion")
 		}
 		if promotion.OldOID == "" {
@@ -1738,7 +1742,14 @@ func promoteReplicationRefs(promotions []replicationPromotion) error {
 		}
 	}
 	input.WriteString("prepare\ncommit\n")
-	if _, err := gitInput([]byte(input.String()), nil, "update-ref", "--stdin"); err != nil {
+	args := []string{"update-ref", "--stdin"}
+	if artifactDestinations {
+		// Artifact publication owns the named accepted refs themselves. Enforce
+		// this in the transaction so a symbolic destination cannot redirect it,
+		// including after source verification. Native-only arguments stay intact.
+		args = append(args, "--no-deref")
+	}
+	if _, err := gitInput([]byte(input.String()), nil, args...); err != nil {
 		return fmt.Errorf("atomically promote accepted refs: %w", err)
 	}
 	return nil
