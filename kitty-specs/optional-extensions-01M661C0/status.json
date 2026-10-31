@@ -1,7 +1,7 @@
 {
-  "event_count": 191,
-  "last_event_id": "01M68ACGN5J8CWBW9NTCPDYJD7",
-  "materialized_at": "2026-10-31T06:29:37.560221+00:00",
+  "event_count": 195,
+  "last_event_id": "01M68AT704E8QFTHM85AR1MJ58",
+  "materialized_at": "2026-10-31T06:37:06.436240+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
@@ -12,8 +12,8 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 2,
-    "in_review": 0,
+    "in_progress": 0,
+    "in_review": 2,
     "planned": 10
   },
   "work_packages": {
@@ -407,17 +407,26 @@
     "WP12": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M6868NRR5Z4APNSEXHZ7263N",
-      "last_transition_at": "2026-10-31T05:17:37.432249+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M68AM81Z7V2NNYBA2VT4VHPW",
+      "last_transition_at": "2026-10-31T06:33:50.911203+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: exact source 02e3e2245ae384ce0a4cde5919ded876726a9677; bounded inert artifact search, full stable pages, explicit stale-cursor recovery, live help; supplied standard/native/race CLI qualification, native memory/default controls and preserved causal REDs at /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP12/finish-20261031/final"
+      ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21"
+      "shell_pid_created_at": "1793287708.21",
+      "subtasks": {
+        "T048": "done",
+        "T049": "done",
+        "T050": "done",
+        "T051": "done"
+      }
     },
     "WP13": {
       "actor": "codex",
@@ -532,17 +541,18 @@
     "WP16": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
-      "lane": "in_progress",
-      "last_event_id": "01M68ACGN5J8CWBW9NTCPDYJD7",
-      "last_transition_at": "2026-10-31T06:29:37.560221+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M68AT704E8QFTHM85AR1MJ58",
+      "last_transition_at": "2026-10-31T06:37:06.436240+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods.",
         "Independent review passed at exact source 320e212b26a5f151b1af09083895d479b4a8396f; all242 input digests and supplied binary hashes independently recomputed. Forty-six focused race test/subtest PASS events, zero fail/skip; supplied standard and combined-native actual-child CLI, raw ungranted writes, frame/stderr bounds, four shared physical slots, finite TERM-ignore/global/descendant cleanup, native lock negative control and syscall no-loader controls; synchronous cancellation/actor-key uncertainty and partial-frame30s cap pass. Handwritten pipelined second-request probe20/20 invalid_input. Anti-pattern1 dead code PASS;2 synthetic fixture PASS;3 silent empty PASS;4 FR coverage PASS;5 frozen surface PASS;6 locked decision PASS;7 shared ownership PASS;8 production fragility PASS. Only seven owned source paths; exact main.go lock exclusion. Same-user boundary and synchronous I/O caveat preserved; WP17/18/19 domain adapters and final platform/performance qualification pending. External evidence optional-extensions-WP16/reviewer-evidence.json; execution slot released; no reviewer fixes.",
-        "Administrative dependency refresh after independently approved WP15 native result correction; retain host lifecycle source, qualify exact updated union before adapters."
+        "Administrative dependency refresh after independently approved WP15 native result correction; retain host lifecycle source, qualify exact updated union before adapters.",
+        "WP16 approved protocol refresh: exact242input union at19cc5d15; unchanged lifecycle bytes with verified accepted evidence; fresh stamped standard/combined binaries pass50 corrected frame controls and focused race/live handshake-capability-revocation/native-lock/no-loader/refusal checks. Evidence optional-extensions-WP16/protocol-refresh/report.md. No new lifecycle/domain adapter behavior."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -552,14 +562,14 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 22770,
+      "shell_pid_created_at": "1793287708.21",
       "subtasks": {
-        "T064": "planned",
-        "T065": "planned",
-        "T066": "planned",
-        "T067": "planned"
+        "T064": "done",
+        "T065": "done",
+        "T066": "done",
+        "T067": "done"
       }
     },
     "WP17": {
