@@ -382,7 +382,8 @@
       "notes": [
         "Ready for independent review: generic list and public recovery CLI; exact source 6b3c5cee, metadata-only delivery ec2ad388, 265-input binding, both supplied release variants plus race and vet pass; external optional-extensions-WP11 evidence retains initial RED and all causes",
         "Independent review passed: exact 265-input provenance and 262 inherited union verified; frozen four-contract roundtrip and all eight antipattern checks PASS; supplied standard combined journey/list/cursor/exact8MiB tests and native-only exact8MiB test PASS; independently recomputed25 public vectors and literal keyless reconstruction/cause/no-effects checks on both release variants. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP11/review-renata/review.md. Final full-suite/package/platform/default qualification remains WP24/WP25.",
-        "Administrative integration refresh after scoped WP09/WP10 named-ref repair; no new query defect; preserve old exact-source approval and requalify new approved dependency bytes before downstream final work."
+        "Administrative integration refresh after scoped WP09/WP10 named-ref repair; no new query defect; preserve old exact-source approval and requalify new approved dependency bytes before downstream final work.",
+        "Refreshed integration ready: committed source 94503db2, approved WP09 fetch acknowledgement fix 70524a91, preserved WP11 regression 293f617f GREEN in both supplied variants, exact 265-input proof plus focused query/recovery/namespace/atomic and small race/vet checks; prior unchanged evidence retained"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
