@@ -693,8 +693,16 @@ func TestExtensionFakeTrackerNativeDefaultInert(t *testing.T) {
 	f := fakeTrackerFixture(t, consumer, "native:issue=read")
 	f.actor()
 	id := f.openNative("ordinary-native-default")
-	registry := filepath.Join(f.home, "config", "hubnot", "extensions", "registry.json")
-	if err := os.WriteFile(registry, []byte("{ deliberately malformed registry"), 0600); err != nil {
+	config := extensionTestConfigDir(t, f.home)
+	f.env = operationalTestEnvironmentWith(f.home, map[string]string{"XDG_CONFIG_HOME": config, "HN_WP17_CHILD": "1", "HN_WP17_REQUESTS": f.input, "HN_WP17_RESPONSES": f.output})
+	registry := filepath.Join(config, "hubnot", "extensions", "registry.json")
+	registered, err := os.ReadFile(registry)
+	if err != nil || !json.Valid(registered) {
+		t.Fatal("registered fixture is not at the actual OS config path", registry, err)
+	}
+	t.Logf("isolated OS config registry: %s", registry)
+	malformed := []byte("{ deliberately malformed registry")
+	if err := os.WriteFile(registry, malformed, 0600); err != nil {
 		t.Fatal(err)
 	}
 	fakeWrite(t, f.config, map[string]any{"token": "PRIVATE-DO-NOT-OPEN-CONFIG"})
@@ -712,6 +720,24 @@ func TestExtensionFakeTrackerNativeDefaultInert(t *testing.T) {
 	if f.serviceState()["writes"] != float64(0) {
 		t.Fatal("ordinary native read wrote to API")
 	}
+	// Unlike syscall tracing, this causal read control also runs on macOS: an
+	// explicit management read must encounter these exact malformed bytes.
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	control := exec.CommandContext(ctx, f.binary, "extension", "inspect", "--json")
+	control.Dir, control.Env = f.repo, f.env
+	var stdout, stderr bytes.Buffer
+	control.Stdout, control.Stderr = &stdout, &stderr
+	controlErr := control.Run()
+	var result extensionCLIResult
+	if ctx.Err() != nil || json.Unmarshal(stdout.Bytes(), &result) != nil || controlErr == nil || result.OK || result.Data != nil || result.Error.Origin != "host" || result.Error.Code != "invalid_input" || result.Error.Recovery != "do_not_retry" {
+		t.Fatalf("explicit management read missed malformed OS registry: error=%v stdout=%s stderr=%s", controlErr, &stdout, &stderr)
+	}
+	afterRegistry, err := os.ReadFile(registry)
+	if err != nil || !bytes.Equal(afterRegistry, malformed) {
+		t.Fatal("native/control read changed malformed registry", err)
+	}
+	nativeSnapshotEqual(t, f.nativeHostFixture, before)
 	// Actual detector negative control, using a real read of this malformed path.
 	if *extensionBaselineTrace != "" {
 		path := filepath.Join(f.home, "negative.trace")
