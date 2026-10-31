@@ -27,6 +27,17 @@ missing selected dependencies and malformed selected histories still refuse.
 The explicit opaque-preservation path retains its separate all-input-objects
 intent and never promotes accepted refs.
 
+The 2048 signed-record bound counts verified selected `hn-artifact/1` records,
+including their selected type/prefix dependencies, rather than every raw object
+whose Git type is `commit`. Arbitrary opaque commits and unreachable table
+commits do not acquire a verified signed identity by that type label. All table
+objects and bytes remain subject to the early aggregate bounds; the verified
+selected count is checked through the shared history/closure before accepted
+copy or promotion. Opaque mode reports zero signed records and may preserve up
+to 4096 raw commit objects when the other index/exchange bounds also permit it.
+Qualification retains a causal old-binary overconstraint refusal and the actual
+opaque CLI positive, as well as the isolated exact/one-over signed-count checks.
+
 WP10 must preserve meaningful failing controls for these draft overconstraints,
 then demonstrate real accepted import with a valid unselected public blob while
 that blob remains absent from the destination ODB and opaque index. An invalid
