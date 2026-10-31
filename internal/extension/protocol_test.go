@@ -1,0 +1,272 @@
+package extension
+
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"strings"
+	"testing"
+)
+
+const testID = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+const testActor = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+func obj(pairs ...any) map[string]any {
+	m := map[string]any{}
+	for i := 0; i < len(pairs); i += 2 {
+		m[pairs[i].(string)] = pairs[i+1]
+	}
+	return m
+}
+func encode(v any) []byte { b, _ := json.Marshal(v); return b }
+func recordFixture() map[string]any {
+	return obj("shape", "document", "type_id", "example.test/item", "type_revision", testID, "title", "item", "content", "", "fields", obj(), "members", []any{}, "relationships", []any{}, "conversion_sources", []any{})
+}
+func typeFixture() map[string]any {
+	return obj("type_id", "example.test/item", "schema_version", 1, "shape", "document", "schema", obj("language", "hn.schema/1", "root", obj("type", "object", "properties", obj(), "required", []any{}, "additionalProperties", false)))
+}
+func nativeFixture(family string) map[string]any {
+	switch family {
+	case "issue":
+		return obj("title", "ticket", "body", "", "status", "open", "criteria", []any{}, "labels", []any{}, "assignees", []any{}, "relations", []any{}, "metadata", obj())
+	case "project":
+		return obj("schema", "hn.project/1", "title", "project", "body", "", "archived", false, "fields", []any{obj("id", "status", "name", "Status", "type", "single_select", "options", []any{obj("id", "open", "name", "Open")})}, "views", []any{obj("id", "board", "name", "Board", "layout", "board", "group_by_field", "status")})
+	case "project-item":
+		return obj("schema", "hn.project-item/1", "project_id", testID, "project_revision", testID, "target", obj("kind", "issue", "id", testID), "archived", false, "position", "0", "values", obj("status", obj("type", "single_select", "option_id", "open")))
+	case "discussion":
+		return obj("schema", "hn.discussion/1", "title", "discussion", "body", "", "category", "general", "status", "open")
+	case "discussion-reply":
+		return obj("schema", "hn.discussion-reply/1", "discussion_id", testID, "body", "reply")
+	default:
+		return obj("schema", "hn.workflow/1", "name", "check", "title", "check", "description", "", "enabled", true, "pipeline", obj("version", "hn.pipeline/0", "steps", []any{obj("name", "check", "command", "go", "args", []any{"test", "./..."}, "timeoutSeconds", 30)}), "source_documents", []any{obj("format", "text", "content", "description", "digest", testID)})
+	}
+}
+func paramFixtures() map[string]map[string]any {
+	selection := obj("families", []any{"issue"}, "types", []any{})
+	return map[string]map[string]any{
+		"capabilities.list": obj(), "identity.public": obj(),
+		"resource.read":         obj("family", "issue", "id", nil, "limit", 20, "cursor", nil),
+		"resource.mutate":       obj("family", "issue", "intent", "open", "id", nil, "expected", []any{}, "actor", testActor, "operation", "key", "state", nativeFixture("issue"), "comment", ""),
+		"resource.operation":    obj("family", "issue", "actor", testActor, "operation", "key"),
+		"artifact.read":         obj("id", testID, "opaque_id", nil, "type_id", nil, "limit", 20, "cursor", nil, "mode", "view", "opaque", false),
+		"artifact.mutate":       obj("kind", "record.open", "record", nil, "parents", []any{}, "payload", recordFixture(), "actor", testActor, "operation", "key"),
+		"artifact.operation":    obj("type_id", "example.test/item", "actor", testActor, "operation", "key"),
+		"artifact.search":       obj("type_id", nil, "shape", nil, "literal", "item", "regex", nil, "limit", 20, "cursor", nil),
+		"artifact.type.read":    obj("id", testID, "type_id", nil, "limit", 20, "cursor", nil),
+		"artifact.type.publish": obj("parents", []any{}, "payload", typeFixture(), "actor", testActor, "operation", "key"),
+		"changes.capture":       obj("selection", selection, "limit", 20),
+		"changes.page":          obj("capture", "capture", "cursor", "cursor", "limit", 20),
+		"changes.since":         obj("checkpoint", "checkpoint", "selection", selection, "limit", 20),
+	}
+}
+func mutationFixture() map[string]any {
+	return obj("protocol", "hn/0", "family", "issue", "type_id", nil, "resource_id", testID, "event_id", testID, "replayed", false, "conflict", false, "head_count", 1, "admission", nil, "source_cut", testID)
+}
+func resultFixtures() map[string]map[string]any {
+	page := obj("items", []any{}, "source_cut", testID, "next_cursor", nil)
+	change := obj("capture", "capture", "snapshot_id", testID, "selection", obj("families", []any{"issue"}, "types", []any{}), "selection_digest", testID, "source_cut", testID, "mode", "replace", "items", []any{}, "next_cursor", nil, "complete", true, "checkpoint", "checkpoint", "expires_at", "2026-10-30T12:00:00Z")
+	capabilities := []any{}
+	for _, method := range []string{"capabilities.list", "identity.public", "resource.read", "resource.mutate", "resource.operation", "artifact.read", "artifact.mutate", "artifact.operation", "artifact.search", "artifact.type.read", "artifact.type.publish", "changes.capture", "changes.page", "changes.since"} {
+		capabilities = append(capabilities, obj("method", method, "declared", true, "granted", false, "enabled", true, "compatible", true, "availability", "observed", "recovery", "do_not_retry"))
+	}
+	unsupported := []any{}
+	for _, surface := range strings.Fields("memory.mutate proposal review decide merge policy.mutate identity.mutate run runner audit automerge sync.apply migration.apply") {
+		unsupported = append(unsupported, obj("surface", surface, "status", "unsupported", "recovery", "do_not_retry"))
+	}
+	return map[string]map[string]any{
+		"capabilities.list": obj("session", obj("session_id", strings.Repeat("a", 32), "module_id", "example.test/tool", "module_version", "1", "registration_id", testID, "repository_id", testID, "protocol", "hn.extension/1"), "capabilities", capabilities, "unsupported", unsupported),
+		"identity.public":   obj("initialized", false, "actor", nil, "name", nil, "public_key", nil),
+		"resource.read":     page, "artifact.read": page, "artifact.search": page, "artifact.type.read": page,
+		"resource.mutate": mutationFixture(), "artifact.mutate": mutationFixture(), "artifact.type.publish": mutationFixture(),
+		"resource.operation": obj("status", "found", "protocol", "hn/0", "actor", testActor, "operation", "key", "family", "issue", "type_id", nil, "request", testID, "resource_id", testID, "event_id", testID, "result", mutationFixture(), "source_cut", testID, "reason", nil),
+		"artifact.operation": obj("status", "verified_absent", "protocol", "hn-artifact/1", "actor", testActor, "operation", "key", "family", nil, "type_id", "example.test/item", "request", nil, "resource_id", nil, "event_id", nil, "result", nil, "source_cut", testID, "reason", nil),
+		"changes.capture":    change, "changes.page": change, "changes.since": change,
+	}
+}
+func TestProtocolAllTypedMethods(t *testing.T) {
+	for method, params := range paramFixtures() {
+		t.Run(method, func(t *testing.T) {
+			request := obj("protocol", "hn.extension/1", "request_id", "r1", "method", method, "params", params)
+			got, err := InspectMessage(encode(request), "request", "", "")
+			if err != nil || got.Method == nil || *got.Method != method {
+				t.Fatalf("request: %v", err)
+			}
+			params["repository"] = "private input must never be echoed"
+			_, err = InspectMessage(encode(request), "request", "", "")
+			requireCode(t, err, "invalid_input")
+			delete(params, "repository")
+			for name, original := range params {
+				params[name] = []any{}
+				if _, alreadyArray := original.([]any); !alreadyArray {
+					_, err = InspectMessage(encode(request), "request", "", "")
+					requireCode(t, err, "invalid_input")
+				}
+				params[name] = original
+			}
+		})
+	}
+	for method, data := range resultFixtures() {
+		t.Run(method+" response", func(t *testing.T) {
+			response := obj("protocol", "hn.extension/1", "request_id", "r1", "ok", true, "data", data, "error", nil)
+			_, err := InspectMessage(encode(response), "response", "r1", method)
+			if err != nil {
+				t.Fatal(err)
+			}
+			data["unexpected"] = true
+			_, err = InspectMessage(encode(response), "response", "r1", method)
+			requireCode(t, err, "invalid_input")
+			delete(data, "unexpected")
+			_, err = InspectMessage(encode(response), "response", "wrong", method)
+			requireCode(t, err, "invalid_input")
+		})
+	}
+}
+func TestProtocolNestedTypedShapes(t *testing.T) {
+	for _, family := range []string{"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"} {
+		t.Run(family, func(t *testing.T) {
+			params := paramFixtures()["resource.mutate"]
+			params["family"] = family
+			params["state"] = nativeFixture(family)
+			request := obj("protocol", "hn.extension/1", "request_id", "r", "method", "resource.mutate", "params", params)
+			if _, err := InspectMessage(encode(request), "request", "", ""); err != nil {
+				t.Fatal(err)
+			}
+			state := params["state"].(map[string]any)
+			for key, original := range state {
+				state[key] = nil
+				_, err := InspectMessage(encode(request), "request", "", "")
+				requireCode(t, err, "invalid_input")
+				state[key] = original
+			}
+			state["extra"] = false
+			_, err := InspectMessage(encode(request), "request", "", "")
+			requireCode(t, err, "invalid_input")
+		})
+	}
+	envelope := obj("protocol", "hn-artifact/1", "kind", "record.open", "actor", testActor, "public_key", base64.RawStdEncoding.EncodeToString(make([]byte, 32)), "stream", testID, "sequence", 1, "previous", "", "timestamp", "2026-10-30T12:00:00Z", "operation", "key", "request", testID, "record", "", "parents", []any{}, "payload", recordFixture())
+	signed := obj("id", testID, "envelope", envelope, "signature", base64.RawStdEncoding.EncodeToString(make([]byte, 64)), "validation", "verified", "diagnostics", []any{})
+	response := obj("protocol", "hn.extension/1", "request_id", "r", "ok", true, "data", obj("items", []any{signed}, "source_cut", testID, "next_cursor", nil), "error", nil)
+	if _, err := InspectMessage(encode(response), "response", "r", "artifact.type.read"); err != nil {
+		t.Fatal(err)
+	}
+	envelope["payload"].(map[string]any)["members"] = nil
+	_, err := InspectMessage(encode(response), "response", "r", "artifact.type.read")
+	requireCode(t, err, "invalid_input")
+}
+func TestProtocolStrictJSONAndCorrelation(t *testing.T) {
+	ready := `{"protocol":"hn.extension/1","ready":true}`
+	for _, raw := range []string{`null`, `[]`, `true`, `{}`, `{"protocol":null,"ready":true}`, `{"protocol":"hn.extension/1","ready":null}`, `{"protocol":"hn.extension/1","ready":true,"ready":true}`, `{"protocol":"hn.extension/1","ready":true,"x":"\ud800"}`, `{"protocol":"hn.extension/1","ready":true} {}`, strings.Replace(ready, "true", "1e0", 1)} {
+		_, err := InspectMessage([]byte(raw), "ready", "", "")
+		requireCode(t, err, "invalid_input")
+	}
+	_, err := InspectMessage(append([]byte(ready[:len(ready)-1]), 255, '}'), "ready", "", "")
+	requireCode(t, err, "invalid_input")
+	_, err = InspectMessage([]byte(strings.Replace(ready, "hn.extension/1", "hn.extension/2", 1)), "ready", "", "")
+	requireCode(t, err, "incompatible_version")
+	for _, id := range []string{"!", strings.Repeat("z", 128)} {
+		request := obj("protocol", "hn.extension/1", "request_id", id, "method", "identity.public", "params", obj())
+		if _, err := InspectMessage(encode(request), "request", "", ""); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, id := range []any{"", strings.Repeat("z", 129), "a b", "é", nil, []any{}, true} {
+		request := obj("protocol", "hn.extension/1", "request_id", id, "method", "identity.public", "params", obj())
+		_, err = InspectMessage(encode(request), "request", "", "")
+		requireCode(t, err, "invalid_input")
+	}
+	request := obj("protocol", "hn.extension/1", "request_id", "r", "method", "runner", "params", obj())
+	_, err = InspectMessage(encode(request), "request", "", "")
+	requireCode(t, err, "unsupported_capability")
+	for _, key := range []string{"expected", "method"} {
+		expected, method := "", ""
+		if key == "expected" {
+			expected = "r"
+		} else {
+			method = "identity.public"
+		}
+		_, err = InspectMessage([]byte(ready), "ready", expected, method)
+		requireCode(t, err, "invalid_input")
+	}
+	cancel := []byte(`{"protocol":"hn.extension/1","cancel":"r"}`)
+	if _, err = InspectMessage(cancel, "cancel", "r", ""); err != nil {
+		t.Fatal(err)
+	}
+	_, err = InspectMessage(cancel, "cancel", "other", "")
+	requireCode(t, err, "invalid_input")
+	failureResponse := obj("protocol", "hn.extension/1", "request_id", nil, "ok", false, "data", nil, "error", obj("origin", "native", "code", "stale_revision", "message", "expected revision is no longer the current head", "recovery", "do_not_retry", "operation", nil))
+	if _, err = InspectMessage(encode(failureResponse), "response", "", ""); err != nil {
+		t.Fatal(err)
+	}
+	failureResponse["ok"] = true
+	_, err = InspectMessage(encode(failureResponse), "response", "", "")
+	requireCode(t, err, "invalid_input")
+	failureResponse["ok"] = false
+	failureResponse["error"].(map[string]any)["code"] = "invented"
+	_, err = InspectMessage(encode(failureResponse), "response", "", "")
+	requireCode(t, err, "invalid_input")
+	raw := `{"protocol":"hn.extension/1","request_id":"r","method":"resource.read","params":{"family":"issue","id":null,"limit":1,"limit":2,"cursor":null}}`
+	_, err = InspectMessage([]byte(raw), "request", "", "")
+	requireCode(t, err, "invalid_input")
+}
+func TestProtocolPayloadAtFrameLimit(t *testing.T) {
+	raw := []byte(`{"protocol":"hn.extension/1","ready":true}`)
+	raw = append(raw, bytes.Repeat([]byte(" "), FrameLimit-len(raw))...)
+	if _, err := InspectMessage(raw, "ready", "", ""); err != nil {
+		t.Fatal(err)
+	}
+	raw = append(raw, ' ')
+	_, err := InspectMessage(raw, "ready", "", "")
+	requireCode(t, err, "resource_limit")
+}
+
+func TestProtocolPublishedValueBounds(t *testing.T) {
+	request := obj("protocol", "hn.extension/1", "request_id", "r", "method", "resource.read", "params", paramFixtures()["resource.read"])
+	params := request["params"].(map[string]any)
+	for _, n := range []int{1, 200} {
+		params["limit"] = n
+		if _, err := InspectMessage(encode(request), "request", "", ""); err != nil {
+			t.Fatal(err)
+		}
+	}
+	params["limit"] = 201
+	_, err := InspectMessage(encode(request), "request", "", "")
+	requireCode(t, err, "resource_limit")
+	params["limit"] = 0
+	_, err = InspectMessage(encode(request), "request", "", "")
+	requireCode(t, err, "invalid_input")
+	params["limit"] = 1
+	for _, n := range []int{1, 240000} {
+		request["timeout_ms"] = n
+		if _, err := InspectMessage(encode(request), "request", "", ""); err != nil {
+			t.Fatal(err)
+		}
+	}
+	request["timeout_ms"] = 240001
+	_, err = InspectMessage(encode(request), "request", "", "")
+	requireCode(t, err, "invalid_input")
+	delete(request, "timeout_ms")
+	params["cursor"] = strings.Repeat("c", 4096)
+	if _, err := InspectMessage(encode(request), "request", "", ""); err != nil {
+		t.Fatal(err)
+	}
+	params["cursor"] = strings.Repeat("c", 4097)
+	_, err = InspectMessage(encode(request), "request", "", "")
+	requireCode(t, err, "resource_limit")
+	response := obj("protocol", "hn.extension/1", "request_id", "r", "ok", false, "data", nil, "error", obj("origin", "host", "code", "denied_access", "message", strings.Repeat("m", 4096), "recovery", "do_not_retry", "operation", obj("protocol", "hn/0", "actor", testActor, "operation", "key")))
+	if _, err := InspectMessage(encode(response), "response", "r", ""); err != nil {
+		t.Fatal(err)
+	}
+	response["error"].(map[string]any)["message"] = strings.Repeat("m", 4097)
+	_, err = InspectMessage(encode(response), "response", "r", "")
+	requireCode(t, err, "resource_limit")
+	params = paramFixtures()["artifact.mutate"]
+	request = obj("protocol", "hn.extension/1", "request_id", "r", "method", "artifact.mutate", "params", params)
+	payload := params["payload"].(map[string]any)
+	payload["title"] = strings.Repeat("t", 1024)
+	if _, err := InspectMessage(encode(request), "request", "", ""); err != nil {
+		t.Fatal(err)
+	}
+	payload["title"] = strings.Repeat("t", 1025)
+	_, err = InspectMessage(encode(request), "request", "", "")
+	requireCode(t, err, "invalid_input")
+}
