@@ -98,6 +98,15 @@ refuse, with no silent truncation. These local consumer limits do not change
 host limits. stdout is reserved for wire frames during a host session; diagnostics
 go to private stderr and never include request/file contents.
 
+The client consumes the full preceding response prefix and payload, checks its
+exact request ID and closed envelope, then validates that method's complete typed
+success data or closed error before another call. A malformed/truncated reply
+stops publication; an explicit business refusal is preserved and handled as a
+refusal. These transport checks do not verify signatures or evaluate schemas,
+lineage, policy or example selection meaning. Those remain separate checks.
+The host's bounded final-byte observation allowance does not permit this client
+to pipeline requests, skip response validation or automatically retry.
+
 ## Explicit conflict and evolution
 
 Create an independent actor B with its own initialized Git repository and its
