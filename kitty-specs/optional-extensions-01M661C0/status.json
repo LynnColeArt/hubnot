@@ -455,7 +455,8 @@
         "Ready for independent review: inert registration and explicit inspect/list/remove, strict bounded private instance identities, exact duplicate no-entropy control, native syscall/no-process controls; fixed source 8f68d66a and external WP13 final-source bindings, both variants focused race/CLI/vet/build pass.",
         "Review feedback 2 fixed: raw stored argv string-array validation before typed decoding; null element refuses inspect/register/remove without repair, empty argument and duplicate no-entropy preserved. Frozen source b37261cb, focused race, both exact binary CLI/native traces, vet/build pass; external WP13/cycle2 bindings.",
         "Independent corrected-source review passed at b37261cb7642474daca093660334bd12f714d00e: null argv now refuses inspect/register/remove without repair; both exact supplied variants pass 48 malformed controls, valid empty-argument/lifecycle controls and focused native-read/race checks; all eight anti-pattern checks PASS. Scoped report external optional-extensions-WP13/cycle2/reviewer/review.md; future grant/session/full-mission qualification remains pending.",
-        "Root test-only portability correction decision6047396b; static audit, no Mac runtime pass; no production semantics changes."
+        "Root test-only portability correction decision6047396b; static audit, no Mac runtime pass; no production semantics changes.",
+        "Ready for fresh independent review: isolated OS config-directory fixture correction; Linux standard/combined-native CLI and strace controls pass at a10d40a6, Darwin runtime pending final qualification"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
