@@ -96,7 +96,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: source cecac403 canonical verifier/inert CLI; generated metadata reconciled; focused race/goldens/vet and both exact binaries qualified; evidence external optional-extensions-WP03/handoff.json",
-        "Independent codex/reviewer-renata rejects WP03 cycle1 for two reproduced P2 contract mismatches: artifact-origin unsupported protocol/kind codes outside closed set, and forbidden predecessor-only stdin despite frozen FILE grammar. Structured feedback committed 7dd64aa7; full external formal-review-cycle-1.md under optional-extensions-WP03. Preserve accepted unchanged evidence; focused fixes and corrected-binary requalification required. WP04/WP05 remain dependency-blocked."
+        "Independent codex/reviewer-renata rejects WP03 cycle1 for two reproduced P2 contract mismatches: artifact-origin unsupported protocol/kind codes outside closed set, and forbidden predecessor-only stdin despite frozen FILE grammar. Structured feedback committed 7dd64aa7; full external formal-review-cycle-1.md under optional-extensions-WP03. Preserve accepted unchanged evidence; focused fixes and corrected-binary requalification required. WP04/WP05 remain dependency-blocked.",
+        "Cycle2 R1/R2 corrected at d3e556f6: artifact closed invalid_input codes, either stdin direction; focused race/vet and both exact binaries39cases pass. T012/T014 accepted unchanged evidence plus new fixproof restores all4subtasks. Evidence external optional-extensions-WP03/cycle2/handoff.json"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
