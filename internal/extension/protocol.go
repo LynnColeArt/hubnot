@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -317,8 +318,8 @@ func dictionary(rule wireRule, max int, keyRule wireRule) wireRule {
 	}
 }
 func matches(pattern string) wireRule {
-	r := regexp.MustCompile(pattern)
-	return predicate(func(v any) bool { s, ok := v.(string); return ok && r.MatchString(s) })
+	r := sync.OnceValue(func() *regexp.Regexp { return regexp.MustCompile(pattern) })
+	return predicate(func(v any) bool { s, ok := v.(string); return ok && r().MatchString(s) })
 }
 
 var idRule = matches(`^sha256:[0-9a-f]{64}$`)
@@ -332,10 +333,12 @@ var shapeRule = inventoryRule("shapes")
 var protocolRule = inventoryRule("operation_protocols")
 var recoveryRule = inventoryRule("recoveries")
 var tokenRule = text(0, 4096)
-var decimalPattern = regexp.MustCompile(`^-?(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$`)
+var decimalPattern = sync.OnceValue(func() *regexp.Regexp {
+	return regexp.MustCompile(`^-?(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$`)
+})
 var decimalRule = predicate(func(v any) bool {
 	s, ok := v.(string)
-	return ok && len(s) <= 64 && s != "-0" && decimalPattern.MatchString(s)
+	return ok && len(s) <= 64 && s != "-0" && decimalPattern().MatchString(s)
 })
 var dateRule = predicate(func(v any) bool {
 	s, ok := v.(string)
@@ -355,10 +358,12 @@ var urlRule = predicate(func(v any) bool {
 })
 var pageLimit = integer(1, 200, true)
 var idsRule = sequence(idRule, 0, 1024, true, true)
-var nativeIdentifierPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,64}$`)
+var nativeIdentifierPattern = sync.OnceValue(func() *regexp.Regexp {
+	return regexp.MustCompile(`^[A-Za-z0-9_.-]{1,64}$`)
+})
 var nativeIdentifier = predicate(func(v any) bool {
 	s, ok := v.(string)
-	return ok && s != "." && s != ".." && nativeIdentifierPattern.MatchString(s)
+	return ok && s != "." && s != ".." && nativeIdentifierPattern().MatchString(s)
 })
 var fieldNameRule = matches(`^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`)
 var timestampRule = predicate(func(v any) bool {

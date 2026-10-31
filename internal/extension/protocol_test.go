@@ -8,8 +8,69 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 )
+
+// An invalid pattern makes compilation observable without depending on compiler
+// allocation sizes. Creating an unused optional rule must not compile it.
+func TestProtocolPatternCompilationIsDeferred(t *testing.T) {
+	var rule wireRule
+	func() {
+		defer func() {
+			if p := recover(); p != nil {
+				t.Fatalf("unused protocol rule compiled its pattern: %v", p)
+			}
+		}()
+		rule = matches("[")
+	}()
+	defer func() {
+		if recover() == nil {
+			t.Fatal("first use did not compile the invalid pattern")
+		}
+	}()
+	_ = rule("first use")
+}
+
+// Run this test alone in a fresh race-enabled test process so these globals
+// receive their first use concurrently, before any typed fixture warms them.
+func TestProtocolPatternsConcurrentFirstUse(t *testing.T) {
+	cases := []struct {
+		name string
+		rule wireRule
+		good string
+		bad  []any
+	}{
+		{"id", idRule, testID, []any{strings.TrimSuffix(testID, "a"), testID + "a", strings.ToUpper(testID), "\n" + testID, nil}},
+		{"actor", actorRule, testActor, []any{testActor[:63], testActor + "a", strings.ToUpper(testActor), testActor + "\n", nil}},
+		{"session", sessionIDRule, strings.Repeat("a", 32), []any{strings.Repeat("a", 31), strings.Repeat("a", 33), strings.Repeat("A", 32), nil}},
+		{"request", requestIDRule, strings.Repeat("~", 128), []any{"", strings.Repeat("a", 129), "space here", "é", nil}},
+		{"version", moduleVersionRule, strings.Repeat("!", 64), []any{"", strings.Repeat("a", 65), "space here", "é", nil}},
+		{"decimal", decimalRule, "-" + strings.Repeat("9", 61) + ".1", []any{"-0", "01", "1.0", "+1", "1e2", strings.Repeat("9", 65), "1\n", nil}},
+		{"native identifier", nativeIdentifier, strings.Repeat("a", 64), []any{"", ".", "..", strings.Repeat("a", 65), "a/b", "a\n", nil}},
+		{"field", fieldNameRule, "_" + strings.Repeat("a", 63), []any{"", "1a", strings.Repeat("a", 65), "a/b", "a\n", nil}},
+		{"member", matches(`^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`), "a" + strings.Repeat("-", 127), []any{"", "_a", strings.Repeat("a", 129), "a/b", "a\n", nil}},
+	}
+	start := make(chan struct{})
+	var workers sync.WaitGroup
+	for range 32 {
+		for _, tc := range cases {
+			workers.Go(func() {
+				<-start
+				for range 8 {
+					if err := tc.rule(tc.good); err != nil {
+						t.Errorf("%s valid value: %v", tc.name, err)
+					}
+					for _, bad := range tc.bad {
+						requireCode(t, tc.rule(bad), "invalid_input")
+					}
+				}
+			})
+		}
+	}
+	close(start)
+	workers.Wait()
+}
 
 const testID = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 const testActor = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
