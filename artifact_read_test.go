@@ -187,6 +187,14 @@ func TestArtifactStoreSelectedRefBudget(t *testing.T) {
 	if e != nil || len(sources) != artifactReadEntries {
 		t.Fatalf("selected refs at bound: %d %v", len(sources), e)
 	}
+	// Exercise the same bound through explicit witness verification, not merely
+	// enumeration. All actual packed refs share one valid public chain.
+	atBound := f.snapshot()
+	history, e := loadArtifactHistoryFromSources(ctx, filepath.Join(f.repo, ".git"), sources)
+	if e != nil || len(history.Sources) != 100000 || len(history.ByID) != 1 {
+		t.Fatalf("explicit selected refs at bound: %v", e)
+	}
+	f.unchanged(atBound)
 	fmt.Fprintf(&packed, "%s refs/hn/remotes/r%06d/%s\n", commit, artifactReadEntries, suffix)
 	if e = os.WriteFile(path, packed.Bytes(), 0600); e != nil {
 		t.Fatal(e)
@@ -444,6 +452,7 @@ func TestArtifactStoreExplicitPublicSources(t *testing.T) {
 				{"malformed-ref", []artifactSource{{"refs/hn/quarantine/artifacts/test", commit}}, "invalid_history"},
 				{"invalid-oid", []artifactSource{{ref, "not-an-oid"}}, "invalid_history"},
 				{"uppercase-oid", []artifactSource{{ref, strings.ToUpper(commit)}}, "invalid_history"},
+				{"wrong-object-format", []artifactSource{{ref, strings.Repeat("1", 104-len(commit))}}, "invalid_history"},
 				{"missing-ref", []artifactSource{{strings.Replace(accepted, "origin", "missing", 1), commit}}, "concurrent_update"},
 				{"over-ref-bound", make([]artifactSource, 100001), "resource_limit"},
 			} {
@@ -498,6 +507,14 @@ func TestArtifactStoreExplicitPublicSources(t *testing.T) {
 				t.Fatal("tampered selected signature", err)
 			}
 			f.unchanged(before)
+			_, err = loadArtifactHistoryFromSources(context.Background(), ".", nil)
+			if !errors.As(err, &failure) || failure.Code != "repository_error" {
+				t.Fatal("relative explicit directory", err)
+			}
+			_, err = loadArtifactHistoryFromSources(context.Background(), filepath.Join(root, "missing.git"), nil)
+			if !errors.As(err, &failure) || failure.Code != "repository_error" {
+				t.Fatal("missing explicit repository became empty success", err)
+			}
 			// Cancellation must be recognized even for an empty source set.
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()

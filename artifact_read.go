@@ -411,38 +411,62 @@ func artifactCheckSourceWitnesses(ctx context.Context, dir string, sources []art
 	if len(sources) == 0 {
 		return nil
 	}
-	var input strings.Builder
 	wanted := make(map[string]string, len(sources))
 	for _, source := range sources {
-		input.WriteString(source.Ref)
-		input.WriteByte('\n')
 		wanted[source.Ref] = source.OID
 	}
-	raw, e := projectGit(ctx, dir, []byte(input.String()), 32*1024*1024, "for-each-ref", "--count=100001", "--format=%(refname) %(objectname)", "--stdin")
-	if e != nil {
-		if ctx.Err() != nil {
-			return artifactFailure("cancelled", "artifact read cancelled")
+	// show-ref --verify performs exact ref lookups. A single for-each-ref query
+	// with100000 patterns scans the pattern set per ref and can exhaust the read
+	// deadline. Bound argv/output per batch instead; no unselected history loads.
+	for start := 0; start < len(sources); start += 64 {
+		end := start + 64
+		if end > len(sources) {
+			end = len(sources)
 		}
-		return artifactFailure("verification_failure", "cannot verify selected artifact source witnesses")
-	}
-	if bytes.Count(raw, []byte("\n")) >= 100001 {
-		return artifactFailure("resource_limit", "selected source witness enumeration exceeds read limit")
-	}
-	for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
-		if line == "" {
-			continue
+		args := []string{"show-ref", "--verify", "--"}
+		for _, source := range sources[start:end] {
+			args = append(args, source.Ref)
 		}
-		p := strings.Fields(line)
-		if len(p) != 2 {
-			return artifactFailure("verification_failure", "invalid selected artifact source witness")
-		}
-		if oid, selected := wanted[p[0]]; selected {
-			if p[1] != oid {
-				return artifactFailure("concurrent_update", "artifact source witness changed while reading")
+		raw, e := projectGit(ctx, dir, nil, 64*512, args...)
+		if e != nil {
+			if ctx.Err() != nil {
+				return artifactFailure("cancelled", "artifact read cancelled")
 			}
-			delete(wanted, p[0])
+			// show-ref fails as a group for a missing witness. The bounded fallback
+			// distinguishes verified disappearance from an unreadable ref database;
+			// neither error is treated as an empty source set.
+			args = []string{"for-each-ref", "--count=65", "--format=%(objectname) %(refname)", "--"}
+			for _, source := range sources[start:end] {
+				args = append(args, source.Ref)
+			}
+			raw, e = projectGit(ctx, dir, nil, 65*512, args...)
+			if e != nil {
+				if ctx.Err() != nil {
+					return artifactFailure("cancelled", "artifact read cancelled")
+				}
+				return artifactFailure("verification_failure", "cannot verify selected artifact source witnesses")
+			}
+			if bytes.Count(raw, []byte("\n")) >= 65 {
+				return artifactFailure("resource_limit", "selected source witness enumeration exceeds read limit")
+			}
+		}
+		for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+			if line == "" {
+				continue
+			}
+			p := strings.Fields(line)
+			if len(p) != 2 {
+				return artifactFailure("verification_failure", "invalid selected artifact source witness")
+			}
+			if oid, selected := wanted[p[1]]; selected {
+				if p[0] != oid {
+					return artifactFailure("concurrent_update", "artifact source witness changed while reading")
+				}
+				delete(wanted, p[1])
+			}
 		}
 	}
+
 	if len(wanted) != 0 {
 		return artifactFailure("concurrent_update", "artifact source witness missing while reading")
 	}
