@@ -1,14 +1,83 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"hubnot/internal/artifact"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 )
+
+func TestArtifactOperationValidatorLazyStartup(t *testing.T) {
+	// A fresh process observes package startup before another test can inspect an
+	// operation. Native command startup must not construct this optional regexp.
+	if os.Getenv("HN_WP07_VALIDATOR_STARTUP") != "1" {
+		binary, err := os.Executable()
+		if err != nil {
+			t.Fatal(err)
+		}
+		cmd := exec.Command(binary, "-test.run=^TestArtifactOperationValidatorLazyStartup$", "-test.count=1")
+		cmd.Env = append(os.Environ(), "HN_WP07_VALIDATOR_STARTUP=1")
+		if raw, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("validator startup and concurrent first use: %v\n%s", err, raw)
+		}
+		return
+	}
+	if artifactOperationType != nil {
+		t.Fatal("artifact operation regexp constructed before any operation inspection")
+	}
+	// Valid selectors reach the actor/key check; invalid selectors must retain
+	// the exact earlier refusal. Neither case can reach repository/private state.
+	tests := []struct {
+		typeID string
+		valid  bool
+	}{
+		{"a/n", true}, {"example.test/note", true}, {"a0.-/n9.-", true},
+		{strings.Repeat("a", 64) + "/" + strings.Repeat("n", 64), true},
+		{"", false}, {"a", false}, {"/n", false}, {"a/", false},
+		{"A/n", false}, {"a/N", false}, {"0a/n", false}, {"a/0n", false},
+		{"-a/n", false}, {"a/_n", false}, {"a/n/x", false},
+		{"a/n\n", false}, {" a/n", false}, {"a/n ", false}, {"a/雪", false},
+		{strings.Repeat("a", 65) + "/n", false}, {"a/" + strings.Repeat("n", 65), false},
+		{"hn/n", false}, {"hubnot/n", false},
+	}
+	type observation struct {
+		typeID, message string
+		err             error
+	}
+	const callers = 32
+	start := make(chan struct{})
+	results := make(chan observation, callers*len(tests))
+	for range callers {
+		go func() {
+			<-start
+			for _, test := range tests {
+				message := "requires a valid custom type ID"
+				if test.valid {
+					message = "requires full actor and bounded operation key"
+				}
+				_, err := inspectArtifactOperation(context.Background(), test.typeID, "", "")
+				results <- observation{test.typeID, message, err}
+			}
+		}()
+	}
+	close(start)
+	for range callers * len(tests) {
+		result := <-results
+		failure, ok := result.err.(*artifact.Error)
+		if !ok || failure.Code != "invalid_input" || failure.Message != result.message {
+			t.Fatalf("selector %q: want invalid_input %q, got %v", result.typeID, result.message, result.err)
+		}
+	}
+	if artifactOperationType == nil {
+		t.Fatal("operation inspection did not construct its validator")
+	}
+}
 
 func operationIntentPath(f *artifactCLIFixture, key string) string {
 	return filepath.Join(f.repo, ".git", "hn", "artifacts", "intents", f.actor, strings.TrimPrefix(eventID([]byte(key)), "sha256:")+".json")
