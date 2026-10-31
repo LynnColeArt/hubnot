@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"unicode"
@@ -179,6 +180,8 @@ func actorPublicationCovered(ref, verifiedHead string) bool {
 	return err == nil
 }
 
+// cmdLog is the explicit immutable raw history inspector. Admission and hiding
+// govern ordinary queries, not this signed historical provenance surface.
 func cmdLog(args []string) error {
 	if len(args) != 0 {
 		return usageError("usage: hn log")
@@ -192,6 +195,11 @@ func cmdLog(args []string) error {
 	events, err := collectEvents()
 	if err != nil {
 		return err
+	}
+	if dir, err := contributionDirectory(false); err == nil {
+		if _, err := os.Lstat(filepath.Join(dir, "authority.json")); err == nil {
+			fmt.Println("Raw signed history (includes unadmitted and hidden facts):")
+		}
 	}
 	sort.Slice(events, func(i, j int) bool {
 		if events[i].Event.Timestamp != events[j].Event.Timestamp {
