@@ -91,7 +91,7 @@
     "WP03": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "architect-alphonso",
       "agent_profile_version": "1.0",
       "force_count": 2,
       "lane": "planned",
@@ -102,7 +102,8 @@
         "Ready for independent review: source cecac403 canonical verifier/inert CLI; generated metadata reconciled; focused race/goldens/vet and both exact binaries qualified; evidence external optional-extensions-WP03/handoff.json",
         "Independent codex/reviewer-renata rejects WP03 cycle1 for two reproduced P2 contract mismatches: artifact-origin unsupported protocol/kind codes outside closed set, and forbidden predecessor-only stdin despite frozen FILE grammar. Structured feedback committed 7dd64aa7; full external formal-review-cycle-1.md under optional-extensions-WP03. Preserve accepted unchanged evidence; focused fixes and corrected-binary requalification required. WP04/WP05 remain dependency-blocked.",
         "Cycle2 R1/R2 corrected at d3e556f6: artifact closed invalid_input codes, either stdin direction; focused race/vet and both exact binaries39cases pass. T012/T014 accepted unchanged evidence plus new fixproof restores all4subtasks. Evidence external optional-extensions-WP03/cycle2/handoff.json",
-        "Review passed cycle2: actual codex/reviewer-renata independently verified R1 closed artifact/invalid_input refusals and R2 either stdin direction, 26 exact-binary cases including blocked-pipe upfront refusal and unchanged complete inventories; all227 source hashes match d3e556f6. All four subtasks and eight antipattern checks pass for narrow inert envelope scope. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP03/cycle2/formal-review-cycle-2.md. Prior accepted unchanged canonical/native evidence retained; schema/store/host/final qualification remains later work."
+        "Review passed cycle2: actual codex/reviewer-renata independently verified R1 closed artifact/invalid_input refusals and R2 either stdin direction, 26 exact-binary cases including blocked-pipe upfront refusal and unchanged complete inventories; all227 source hashes match d3e556f6. All four subtasks and eight antipattern checks pass for narrow inert envelope scope. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP03/cycle2/formal-review-cycle-2.md. Prior accepted unchanged canonical/native evidence retained; schema/store/host/final qualification remains later work.",
+        "Administrative post-approval maintenance: actual WP24 default RSS failure and eager optional validator initialization; preserve old verdicts; fresh owner fix and independent review required."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -112,14 +113,14 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
+        "T012": "planned",
+        "T013": "planned",
+        "T014": "planned",
+        "T015": "planned"
       }
     },
     "WP04": {
