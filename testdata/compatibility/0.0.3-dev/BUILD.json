@@ -1,0 +1,33 @@
+{
+  "schema": "hn.release-build/1",
+  "source_commit": "01a152cfbb822a7be9ccbc51dac34e3caa0cf925",
+  "source_tree": "43a1cf9f58c149d0e94a484208bd23500a4a16f9",
+  "source_timestamp": 1793105328,
+  "compiler": "go1.26.4",
+  "version": "0.0.3-dev",
+  "target": "linux/amd64",
+  "variant": "standard",
+  "flags": [
+    "-mod=readonly",
+    "-trimpath",
+    "-buildvcs=false",
+    "-ldflags=-s -w -buildid= -X main.version=0.0.3-dev"
+  ],
+  "environment": [
+    "CGO_ENABLED=0",
+    "GOAMD64=v1",
+    "GOARCH=amd64",
+    "GOARM64=v8.0",
+    "GOENV=off",
+    "GOEXPERIMENT=",
+    "GOFLAGS=",
+    "GONOPROXY=none",
+    "GOOS=linux",
+    "GOPRIVATE=none",
+    "GOPROXY=off",
+    "GOSUMDB=off",
+    "GOTOOLCHAIN=local",
+    "GOWORK=off"
+  ],
+  "executable_sha256": "df0b989770eeaaff0af00cbff1a615bb2a48f0ff5bbf6b972ae18c426576f6a6"
+}
