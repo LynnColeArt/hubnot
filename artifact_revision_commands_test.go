@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -345,9 +346,22 @@ func TestArtifactRevisionEnvelopeBytesCLI(t *testing.T) {
 	revisionCall(f, "revise", over, "byte-bound-1", "resource_limit")
 	f.unchanged(before)
 	p["content"] = p["content"].(string)[1:]
-	revisionCall(f, "revise", revisionInput(t, opening, []string{opening}, p), "byte-bound-0", "")
+	originalInput := revisionInput(t, opening, []string{opening}, p)
+	atBound := revisionEvent(revisionCall(f, "revise", originalInput, "byte-bound-0", ""))
 	raw = f.git("show", artifactRef(f.actor)+":artifact.json")
 	if len(raw) != 1048576 {
 		t.Fatal("at-bound signed envelope", len(raw))
 	}
+	// New candidates would now need a two-digit sequence and would exceed the
+	// envelope bound with this old payload. Exact replay uses its original bytes.
+	head := atBound
+	for sequence := 4; sequence <= 10; sequence++ {
+		head = revisionEvent(revisionCall(f, "revise", revisionInput(t, opening, []string{head}, revisionPayload(schema, "advance")), fmt.Sprintf("advance-%d", sequence), ""))
+	}
+	before = f.snapshot()
+	replay := revisionCall(f, "revise", originalInput, "byte-bound-0", "")["data"].(map[string]any)
+	if replay["event_id"] != atBound || replay["replayed"] != true {
+		t.Fatal(replay)
+	}
+	f.unchanged(before)
 }

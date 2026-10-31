@@ -76,8 +76,10 @@ func writeArtifactSuccessor(ctx context.Context, kind, actor, operation string, 
 		if e = artifactCheckSuccessor(ctx, preflight.History, kind, input); e != nil {
 			return zero, e
 		}
-		if e = artifactCheckSuccessorSize(preflight.History, actor, requestBytes, request); e != nil {
-			return zero, e
+		if preflight.Candidate == nil {
+			if e = artifactCheckSuccessorSize(preflight.History, actor, requestBytes, request); e != nil {
+				return zero, e
+			}
 		}
 	}
 	identity, e := artifactMutationIdentity(actor)
@@ -95,8 +97,10 @@ func writeArtifactSuccessor(ctx context.Context, kind, actor, operation string, 
 	if e = artifactCheckSuccessor(ctx, attempt.History, kind, input); e != nil {
 		return zero, e
 	}
-	if e = artifactCheckSuccessorSize(attempt.History, actor, requestBytes, request); e != nil {
-		return zero, e
+	if attempt.evidence.Candidate == nil {
+		if e = artifactCheckSuccessorSize(attempt.History, actor, requestBytes, request); e != nil {
+			return zero, e
+		}
 	}
 	return appendArtifact(ctx, attempt)
 }
