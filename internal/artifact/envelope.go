@@ -51,13 +51,13 @@ func Verify(raw []byte, signature string, previous *Verified) (Verified, error) 
 		return Verified{}, refuse("invalid_input", "envelope requires exactly the protocol fields")
 	}
 	if text(m, "protocol") != "hn-artifact/1" {
-		return Verified{}, refuse("incompatible_version", "unsupported artifact protocol")
+		return Verified{}, refuse("invalid_input", "unsupported artifact protocol")
 	}
 	kind := text(m, "kind")
 	switch kind {
 	case "type.publish", "record.open", "record.revise", "record.resolve", "record.convert":
 	default:
-		return Verified{}, refuse("unsupported_capability", "unsupported artifact kind")
+		return Verified{}, refuse("invalid_input", "unsupported artifact kind")
 	}
 	actor := text(m, "actor")
 	if !actorPattern.MatchString(actor) {

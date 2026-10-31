@@ -30,8 +30,8 @@ func cmdArtifactEnvelope(args []string) error {
 	if e := flags.Parse(args[1:]); e != nil || flags.NArg() != 0 || *input == "" || *signature == "" {
 		return invalid("requires --input FILE|- and --signature BASE64")
 	}
-	if (*previousInput == "") != (*previousSignature == "") || *previousInput == "-" {
-		return invalid("predecessor requires a file and signature")
+	if (*previousInput == "") != (*previousSignature == "") || (*previousInput == "-" && *input == "-") {
+		return invalid("predecessor requires paired input and signature with at most one stdin selection")
 	}
 	var previous *artifact.Verified
 	if *previousInput != "" {

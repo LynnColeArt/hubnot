@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/base64"
@@ -12,8 +13,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
+	"time"
 )
 
 const artifactVector = `{"actor":"81ebe0bf3a2be9358144a0cabbea22d5b79c008514c61207556a6b5d044d07c0","kind":"type.publish","operation":"type-note-v1","parents":[],"payload":{"schema":{"language":"hn.schema/1","root":{"additionalProperties":false,"properties":{"code":{"maxBytes":64,"type":"string"}},"required":["code"],"type":"object"}},"schema_version":1,"shape":"document","type_id":"example.inventory/note"},"previous":"","protocol":"hn-artifact/1","public_key":"yimwBSxhzDCWe9uCqanwoHsavi3uPQpYiOwM8wMqcf8","record":"","request":"sha256:887e78418d32957fbbbb77ff080a3d035a500bec823f56968e959cc492dab773","sequence":1,"stream":"sha256:2c33e48cae82e7e2b1b6010528340c2473c2d2f55800bcc7223f584a5cf21dbb","timestamp":"2026-10-30T00:00:00Z"}`
@@ -104,7 +107,7 @@ func TestArtifactEnvelopeCLIRefusalsAndBounds(t *testing.T) {
 				t.Fatalf("negative CLI: %v %s", e, out)
 			}
 			problem, ok := result["error"].(map[string]any)
-			if !ok || problem["code"] != code || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil {
+			if !ok || problem["code"] != code || !artifactFrozenErrorCodes[code] || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil {
 				t.Fatalf("wrong refusal: %s", out)
 			}
 		}
@@ -136,7 +139,15 @@ func TestArtifactEnvelopeCLIRefusalsAndBounds(t *testing.T) {
 	call(strings.Replace(artifactVector, `"sequence":1`, `"sequence":1,"unknown":true`, 1), artifactVectorSignature, "validate", "invalid_input")
 	call(artifactVector, artifactVectorSignature+"=", "validate", "invalid_input")
 	raw, sig := artifactSignedCLI(t, func(m map[string]any) { m["protocol"] = "hn-artifact/2" })
-	call(raw, sig, "validate", "incompatible_version")
+	protocolResult := call(raw, sig, "validate", "invalid_input")
+	if protocolResult["error"].(map[string]any)["message"] != "unsupported artifact protocol" {
+		t.Fatal(protocolResult)
+	}
+	raw, sig = artifactSignedCLI(t, func(m map[string]any) { m["kind"] = "record.unknown" })
+	kindResult := call(raw, sig, "validate", "invalid_input")
+	if kindResult["error"].(map[string]any)["message"] != "unsupported artifact kind" {
+		t.Fatal(kindResult)
+	}
 	raw, sig = artifactSignedCLI(t, func(m map[string]any) { m["actor"] = strings.Repeat("0", 64) })
 	call(raw, sig, "validate", "verification_failure")
 	raw, sig = artifactSignedCLI(t, func(m map[string]any) { m["previous"] = "sha256:" + strings.Repeat("0", 64) })
@@ -359,5 +370,164 @@ func TestArtifactEnvelopeCLIPublishedBounds(t *testing.T) {
 			code = "resource_limit"
 		}
 		check(raw, sig, code)
+	}
+}
+
+// This mirror is checked against the frozen contract, and every exercised
+// artifact-origin CLI refusal must belong to it. Host negotiation codes cannot
+// silently enter this input-verification surface.
+var artifactFrozenErrorCodes = map[string]bool{
+	"invalid_input": true, "resource_limit": true, "verification_failure": true,
+	"invalid_history": true, "incomplete_dependency": true, "unsupported_schema": true,
+	"actor_stream_conflict": true, "operation_conflict": true, "stale_revision": true,
+	"resource_conflict": true, "concurrent_update": true, "not_found": true,
+	"repository_error": true, "cancelled": true, "uncertain_operation": true,
+}
+
+func TestArtifactEnvelopeErrorContractMirror(t *testing.T) {
+	contract, e := os.ReadFile("kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md")
+	if e != nil {
+		t.Fatal(e)
+	}
+	_, tail, ok := strings.Cut(string(contract), "Artifact-origin codes are exactly ")
+	if !ok {
+		t.Fatal("artifact error set absent from contract")
+	}
+	block, _, ok := strings.Cut(tail, ".\nDiagnostic")
+	if !ok {
+		t.Fatal("artifact error set terminator absent")
+	}
+	want := []string{}
+	for _, code := range strings.Split(block, ",") {
+		want = append(want, strings.TrimSpace(code))
+	}
+	sort.Strings(want)
+	got := []string{}
+	for code := range artifactFrozenErrorCodes {
+		got = append(got, code)
+	}
+	sort.Strings(got)
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("artifact error mirror differs from contract: %v vs %v", got, want)
+	}
+}
+
+func TestArtifactEnvelopeCLIPredecessorStdin(t *testing.T) {
+	binary := buildOperationalBinary(t)
+	root := t.TempDir()
+	repo := filepath.Join(root, "repo")
+	home := filepath.Join(root, "home")
+	if e := os.MkdirAll(repo, 0700); e != nil {
+		t.Fatal(e)
+	}
+	init := exec.Command("git", "init", "--quiet", repo)
+	if out, e := init.CombinedOutput(); e != nil {
+		t.Fatalf("git init: %v %s", e, out)
+	}
+	first := filepath.Join(root, "first.json")
+	second := filepath.Join(root, "second.json")
+	bad := filepath.Join(root, "bad.json")
+	for p, data := range map[string]string{first: artifactVector, second: artifactSecondVector, bad: "{"} {
+		if e := os.WriteFile(p, []byte(data), 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	for _, p := range []string{filepath.Join(repo, ".hn", "extensions.json"), filepath.Join(repo, ".git", "hn", "extensions", "enabled.json"), filepath.Join(home, ".config", "hubnot", "extensions", "registry.json"), filepath.Join(repo, ".git", "hn", "artifacts", "intents", "marker.json")} {
+		if e := os.MkdirAll(filepath.Dir(p), 0700); e != nil {
+			t.Fatal(e)
+		}
+		if e := os.WriteFile(p, []byte("INVALID PRIVATE_STDIN_SENTINEL"), 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	snapshot := func() map[string]string {
+		inventory := map[string]string{}
+		if e := filepath.WalkDir(root, func(p string, d fs.DirEntry, e error) error {
+			if e != nil {
+				return e
+			}
+			if d.IsDir() {
+				return nil
+			}
+			b, e := os.ReadFile(p)
+			if e != nil {
+				return e
+			}
+			h := sha256.Sum256(b)
+			inventory[p] = hex.EncodeToString(h[:])
+			return nil
+		}); e != nil {
+			t.Fatal(e)
+		}
+		return inventory
+	}
+	before := snapshot()
+	call := func(action, input, previous, stdin, code, message string, blocked bool) {
+		t.Helper()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, binary, "artifact", "envelope", action, "--input", input, "--signature", artifactSecondSignature, "--previous-input", previous, "--previous-signature", artifactVectorSignature, "--json")
+		cmd.Dir = repo
+		cmd.Env = operationalTestEnvironment(home)
+		if blocked {
+			read, write, e := os.Pipe()
+			if e != nil {
+				t.Fatal(e)
+			}
+			defer read.Close()
+			defer write.Close()
+			cmd.Stdin = read
+		} else {
+			cmd.Stdin = strings.NewReader(stdin)
+		}
+		out, e := cmd.Output()
+		if ctx.Err() != nil {
+			t.Fatal("double stdin must refuse before reading the open pipe")
+		}
+		var result map[string]any
+		if je := json.Unmarshal(out, &result); je != nil {
+			t.Fatalf("JSON: %v %s", je, out)
+		}
+		if code != "" {
+			problem, ok := result["error"].(map[string]any)
+			if e == nil || result["ok"] != false || result["data"] != nil || !ok || problem["origin"] != "artifact" || problem["code"] != code || !artifactFrozenErrorCodes[code] || problem["recovery"] != "do_not_retry" || problem["operation"] != nil || !strings.Contains(problem["message"].(string), message) {
+				t.Fatalf("wrong refusal: %v %s", e, out)
+			}
+		} else {
+			data, ok := result["data"].(map[string]any)
+			if e != nil || result["ok"] != true || result["error"] != nil || !ok || data["continuity"] != "predecessor_verified" || data["semantic_validation"] != "not_checked" || data["integrity"] != "verified" {
+				t.Fatalf("stdin pair: %v %s", e, out)
+			}
+			h := sha256.Sum256([]byte(artifactSecondVector))
+			if data["id"] != "sha256:"+hex.EncodeToString(h[:]) {
+				t.Fatal(data)
+			}
+			fields := 6
+			if action == "inspect" {
+				fields++
+				b, _ := json.Marshal(data["envelope"])
+				if string(b) != artifactSecondVector {
+					t.Fatalf("inspect changed envelope: %s", b)
+				}
+			}
+			if len(data) != fields {
+				t.Fatalf("unexpected success fields: %v", data)
+			}
+		}
+		if strings.Contains(string(out), "PRIVATE_STDIN_SENTINEL") {
+			t.Fatal("private marker leaked")
+		}
+	}
+	for _, action := range []string{"validate", "inspect"} {
+		call(action, second, "-", artifactVector, "", "", false)
+		call(action, "-", first, artifactSecondVector, "", "", false)
+	}
+	call("validate", "-", "-", "", "invalid_input", "at most one stdin", true)
+	call("validate", second, "-", strings.Repeat("x", 1048577), "resource_limit", "envelope exceeds", false)
+	// A bad predecessor must fail before attempting to open the missing current file.
+	call("validate", filepath.Join(root, "missing-current.json"), "-", "{", "invalid_input", "malformed object", false)
+	call("validate", second, "-", artifactSecondVector, "invalid_history", "predecessor mismatch", false)
+	if after := snapshot(); !reflect.DeepEqual(before, after) {
+		t.Fatalf("stdin checks changed public/private inventory: %v %v", before, after)
 	}
 }

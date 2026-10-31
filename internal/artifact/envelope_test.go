@@ -66,7 +66,7 @@ func TestFrozenEnvelopeVectors(t *testing.T) {
 			v, e := Verify([]byte(f.raw), f.signature, nil)
 			switch f.name {
 			case "unknown-protocol":
-				requireCode(t, e, "incompatible_version")
+				requireCode(t, e, "invalid_input")
 			case "actor-key-mismatch":
 				requireCode(t, e, "verification_failure")
 			default:
