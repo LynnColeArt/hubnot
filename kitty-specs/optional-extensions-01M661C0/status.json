@@ -120,10 +120,20 @@
     },
     "WP04": {
       "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
+      "assignee": "codex",
       "force_count": 0,
       "lane": "in_progress",
       "last_event_id": "01M67NQY5DAAMH0P9CWPSH3X9J",
-      "last_transition_at": "2026-10-31T00:28:51.757531+00:00"
+      "last_transition_at": "2026-10-31T00:28:51.757531+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Administrative allocation recovery only: canonical existing-branch retry reattached lane-c; followed printed manual merge of exact recorded planning 7dd64aa738b0dcee0222a943e2d7a9e1e7f44505. Only WP03 task generated base_branch/base_commit/created_at conflicted; both sides and hashes preserved externally, authored body identical, resolved exact recorded planning copy and committed d86f2276. No WP04 implementation or tests. Resume proper codex implementer-ivan claim through canonical action next."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer"
     },
     "WP05": {
       "actor": "finalize-tasks",
