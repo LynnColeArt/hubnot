@@ -702,3 +702,145 @@ func TestArtifactGitFrozenRawBodiesCLI(t *testing.T) {
 	}
 	broken.unchanged(missingBefore)
 }
+
+// This fixture contains only inert public type declarations from the frozen
+// corpus. It never initializes a signer or handles private recovery material.
+type artifactNamespaceFixture struct {
+	src, dst                                     *artifactCLIFixture
+	selected, oldTip, newTip, accepted, sentinel string
+}
+
+func newArtifactNamespaceFixture(t *testing.T) artifactNamespaceFixture {
+	t.Helper()
+	keyless := func(name string) *artifactCLIFixture {
+		root := t.TempDir()
+		f := &artifactCLIFixture{t: t, binary: artifactStoreBinary(t), repo: filepath.Join(root, name), home: filepath.Join(root, "home")}
+		f.git("init", "--quiet")
+		return f
+	}
+	src, dst := keyless("public-source"), keyless("public-destination")
+	text, e := os.ReadFile("kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md")
+	if e != nil {
+		t.Fatal(e)
+	}
+	f := artifactNamespaceFixture{src: src, dst: dst, sentinel: "refs/namespace-test/public-sentinel"}
+	sourceRef := ""
+	for i, name := range []string{"type-note-v1", "type-list-v1"} {
+		_, section, ok := strings.Cut(string(text), "## Signed vector: "+name+"\n")
+		if !ok {
+			t.Fatal(name)
+		}
+		section = strings.SplitN(section, "\n## ", 2)[0]
+		blocks := regexp.MustCompile("(?s)~~~json\\n(.*?)\\n~~~").FindAllStringSubmatch(section, -1)
+		if len(blocks) != 2 {
+			t.Fatal(name)
+		}
+		var meta map[string]any
+		if e = json.Unmarshal([]byte(blocks[1][1]), &meta); e != nil {
+			t.Fatal(e)
+		}
+		g := meta["git_sha1"].(map[string]any)
+		raw, e := hex.DecodeString(meta["canonical_utf8_hex"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		payload, e := hex.DecodeString(g["payload_blob"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		signature, e := hex.DecodeString(g["signature_blob"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		tree := append(append(append([]byte("100644 artifact.json\x00"), payload...), []byte("100644 signature\x00")...), signature...)
+		objects := []struct {
+			kind, oid string
+			raw       []byte
+		}{{"blob", g["payload_blob"].(string), raw}, {"blob", g["signature_blob"].(string), []byte(meta["signature"].(string))}, {"tree", g["tree"].(string), tree}, {"commit", g["commit"].(string), []byte(g["commit_body"].(string))}}
+		for _, o := range objects {
+			if got := src.gitInput(string(o.raw), "hash-object", "-w", "--literally", "-t", o.kind, "--stdin"); got != o.oid {
+				t.Fatal("public literal OID changed", got, o.oid)
+			}
+		}
+		sourceRef = meta["local_ref"].(string)
+		if i == 0 {
+			f.oldTip = g["commit"].(string)
+		} else {
+			f.newTip = g["commit"].(string)
+			f.selected = meta["id"].(string)
+		}
+	}
+	src.git("update-ref", sourceRef, f.newTip)
+	remote := filepath.Join(t.TempDir(), "public.git")
+	src.git("init", "--bare", "--quiet", remote)
+	src.git("--git-dir="+remote, "fetch", "--no-tags", "--no-write-fetch-head", src.repo, sourceRef+":"+sourceRef)
+	dst.git("remote", "add", "public", remote)
+	dst.git("fetch", "--no-tags", "--no-write-fetch-head", src.repo, f.oldTip+":"+f.sentinel)
+	f.accepted = strings.Replace(sourceRef, "refs/hn/", "refs/hn/remotes/public/", 1)
+	dst.git("update-ref", f.accepted, f.oldTip)
+	return f
+}
+
+func namespacePublicBody(t *testing.T, f *artifactCLIFixture, ref string) []byte {
+	t.Helper()
+	cmd := exec.Command("git", "cat-file", "commit", ref)
+	cmd.Dir = f.repo
+	cmd.Env = operationalTestEnvironment(f.home)
+	b, e := cmd.Output()
+	if e != nil {
+		t.Fatal(e)
+	}
+	return b
+}
+
+func assertArtifactNamespaceResult(t *testing.T, f artifactNamespaceFixture, before []byte) {
+	t.Helper()
+	sentinelOID := f.dst.git("rev-parse", f.sentinel)
+	after := namespacePublicBody(t, f.dst, f.sentinel)
+	accepted := f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/")
+	t.Logf("public sentinel before=%s after=%s body_before=%x body_after=%x accepted_after=%q", f.oldTip, sentinelOID, before, after, accepted)
+	if sentinelOID != f.oldTip || !bytes.Equal(before, after) {
+		t.Fatal("artifact fetch advanced unrelated public sentinel", f.sentinel)
+	}
+	if accepted != f.accepted+" "+f.newTip {
+		t.Fatal("fetch did not publish only the exact named direct accepted ref", accepted)
+	}
+	if got := f.dst.git("for-each-ref", "--format=%(refname)", "refs/hn/artifacts/"); got != "" {
+		t.Fatal("public fixture acquired local artifact roots", got)
+	}
+	if _, e := os.Stat(f.dst.home); !os.IsNotExist(e) {
+		t.Fatal("public fixture created private identity state", e)
+	}
+}
+
+func TestArtifactGitFetchNamedAcceptedNamespaceCLI(t *testing.T) {
+	for _, symbolic := range []bool{false, true} {
+		name := "direct-positive"
+		if symbolic {
+			name = "preexisting-public-alias"
+		}
+		t.Run(name, func(t *testing.T) {
+			f := newArtifactNamespaceFixture(t)
+			if symbolic {
+				f.dst.git("symbolic-ref", f.accepted, f.sentinel)
+			}
+			before := namespacePublicBody(t, f.dst, f.sentinel)
+			t.Log("accepted_before", f.dst.git("for-each-ref", "--format=%(refname) %(objectname) %(symref)", "refs/hn/remotes/public/artifacts/"))
+			f.dst.call("", "", "artifact", "fetch", "--remote", "public", "--id", f.selected, "--json")
+			assertArtifactNamespaceResult(t, f, before)
+		})
+	}
+}
+
+func TestArtifactGitFetchNamedNamespaceRace(t *testing.T) {
+	f := newArtifactNamespaceFixture(t)
+	before := namespacePublicBody(t, f.dst, f.sentinel)
+	t.Chdir(f.dst.repo)
+	replicationBeforePromoteHook = func() error { f.dst.git("symbolic-ref", f.accepted, f.sentinel); return nil }
+	t.Cleanup(func() { replicationBeforePromoteHook = nil })
+	_, e := replicateArtifacts(context.Background(), "fetch", "public", []string{f.selected})
+	if e != nil {
+		t.Fatal(e)
+	}
+	assertArtifactNamespaceResult(t, f, before)
+}
