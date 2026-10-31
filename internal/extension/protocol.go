@@ -45,6 +45,9 @@ func InspectMessage(payload []byte, kind, expected, method string) (MessageInspe
 	if object["protocol"] != HostProtocol {
 		return result, failure("incompatible_version", "unsupported host protocol")
 	}
+	if err := inventoryRule("message_kinds")(kind); err != nil {
+		return result, err
+	}
 	var shape wireRule
 	switch kind {
 	case "hello":
@@ -126,6 +129,42 @@ func InspectMessage(payload []byte, kind, expected, method string) (MessageInspe
 	}
 	return result, nil
 }
+
+// protocolInventories are the private closed wire vocabularies frozen by the
+// host/artifact contracts. Every typed enum below consumes these same values;
+// protocol_test.go mirrors them against independent literal contract copies.
+var protocolInventories = map[string][]string{
+	"families":                {"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"},
+	"shapes":                  {"document", "list", "ticket"},
+	"operation_protocols":     {"hn/0", "hn-artifact/1"},
+	"recoveries":              {"do_not_retry", "retry_identical", "inspect_operation", "rescan_required"},
+	"artifact_read_modes":     {"view", "heads", "history", "inspect"},
+	"artifact_mutation_kinds": {"record.open", "record.revise", "record.resolve", "record.convert"},
+	"diagnostic_codes":        {"incomplete_dependency", "unsupported_schema", "target_conflict", "missing_optional", "invalid_history", "opaque_unverified"},
+	"native_admission":        {"admitted", "pending", "hidden"},
+	"operation_statuses":      {"found", "verified_absent", "uncertain"},
+	"operation_reasons":       {"incomplete_selection", "unavailable_history", "private_intent_pending", "visibility_restricted", "publication_unconfirmed"},
+	"availability":            {"observed", "not_probed", "unavailable"},
+	"signed_validation":       {"verified", "unsupported", "incomplete"},
+	"artifact_envelope_kinds": {"type.publish", "record.open", "record.revise", "record.resolve", "record.convert"},
+	"target_modes":            {"logical", "revision"},
+	"schema_node_types":       {"object", "array", "string", "integer", "boolean", "null"},
+	"native_statuses":         {"open", "closed"},
+	"native_relation_kinds":   {"blocks", "related", "parent"},
+	"project_value_types":     {"text", "number", "date", "single_select"},
+	"project_layouts":         {"table", "board"},
+	"project_target_kinds":    {"issue", "proposal", "discussion", "draft", "external"},
+	"message_kinds":           {"hello", "ready", "request", "response", "cancel"},
+	"native_intents":          {"open", "revise", "resolve"},
+	"issue_intents":           {"open", "revise", "resolve", "comment"},
+	"error_origins":           {"host", "native", "artifact"},
+	"host_error_codes":        {"denied_access", "incompatible_version", "unavailable_module", "unsupported_capability", "resource_limit", "cancelled", "uncertain_operation", "checkpoint_invalidated", "verification_failure", "invalid_input", "not_found", "repository_error"},
+	"native_error_codes":      {"actor_mismatch", "admission_pending", "admission_refused", "ambiguous_id", "concurrent_update", "invalid_cursor", "invalid_history", "invalid_input", "issue_conflict", "not_found", "operation_conflict", "permission_denied", "repository_error", "resource_conflict", "resource_limit", "stale_cursor", "stale_revision"},
+	"artifact_error_codes":    {"invalid_input", "resource_limit", "verification_failure", "invalid_history", "incomplete_dependency", "unsupported_schema", "actor_stream_conflict", "operation_conflict", "stale_revision", "resource_conflict", "concurrent_update", "not_found", "repository_error", "cancelled", "uncertain_operation"},
+	"unsupported":             {"memory.mutate", "proposal", "review", "decide", "merge", "policy.mutate", "identity.mutate", "run", "runner", "audit", "automerge", "sync.apply", "migration.apply"},
+}
+
+func inventoryRule(name string) wireRule { return enumeration(protocolInventories[name]...) }
 
 type wireRule func(any) error
 
@@ -288,10 +327,10 @@ var sessionIDRule = matches(`^[0-9a-f]{32}$`)
 var requestIDRule = matches(`^[!-~]{1,128}$`)
 var moduleVersionRule = matches(`^[!-~]{1,64}$`)
 var typeIDRule = predicate(func(v any) bool { s, ok := v.(string); return ok && ValidModuleID(s) })
-var familyRule = enumeration("issue", "project", "project-item", "discussion", "discussion-reply", "workflow")
-var shapeRule = enumeration("document", "list", "ticket")
-var protocolRule = enumeration("hn/0", "hn-artifact/1")
-var recoveryRule = enumeration("do_not_retry", "retry_identical", "inspect_operation", "rescan_required")
+var familyRule = inventoryRule("families")
+var shapeRule = inventoryRule("shapes")
+var protocolRule = inventoryRule("operation_protocols")
+var recoveryRule = inventoryRule("recoveries")
 var tokenRule = text(0, 4096)
 var decimalPattern = regexp.MustCompile(`^-?(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$`)
 var decimalRule = predicate(func(v any) bool {
@@ -362,9 +401,9 @@ func paramsRule(method string) wireRule {
 	case "resource.operation":
 		fields = map[string]wireRule{"family": familyRule, "actor": actorRule, "operation": requestIDRule}
 	case "artifact.read":
-		fields = map[string]wireRule{"id": nullable(idRule), "opaque_id": nullable(idRule), "type_id": nullable(typeIDRule), "limit": pageLimit, "cursor": nullable(tokenRule), "mode": enumeration("view", "heads", "history", "inspect"), "opaque": booleanRule}
+		fields = map[string]wireRule{"id": nullable(idRule), "opaque_id": nullable(idRule), "type_id": nullable(typeIDRule), "limit": pageLimit, "cursor": nullable(tokenRule), "mode": inventoryRule("artifact_read_modes"), "opaque": booleanRule}
 	case "artifact.mutate":
-		fields = map[string]wireRule{"kind": enumeration("record.open", "record.revise", "record.resolve", "record.convert"), "record": nullable(idRule), "parents": idsRule, "payload": recordPayloadRule(), "actor": actorRule, "operation": requestIDRule}
+		fields = map[string]wireRule{"kind": inventoryRule("artifact_mutation_kinds"), "record": nullable(idRule), "parents": idsRule, "payload": recordPayloadRule(), "actor": actorRule, "operation": requestIDRule}
 	case "artifact.operation":
 		fields = map[string]wireRule{"type_id": typeIDRule, "actor": actorRule, "operation": requestIDRule}
 	case "artifact.search":
@@ -418,9 +457,9 @@ func nativeMutationRule() wireRule {
 		if !ok {
 			return invalidShape()
 		}
-		intents := []string{"open", "revise", "resolve"}
+		intents := protocolInventories["native_intents"]
 		if family == "issue" {
-			intents = append(intents, "comment")
+			intents = protocolInventories["issue_intents"]
 		}
 		if err := closed(map[string]wireRule{"family": familyRule, "intent": enumeration(intents...), "id": nullable(idRule), "expected": sequence(idRule, 0, 200, true, true), "actor": actorRule, "operation": requestIDRule, "state": nullable(nativeStateRule(family)), "comment": text(0, 65536)}, nil)(v); err != nil {
 			return err
@@ -452,20 +491,16 @@ func errorShape() wireRule {
 		if !ok {
 			return invalidShape()
 		}
-		codes := map[string]string{
-			"host":     "denied_access incompatible_version unavailable_module unsupported_capability resource_limit cancelled uncertain_operation checkpoint_invalidated verification_failure invalid_input not_found repository_error",
-			"native":   "actor_mismatch admission_pending admission_refused ambiguous_id concurrent_update invalid_cursor invalid_history invalid_input issue_conflict not_found operation_conflict permission_denied repository_error resource_conflict resource_limit stale_cursor stale_revision",
-			"artifact": "invalid_input resource_limit verification_failure invalid_history incomplete_dependency unsupported_schema actor_stream_conflict operation_conflict stale_revision resource_conflict concurrent_update not_found repository_error cancelled uncertain_operation",
+		if err := inventoryRule("error_origins")(origin); err != nil {
+			return err
 		}
-		list, ok := codes[origin]
-		if !ok {
-			return invalidShape()
-		}
-		return closed(map[string]wireRule{"origin": literal(origin), "code": enumeration(strings.Fields(list)...), "message": text(0, 4096), "recovery": recoveryRule, "operation": nullable(closed(map[string]wireRule{"protocol": protocolRule, "actor": actorRule, "operation": requestIDRule}, nil))}, nil)(v)
+		codes := protocolInventories[origin+"_error_codes"]
+
+		return closed(map[string]wireRule{"origin": literal(origin), "code": enumeration(codes...), "message": text(0, 4096), "recovery": recoveryRule, "operation": nullable(closed(map[string]wireRule{"protocol": protocolRule, "actor": actorRule, "operation": requestIDRule}, nil))}, nil)(v)
 	}
 }
 func diagnosticRule() wireRule {
-	return closed(map[string]wireRule{"code": enumeration("incomplete_dependency", "unsupported_schema", "target_conflict", "missing_optional", "invalid_history", "opaque_unverified"), "id": nullable(idRule), "message": text(0, 4096)}, nil)
+	return closed(map[string]wireRule{"code": inventoryRule("diagnostic_codes"), "id": nullable(idRule), "message": text(0, 4096)}, nil)
 }
 func resultRule(method string) wireRule {
 	switch method {
@@ -502,7 +537,7 @@ func page(item wireRule) wireRule {
 }
 func mutationResultRule() wireRule {
 	return func(v any) error {
-		if err := closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "event_id": idRule, "replayed": booleanRule, "conflict": booleanRule, "head_count": integer(1, 9007199254740991, false), "admission": nullable(enumeration("admitted", "pending", "hidden")), "source_cut": idRule}, nil)(v); err != nil {
+		if err := closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "event_id": idRule, "replayed": booleanRule, "conflict": booleanRule, "head_count": integer(1, 9007199254740991, false), "admission": nullable(inventoryRule("native_admission")), "source_cut": idRule}, nil)(v); err != nil {
 			return err
 		}
 		o := v.(map[string]any)
@@ -520,7 +555,7 @@ func mutationResultRule() wireRule {
 }
 func operationResultRule() wireRule {
 	return func(v any) error {
-		if err := closed(map[string]wireRule{"status": enumeration("found", "verified_absent", "uncertain"), "protocol": protocolRule, "actor": actorRule, "operation": requestIDRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "request": nullable(idRule), "resource_id": nullable(idRule), "event_id": nullable(idRule), "result": nullable(mutationResultRule()), "source_cut": idRule, "reason": nullable(enumeration("incomplete_selection", "unavailable_history", "private_intent_pending", "visibility_restricted", "publication_unconfirmed"))}, nil)(v); err != nil {
+		if err := closed(map[string]wireRule{"status": inventoryRule("operation_statuses"), "protocol": protocolRule, "actor": actorRule, "operation": requestIDRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "request": nullable(idRule), "resource_id": nullable(idRule), "event_id": nullable(idRule), "result": nullable(mutationResultRule()), "source_cut": idRule, "reason": nullable(inventoryRule("operation_reasons"))}, nil)(v); err != nil {
 			return err
 		}
 		o := v.(map[string]any)
@@ -550,7 +585,7 @@ func operationResultRule() wireRule {
 }
 func capabilitiesRule() wireRule {
 	return func(v any) error {
-		capability := closed(map[string]wireRule{"method": enumeration(methodNames()...), "declared": booleanRule, "granted": booleanRule, "enabled": booleanRule, "compatible": booleanRule, "availability": enumeration("observed", "not_probed", "unavailable"), "recovery": recoveryRule}, nil)
+		capability := closed(map[string]wireRule{"method": enumeration(methodNames()...), "declared": booleanRule, "granted": booleanRule, "enabled": booleanRule, "compatible": booleanRule, "availability": inventoryRule("availability"), "recovery": recoveryRule}, nil)
 		unsupported := closed(map[string]wireRule{"surface": enumeration(unsupportedNames()...), "status": literal("unsupported"), "recovery": literal("do_not_retry")}, nil)
 		err := closed(map[string]wireRule{"session": sessionFields(true), "capabilities": sequence(capability, 14, 14, false, false), "unsupported": sequence(unsupported, 13, 13, false, false)}, nil)(v)
 		if err != nil {
@@ -579,7 +614,7 @@ func methodNames() []string {
 	return names
 }
 func unsupportedNames() []string {
-	return strings.Fields("memory.mutate proposal review decide merge policy.mutate identity.mutate run runner audit automerge sync.apply migration.apply")
+	return protocolInventories["unsupported"]
 }
 func changePageRule() wireRule {
 	return closed(map[string]wireRule{"capture": tokenRule, "snapshot_id": idRule, "selection": selectionRule(), "selection_digest": idRule, "source_cut": idRule, "mode": literal("replace"), "items": sequence(closed(map[string]wireRule{"protocol": protocolRule, "family": nullable(familyRule), "type_id": nullable(typeIDRule), "resource_id": idRule, "revision_ids": idsRule, "value": either(nativeViewRule(), recordViewRule())}, nil), 0, 200, false, false), "next_cursor": nullable(tokenRule), "complete": booleanRule, "checkpoint": nullable(tokenRule), "expires_at": timestampRule}, nil)
@@ -621,7 +656,7 @@ func signedArtifactRule() wireRule {
 		if o["validation"] == "opaque" {
 			return closed(map[string]wireRule{"id": nullRule, "opaque_id": idRule, "envelope": nullRule, "signature": nullRule, "validation": literal("opaque"), "raw": closed(map[string]wireRule{"oid": text(1, 128), "type": text(1, 128), "data": base64Rule(-1)}, nil), "diagnostics": diagnostics}, nil)(v)
 		}
-		return closed(map[string]wireRule{"id": idRule, "envelope": artifactEnvelopeRule(), "signature": base64Rule(64), "validation": enumeration("verified", "unsupported", "incomplete"), "diagnostics": diagnostics}, nil)(v)
+		return closed(map[string]wireRule{"id": idRule, "envelope": artifactEnvelopeRule(), "signature": base64Rule(64), "validation": inventoryRule("signed_validation"), "diagnostics": diagnostics}, nil)(v)
 	}
 }
 func artifactEnvelopeRule() wireRule {
@@ -635,7 +670,7 @@ func artifactEnvelopeRule() wireRule {
 			payload = typePayloadRule()
 		}
 		emptyID := either(literal(""), idRule)
-		if err := closed(map[string]wireRule{"protocol": literal("hn-artifact/1"), "kind": enumeration("type.publish", "record.open", "record.revise", "record.resolve", "record.convert"), "actor": actorRule, "public_key": base64Rule(32), "stream": idRule, "sequence": integer(1, 9007199254740991, false), "previous": emptyID, "timestamp": timestampRule, "operation": requestIDRule, "request": idRule, "record": emptyID, "parents": idsRule, "payload": payload}, nil)(v); err != nil {
+		if err := closed(map[string]wireRule{"protocol": literal("hn-artifact/1"), "kind": inventoryRule("artifact_envelope_kinds"), "actor": actorRule, "public_key": base64Rule(32), "stream": idRule, "sequence": integer(1, 9007199254740991, false), "previous": emptyID, "timestamp": timestampRule, "operation": requestIDRule, "request": idRule, "record": emptyID, "parents": idsRule, "payload": payload}, nil)(v); err != nil {
 			return err
 		}
 		if len(canonical(v)) > 1048576 {
@@ -645,7 +680,7 @@ func artifactEnvelopeRule() wireRule {
 	}
 }
 func recordPayloadRule() wireRule {
-	target := map[string]wireRule{"target": idRule, "target_mode": enumeration("logical", "revision"), "required": booleanRule}
+	target := map[string]wireRule{"target": idRule, "target_mode": inventoryRule("target_modes"), "required": booleanRule}
 	member := map[string]wireRule{"member_id": matches(`^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`)}
 	relation := map[string]wireRule{"relation": typeIDRule}
 	for k, r := range target {
@@ -714,7 +749,7 @@ func schemaNodeRule(depth int) wireRule {
 		if !ok {
 			return invalidShape()
 		}
-		required := map[string]wireRule{"type": enumeration("object", "array", "string", "integer", "boolean", "null")}
+		required := map[string]wireRule{"type": inventoryRule("schema_node_types")}
 		optional := map[string]wireRule{}
 		switch o["type"] {
 		case "object":
@@ -750,17 +785,17 @@ func nativeStateRule(family string) wireRule {
 	maxBytes := 256 * 1024
 	switch family {
 	case "issue":
-		required = map[string]wireRule{"title": text(1, 1024), "body": text(0, 65536), "status": enumeration("open", "closed"), "criteria": sequence(closed(map[string]wireRule{"id": text(1, 64), "text": text(0, 4096)}, nil), 0, 64, false, false), "labels": sequence(text(0, 256), 0, 64, true, false), "assignees": sequence(text(0, 256), 0, 64, true, false), "relations": sequence(closed(map[string]wireRule{"kind": enumeration("blocks", "related", "parent"), "target": idRule}, nil), 0, 128, false, false), "metadata": metadata}
+		required = map[string]wireRule{"title": text(1, 1024), "body": text(0, 65536), "status": inventoryRule("native_statuses"), "criteria": sequence(closed(map[string]wireRule{"id": text(1, 64), "text": text(0, 4096)}, nil), 0, 64, false, false), "labels": sequence(text(0, 256), 0, 64, true, false), "assignees": sequence(text(0, 256), 0, 64, true, false), "relations": sequence(closed(map[string]wireRule{"kind": inventoryRule("native_relation_kinds"), "target": idRule}, nil), 0, 128, false, false), "metadata": metadata}
 		optional = nil
 	case "project":
 		required = map[string]wireRule{"schema": literal("hn.project/1"), "title": text(1, 1024), "body": text(0, 65536), "archived": booleanRule}
-		optional["fields"] = sequence(closed(map[string]wireRule{"id": nativeIdentifier, "name": text(1, 256), "type": enumeration("text", "number", "date", "single_select")}, map[string]wireRule{"options": sequence(closed(map[string]wireRule{"id": nativeIdentifier, "name": text(1, 256)}, nil), 0, 64, false, false)}), 0, 64, false, false)
-		optional["views"] = sequence(closed(map[string]wireRule{"id": nativeIdentifier, "name": text(1, 256), "layout": enumeration("table", "board")}, map[string]wireRule{"group_by_field": nativeIdentifier}), 0, 16, false, false)
+		optional["fields"] = sequence(closed(map[string]wireRule{"id": nativeIdentifier, "name": text(1, 256), "type": inventoryRule("project_value_types")}, map[string]wireRule{"options": sequence(closed(map[string]wireRule{"id": nativeIdentifier, "name": text(1, 256)}, nil), 0, 64, false, false)}), 0, 64, false, false)
+		optional["views"] = sequence(closed(map[string]wireRule{"id": nativeIdentifier, "name": text(1, 256), "layout": inventoryRule("project_layouts")}, map[string]wireRule{"group_by_field": nativeIdentifier}), 0, 16, false, false)
 	case "project-item":
 		required = map[string]wireRule{"schema": literal("hn.project-item/1"), "project_id": idRule, "project_revision": idRule, "target": projectTargetRule(), "archived": booleanRule, "position": either(literal(""), decimalRule)}
 		optional["values"] = dictionary(projectValueRule(), 64, nativeIdentifier)
 	case "discussion":
-		required = map[string]wireRule{"schema": literal("hn.discussion/1"), "title": text(1, 1024), "body": text(0, 65536), "category": text(1, 256), "status": enumeration("open", "closed")}
+		required = map[string]wireRule{"schema": literal("hn.discussion/1"), "title": text(1, 1024), "body": text(0, 65536), "category": text(1, 256), "status": inventoryRule("native_statuses")}
 		optional["accepted_reply_revision"] = idRule
 	case "discussion-reply":
 		required = map[string]wireRule{"schema": literal("hn.discussion-reply/1"), "discussion_id": idRule, "body": text(1, 65536)}
@@ -792,7 +827,7 @@ func projectTargetRule() wireRule {
 		if !ok {
 			return invalidShape()
 		}
-		required := map[string]wireRule{"kind": enumeration("issue", "proposal", "discussion", "draft", "external")}
+		required := map[string]wireRule{"kind": inventoryRule("project_target_kinds")}
 		switch o["kind"] {
 		case "issue", "proposal", "discussion":
 			required["id"] = idRule
@@ -811,7 +846,7 @@ func projectValueRule() wireRule {
 		if !ok {
 			return invalidShape()
 		}
-		required := map[string]wireRule{"type": enumeration("text", "number", "date", "single_select")}
+		required := map[string]wireRule{"type": inventoryRule("project_value_types")}
 		switch o["type"] {
 		case "text":
 			required["text"] = text(0, 4096)

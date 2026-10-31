@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -269,4 +272,114 @@ func TestProtocolPublishedValueBounds(t *testing.T) {
 	payload["title"] = strings.Repeat("t", 1025)
 	_, err = InspectMessage(encode(request), "request", "", "")
 	requireCode(t, err, "invalid_input")
+}
+
+// These are independent literal copies of the closed inventories frozen in
+// host-v1 §§2/4/6/7.1 and artifact-v1 §§1/2/3, not values derived from validators.
+func frozenProtocolInventories() map[string][]string {
+	return map[string][]string{
+		"methods":                 {"capabilities.list", "identity.public", "resource.read", "resource.mutate", "resource.operation", "artifact.read", "artifact.mutate", "artifact.operation", "artifact.search", "artifact.type.read", "artifact.type.publish", "changes.capture", "changes.page", "changes.since"},
+		"unsupported":             {"memory.mutate", "proposal", "review", "decide", "merge", "policy.mutate", "identity.mutate", "run", "runner", "audit", "automerge", "sync.apply", "migration.apply"},
+		"message_kinds":           {"hello", "ready", "request", "response", "cancel"},
+		"families":                {"issue", "project", "project-item", "discussion", "discussion-reply", "workflow"},
+		"shapes":                  {"document", "list", "ticket"},
+		"operation_protocols":     {"hn/0", "hn-artifact/1"},
+		"recoveries":              {"do_not_retry", "retry_identical", "inspect_operation", "rescan_required"},
+		"artifact_read_modes":     {"view", "heads", "history", "inspect"},
+		"artifact_mutation_kinds": {"record.open", "record.revise", "record.resolve", "record.convert"},
+		"native_intents":          {"open", "revise", "resolve"},
+		"issue_intents":           {"open", "revise", "resolve", "comment"},
+		"error_origins":           {"host", "native", "artifact"},
+		"host_error_codes":        {"denied_access", "incompatible_version", "unavailable_module", "unsupported_capability", "resource_limit", "cancelled", "uncertain_operation", "checkpoint_invalidated", "verification_failure", "invalid_input", "not_found", "repository_error"},
+		"native_error_codes":      {"actor_mismatch", "admission_pending", "admission_refused", "ambiguous_id", "concurrent_update", "invalid_cursor", "invalid_history", "invalid_input", "issue_conflict", "not_found", "operation_conflict", "permission_denied", "repository_error", "resource_conflict", "resource_limit", "stale_cursor", "stale_revision"},
+		"artifact_error_codes":    {"invalid_input", "resource_limit", "verification_failure", "invalid_history", "incomplete_dependency", "unsupported_schema", "actor_stream_conflict", "operation_conflict", "stale_revision", "resource_conflict", "concurrent_update", "not_found", "repository_error", "cancelled", "uncertain_operation"},
+		"diagnostic_codes":        {"incomplete_dependency", "unsupported_schema", "target_conflict", "missing_optional", "invalid_history", "opaque_unverified"},
+		"native_admission":        {"admitted", "pending", "hidden"},
+		"operation_statuses":      {"found", "verified_absent", "uncertain"},
+		"operation_reasons":       {"incomplete_selection", "unavailable_history", "private_intent_pending", "visibility_restricted", "publication_unconfirmed"},
+		"availability":            {"observed", "not_probed", "unavailable"},
+		"signed_validation":       {"verified", "unsupported", "incomplete"},
+		"artifact_envelope_kinds": {"type.publish", "record.open", "record.revise", "record.resolve", "record.convert"},
+		"target_modes":            {"logical", "revision"},
+		"schema_node_types":       {"object", "array", "string", "integer", "boolean", "null"},
+		"native_statuses":         {"open", "closed"},
+		"native_relation_kinds":   {"blocks", "related", "parent"},
+		"project_value_types":     {"text", "number", "date", "single_select"},
+		"project_layouts":         {"table", "board"},
+		"project_target_kinds":    {"issue", "proposal", "discussion", "draft", "external"},
+	}
+}
+
+func protocolInventoryDifference(actual, expected []string) error {
+	if len(actual) != len(expected) {
+		return fmt.Errorf("inventory count got %d, want %d", len(actual), len(expected))
+	}
+	seen := map[string]bool{}
+	for _, value := range actual {
+		if seen[value] {
+			return fmt.Errorf("duplicate inventory member %q", value)
+		}
+		seen[value] = true
+	}
+	got, want := append([]string(nil), actual...), append([]string(nil), expected...)
+	sort.Strings(got)
+	sort.Strings(want)
+	if !reflect.DeepEqual(got, want) {
+		return fmt.Errorf("inventory differs: got %q, want %q", got, want)
+	}
+	return nil
+}
+
+func runtimeProtocolInventories() map[string][]string {
+	actual := make(map[string][]string, len(protocolInventories)+1)
+	for name, values := range protocolInventories {
+		actual[name] = values
+	}
+	// The existing WP13 method map remains the source used by requests and the
+	// capabilities result. Inspect its real accessor, not the fixture map.
+	actual["methods"] = methodNames()
+	return actual
+}
+func TestProtocolClosedInventories(t *testing.T) {
+	actual, expected := runtimeProtocolInventories(), frozenProtocolInventories()
+	gotNames, wantNames := []string{}, []string{}
+	for name := range actual {
+		gotNames = append(gotNames, name)
+	}
+	for name := range expected {
+		wantNames = append(wantNames, name)
+	}
+	if err := protocolInventoryDifference(gotNames, wantNames); err != nil {
+		t.Fatalf("closed inventory names: %v", err)
+	}
+	for name, want := range expected {
+		t.Run(name, func(t *testing.T) {
+			if err := protocolInventoryDifference(actual[name], want); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+	if err := protocolInventoryDifference(unsupportedNames(), expected["unsupported"]); err != nil {
+		t.Fatalf("actual unsupported result inventory: %v", err)
+	}
+}
+func TestProtocolInventoryMirrorsDetectDrift(t *testing.T) {
+	for name, actual := range runtimeProtocolInventories() {
+		t.Run(name, func(t *testing.T) {
+			expected := frozenProtocolInventories()[name]
+			// Each alteration acts on the actual private runtime inventory, copied only
+			// to avoid changing process-wide validators while checking the mirror guard.
+			extra := append(append([]string(nil), actual...), "unexpected.contract.member")
+			missing := append([]string(nil), actual[1:]...)
+			renamed := append([]string(nil), actual...)
+			renamed[0] = "renamed.contract.member"
+			duplicate := append([]string(nil), actual...)
+			duplicate[len(duplicate)-1] = duplicate[0]
+			for control, values := range map[string][]string{"extra": extra, "missing": missing, "renamed": renamed, "duplicate": duplicate} {
+				if err := protocolInventoryDifference(values, expected); err == nil {
+					t.Fatalf("%s inventory drift escaped the exact mirror", control)
+				}
+			}
+		})
+	}
 }
