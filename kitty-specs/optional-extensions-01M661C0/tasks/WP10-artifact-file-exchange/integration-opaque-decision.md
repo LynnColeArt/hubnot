@@ -23,7 +23,13 @@ actual boundary reached rather than invent a 32 MiB decoded wire success.
 The implementation must use the existing physical-directory and regular-file,
 no-symlink safety patterns, serialize read/merge/write operations, and replace a
 complete validated index atomically. Concurrent writers must not silently lose
-preserved objects. Any refusal retains the prior index. This is an implementation
+preserved objects. A definitive pre-replacement refusal retains the prior index.
+If an error can occur after replacement, it must report possible commitment
+honestly rather than promise that the prior index remains. The same distinction
+applies to a Git ref transaction that commits and then loses its acknowledgement:
+joined writer completion and ref witnesses must distinguish a known pre-commit
+CAS refusal from `uncertain_operation`; returning an exit error alone does not
+prove absence of publication. This is an implementation
 policy within the published exchange bounds, not a new signed or public wire
 format, registration requirement, or accepted ref.
 
