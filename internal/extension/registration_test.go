@@ -432,3 +432,68 @@ func TestRegistryRejectsMissingMalformedAndMismatchedInstance(t *testing.T) {
 		})
 	}
 }
+
+func TestRegistryRawArrayTypesPreserveMalformedBytes(t *testing.T) {
+	candidate, path := registrationFixture(t)
+	candidate.Argv = []string{""}
+	installed, err := Register(path, candidate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	good, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(map[string]any){
+		"null argv element":    func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{nil} },
+		"boolean argv element": func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{true} },
+		"number argv element":  func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{2} },
+		"object argv element": func(value map[string]any) {
+			value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{map[string]any{}}
+		},
+		"array argv element": func(value map[string]any) {
+			value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{[]any{}}
+		},
+		"null argv array": func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = nil },
+		"null capabilities array": func(value map[string]any) {
+			value["registrations"].([]any)[0].(map[string]any)["manifest"].(map[string]any)["capabilities"] = nil
+		},
+		"null registrations array": func(value map[string]any) { value["registrations"] = nil },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var value map[string]any
+			if err := json.Unmarshal(good, &value); err != nil {
+				t.Fatal(err)
+			}
+			mutate(value)
+			malformed, err := json.Marshal(value)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(path, malformed, 0600); err != nil {
+				t.Fatal(err)
+			}
+			_, err = LoadRegistry(path)
+			expectCode(t, err, "invalid_input")
+			_, err = Register(path, candidate)
+			expectCode(t, err, "invalid_input")
+			_, err = Remove(path, installed.Manifest.ModuleID)
+			expectCode(t, err, "invalid_input")
+			after, err := os.ReadFile(path)
+			if err != nil || !bytes.Equal(after, malformed) {
+				t.Fatalf("malformed array repaired: %v", err)
+			}
+		})
+	}
+	if err := os.WriteFile(path, good, 0600); err != nil {
+		t.Fatal(err)
+	}
+	duplicate, err := registerWithRandom(path, candidate, strings.NewReader(""))
+	if err != nil || !reflect.DeepEqual(duplicate, installed) {
+		t.Fatalf("valid empty argument changed or drew entropy: %v", err)
+	}
+	after, err := os.ReadFile(path)
+	if err != nil || !bytes.Equal(after, good) {
+		t.Fatalf("valid empty argument changed bytes: %v", err)
+	}
+}

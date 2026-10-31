@@ -264,6 +264,39 @@ func LoadRegistry(path string) (Registry, error) {
 	if err != nil {
 		return empty, err
 	}
+	object, ok := value.(map[string]any)
+	if !ok || !exactFields(object, "protocol", "registrations") {
+		return empty, failure("invalid_input", "invalid extension registry fields")
+	}
+	registrations, ok := object["registrations"].([]any)
+	if !ok {
+		return empty, failure("invalid_input", "registrations must be an array")
+	}
+	if len(registrations) > RegistrationLimit {
+		return empty, failure("resource_limit", "too many registrations")
+	}
+	for _, raw := range registrations {
+		fields, ok := raw.(map[string]any)
+		if !ok || !exactFields(fields, "registration_id", "registration_instance", "manifest", "manifest_digest", "executable", "executable_digest", "argv") {
+			return empty, failure("invalid_input", "invalid registration fields")
+		}
+		// encoding/json accepts null as a Go string's zero value. Check the raw
+		// array before typed decoding so malformed null arguments cannot become
+		// valid empty arguments or be silently repaired by an idempotent register.
+		argv, ok := fields["argv"].([]any)
+		if !ok {
+			return empty, failure("invalid_input", "argv must be a string array")
+		}
+		for _, argument := range argv {
+			if _, ok := argument.(string); !ok {
+				return empty, failure("invalid_input", "argv elements must be strings")
+			}
+		}
+		manifestBytes, _ := json.Marshal(fields["manifest"])
+		if _, err := parseManifest(manifestBytes, false); err != nil {
+			return empty, err
+		}
+	}
 	encoded, _ := json.Marshal(value)
 	var registry Registry
 	decoder := json.NewDecoder(bytes.NewReader(encoded))
@@ -271,24 +304,8 @@ func LoadRegistry(path string) (Registry, error) {
 	if decoder.Decode(&registry) != nil || registry.Protocol != "hn.extension-registry/1" || registry.Registrations == nil {
 		return empty, failure("invalid_input", "invalid extension registry")
 	}
-	object, ok := value.(map[string]any)
-	if !ok || !exactFields(object, "protocol", "registrations") {
-		return empty, failure("invalid_input", "invalid extension registry fields")
-	}
-	if len(registry.Registrations) > RegistrationLimit {
-		return empty, failure("resource_limit", "too many registrations")
-	}
 	seen := map[string]bool{}
-	for i, r := range registry.Registrations {
-		raw := object["registrations"].([]any)[i]
-		fields, ok := raw.(map[string]any)
-		if !ok || !exactFields(fields, "registration_id", "registration_instance", "manifest", "manifest_digest", "executable", "executable_digest", "argv") {
-			return empty, failure("invalid_input", "invalid registration fields")
-		}
-		manifestBytes, _ := json.Marshal(fields["manifest"])
-		if _, err := parseManifest(manifestBytes, false); err != nil {
-			return empty, err
-		}
+	for _, r := range registry.Registrations {
 		if err := r.validateStored(); err != nil {
 			return empty, err
 		}

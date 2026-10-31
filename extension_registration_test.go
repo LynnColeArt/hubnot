@@ -493,3 +493,115 @@ func extensionCLIDigest(data []byte) string {
 	sum := sha256.Sum256(data)
 	return "sha256:" + hex.EncodeToString(sum[:])
 }
+
+func TestExtensionRegistryRawArrayTypesCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	home := t.TempDir()
+	dir := t.TempDir()
+	config := filepath.Join(home, "config")
+	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
+	git := exec.Command("git", "init", "-q", dir)
+	git.Env = env
+	if out, err := git.CombinedOutput(); err != nil {
+		t.Fatalf("fixture git: %v %s", err, out)
+	}
+	manifest := filepath.Join(dir, "manifest.json")
+	module := filepath.Join(dir, "module")
+	marker := filepath.Join(dir, "module-started")
+	if err := os.WriteFile(manifest, []byte(`{"protocol":"hn.extension-manifest/1","module_id":"example.inventory/tool","module_version":"1","host_protocol":"hn.extension/1","capabilities":["resource.read"]}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(module, []byte("#!/bin/sh\nprintf forbidden > '"+marker+"'\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	invoke := func(t *testing.T, wantCode string, args ...string) {
+		t.Helper()
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, binary, args...)
+		cmd.Dir = dir
+		cmd.Env = env
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err := cmd.Run()
+		var envelope struct {
+			OK    bool            `json:"ok"`
+			Data  json.RawMessage `json:"data"`
+			Error *struct {
+				Origin    string          `json:"origin"`
+				Code      string          `json:"code"`
+				Recovery  string          `json:"recovery"`
+				Operation json.RawMessage `json:"operation"`
+			} `json:"error"`
+		}
+		if decodeErr := json.Unmarshal(stdout.Bytes(), &envelope); decodeErr != nil {
+			t.Fatalf("%v: invalid JSON: %v %s %s", args, decodeErr, &stdout, &stderr)
+		}
+		if wantCode == "" {
+			if err != nil || !envelope.OK || envelope.Error != nil {
+				t.Fatalf("%v: valid string array failed: %v %s %s", args, err, &stdout, &stderr)
+			}
+		} else if err == nil || envelope.OK || string(envelope.Data) != "null" || envelope.Error == nil || envelope.Error.Origin != "host" || envelope.Error.Code != wantCode || envelope.Error.Recovery != "do_not_retry" || string(envelope.Error.Operation) != "null" {
+			t.Fatalf("%v: want host/%s with unchanged malformed bytes; err=%v stdout=%s stderr=%s", args, wantCode, err, &stdout, &stderr)
+		}
+	}
+	register := []string{"extension", "register", "--manifest", manifest, "--executable", module, "--arg", "", "--json"}
+	before := extensionPrivateSnapshot(t, dir)
+	invoke(t, "", register...)
+	path := filepath.Join(config, "hubnot", "extensions", "registry.json")
+	good, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	invoke(t, "", "extension", "inspect", "example.inventory/tool", "--json")
+	invoke(t, "", register...)
+	positive, err := os.ReadFile(path)
+	if err != nil || !bytes.Equal(positive, good) {
+		t.Fatalf("valid empty argument duplicate changed bytes: %v", err)
+	}
+	for name, mutate := range map[string]func(map[string]any){
+		"null argv element":    func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{nil} },
+		"boolean argv element": func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{true} },
+		"number argv element":  func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{2} },
+		"object argv element": func(value map[string]any) {
+			value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{map[string]any{}}
+		},
+		"array argv element": func(value map[string]any) {
+			value["registrations"].([]any)[0].(map[string]any)["argv"] = []any{[]any{}}
+		},
+		"null argv array": func(value map[string]any) { value["registrations"].([]any)[0].(map[string]any)["argv"] = nil },
+		"null capabilities array": func(value map[string]any) {
+			value["registrations"].([]any)[0].(map[string]any)["manifest"].(map[string]any)["capabilities"] = nil
+		},
+		"null registrations array": func(value map[string]any) { value["registrations"] = nil },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var value map[string]any
+			if err := json.Unmarshal(good, &value); err != nil {
+				t.Fatal(err)
+			}
+			mutate(value)
+			malformed, err := json.Marshal(value)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(path, malformed, 0600); err != nil {
+				t.Fatal(err)
+			}
+			for _, args := range [][]string{{"extension", "inspect", "example.inventory/tool", "--json"}, register, {"extension", "remove", "example.inventory/tool", "--json"}} {
+				invoke(t, "invalid_input", args...)
+				after, err := os.ReadFile(path)
+				if err != nil || !bytes.Equal(after, malformed) {
+					t.Fatalf("%v repaired malformed array bytes: %v", args, err)
+				}
+			}
+		})
+	}
+	if !reflect.DeepEqual(before, extensionPrivateSnapshot(t, dir)) {
+		t.Fatal("array refusal modified repository keys, public objects, refs or private state")
+	}
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatalf("array refusal launched module: %v", err)
+	}
+}
