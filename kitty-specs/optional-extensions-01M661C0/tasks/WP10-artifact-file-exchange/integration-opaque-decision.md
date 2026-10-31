@@ -41,6 +41,21 @@ files or relying on captured map-initialization order. WP18 later consumes the
 same index reader under its explicit opaque grant; no dormant host method is
 introduced in WP10. Native/default commands perform no index I/O.
 
+`import --preserve-opaque` explicitly selects preservation only for all supplied
+hash-valid public objects, whether the input wrapper says `accepted` or `opaque`.
+The result is mode `opaque` with no accepted promotion. It is not an automatic
+acceptance attempt followed by a hidden fallback. An opaque-mode input without
+the explicit flag refuses with the frozen `invalid_input` code. Strict wrapper,
+Git hash and resource checks still apply; malformed JSON never enters the index.
+
+Normal accepted import and Git fetch/push reuse `artifactMutationPolicy` before
+transport, object-copy or public-promotion effects. The selected-contribution
+combination remains `host/unsupported_capability`: a transport must not bypass
+the existing prohibition on custom publication under that policy. Public import
+does not require a local signing identity. Read-only export and explicit opaque
+preservation do not admit accepted custom data or advertise a governed custom
+feed. Existing native command-lock bookkeeping remains intact.
+
 This decision changes no work-package ownership, lane identity, signed contract,
 default workflow or mission scope. Independent WP10 review must verify these
 concrete storage and CLI behaviors before approval.
