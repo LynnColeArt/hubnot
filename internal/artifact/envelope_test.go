@@ -236,14 +236,39 @@ func TestEnvelopeConcurrentFirstUse(t *testing.T) {
 			"relationships": []any{}, "conversion_sources": []any{},
 		}
 	})
+	// Direct callers (schema/content validation) share these caches with Verify.
+	patterns := []struct {
+		name           string
+		matcher        interface{ MatchString(string) bool }
+		valid, invalid string
+	}{
+		{"digest", &digestPattern, frozenVectors[0].id, frozenVectors[0].id + "\n"},
+		{"actor", &actorPattern, strings.Repeat("a", 64), strings.Repeat("A", 64)},
+		{"type", &typePattern, "example/list", "example/list\n"},
+		{"field", &fieldPattern, "_field.key-1", "field\n"},
+		{"member", &memberPattern, "1.member-key_", "member\n"},
+	}
+	checkDirect := func() {
+		for _, p := range patterns {
+			if !p.matcher.MatchString(p.valid) || p.matcher.MatchString(p.invalid) {
+				t.Errorf("concurrent direct %s grammar changed", p.name)
+			}
+		}
+	}
 	start := make(chan struct{})
 	var workers sync.WaitGroup
-	for range 32 {
+	for i := range 32 {
 		workers.Go(func() {
 			<-start
+			if i%2 == 0 {
+				checkDirect()
+			}
 			v, err := Verify(raw, sig, nil)
 			if err != nil || !bytes.Equal(v.Bytes(), raw) {
 				t.Errorf("concurrent signed list: %v", err)
+			}
+			if i%2 != 0 {
+				checkDirect()
 			}
 			for _, f := range frozenVectors {
 				v, err := Verify([]byte(f.raw), f.signature, nil)
