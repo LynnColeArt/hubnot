@@ -1,20 +1,20 @@
 {
-  "event_count": 251,
-  "last_event_id": "01M69157KH14BF72SRK9JWZ51F",
-  "materialized_at": "2026-10-31T13:07:36.177788+00:00",
+  "event_count": 293,
+  "last_event_id": "01M69JV4DTHA45MBBWV21NNNFG",
+  "materialized_at": "2026-10-31T18:16:39.595231+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 16,
+    "approved": 21,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 4,
-    "in_review": 1,
-    "planned": 5
+    "in_progress": 3,
+    "in_review": 0,
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -91,35 +91,36 @@
     "WP03": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
-      "force_count": 1,
-      "lane": "approved",
-      "last_event_id": "01M67N0T46R5BNYX9BXX1G3K2K",
-      "last_transition_at": "2026-10-31T00:16:13.958893+00:00",
+      "force_count": 2,
+      "lane": "in_progress",
+      "last_event_id": "01M69JS1TE352KC8EZZ6YAKKY2",
+      "last_transition_at": "2026-10-31T18:15:31.390348+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: source cecac403 canonical verifier/inert CLI; generated metadata reconciled; focused race/goldens/vet and both exact binaries qualified; evidence external optional-extensions-WP03/handoff.json",
         "Independent codex/reviewer-renata rejects WP03 cycle1 for two reproduced P2 contract mismatches: artifact-origin unsupported protocol/kind codes outside closed set, and forbidden predecessor-only stdin despite frozen FILE grammar. Structured feedback committed 7dd64aa7; full external formal-review-cycle-1.md under optional-extensions-WP03. Preserve accepted unchanged evidence; focused fixes and corrected-binary requalification required. WP04/WP05 remain dependency-blocked.",
         "Cycle2 R1/R2 corrected at d3e556f6: artifact closed invalid_input codes, either stdin direction; focused race/vet and both exact binaries39cases pass. T012/T014 accepted unchanged evidence plus new fixproof restores all4subtasks. Evidence external optional-extensions-WP03/cycle2/handoff.json",
-        "Review passed cycle2: actual codex/reviewer-renata independently verified R1 closed artifact/invalid_input refusals and R2 either stdin direction, 26 exact-binary cases including blocked-pipe upfront refusal and unchanged complete inventories; all227 source hashes match d3e556f6. All four subtasks and eight antipattern checks pass for narrow inert envelope scope. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP03/cycle2/formal-review-cycle-2.md. Prior accepted unchanged canonical/native evidence retained; schema/store/host/final qualification remains later work."
+        "Review passed cycle2: actual codex/reviewer-renata independently verified R1 closed artifact/invalid_input refusals and R2 either stdin direction, 26 exact-binary cases including blocked-pipe upfront refusal and unchanged complete inventories; all227 source hashes match d3e556f6. All four subtasks and eight antipattern checks pass for narrow inert envelope scope. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP03/cycle2/formal-review-cycle-2.md. Prior accepted unchanged canonical/native evidence retained; schema/store/host/final qualification remains later work.",
+        "Administrative post-approval maintenance: actual WP24 default RSS failure and eager optional validator initialization; preserve old verdicts; fresh owner fix and independent review required."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP03-canonical-artifact-envelope/review-cycle-2.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP03-canonical-artifact-envelope/review-cycle-2.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP03-canonical-artifact-envelope/review-cycle-3.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP03-canonical-artifact-envelope/review-cycle-3.md",
         "reviewer": "codex",
-        "verdict": "approved"
+        "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T012": "done",
-        "T013": "done",
-        "T014": "done",
-        "T015": "done"
+        "T012": "planned",
+        "T013": "planned",
+        "T014": "planned",
+        "T015": "planned"
       }
     },
     "WP04": {
@@ -442,12 +443,12 @@
     "WP13": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
-      "force_count": 3,
-      "lane": "in_review",
-      "last_event_id": "01M69157KH14BF72SRK9JWZ51F",
-      "last_transition_at": "2026-10-31T13:07:36.177788+00:00",
+      "force_count": 4,
+      "lane": "in_progress",
+      "last_event_id": "01M69JV4DTHA45MBBWV21NNNFG",
+      "last_transition_at": "2026-10-31T18:16:39.595231+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Root codex normal blocked-to-in_progress recovery: allocator planning-merge blocker resolved by fa420df6 in canonical lane-l, recorded d33 ancestry and exact approved source verified. No implementation yet; canonical implement action will resume and establish codex implementer-ivan identity before dispatch.",
@@ -456,24 +457,26 @@
         "Review feedback 2 fixed: raw stored argv string-array validation before typed decoding; null element refuses inspect/register/remove without repair, empty argument and duplicate no-entropy preserved. Frozen source b37261cb, focused race, both exact binary CLI/native traces, vet/build pass; external WP13/cycle2 bindings.",
         "Independent corrected-source review passed at b37261cb7642474daca093660334bd12f714d00e: null argv now refuses inspect/register/remove without repair; both exact supplied variants pass 48 malformed controls, valid empty-argument/lifecycle controls and focused native-read/race checks; all eight anti-pattern checks PASS. Scoped report external optional-extensions-WP13/cycle2/reviewer/review.md; future grant/session/full-mission qualification remains pending.",
         "Root test-only portability correction decision6047396b; static audit, no Mac runtime pass; no production semantics changes.",
-        "Ready for fresh independent review: isolated OS config-directory fixture correction; Linux standard/combined-native CLI and strace controls pass at a10d40a6, Darwin runtime pending final qualification"
+        "Ready for fresh independent review: isolated OS config-directory fixture correction; Linux standard/combined-native CLI and strace controls pass at a10d40a6, Darwin runtime pending final qualification",
+        "Review passed: independent reviewer-renata approves only the isolated OS config fixture repair a10d40a6 (+18/-4 root test). All226 inputs match fixed source, all108 production inputs unchanged. Supplied standard/combined-native live CLI strict registration/raw-array/malformed-state/process/absolute-relative strace controls pass with no skips; focused race and vet pass. All8 anti-pattern checks PASS. Normal gate event01M6913NZYMNTQZ2NY24CS3YHV is no_coverage/missingframework, not Go qualification; Darwin runtime pending WP25; historical production approval unchanged. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP13-config-fixture-review/review.md SHA256 80eefd595827cfe35273d66a84c561d7a0973ff5ad3051529bac1cdbd3880e75",
+        "Administrative post-approval maintenance: actual WP24 default RSS failure and eager optional validator initialization; preserve old verdicts; fresh owner fix and independent review required."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP13-extension-registration/review-cycle-4.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP13-extension-registration/review-cycle-4.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP13-extension-registration/review-cycle-6.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP13-extension-registration/review-cycle-6.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T052": "done",
-        "T053": "done",
-        "T054": "done",
-        "T055": "done"
+        "T052": "planned",
+        "T053": "planned",
+        "T054": "planned",
+        "T055": "planned"
       }
     },
     "WP14": {
@@ -515,13 +518,13 @@
     "WP15": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "assignee": "codex",
       "force_count": 4,
-      "lane": "planned",
-      "last_event_id": "01M690V0AEZ6W1FNXER2PT86MW",
-      "last_transition_at": "2026-10-31T13:02:01.038055+00:00",
+      "lane": "approved",
+      "last_event_id": "01M6924QYM5R1CR5ZY61FKYCVM",
+      "last_transition_at": "2026-10-31T13:24:48.724513+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Administrative allocation recovery only: canonical next selected WP15, normal action and retry retained lane-n after dependency merge conflict. Followed printed exact approved WP13 lane-l merge; only WP03 task generated base_branch/base_commit/created_at differed with identical authored body. All stages/diffs/hashes external lane-n-planning-recovery; chose exact recorded 8aa copy, normal merge cd8ce1f1, staged226Go equal approved WP13. No WP15 implementation/tests. Resume proper codex implementer-ivan action claim next.",
@@ -535,35 +538,37 @@
         "Administrative integration rework: WP19 real 1025-revision capture exposes inherited parent-array cap in changePageRule; preserve earlier approvals and fix only frozen complete-observation response fidelity.",
         "Ready for independent review: source c1f5807f, metadata delivery b9f6efea; complete frame-bounded revision_ids only. Retained causal RED then standard/combined protocol race GREEN, vet,34 exact supplied-binary frame controls and preserved artifact1024 limits; all230 other inputs unchanged. T060-T063 restored using accepted unchanged cycle4 evidence plus narrow current correction. Evidence optional-extensions-WP15-observation-array; actual signed producer/raw changes regression remains WP19.",
         "Independent review passed: source c1f5807fbeeaca4e39563eea891aa8a2ce6aab0f, metadata b9f6efea9ad2c405bf11dec7bd5b086a3bf69f12, 232-input map 1d000169ccd9ea8fa3bcda6c570ccadf52b4c8098d77d7e1e9c6af411502347c verified; 84 supplied-binary exact CLI controls and fresh protocol race PASS; in-scope literal roundtrip and closed-set mirrors PASS; all eight anti-patterns PASS. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP15-observation-array-review/review.md SHA256 211b9b672c0f7c0511e3fea4d002d741787f693c63b216be67c6f1d270113f18. Root decision 51d72b01 coordinates WP19 response seam; sole inherited WP19 prompt generated-field cleanup uses execution brief standing exact-path authority. Actual WP19 signed producer regression remains WP19 and must pass after approved dependency integration. Inert WP15 slice only; no platform/performance/final-suite claim.",
-        "Root narrow test-only protocol malformed-registry trap correction under9071bdba; actual OS config directory under isolated fixture, production and wire bytes unchanged; no Mac runtime pass inferred."
+        "Root narrow test-only protocol malformed-registry trap correction under9071bdba; actual OS config directory under isolated fixture, production and wire bytes unchanged; no Mac runtime pass inferred.",
+        "Test-only OS config fixture correction at 62759dd4144d85c44975fef8ae7b313976113c2a; approved WP13 helper resolves actual registry path, explicit invalid_input detector rejects wrong-path mutant. Original frame/bounds/malformed/no-effect controls unchanged. Standard+combined focused CLI, protocol/frame race, vet, 250+182+84 supplied-binary controls pass. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP15-config-fixture/. Linux actual; Darwin source-only pending WP25.",
+        "Review passed: independent codex/reviewer-renata approves only WP15 OS-config fixture repair 62759dd4 (+12/-1 root protocol test). All232 Go/module inputs verified; production/modules unchanged from approved c1f5807f. Standard/combined actual supplied CLI frame strict controls, causal malformed registry/valid/missing/wrong-argument controls, intended wrong-path mutant failures, internal race and vet pass; all8 anti-pattern checks PASS. Normal gate01M691TDWWGW303YWH3VDTZ17Q no_coverage/missingframework is not Go qualification. Darwin runtime pendingWP25. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP15-config-fixture-review/review.md SHA256 4f036b74f65e1ed922bdd59f6d1fd6adb474aac5e0b807a08ca79f8e87ec10ec"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP15-extension-framing/review-cycle-7.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP15-extension-framing/review-cycle-7.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP15-extension-framing/review-cycle-8.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP15-extension-framing/review-cycle-8.md",
         "reviewer": "codex",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 22770,
+      "shell_pid_created_at": "1793287708.21",
       "subtasks": {
-        "T060": "planned",
-        "T061": "planned",
-        "T062": "planned",
-        "T063": "planned"
+        "T060": "done",
+        "T061": "done",
+        "T062": "done",
+        "T063": "done"
       }
     },
     "WP16": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
-      "force_count": 4,
-      "lane": "in_progress",
-      "last_event_id": "01M68XQRKP87FQN9EYDVP0A1RM",
-      "last_transition_at": "2026-10-31T12:07:49.095470+00:00",
+      "force_count": 5,
+      "lane": "approved",
+      "last_event_id": "01M69F7KC41MBTKARC292Z7KCR",
+      "last_transition_at": "2026-10-31T17:13:33.828208+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods.",
@@ -577,24 +582,29 @@
         "Administrative bounded value-object/dispatch handoff: expose actual existing host SessionID internally for session-bound WP19 capture, no wire or grant change; active17/18 preserve source evidence before normal refresh.",
         "WP16 bounded actual SessionID handoff source0e728734. Live Invocation receives existing host-generated session ID; deterministic missing-field RED and actual two same-binding distinct sessions/hello/capabilities equality/strict raw override controls pass. Full approved shutdown code reconstructs exactly except field/initializer,239 other inputs exact. Fresh stamped std+combined binaries, focused session race/current CLI/static checks pass. Evidence optional-extensions-WP16/session-identity-handoff/report.md.",
         "Independent session handoff review passed: source0e728734a156,242 mapa10e82a135c9958 verified; all239 other inputs exact, removing field+initializer reconstructs approvede434 shutdown production. Current real Run callback identity equals actual hello/caps/result and differs across same-binding sessions; both raw overrides refuse before extra dispatch. Old-source runtime RED reproduced once, current race GREEN,8 selected supplied CLI test events per standard/combined variant0fail/skip with correct13/16binary envs, vet/diff checks pass. All8 anti-patterns PASS, closed inventories unchanged with exact retained evidence. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16/session-identity-review/report.md. No17/18 WIP or capture implementation imported; LinuxAMD64 only, original lifecycle provenance retained, Python no_coverage unavailable, final qualification pending.",
-        "Administrative integration rework: WP21 observed unexplained uncertainty during valid sequential standalone publication. Investigate suspected response-completion channel race causally; preserve earlier exact-source approvals and strict one-outstanding/cancel/uncertainty semantics. No downstream acceptance over unresolved concern."
+        "Administrative integration rework: WP21 observed unexplained uncertainty during valid sequential standalone publication. Investigate suspected response-completion channel race causally; preserve earlier exact-source approvals and strict one-outstanding/cancel/uncertainty semantics. No downstream acceptance over unresolved concern.",
+        "Ready for independent review: exact ae5e4f8b; bounded final-byte/join/frontier repair, precise refusal cleanup priority; std/combined/race lifecycle and causal controls pass. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16-response-completion/final-handoff.md",
+        "Independent WP16 response-completion repair review passed for exact ae5e4f8b, 242-input SHA256 2df732d780d3f02c93c3fad83977d3a0007096542daf623da65b6c02317ea329. All eight anti-pattern checks PASS. Fresh uninstrumented race session checks, independent full-reader completion-publication barrier plus meaningful causal rejection mutant, audited frontier/cleanup race and actual supplied CLI race controls passed. No product edits. Report: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16-response-completion-review/review.md. All owned commands exited and 377 retained PID observations gone. Explicit coordinated approved dependency test and WP02 contract merges retained. No downstream, platform, beta, main or release acceptance claimed.",
+        "New post-approval maintenance finding from actual WP24 native-only blocked-startup control: first-byte OS deadline bypasses typed cancellation normalization and select can emit unavailable_module. Root independently inspected source and frozen cancellation contract; exact binary/log/source evidence in feedback10. Previous cycle9 approval remains history; targeted owner correction and fresh independent review required before WP24 measurement freeze. No timeout/guard relaxation or source edit by root.",
+        "Ready for independent review: a0fcbd72 first-byte OS deadline cancellation; causal RED retained, EOF and partial-frame distinctions preserved; supplied std/combined/race lifecycle and retained frontier/cleanup regressions pass. Evidence optional-extensions-WP16-startup-deadline/report.md.",
+        "Review passed: independent codex/reviewer-renata approves WP16 first-byte OS-deadline correction source a0fcbd72c9134646c4fa803b8d646f074b0d391f. All242 inputs verified; exactly3 owned Go paths changed, five production lines only; raw EOF/other IO retained. Original-source causal RED reproduced, fresh reader race8 PASS, supplied actual standard CLI normal/startupEOF/silent-startup5 PASS; retained std/combined/race23 each and frontier/cleanup/closed inventory evidence verified. All8 anti-pattern checks PASS. No code edits or conditional approval. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16-startup-deadline-review/review.md SHA256 66dacbb07d2a05ecc14f255e6a105d802d5acc1350bb3775d4ee69d60c2b941b. Normal noforce/noskip; final integrated platforms/performance/packages/trials remain WP24-26."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-8.md",
-        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-8.md",
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-11.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-11.md",
         "reviewer": "codex",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 266009,
+      "shell_pid_created_at": "1793466465.44",
       "subtasks": {
-        "T064": "planned",
-        "T065": "planned",
-        "T066": "planned",
-        "T067": "planned"
+        "T064": "done",
+        "T065": "done",
+        "T066": "done",
+        "T067": "done"
       }
     },
     "WP17": {
@@ -695,69 +705,152 @@
     "WP20": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
-      "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M68VEW7DM7AKPF0CGN9JTWYE",
-      "last_transition_at": "2026-10-31T11:28:00.749493+00:00",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M698C378S649MDB43DTV83WX",
+      "last_transition_at": "2026-10-31T15:13:41.096598+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: supplied standalone tracker import/kill/recovery/export/conflict/privacy controls and std/combined/race checks passed; exact source c8a38b2c, production assets6f8fad1f. Evidence: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP20/qualification-report.md",
+        "Independent review rejected R1: consumed uncertain_operation is persisted as definitive Refusal; restart skips original lookup and update may mint a fresh key before settlement. Actual executable public-frame repro and all eight anti-pattern results in review-feedback-1.md; exact reviewed delivery c8a38b2ce35ef0957a54522e9d721d8e03f1d1ef and external report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP20-review/review-report.md. No app/test edits; positive focused controls passed; force false/no skip.",
+        "R1 corrected: consumed uncertainty and legacy journals retain original immutable operation; read-only lookup refusal cannot close mutation; exact standalone RED/GREEN, original-lookup mutant, standard/combined/race and actual OS-registry causal controls pass. Production4c913352, test63e9a537, approved planning77f35 normally integrated9a6790a4. Evidence optional-extensions-WP20/r1-fix/qualification-report.md.",
+        "Independent R1 correction review passed: new and legacy uncertainty preserve first response and immutable actor/key/parents/content; original lookup precedes GET/newkey, repeated read refusal stays pending, definitive mutation refusal stops. Independently authored23-scenario68-session public-process checks, actual supplied-host8 tests29events,16units61events and vet pass; old executable and legacy-shortcut mutant fail exact causes. All eight anti-pattern checks PASS. Exact303 inputs match delivery9a6790a4 and299 approved union. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP20-r1-review/review-report.md. No full/Mac/main/release claim."
+      ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21"
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP20-fake-tracker-consumer/review-cycle-2.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP20-fake-tracker-consumer/review-cycle-2.md",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1455160,
+      "shell_pid_created_at": "1793457455.46",
+      "subtasks": {
+        "T080": "done",
+        "T081": "done",
+        "T082": "done",
+        "T083": "done"
+      }
     },
     "WP21": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "assignee": "codex",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M68VKY4YZY00774WB1B72WFT",
-      "last_transition_at": "2026-10-31T11:30:46.558317+00:00",
+      "lane": "approved",
+      "last_event_id": "01M696Z14NWEJ2R179RQEE17FT",
+      "last_transition_at": "2026-10-31T14:49:04.405216+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Administrative allocation recovery only: followed printed exact recorded planning18f10 merge after normal retry retained lane-t; sole WP20 task conflict differs only generated base_branch/base_commit/created_at with identical authored bytes, archived all actual stages and restored exact feature task. Merge a4ff9544 preserves all299 approved19 Go/module inputs. Resume proper implementation action claim next; no product edits/tests or state bypass."
+        "Administrative allocation recovery only: followed printed exact recorded planning18f10 merge after normal retry retained lane-t; sole WP20 task conflict differs only generated base_branch/base_commit/created_at with identical authored bytes, archived all actual stages and restored exact feature task. Merge a4ff9544 preserves all299 approved19 Go/module inputs. Resume proper implementation action claim next; no product edits/tests or state bypass.",
+        "Ready for independent review: standalone charter model, exact historical selection, real two-actor resolution/evolution and plugin-free clone; approved16 integrated, typed client corrected; fixed23983 standard/combined/race and frozen public fixture reads passed; evidence optional-extensions-WP21/after-approved16-first-batch.",
+        "Independent review passed exact23983 source/delivery02c6, all303 inputs and299 approved union preserved. All eight anti-pattern checks PASS. Actual supplied standalone journey/missing-schema, consumer race, 32 independent process controls, native syscall detector and independent minimal8/full21 original public artifact Git/canonical/signature/stream verification plus current plugin-free import/query passed. Unchanged historical public bundle and companion metadata approved for WP22; original producer4eb remains explicit, first lost-fixture outcome unknown. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP21-review/review-report.md. No product fixes, force/skip, platform, beta/main or release claim."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP21-charter-model-consumer/review-cycle-1.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP21-charter-model-consumer/review-cycle-1.md",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
       "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21"
+      "shell_pid_created_at": "1793287708.21",
+      "subtasks": {
+        "T084": "done",
+        "T085": "done",
+        "T086": "done",
+        "T087": "done"
+      }
     },
     "WP22": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "implementer-ivan",
+      "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "assignee": "codex",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M68W0DDHA667XX76BJTVR479",
-      "last_transition_at": "2026-10-31T11:37:35.409723+00:00",
+      "lane": "approved",
+      "last_event_id": "01M69AFY6S36328ATHY54MBHFR",
+      "last_transition_at": "2026-10-31T15:50:44.185124+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Administrative allocation recovery only: after normal retry retained lane-u, followed printed exact18f10 planning merge at7bf1569b. Archived all stages; WP20 conflict is only three generated fields, WP21 preserves exact canonical root correction committed0a439ea7. Indexed/working220 Go-module inputs exactly equal recorded planning18, not yet approved19; no manual product edits/tests. Resume proper action claim for dependency merge and require actual299 equality before author dispatch."
+        "Administrative allocation recovery only: after normal retry retained lane-u, followed printed exact18f10 planning merge at7bf1569b. Archived all stages; WP20 conflict is only three generated fields, WP21 preserves exact canonical root correction committed0a439ea7. Indexed/working220 Go-module inputs exactly equal recorded planning18, not yet approved19; no manual product edits/tests. Resume proper action claim for dependency merge and require actual299 equality before author dispatch.",
+        "Ready for independent review: standalone inventory publisher, actual two-actor3shape collaboration/explicit conversion, approved frozen public charter mixed corpus and plugin-free clone/removal/native memory; fixed7bee std106.61s/combined97.67s/actual race525.67s and strict-client/field/frame/OS-config controls passed. Runtime source7bee433c; planning77f metadata deliveryd004 all303 unchanged. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP22/final-runtime-7bee433c-20261031/qualification-report.md",
+        "Independent WP22 review passed: actual standard two-actor public clone/removal journey, missing-schema and malformed-response controls, field bounds and unit47 pass; original public32 Git objects/8 signatures and all303 source inputs verified. Eight anti-pattern checks PASS. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP22-review/review-report.md SHA256 b9dac0bf604d4ca132b348e2970380a55d8730ac4e0d37cc797141a69a7a0dad. Final Mac/package/performance/cold-trial gates remain later mission work."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP22-inventory-model-proof/review-cycle-1.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP22-inventory-model-proof/review-cycle-1.md",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1455160,
+      "shell_pid_created_at": "1793457455.46",
+      "subtasks": {
+        "T088": "done",
+        "T089": "done",
+        "T090": "done",
+        "T091": "done"
+      }
+    },
+    "WP23": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M69CAHAE3A61PCKTZ749VAFP",
+      "last_transition_at": "2026-10-31T16:22:44.302252+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Administrative allocation recovery only: normal retry retained lane-v; followed printed exact747ac262 planning merge at9daa5803. Archived eight add/add conflicts; stage2 authored bytes exactly match preamendment archive, stage3 exactly root-approved exclusive maintenance amendment, generated-field differences retained in evidence. All220 Go/module inputs exactly recorded planning baseline, NOT YET311 dependency union. No manual Go edit, app/test run, force/skip or review verdict; resume normal action claim and require actual311 equality before curator dispatch.",
+        "Ready for independent review: five owned docs; supplied-binary focused journeys and 66-command guide replay; exact refusal/no-effect controls; unchanged311 Go/module union; native README preserved; detailed external WP23 evidence, final platform/performance/cold trials pending",
+        "Independent WP23 review passed: exact five owned docs and native README preserved, source311/binary/guide identities verified, fresh66-call supplied-binary guide replay with exact3 refusal/no-effect controls and public transfer, complete14/13 method/capability and error/recovery mirrors,25 literal signed vectors independently recomputed. All eight anti-pattern checks PASS. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP23-review/review-report.md SHA256 6605b84b7570ba9d50fd9fd4a98d050297125ec91c75a98d25bb33469bc3a9e6. Final all8 platforms/performance/cold trials and mission acceptance remain later work."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP23-extension-consumer-documentation/review-cycle-1.md",
+        "reference": "review-cycle://optional-extensions-01M661C0/WP23-extension-consumer-documentation/review-cycle-1.md",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1455160,
+      "shell_pid_created_at": "1793457455.46",
+      "subtasks": {
+        "T092": "done",
+        "T093": "done",
+        "T094": "done",
+        "T095": "done"
+      }
+    },
+    "WP24": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "in_progress",
+      "last_event_id": "01M69CGVMYY7S0DA8C4WJT5S95",
+      "last_transition_at": "2026-10-31T16:26:11.486325+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Administrative allocation recovery only: normal retry retained lane-w; followed printed exact747ac262 merge with eight conflicts archived and verified against preamendment history/exact authorized maintenance update. All220 Go/module inputs equal recorded planning baseline, NOT YET311 dependency union. No manual Go edits, app/tests/measurements, force/skip or verdict. Resume normal implementation action and require actual311 dependency equality before author dispatch; evidence optional-extensions-WP24-allocation-recovery/printed-planning-resolution.json."
       ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21"
-    },
-    "WP23": {
-      "actor": "finalize-tasks",
-      "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M663XKJHG1MHEQ3D7VXTXN2D",
-      "last_transition_at": "2026-10-30T09:58:08.721803+00:00"
-    },
-    "WP24": {
-      "actor": "finalize-tasks",
-      "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M663XNDMWGPS3T0J6B5WNRVP",
-      "last_transition_at": "2026-10-30T09:58:10.612576+00:00"
+      "shell_pid": 3712404,
+      "shell_pid_created_at": "1793463976.09"
     },
     "WP25": {
       "actor": "finalize-tasks",
