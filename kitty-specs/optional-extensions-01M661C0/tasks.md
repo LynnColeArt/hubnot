@@ -283,7 +283,7 @@ T023 Prove storage using real Git and history integrity (WP05)
 
 **Implementation sketch**: Write additive actor streams with native signer mediation → Load verified selected artifact histories under read budgets → Refuse unsupported contribution writes before private/public effects → Prove storage using real Git and history integrity.
 
-**Ownership**: `artifact_store.go`, `artifact_read.go`, `artifact_store_test.go`, `artifact_read_test.go`, `artifact_store_commands.go`, `artifact_store_commands_test.go`.
+**Ownership**: `artifact_store.go`, `artifact_read.go`, `artifact_store_test.go`, `artifact_read_test.go`, `artifact_store_commands.go`, `artifact_store_commands_test.go`, `internal/artifact/canonical_export.go`. The last path is a minimal strict canonicalization wrapper used by the current writer/CLI; WP03 parser source remains unchanged.
 
 **Parallel opportunities**: Only after listed approvals and within disjoint declared file ownership; computed lanes are authoritative. No package may begin merely because a dependency prompt exists.
 
