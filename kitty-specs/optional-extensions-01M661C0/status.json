@@ -548,7 +548,7 @@
     "WP16": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "architect-alphonso",
       "agent_profile_version": "1.0",
       "force_count": 3,
       "lane": "planned",
@@ -563,7 +563,8 @@
         "Independent bounded dependency refresh review passed at19cc5d1591d1148f516947730a7355562663d9ef, mapf68fb22fca827cbbb208817c9179b3ba27016fb79114354e0c951e0c4588d6d0. Root be349643 coordinates exact approved WP15 protocol import; all other240 inputs and7 lifecycle paths equal prior approved WP16.28 independent actual frame controls and4 real supplied-binary race host tests across both variants passed with exact14method/13unsupported inventory, argv/binding, idle native/second-module progress, exact old-lock detector, epoch disable cleanup and observed PID exit.29 closed inventory mirrors and12 prior evidence log hashes verified. All8 anti-pattern items PASS; contracts reviewed. Business adapters17/18/19 and final full platform/performance qualification remain pending. No force/skip/reviewer fixes; heavy slot released.",
         "Administrative integration rework: current governed native caller exposed clean-monitor shutdown cancellation race; deterministic lifecycle repair and permanent unsupported-surface test control required before17/18 qualification.",
         "WP16 clean shutdown correction source e4349c8d; metadata delivery5d2de715. Causal held-in-flight two-stage RED retained; private intentional-stop cause and joined monitor result preserve clean completion/real failures/cancellation/uncertainty. Frozen memory.mutate actual child control replaces stage-only supported read expectation. Fresh clean std+combined binaries, focused race/live controls/vet pass. Evidence optional-extensions-WP16/clean-shutdown-rework/report.md.",
-        "Independent clean-shutdown review passed: exact source e4349c8d02b6 and metadata delivery5d2de715, input map49e4ca969880 verified; both deterministic causal RED stages reproduced once; focused race108 pass0fail/skip; supplied standard/combined real clean/refusal/unsupported/PID/lock controls pass, explicit supplied native-read detector pass. All8 anti-patterns PASS,29 closed mirrors/drift+14method matrix retained. Root-authorized WP17 generated3field metadata-only repair verified; no17/18 WIP imported. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16/clean-shutdown-review/report.md. LinuxAMD64 only; old broad/platform evidence provenance retained; Python no_coverage unavailable; final WP24/25 qualification pending."
+        "Independent clean-shutdown review passed: exact source e4349c8d02b6 and metadata delivery5d2de715, input map49e4ca969880 verified; both deterministic causal RED stages reproduced once; focused race108 pass0fail/skip; supplied standard/combined real clean/refusal/unsupported/PID/lock controls pass, explicit supplied native-read detector pass. All8 anti-patterns PASS,29 closed mirrors/drift+14method matrix retained. Root-authorized WP17 generated3field metadata-only repair verified; no17/18 WIP imported. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP16/clean-shutdown-review/report.md. LinuxAMD64 only; old broad/platform evidence provenance retained; Python no_coverage unavailable; final WP24/25 qualification pending.",
+        "Administrative bounded value-object/dispatch handoff: expose actual existing host SessionID internally for session-bound WP19 capture, no wire or grant change; active17/18 preserve source evidence before normal refresh."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -573,14 +574,14 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T064": "done",
-        "T065": "done",
-        "T066": "done",
-        "T067": "done"
+        "T064": "planned",
+        "T065": "planned",
+        "T066": "planned",
+        "T067": "planned"
       }
     },
     "WP17": {
