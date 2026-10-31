@@ -1,7 +1,7 @@
 {
-  "event_count": 117,
-  "last_event_id": "01M67YAB22XFJCAV5SS9B66JNV",
-  "materialized_at": "2026-10-31T02:58:43.393927+00:00",
+  "event_count": 119,
+  "last_event_id": "01M67YH6SGF69X35580F5ZXHKR",
+  "materialized_at": "2026-10-31T03:02:28.400533+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 1,
+    "in_progress": 2,
     "in_review": 0,
-    "planned": 15
+    "planned": 14
   },
   "work_packages": {
     "WP01": {
@@ -238,11 +238,23 @@
       "shell_pid_created_at": "1793287708.21"
     },
     "WP08": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
+      "assignee": "codex",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M663WSER6CSEEBZ3EEYXDP0G",
-      "last_transition_at": "2026-10-30T09:57:41.976210+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M67YH6SGF69X35580F5ZXHKR",
+      "last_transition_at": "2026-10-31T03:02:28.400533+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Administrative WP08 allocation recovery only: same canonical action retry retained lane-g after recorded planning18 merge conflict. Followed printed exact planning18 merge. Sole add/add WP07 task difference was three generated base_branch/base_commit/created_at lines; all other bytes identical, including approved18 guidance. Preserved full stages/absent-base/diff/hashes externally lane-g-planning-recovery, selected exact recorded18 copy and normal merge ee1069e9. Same action then automatically merged approved06 lane-e tip ca792d4e via f6772699. All248 Go/module inputs equal actual approved06 tip and tested ec99da3c, planning18/06tip/testedsource ancestors, four08owned paths absent, betaWP09 excluded. No WP08 product implementation or standalone tests. Resume actual codex implementer-ivan canonical claim next."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 183456,
+      "shell_pid_created_at": "1793415732.27"
     },
     "WP09": {
       "actor": "finalize-tasks",
