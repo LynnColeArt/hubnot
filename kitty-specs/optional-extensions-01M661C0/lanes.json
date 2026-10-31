@@ -176,7 +176,8 @@
         "artifact_store.go",
         "artifact_store_commands.go",
         "artifact_store_commands_test.go",
-        "artifact_store_test.go"
+        "artifact_store_test.go",
+        "internal/artifact/canonical_export.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -227,7 +228,9 @@
         "artifact_revision.go",
         "artifact_revision_commands.go",
         "artifact_revision_commands_test.go",
-        "artifact_revision_test.go"
+        "artifact_revision_test.go",
+        "internal/artifact/revision_export.go",
+        "internal/artifact/revision_export_test.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -608,10 +611,10 @@
       "parallel_group": 16
     }
   ],
-  "computed_at": "2026-10-30T23:30:31.708400+00:00",
+  "computed_at": "2026-10-31T01:50:34.249398+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [
     "WP02"
   ],
-  "planning_commit_sha": "d33ef595b3215333cf9b0f6024529dd05bd7dcf9"
+  "planning_commit_sha": "18f10ce2d6779509722021e84031db620b75c58e"
 }

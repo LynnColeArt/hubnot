@@ -104,16 +104,70 @@ it is correlation, never durable mutation identity.
 ~~~json
 {"protocol":"hn.extension/1","request_id":"r1","method":"capabilities.list","params":{}}
 ~~~
-Only one business request may be outstanding. The host's reader may accept this
-separate control while that request is outstanding:
+Only one business request may be admitted/outstanding, with one synchronous
+operation and one response writer at a time. Before sending another business
+request, the module MUST consume the entire preceding response prefix and payload,
+validate its envelope/type and exact request_id correlation, and handle its result.
+The bounded observation allowance below does not remove this client obligation.
+The host's reader may accept this separate control while a request is outstanding:
 ~~~json
 {"protocol":"hn.extension/1","cancel":"r1"}
 ~~~
 A cancel object has exactly those two fields, consumes no business-request slot
 and receives no separate acknowledgement. It must name the current outstanding
-request. Invalid control/second business request is a protocol error: cancel the
-active context, close the session, retain any dispatched mutation as uncertain.
-Control reading never dispatches an additional writer.
+request. Invalid control or a second business request outside the bounded
+observation allowance below is a protocol error: cancel the active context, close
+the session and apply §3's settled-result/uncertainty rules. Control reading never
+dispatches an additional writer or sends a separate response.
+
+For each response, encode and validate one immutable payload of at most frame_bytes.
+Successfully settle the prefix and every payload byte except the last before
+attempting that final payload byte in a separate write. Record a tail marker
+immediately before that attempt and a settlement frontier only after the full
+response writer has successfully returned and been joined. The marker is a local
+observation, not proof of syscall entry or peer receipt; scheduling can delay either
+side of it, so the tail interval has no separate wall-clock bound. A failed or
+unfinished final write never establishes successful response settlement.
+
+Record the first host-observed prefix-byte time, the response phase and the relevant
+request/response frontier for each incoming frame. Preserve these records across
+partial prefixes/payloads, queued events and subsequent loop iterations. An additional business
+frame recorded while a request is outstanding and before its response tail marker
+remains premature even when decoded/dequeued after settlement; do not classify it using only the later main-loop phase. These
+userspace records do not establish actual physical peer send/read order.
+
+Between the tail marker and successful settlement, the host may retain at most ONE
+otherwise syntactically valid business candidate. It is not admitted: no grant
+admission, operation reservation, signer/journal effect, second operation dispatch
+or second response writer occurs before successful synchronous settlement of the
+preceding response. Afterward the candidate passes the ordinary request-ID,
+input, binding, epoch, grant and deadline checks before any dispatch. A second
+candidate is invalid_input, never an additional queued request. This deliberately
+tolerates a physically premature peer indistinguishable in the tail interval;
+it does not promise detection of every physically premature send. The allowance
+never extends to the prefix/bulk response write. No sleep, yield or retry substitutes
+for this observation rule, and no peer acknowledgement or wire field is added.
+
+Raw inbound storage is bounded by one retained candidate, one queued reader event
+and one in-progress frame, each at most frame_bytes payload plus its four-byte
+prefix: at most 3*(frame_bytes+4) encoded bytes. The immutable outgoing response
+adds at most frame_bytes+4 encoded bytes. Reuse/backpressure the bounded reader
+slots; do not grow a candidate queue. These are encoded-buffer envelopes, not a
+process-heap cap: decoded values, allocator overhead and operating-system pipe
+buffers are distinct. Zero/oversize prefix refusal still precedes payload allocation.
+
+Cancellation, revocation, parent cancellation, stderr overflow, EOF, read/write
+errors and deadlines remain live while a candidate is retained. Record control
+and terminal observations against the same response frontier. A complete exact
+cancel whose first prefix byte was observed before settlement targets that active
+request, even if decoded/dequeued later; it cancels that request. Wrong/malformed
+controls fail, and a cancel for an unadmitted candidate is invalid. Dispose of
+already recorded controls/errors, including any recorded partial frame within its
+existing budget, before admitting a candidate. A cancel first observed after
+settlement cannot retroactively cancel the settled request. Completion-channel
+readiness or select order must not change these dispositions. EOF has only the
+conditional clean-completion disposition specified in §7; other failures cannot
+become clean completion merely because a write result becomes ready.
 
 Idle frame-read budget is 30 seconds beginning when waiting for a new request,
 even with no prefix bytes. Partial prefixes/payloads must complete within that
@@ -123,7 +177,13 @@ min(30 seconds, remaining request deadline). Request execution deadline is measu
 from its first prefix byte: read default 30 seconds, mutation default 240 seconds;
 timeout_ms may choose 1..240000 milliseconds and never extend a stricter native
 deadline. The initial partial-frame budget is not extended by an unread timeout.
-Response encoding/blocked writes count against the request budget.
+Response encoding/blocked writes, including the separate final byte and writer
+settlement, count against the same absolute request budget. While the preceding
+request is unsettled, candidate/control reads keep its remaining deadline. After
+settlement, the candidate's own execution deadline is calculated from its original
+first host-observed prefix byte, never its later admission time; its already-started
+partial-frame cap is retained. An expired candidate refuses before dispatch.
+Retention and frontier changes never reset or extend either budget.
 
 Every ordinary response has exactly protocol, request_id, ok, data, error.
 ~~~json
@@ -152,7 +212,8 @@ intent, journal or public object/ref. Recheck the actual active actor immediatel
 before each write; caller actor must match, and missing identity is not initialized.
 
 After dispatch, a timeout/EOF/cancel/crash/disabled epoch may have interrupted an
-effect. Stop accepting business requests; cancel the same parent context and
+effect. Except for the conditional clean-tail EOF disposition in §7, stop admitting
+business requests, discard any unadmitted candidate, cancel the same parent context and
 terminate the owned child/group, kill after 2 seconds if necessary, verify exit
 within 5 seconds. Stderr byte 65537 is resource_limit and cancels the session;
 retain at most 64 KiB privately, not a silent successful truncated log.
@@ -168,11 +229,17 @@ A pre-dispatch cancellation is cancelled/do_not_retry. A dispatched mutation who
 complete outcome is not established is uncertain_operation/inspect_operation with
 original actor/key/protocol, even when its child disconnected. Do not return
 cancelled/verified_absent merely because a timer fired. A completed native refusal
-or success retains its actual result. An oversized/unwritable response after a
-write also leaves an uncertain operation rather than a pre-effect size refusal.
+or success retains its actual result. In particular, a settled definitive native
+refusal retains its actual code/result even if its response cannot be delivered;
+do not replace it with mutation uncertainty. A successful mutation whose response
+is oversized, unwritable or lost still leaves an uncertain operation with its
+original actor/key/protocol rather than a pre-effect size refusal or verified
+absence. Successful transport settlement does not attest durable consumer receipt.
 
 No detached writer may publish after a definitive refusal. Join the native writer
-before releasing its per-request lock or accepting another business request.
+before releasing its per-request lock or admitting another business request.
+Join the response writer before admitting a retained candidate; failure/abort never
+releases that candidate into dispatch. Neither native nor response writers detach.
 On synchronous/kernel I/O that cannot stop promptly, child cleanup remains
 observed but writer settlement/host exit may exceed the watchdog; preserve an
 uncertain result. This explicit limitation is not a hard kernel-I/O SLA.
@@ -592,8 +659,15 @@ a host unavailable_module/incompatible_version error. Pre-dispatch cancellation
 uses cancelled. Deadline/EOF/crash/response loss with an unresolved dispatched
 mutation uses uncertain_operation/inspect_operation with its actual actor/key;
 it NEVER emits the completed summary. Normal child EOF after all responses and
-exit0 is completion; EOF during startup/request/response is not. Any known public
-result is retained independently of the child/parent exit. An example failure is:
+exit0 is completion. EOF first observed in the final-byte/settlement interval may
+be deferred until the current writer is joined: only a successfully settled full
+response, verified child exit0 and no unfinished candidate/request establish clean
+completion. A delayed completion publication alone cannot turn that case into a
+response-loss failure. EOF recorded before the tail, failed/unfinished writing,
+nonzero exit or an unfinished candidate/request remains failure; no candidate may
+be dispatched from that state. All other recorded controls/errors and §3's result
+priority still apply. Any known public result is retained independently of the
+child/parent exit. An example failure is:
 ~~~json
 {"ok":false,"data":null,"error":{"origin":"host","code":"uncertain_operation","message":"dispatched mutation outcome requires inspection","recovery":"inspect_operation","operation":{"protocol":"hn-artifact/1","actor":"81ebe0bf3a2be9358144a0cabbea22d5b79c008514c61207556a6b5d044d07c0","operation":"asset-open"}}}
 ~~~
@@ -614,7 +688,9 @@ conformance-fixtures.md, and the host always reports the actual bound actor.
 | startup | 10 seconds | stalled prefix/payload/write past deadline | cancelled/unavailable, no dispatch |
 | default read / mutation, max request | 30 / 240 / 240 seconds | request context expired | cancelled before dispatch; uncertain after write dispatch |
 | stderr | 65536 bytes | 65537 | resource_limit, finite child cleanup |
-| outstanding requests / repository sessions | 1 / 4 | second / fifth | invalid_input / resource_limit |
+| admitted outstanding requests / repository sessions | 1 / 4 | second admitted request / fifth session | invalid_input / resource_limit; §2 permits one unadmitted tail candidate only |
+| response-boundary candidates | 1 only in §2 tail interval | pre-tail business frame or second candidate | invalid_input, no additional dispatch; §3 preserves settled result/original uncertainty |
+| raw encoded response-boundary buffers | inbound <=3*(frame_bytes+4), outgoing <=frame_bytes+4 | another retained candidate/reader slot | no queue growth; reject second candidate, backpressure reader; not a heap cap |
 | terminate-to-kill / child exit | 2 / 5 seconds | ignored TERM / still alive | observed kill / cleanup failure |
 | page limit | 200 | 201 or 0 | resource_limit / invalid_input |
 | captured entries / bytes / lifetime | 10000 / 16777216 / 10 minutes | one greater / expired | resource_limit / checkpoint_invalidated |
@@ -625,3 +701,79 @@ Required live checks include raw ungranted write before journal/signer effects,
 exact/changed replay, publication interruption, partial/blocked frame cancellation,
 disable ownership, unrelated native and second-module progress, governed admission,
 visibility hide/restore without edits and atomic interrupted-rescan behavior.
+
+### 7.1 Inert frame-inspection slice
+
+WP15 registers the literal frame subcommand through compiled
+extensionSubcommands, with no initialization-time I/O:
+
+- `hn extension frame inspect --input FILE|- --kind hello|ready|request|response|cancel [--expected-request-id ID] [--method METHOD] [--timeout-ms MS] [--json]`
+
+FILE is exactly one explicit local regular file, or `-` for stdin consumed once.
+The input is raw bytes: one unsigned four-byte big-endian length followed by one
+UTF-8 JSON message, not Base64, a JSON descriptor, a frame list or unframed JSON.
+Require EOF after that one frame; a second frame or any trailing byte refuses.
+--input and --kind are required and occur once; all other flags occur at most once.
+Unknown flags/positionals/kinds refuse invalid_input. MS is integer1..30000;
+default30000 uses the existing30-second read budget. Its absolute timer covers
+opening/reading the input, partial prefix/payload and the final EOF check. Timeout
+or caller cancellation is host/cancelled, with no dispatched operation. A named
+nonregular input refuses before consuming its stream. No input bytes are echoed.
+
+Reject zero length as invalid_input and length>8388608 as resource_limit before
+payload allocation. Partial prefix/payload, malformed Unicode/JSON, duplicate
+keys, nonobjects, trailing data, unknown top-level or nested typed fields, wrong
+primitive/null/array types and malformed correlation fields refuse invalid_input.
+The same bounded transport JSON rules and first-host message/param/result shapes
+from sections2/4 apply, including method membership, value bounds and nullability.
+Unknown protocol is incompatible_version; an unknown method is
+unsupported_capability. This validates transport and closed typed message shape,
+not schema semantics, signature integrity or business preconditions.
+
+--kind selects exactly the existing hello, ready, business-request, ordinary-
+response or cancel-control shape, without sending it or creating a session.
+Correlation flags have this closed matrix:
+
+- hello/ready: neither --expected-request-id nor --method is permitted.
+- request: neither flag is permitted; its own known method selects the exact
+  params shape and its own request_id must satisfy the protocol grammar.
+- cancel: --expected-request-id is required and must equal cancel; --method is
+  forbidden. This proves only supplied ID equality, not an outstanding request.
+- response with a nonnull request_id: --expected-request-id is required and must
+  match exactly. A successful response additionally requires --method to select
+  its exact success data shape. A failed response forbids --method and validates
+  the existing closed error shape, including data=null and actual origin/code.
+- terminal response with request_id=null: both flags are forbidden; it must be a
+  failed response with data=null and a valid closed error. A success with null
+  request_id is invalid_input.
+
+Wrong supplied correlation or a flag combination outside this matrix refuses
+invalid_input. A request's timeout_ms, if present, retains its existing protocol
+bounds; it is data being inspected, not this utility's read timeout. Responses
+must preserve the existing ok/data/error consistency. No supplied method or ID
+substitutes for a host-selected repository, module, grants or durable actor/key.
+
+Success uses the ordinary management JSON/exit0 wrapper; data is exactly
+{frame_bytes:integer,payload_bytes:integer,message_kind:Kind,
+request_id:string|null,method:string|null,validation:"frame_and_typed_message",
+session_state:"not_checked",authorization:"not_checked",
+semantic_validation:"not_checked",signature_integrity:"not_checked",
+dispatch:"not_performed"}. frame_bytes=payload_bytes+4. request_id is the actual
+request/response ID or cancel target, otherwise null. method is the request's
+method or the supplied successful-response method, otherwise null. A known
+business refusal inside an otherwise valid response is inspect success: the tool
+validates that response's shape, not the success of its business operation.
+Failure uses exit1,ok=false,data=null and the existing host-origin closed error
+set, with recovery=do_not_retry,operation=null. Sanitized input I/O failure is
+host/repository_error. This adds no error origin/code and no host method.
+
+The utility never parses registration/enablement, authorizes or dispatches a
+business call, loads identity/accepted state, signs, writes an intent/ref/public
+object, launches a module, or applies transport. It does not assert handshake
+order, request-ID uniqueness across a session, one-outstanding-request state,
+response ordering, cancellation of a live writer, session cleanup or deadlines
+of an actual child. Those require WP16+ real-session qualification. This current
+slice exposes only bounded frame/message value inspection: do not introduce an
+unused public encoder/session-writer API or an artificial encode/decode call
+merely to anticipate the later real child writer. The native
+outer-lock rules remain unchanged; no default native work or lock bypass is added.
