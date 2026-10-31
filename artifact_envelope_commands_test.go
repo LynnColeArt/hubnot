@@ -462,11 +462,15 @@ func TestArtifactEnvelopeCLIPredecessorStdin(t *testing.T) {
 		return inventory
 	}
 	before := snapshot()
-	call := func(action, input, previous, stdin, code, message string, blocked bool) {
+	call := func(action, input, previous, stdin, code, message string, blocked bool, predecessorSignatures ...string) {
 		t.Helper()
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		cmd := exec.CommandContext(ctx, binary, "artifact", "envelope", action, "--input", input, "--signature", artifactSecondSignature, "--previous-input", previous, "--previous-signature", artifactVectorSignature, "--json")
+		previousSignature := artifactVectorSignature
+		if len(predecessorSignatures) > 0 {
+			previousSignature = predecessorSignatures[0]
+		}
+		cmd := exec.CommandContext(ctx, binary, "artifact", "envelope", action, "--input", input, "--signature", artifactSecondSignature, "--previous-input", previous, "--previous-signature", previousSignature, "--json")
 		cmd.Dir = repo
 		cmd.Env = operationalTestEnvironment(home)
 		if blocked {
@@ -526,7 +530,7 @@ func TestArtifactEnvelopeCLIPredecessorStdin(t *testing.T) {
 	call("validate", second, "-", strings.Repeat("x", 1048577), "resource_limit", "envelope exceeds", false)
 	// A bad predecessor must fail before attempting to open the missing current file.
 	call("validate", filepath.Join(root, "missing-current.json"), "-", "{", "invalid_input", "malformed object", false)
-	call("validate", second, "-", artifactSecondVector, "invalid_history", "predecessor mismatch", false)
+	call("validate", second, "-", artifactSecondVector, "invalid_history", "predecessor mismatch", false, artifactSecondSignature)
 	if after := snapshot(); !reflect.DeepEqual(before, after) {
 		t.Fatalf("stdin checks changed public/private inventory: %v %v", before, after)
 	}
