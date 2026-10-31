@@ -1,0 +1,153 @@
+{
+  "assertion": "public command semantic compatibility, unchanged full original Git object bytes/signatures and exact refs; original test assertions retained",
+  "corpora": [
+    {
+      "all_files_sha256": {
+        "BUILDINFO.json": "d5e79c57a86d3d6173763bec13d64bcd3170ab65579fd719218e95eaccb9f701",
+        "GITHUB_RELEASE.json": "85f2db73b78e8f00eec86587240b2e614ac4fde16f37b4bb923f8c0c18a709b1",
+        "RELEASE_SHA256SUMS": "fed36403243d27d30d0f9cd886930aacdc15baf7593aa15d991c2869647acfdc",
+        "future-protocol.bundle": "db1d63d8ac7c3803b011c2bf13e52dd79f4c41948e979a57aba465e82a157039",
+        "future-resource.bundle": "16f3c8c3629391d4f60d0beed6e759a81e37210a4a3efde299bbfabf60415461",
+        "observations.json": "3fdf88c51c596fdb6563d22dcfd79a178931d420bd9edcefb94ce1ac4b1ee0ed",
+        "provenance.json": "f868e47438463aa0ca8f3ee7b40143402a1f4a63f95a84e0e8b61afc4a1b6202",
+        "public.bundle": "4706af9932634f6939b830f5dc18c4e9f9dcbddb32857165ccab1a957764164a"
+      },
+      "provenance": {
+        "executable_sha256": "1a7395b2345890224259416a0f5a2d497f61e0f6fc3aafcd57416924c2449ac9",
+        "files_sha256": {
+          "BUILDINFO.json": "d5e79c57a86d3d6173763bec13d64bcd3170ab65579fd719218e95eaccb9f701",
+          "GITHUB_RELEASE.json": "85f2db73b78e8f00eec86587240b2e614ac4fde16f37b4bb923f8c0c18a709b1",
+          "RELEASE_SHA256SUMS": "fed36403243d27d30d0f9cd886930aacdc15baf7593aa15d991c2869647acfdc",
+          "future-protocol.bundle": "db1d63d8ac7c3803b011c2bf13e52dd79f4c41948e979a57aba465e82a157039",
+          "future-resource.bundle": "16f3c8c3629391d4f60d0beed6e759a81e37210a4a3efde299bbfabf60415461",
+          "observations.json": "3fdf88c51c596fdb6563d22dcfd79a178931d420bd9edcefb94ce1ac4b1ee0ed",
+          "public.bundle": "4706af9932634f6939b830f5dc18c4e9f9dcbddb32857165ccab1a957764164a"
+        },
+        "future_actors": {
+          "protocol": "351b7f214977a5d6e76d10f93c9bae055be0f569477846ab33eff1de47bc797a",
+          "resource": "834cb2a3a1a94b6d297cd17671b7b1b772b5c0ad0d9c97bfa882f59ad0d2ae54"
+        },
+        "ids": {
+          "discussion": "sha256:d63eae6f52f5e58c248f32d92f7860d65e1ceab6415dbac8ae3bcc0e38761431",
+          "discussion-reply": "sha256:7c14736640c1c7095efb0b7ab071cc669ac94e0f34ffcc30a308b7f3f48a7718",
+          "issue": "sha256:eda0e6c0f84957bb710599e07476a6d32d9362c1f543d6f706a4f572d3e2fa66",
+          "memory": "sha256:9ee1e3238143c13e96e0444ee84fea150923802eb78d0261c620272eecda6e9a",
+          "project": "sha256:de5546decf9fac1e841e54c9688c905dafe616603d63f180752796eaf887f896",
+          "project-item": "sha256:5910a00fbbc2f1ec6a3aa20525637936af536153213eb3433fb9f22ce12f996e",
+          "workflow": "sha256:88e92f37e2a2cf3ec4c9d1e077bb18017e6ae968924e986f51e9c81982f7a323"
+        },
+        "qualification": "exact release archive executable; Linux AMD64 standard writer",
+        "refs": {
+          "refs/heads/main": "c6976473a80aff9d5a5881824a55d5d0f5f04cc1",
+          "refs/hn/actors/74e6e6ccc0e40cdf23f63832da8b665e47a4f9241c79025303dac69e795cee33": "42644fe220ac6e501cc113ef55cbae097c0bbf43",
+          "refs/hn/memory/74e6e6ccc0e40cdf23f63832da8b665e47a4f9241c79025303dac69e795cee33/a082e496a05d450062fe5348ab5bc5e5979f2ab3f028450e590980251c02c295": "da56dbedf1f34f5eaae572906926276307bd3ec2"
+        },
+        "release_archive": "hubnot_0.0.1-dev_linux_amd64.tar.gz",
+        "release_archive_sha256": "7606efc4018c6afb93538f7325603854860039fc642e05f8a06529cca246d070",
+        "release_url": "https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.1-dev",
+        "source_commit": "f82b57420f0c825a9ea6f3b9f93ede680c8cf06f",
+        "version": "0.0.1-dev"
+      },
+      "version": "0.0.1-dev"
+    },
+    {
+      "all_files_sha256": {
+        "BUILD.json": "82760216676bed90164db649abfdb81d1aa4635604f98e23437d06b4f758c45d",
+        "RELEASE_SHA256SUMS": "995b3fe622097d9a33506dd0141eb26a475aa41f65c3761d4443f2efa3974647",
+        "future-protocol.bundle": "1578680a741fa2080d9d59888f6b49fe2eff6265c71d79358ef5d5d971b02ee3",
+        "future-resource.bundle": "63718f3b34185836ec0f3107c987de303a6c21d28c64faafcd2c6f2d38621edc",
+        "observations.json": "6825a6d5abcb40b12454dd17d25e0ee562e40628b3889ae90587b36b9c55c564",
+        "project.hn": "03be249283d02182a752712e9a4140c8156086ed84ea97ce823876ec5f3f9b68",
+        "provenance.json": "ad8215c7f411adec98502e7c2735b336620b75f3eca92a41097c172e53c2eaa1",
+        "public.bundle": "a6ddfa8f77c7a838067aa2a896b746254583d59eac054d4032ea19433ff4a070"
+      },
+      "provenance": {
+        "executable_sha256": "f4b7cc9ee8de69227241219e6b559b390c0f08fd4f1c28435285758d5cbbf8e5",
+        "files_sha256": {
+          "BUILD.json": "82760216676bed90164db649abfdb81d1aa4635604f98e23437d06b4f758c45d",
+          "RELEASE_SHA256SUMS": "995b3fe622097d9a33506dd0141eb26a475aa41f65c3761d4443f2efa3974647",
+          "future-protocol.bundle": "1578680a741fa2080d9d59888f6b49fe2eff6265c71d79358ef5d5d971b02ee3",
+          "future-resource.bundle": "63718f3b34185836ec0f3107c987de303a6c21d28c64faafcd2c6f2d38621edc",
+          "observations.json": "6825a6d5abcb40b12454dd17d25e0ee562e40628b3889ae90587b36b9c55c564",
+          "project.hn": "03be249283d02182a752712e9a4140c8156086ed84ea97ce823876ec5f3f9b68",
+          "public.bundle": "a6ddfa8f77c7a838067aa2a896b746254583d59eac054d4032ea19433ff4a070"
+        },
+        "future_actors": {
+          "protocol": "dfb9a34aee866021362924dd11ad879477f62a7891767697a5b0da9f3e38e7b5",
+          "resource": "26cba1ab9e28b3d2b999648f532e24a3f04052f6aff2f6dd29d50ecca192c9ff"
+        },
+        "ids": {
+          "discussion": "sha256:89c23076495a41e465794fa98c58720627e838d1972479b3fd4984b3d06d6767",
+          "discussion-reply": "sha256:623bf6131683c37548244941e8f497e45e6749167b2562370dff05d800752358",
+          "issue": "sha256:99a8c03a2b9ba2d99ec02530588b933d326d92d30d5654589809bce2117dc2ad",
+          "memory": "sha256:add0b94567d7770194c223884b59d3e2172cee8707f4ef46c9ca4b848f6e72af",
+          "project": "sha256:fc9c5a81623e06dd6001ef1e9aa5077b52c5cec241ad3217a2ec1f94b186ee82",
+          "project-item": "sha256:0027e9c18764a27631653ca808fe9aa2225b41149cb0ff7e27db7a99f91ee87c",
+          "workflow": "sha256:0172d5c062e7600f985a44be3919ec6357570c51566cb60d481c21fd1399c401"
+        },
+        "qualification": "exact release archive executable; Linux AMD64 standard writer",
+        "refs": {
+          "refs/heads/main": "962e82996e6443b2bdddaad3ed46fd2a92415316",
+          "refs/hn/actors/c42b4993ba49901d7e44d32b3c073d613e458601254d7642745a10ae8ec0b4bd": "a60d9e73b132e6b0f0dc75f9284e862410445e68",
+          "refs/hn/memory/c42b4993ba49901d7e44d32b3c073d613e458601254d7642745a10ae8ec0b4bd/ddbec6353e40b73a7cc432fc0c12710fcf0501ae8660282c302b5bae1da31fbc": "444626b2bc918eeef3e8a016504c9a03ab69ac14"
+        },
+        "release_archive": "hubnot_0.0.2-dev_linux_amd64.tar.gz",
+        "release_archive_sha256": "cde0c34fb8b43a461ca73d850b255e94a17be0c0ac54a14f2e42536042bd7a21",
+        "release_url": "https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.2-dev",
+        "source_commit": "e80880abc792e2c386182e06027fc251b134c0d2",
+        "version": "0.0.2-dev"
+      },
+      "version": "0.0.2-dev"
+    },
+    {
+      "all_files_sha256": {
+        "BUILD.json": "08950d776771038b0c19615000d308e50386468bf6af3cf4a0d27efc55a40606",
+        "RELEASE_SHA256SUMS": "5aca4bcbc2c26057400c33ef4bb81f320ec05327055b74d25933bc374d830aac",
+        "future-protocol.bundle": "352dcac87fd74a9409defd07a2966526b96c923363eda237cad0ba9df6677307",
+        "future-resource.bundle": "04aa966376b5a51c11a81a29de19ce420a93962871f1fc6944228202c16cec03",
+        "observations.json": "2444e02ec30cbb973fc71768ba3256cad7a4fe411bf67cb074c8f3769ab9908d",
+        "project.hn": "27222067d2083690af3ba161f383e25bf9bc319b2afa94a8da5e54c784b8383d",
+        "provenance.json": "bd146f802f6c369b32c29d57697092300edac7318ba6e1c446842d2410c5f666",
+        "public.bundle": "68a57bcef52839c84a9b3436c723b76683c7cf1bcb095728a9a1e2f42f63d261"
+      },
+      "provenance": {
+        "executable_sha256": "df0b989770eeaaff0af00cbff1a615bb2a48f0ff5bbf6b972ae18c426576f6a6",
+        "files_sha256": {
+          "BUILD.json": "08950d776771038b0c19615000d308e50386468bf6af3cf4a0d27efc55a40606",
+          "RELEASE_SHA256SUMS": "5aca4bcbc2c26057400c33ef4bb81f320ec05327055b74d25933bc374d830aac",
+          "future-protocol.bundle": "352dcac87fd74a9409defd07a2966526b96c923363eda237cad0ba9df6677307",
+          "future-resource.bundle": "04aa966376b5a51c11a81a29de19ce420a93962871f1fc6944228202c16cec03",
+          "observations.json": "2444e02ec30cbb973fc71768ba3256cad7a4fe411bf67cb074c8f3769ab9908d",
+          "project.hn": "27222067d2083690af3ba161f383e25bf9bc319b2afa94a8da5e54c784b8383d",
+          "public.bundle": "68a57bcef52839c84a9b3436c723b76683c7cf1bcb095728a9a1e2f42f63d261"
+        },
+        "future_actors": {
+          "protocol": "431717ddb4335937822dc15d1e47cbd3746f4beb0b34338df0943b901dc53944",
+          "resource": "0a9766c35f8207501b2f34fe815785835e24b4c649778d5821c83c5eaa03bcbe"
+        },
+        "ids": {
+          "discussion": "sha256:1def7dd76819968143fbc5dda86a7934ef89919f081ed24aa03522231457397c",
+          "discussion-reply": "sha256:b2228d3c46b49185b6ae9e7e34097fd43412bddcbc06c16ecf896901bb8d6f34",
+          "issue": "sha256:1415cf2d081520783c3b91acd6d732f7ef3bf4abdb49824c83cc6554622eeb19",
+          "memory": "sha256:f58ae62c0cd34abcd6e9b2bd72e71be4325ef9a008e6a94f5d7684d7758d9936",
+          "project": "sha256:0df42c730cf73c66020ab1affd6fabac573b9f73b8183f5aa3dce9c6fc0194a2",
+          "project-item": "sha256:c57ea6f7dd047e5b4fffaf797624fb24bda4f089d8bfb33dfce2f20bc27250fc",
+          "workflow": "sha256:7b69446a595afa6262c6b34bc4880f28e7ab9d0a15bfae422cae9a53561742a0"
+        },
+        "qualification": "exact release archive executable; Linux AMD64 standard writer",
+        "refs": {
+          "refs/heads/main": "7cbe27302eda284b87b1da6263b5e7261cf1d7e1",
+          "refs/hn/actors/374f59fbbcfb5c6e0959b398b00cd7a1f1bc40d7e08aba97bac9a6dad3bc3d43": "37ac2101376cb33fb518c888a41590e69d18dbda",
+          "refs/hn/memory/374f59fbbcfb5c6e0959b398b00cd7a1f1bc40d7e08aba97bac9a6dad3bc3d43/1a7647bcf9d30a3d9c75d71dc28974296113651261ffd8fe4c30c041adb7b09e": "fb223af03127788076c5772d96bd740f30673fa5"
+        },
+        "release_archive": "hubnot_0.0.3-dev_linux_amd64.tar.gz",
+        "release_archive_sha256": "dfb54281846272d2fe5a84ad8c2fcd099aeadf5ad901859a857ca60f4ea8ba77",
+        "release_url": "https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev",
+        "source_commit": "01a152cfbb822a7be9ccbc51dac34e3caa0cf925",
+        "version": "0.0.3-dev"
+      },
+      "version": "0.0.3-dev"
+    }
+  ],
+  "schema": "hn.optional-extensions-historical-baseline/1"
+}
