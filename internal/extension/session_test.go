@@ -66,7 +66,16 @@ func TestSessionNoDispatchAfterRevokedEpoch(t *testing.T) {
 	cfg.Dispatch = func(context.Context, Invocation) (any, error) { t.Error("idle child dispatched"); return nil, nil }
 	done := make(chan error, 1)
 	go func() { _, e := Run(context.Background(), cfg); done <- e }()
-	time.Sleep(100 * time.Millisecond)
+	ready := time.Now().Add(3 * time.Second)
+	for {
+		if _, e := os.Stat(pid); e == nil {
+			break
+		}
+		if time.Now().After(ready) {
+			t.Fatal("child did not establish live revocation fixture")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	entry, _, e := cfg.Store.Entry(cfg.Registration)
 	if e != nil {
 		t.Fatal(e)
