@@ -708,23 +708,25 @@
       "last_transition_at": "2026-10-31T14:33:51.301164+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: supplied standalone tracker import/kill/recovery/export/conflict/privacy controls and std/combined/race checks passed; exact source c8a38b2c, production assets6f8fad1f. Evidence: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP20/qualification-report.md"
+        "Ready for independent review: supplied standalone tracker import/kill/recovery/export/conflict/privacy controls and std/combined/race checks passed; exact source c8a38b2c, production assets6f8fad1f. Evidence: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP20/qualification-report.md",
+        "Independent review rejected R1: consumed uncertain_operation is persisted as definitive Refusal; restart skips original lookup and update may mint a fresh key before settlement. Actual executable public-frame repro and all eight anti-pattern results in review-feedback-1.md; exact reviewed delivery c8a38b2ce35ef0957a54522e9d721d8e03f1d1ef and external report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP20-review/review-report.md. No app/test edits; positive focused controls passed; force false/no skip."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP20-fake-tracker-consumer/review-cycle-1.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP20-fake-tracker-consumer/review-cycle-1.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T080": "done",
-        "T081": "done",
-        "T082": "done",
-        "T083": "done"
+        "T080": "planned",
+        "T081": "planned",
+        "T082": "planned",
+        "T083": "planned"
       }
     },
     "WP21": {
