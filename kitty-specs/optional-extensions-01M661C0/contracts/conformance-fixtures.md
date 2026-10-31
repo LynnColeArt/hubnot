@@ -1028,6 +1028,52 @@ A cancel control does not occupy a second business-request slot.
 }
 ~~~
 
+## Required response-completion observation scenarios
+
+These scenarios specify live WP16 implementation/review obligations under
+host-v1.md §§2–3 and §7. They add no literal wire fields, versions, acknowledgement,
+method/error codes or numerical frame/deadline changes. They are not a claim that
+WP02 executed or that the current host passes these scenarios. Retain exact
+source/overlay/binary identities, child observations, structured errors, dispatch
+counts, writer-join and cleanup evidence for each later execution.
+
+The causal regression uses a real sequential child: consume the full response
+prefix and payload, validate type/correlation/result, record it, then send the
+next request. Hold only local completion publication AFTER the actual full write
+succeeds. The old host must fail for the completion-publication defect; the repaired
+host accepts all requests once each without sleeps/retries. Repeat with a final
+fully consumed response followed by clean EOF/exit0. This deterministic WP16 RED
+does not prove the cause or result of WP21's first automatically removed fixture;
+its original actor/key publication outcome remains unavailable, and a separate
+successful fixture cannot erase or settle it.
+
+| Live observation/control | Required outcome and exact-cause assertions |
+|---|---|
+| Valid fully-reading sequential child; completion publication held after successful write | All correlated requests/results accepted once, no concurrent dispatch or detached writer; prior writer successfully joined before next admission |
+| Business prefix or whole frame first recorded during dispatch or prefix/bulk response; delivery/decode held until tail/settlement | invalid_input for read; apply original dispatched mutation uncertainty/settled-refusal priority for mutation; one dispatch only. A partial pre-tail prefix cannot become a tail candidate |
+| First business candidate recorded during final-byte attempt; writer not yet settled | Retain at most one; no candidate grant admission/reservation/signing/journal/dispatch or second writer. Release through normal checks only after full successful joined settlement |
+| Physically premature peer deliberately sends during tail attempt | Document the indistinguishable tolerated observation; at most one candidate, no early/concurrent dispatch. Do not label the peer conforming or claim every physical premature send is detected |
+| Second candidate while first retained, including queued/in-progress reader events | invalid_input, close session, no candidate dispatch; original mutation identity/result priority retained. No overwrite or accumulating candidate queue |
+| Real valid multi-MiB read response; child consumes prefix only and sends second business / exact cancel / nothing | Bulk-write second refuses invalid_input; exact current-ID cancel is cancelled; no input reaches second dispatch; silence reaches original deadline and finite cleanup. Do not drain full payload in these negative controls |
+| Exact active-ID cancel first prefix observed before settlement, decoded/dequeued across completion | Cancel original request with no separate acknowledgement/writer; same recorded history gives same outcome regardless of select readiness; unadmitted candidate discarded |
+| Wrong cancel ID / extra cancel field / cancel for candidate / malformed or duplicate-key frame while candidate held | Protocol failure with exact invalid_input (or existing frame resource_limit for oversized input), no candidate dispatch; refusal does not suspend cleanup/joins or leak input |
+| Revocation / parent cancellation / stderr overflow / read or final-write error while candidate held | Existing denied_access/cancelled/resource_limit/transport classification under §§2–3; no candidate dispatch, finite owned-child cleanup and joined writers; no conversion into clean completion |
+| Partial control/candidate prefix or payload; retention crosses old and candidate deadlines | While old request unsettled use its remaining deadline and 30-second partial cap; preserve candidate first-prefix time across admission; expired candidate refuses before dispatch, no timer reset or extension |
+| Candidate duplicate ID / changed epoch, binding or grant before admission | Ordinary uniqueness/binding/epoch/grant checks still refuse before second dispatch and prohibited signer/journal/ref effects |
+| EOF first recorded in tail interval after child fully consumes final response and exits0 | Clean completion only after full successful joined response settlement and no unfinished candidate/request; delayed completion publication alone is not failure |
+| Pre-tail EOF / failed or unfinished tail / nonzero exit / EOF with unfinished candidate | Explicit failure, no candidate dispatch or completed summary; unresolved dispatched mutation uses original protocol/actor/key and inspect_operation |
+| Blocked dispatched mutation interrupted by cancel/second/EOF/response loss | Exactly one synchronous settled writer; uncertain_operation/inspect_operation with original protocol/actor/key, never candidate key, cancelled/verified_absent or lost operation identity |
+| Settled definitive native refusal followed by unwritable/lost response; successful mutation with same transport failure | Refusal preserves exact native code/result; successful mutation retains uncertain_operation/inspect_operation and original identity. Inspect known public outcomes independently of transport success |
+| Bounded candidate plus reader channel/in-progress frame and immutable response | At most one candidate, one queued event and one in-progress frame: inbound <=3*(frame_bytes+4) raw encoded bytes, outgoing <=frame_bytes+4; no new queue. This is not a bound on decoded objects, total heap or OS pipe buffers |
+
+On every failure retain meaningful structured errors and observed state: original
+request identity, exact dispatch count, synchronous writer settlement, owned child
+exit and public refs/objects/private prohibited-effect markers where applicable.
+A successful unrelated native command or second module remains usable after the
+failed session. Test-only causal scheduling controls stay outside production;
+accepted full writes and recorded reader frontiers, not timing sleeps, distinguish
+the positive sequential case from the real blocked-response negative controls.
+
 ## Required history and recovery results
 
 | Selection/action | Expected contract outcome |
@@ -1815,7 +1861,8 @@ closure and assert no journal/sign/ref publication on refusal.
 | mutation240s/max240s |writer completes under parent/native deadline |timeout_ms240001 or expired write | invalid_input for too-large request; uncertain after dispatch |
 | request timeout lower bound |timeout_ms=1 |0 or negative | invalid_input before dispatch |
 | stderr64KiB |65536 bytes |65537 | resource_limit + owned child cleanup, no public stderr leak |
-| business outstanding1 |one request plus matching cancel control |second business / cancel wrong ID | invalid_input, session closes, dispatched write uncertain |
+| business admitted outstanding1 |one request plus matching cancel; at most one unadmitted tail candidate under §2 |pre-tail business / second candidate / cancel wrong ID | invalid_input, session closes, no second dispatch; original mutation uncertainty or settled native refusal retained |
+| response-boundary raw buffers |one candidate + one reader event + one in-progress frame, each <=frame_bytes+4; outgoing <=frame_bytes+4 |additional candidate or reader queue growth | second candidate refuses; reader backpressure, encoded-byte bound only, no heap-cap claim |
 | sessions4 |four separate owned sessions same physical repo |fifth | resource_limit; no contribution lock held while idle |
 | TERM/KILL2s / exit5s |cooperative exit then TERM-ignoring child killed by2s |owned child persists beyond5s | observed cleanup failure, never false successful disable |
 | revocation observation250ms |epoch change noticed within bound |ignored epoch or stale-session grant reused | qualification failure/denied_access before next dispatch |
