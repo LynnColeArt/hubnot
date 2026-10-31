@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	c "hubnot/internal/contribution"
@@ -13,6 +15,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -287,10 +290,26 @@ func TestExtensionNativeSixFamiliesCLI(t *testing.T) {
 			}
 			nativeSnapshotEqual(t, f, before)
 			request["params"].(map[string]any)["state"].(map[string]any)["metadata"] = map[string]any{"example/changed": "content"}
-			nativeDenial(t, f.requests(request)[0], "native", "operation_conflict", "do_not_retry")
+			changedReplay := f.requests(request)[0]
+			nativeDenial(t, changedReplay, "native", "operation_conflict", "do_not_retry")
+			message := "operation key was already used for different kind, intent, content or expectations"
+			if family == "issue" {
+				message = "operation key was already used for different content"
+			}
+			if changedReplay["error"].(map[string]any)["message"] != message {
+				t.Fatalf("native replay message changed: %v", changedReplay)
+			}
 			nativeSnapshotEqual(t, f, before)
 			bad := nativeMutation(family, strings.Repeat("a", 64), "wrong-actor-"+family, state)
-			nativeDenial(t, f.requests(bad)[0], "native", "actor_mismatch", "do_not_retry")
+			actorRefusal := f.requests(bad)[0]
+			nativeDenial(t, actorRefusal, "native", "actor_mismatch", "do_not_retry")
+			message = "active signing actor differs from expected actor"
+			if family == "issue" {
+				message = "active signing actor differs from the expected actor; repair the binding"
+			}
+			if actorRefusal["error"].(map[string]any)["message"] != message {
+				t.Fatalf("native actor message changed: %v", actorRefusal)
+			}
 			nativeSnapshotEqual(t, f, before)
 			absent := nativeOK(t, f.requests(nativeLookup(family, actor, "absent-"+family))[0])
 			if absent["status"] != "verified_absent" || absent["event_id"] != nil || absent["request"] != nil || absent["result"] != nil || absent["reason"] != nil {
@@ -299,7 +318,15 @@ func TestExtensionNativeSixFamiliesCLI(t *testing.T) {
 			changed := nativeMutation(family, actor, "revise-"+family, state)
 			p := changed["params"].(map[string]any)
 			p["id"], p["intent"], p["expected"] = id, "revise", []any{eventID([]byte("stale"))}
-			nativeDenial(t, f.requests(changed)[0], "native", "stale_revision", "do_not_retry")
+			stale := f.requests(changed)[0]
+			nativeDenial(t, stale, "native", "stale_revision", "do_not_retry")
+			message = "expected revisions must exactly match every current head"
+			if family == "issue" {
+				message = "expected revision is no longer the current head"
+			}
+			if stale["error"].(map[string]any)["message"] != message {
+				t.Fatalf("native stale message changed: %v", stale)
+			}
 			nativeSnapshotEqual(t, f, before)
 			p["expected"] = []any{id}
 			revised := nativeOK(t, f.requests(changed)[0])
@@ -423,6 +450,7 @@ func TestExtensionNativeGovernedSixFamiliesCLI(t *testing.T) {
 	}
 	f.policy(actor, rules)
 	ids := map[string]string{}
+	opens := map[string]map[string]any{}
 	for _, family := range families {
 		var state any
 		switch family {
@@ -440,7 +468,8 @@ func TestExtensionNativeGovernedSixFamiliesCLI(t *testing.T) {
 			state = map[string]any{"schema": "hn.workflow/1", "name": "governed-definition", "title": "Governed workflow", "description": "inert", "enabled": false}
 		}
 		t.Logf("governed family %s", family)
-		opened := nativeOK(t, f.requests(nativeMutation(family, actor, "governed-"+family, state))[0])
+		opens[family] = nativeMutation(family, actor, "governed-"+family, state)
+		opened := nativeOK(t, f.requests(opens[family])[0])
 		if opened["admission"] != "admitted" || opened["head_count"] != float64(1) {
 			t.Fatalf("governed %s: %v", family, opened)
 		}
@@ -454,6 +483,7 @@ func TestExtensionNativeGovernedSixFamiliesCLI(t *testing.T) {
 			id := ids[family]
 			before := hostNativeSnapshot(t, f.repo)
 			visible := nativeOK(t, f.requests(nativeReadRequest(family, id))[0])
+			f.assertGovernedCut(family, id, true, visible["source_cut"])
 			nativeSnapshotEqual(t, f, before)
 			var hidden map[string]any
 			if json.Unmarshal([]byte(f.native("contribution", "decide", "hide", "--revision", id, "--expect-heads", "absent", "--json")), &hidden) != nil {
@@ -461,10 +491,15 @@ func TestExtensionNativeGovernedSixFamiliesCLI(t *testing.T) {
 			}
 			before = hostNativeSnapshot(t, f.repo)
 			page := nativeOK(t, f.requests(nativeReadRequest(family, nil))[0])
+			f.assertGovernedCut(family, id, false, page["source_cut"])
 			if len(page["items"].([]any)) != 0 || page["source_cut"] == visible["source_cut"] {
 				t.Fatalf("hidden selection/cut %v", page)
 			}
 			nativeDenial(t, f.requests(nativeReadRequest(family, id))[0], "native", "not_found", "do_not_retry")
+			hiddenReplay := nativeOK(t, f.requests(opens[family])[0])
+			if hiddenReplay["admission"] != "hidden" || hiddenReplay["head_count"] != float64(0) || hiddenReplay["event_id"] != id || hiddenReplay["replayed"] != true {
+				t.Fatalf("hidden mutation normalization %v", hiddenReplay)
+			}
 			lookup := nativeOK(t, f.requests(nativeLookup(family, actor, "governed-"+family))[0])
 			if lookup["status"] != "uncertain" || lookup["reason"] != "visibility_restricted" || lookup["event_id"] != nil || lookup["resource_id"] != nil || lookup["request"] != nil || lookup["result"] != nil {
 				t.Fatalf("hidden ID leak %v", lookup)
@@ -472,6 +507,7 @@ func TestExtensionNativeGovernedSixFamiliesCLI(t *testing.T) {
 			nativeSnapshotEqual(t, f, before)
 			f.native("contribution", "decide", "restore", "--revision", id, "--expect-heads", hidden["id"].(string), "--json")
 			restored := nativeOK(t, f.requests(nativeReadRequest(family, id))[0])
+			f.assertGovernedCut(family, id, true, restored["source_cut"])
 			if len(restored["items"].([]any)) != 1 || restored["source_cut"] == page["source_cut"] {
 				t.Fatalf("restore %v", restored)
 			}
@@ -631,6 +667,15 @@ exec "$HN_WP17_REAL_GIT" "$@"
 				}
 				time.Sleep(10 * time.Millisecond)
 			}
+			gateRaw, e := os.ReadFile(gate)
+			if e != nil {
+				t.Fatal(e)
+			}
+			gateArgs := strings.Split(strings.TrimSpace(string(gateRaw)), "\n")
+			if stage == "retention-promotion" && !reflect.DeepEqual(gateArgs, []string{"--git-dir=" + selectedGitDir, "-c", "core.hooksPath=/dev/null", "update-ref", "--stdin"}) {
+				t.Fatalf("wrong native retention gate: %q", gateArgs)
+			}
+			t.Logf("observed cancellation stage %s with real Git arguments %q", stage, gateArgs)
 			// Allow the independently read cancel control to cancel the request parent
 			// before unblocking synchronous Git, which the host must join.
 			time.Sleep(100 * time.Millisecond)
@@ -661,6 +706,17 @@ exec "$HN_WP17_REAL_GIT" "$@"
 			op := envelope["error"].(map[string]any)["operation"].(map[string]any)
 			if op["protocol"] != "hn/0" || op["actor"] != actor || op["operation"] != "cancel-"+stage {
 				t.Fatalf("original cancellation identity %v", op)
+			}
+			if evidence := os.Getenv("HN_WP17_EVIDENCE"); evidence != "" {
+				file, e := os.CreateTemp(evidence, "cancellation-"+stage+"-*.json")
+				if e != nil {
+					t.Fatal(e)
+				}
+				raw, _ := json.Marshal(map[string]any{"test": t.Name(), "stage": stage, "binary": f.binary, "request": request, "gate_args": gateArgs, "parent_result": envelope})
+				if _, e = file.Write(raw); e != nil {
+					t.Fatal(e)
+				}
+				file.Close()
 			}
 			f.env = baseEnv
 			settled := hostNativeSnapshot(t, f.repo)
@@ -825,4 +881,158 @@ func TestExtensionNativeUnboundAndUnsupportedFramesCLI(t *testing.T) {
 	valid["params"].(map[string]any)["cursor"] = "not-a-native-cursor"
 	nativeDenial(t, f.requests(valid)[0], "native", "invalid_cursor", "rescan_required")
 	nativeSnapshotEqual(t, f, before)
+}
+
+func TestExtensionNativeMissingSignerDoesNotInitializeCLI(t *testing.T) {
+	f := newNativeHostFixture(t, "native:identity=read", "native:issue=read,create")
+	before := hostNativeSnapshot(t, f.repo)
+	nativeDenial(t, f.requests(nativeMutation("issue", strings.Repeat("a", 64), "missing-signer", nativeIssueState("No implicit identity")))[0], "native", "repository_error", "retry_identical")
+	identity := nativeOK(t, f.requests(nativeRequest("identity.public", map[string]any{}))[0])
+	if identity["initialized"] != false || identity["actor"] != nil {
+		t.Fatalf("write initialized identity: %v", identity)
+	}
+	nativeSnapshotEqual(t, f, before)
+}
+func TestExtensionNativeBusyLockBeforeWriterCLI(t *testing.T) {
+	f := newNativeHostFixture(t, "native:issue=read,create")
+	actor := f.actor()
+	f.policy(actor, []c.Rule{{Operation: c.IssueCreate, Automatic: true}})
+	path := filepath.Join(f.repo, ".git", "hn", "contribution", "operation.lock")
+	lock, e := os.OpenFile(path, os.O_RDWR, 0600)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer lock.Close()
+	if e = syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); e != nil {
+		t.Fatal(e)
+	}
+	before := hostNativeSnapshot(t, f.repo)
+	request := nativeMutation("issue", actor, "busy-request", nativeIssueState("Only after settlement"))
+	started := time.Now()
+	nativeDenial(t, f.requests(request)[0], "host", "repository_error", "retry_identical")
+	if time.Since(started) > 5*time.Second {
+		t.Fatal("busy request waited instead of refusing before dispatch")
+	}
+	nativeSnapshotEqual(t, f, before)
+	native := exec.Command(f.binary, "issue", "list", "--json")
+	native.Dir = f.repo
+	native.Env = f.env
+	output, e := native.CombinedOutput()
+	if e == nil || !bytes.Contains(output, []byte("contribution operation busy")) {
+		t.Fatalf("competing native command bypassed shared lock: %v %s", e, output)
+	}
+	nativeSnapshotEqual(t, f, before)
+	if e = syscall.Flock(int(lock.Fd()), syscall.LOCK_UN); e != nil {
+		t.Fatal(e)
+	}
+	result := nativeOK(t, f.requests(request)[0])
+	if result["admission"] != "admitted" || result["replayed"] != false {
+		t.Fatalf("busy refusal created an intent or publication: %v", result)
+	}
+}
+
+func TestExtensionNativePrivateReservationLookupCLI(t *testing.T) {
+	f := newNativeHostFixture(t, "native:issue=read,create")
+	actor := f.actor()
+	f.policy(actor, []c.Rule{{Operation: c.IssueCreate, Automatic: true}})
+	t.Chdir(f.repo)
+	// Source-assisted interruption fixture uses the exact shared pre-publication
+	// reservation seam. The independent external raw lookup must then distinguish
+	// this authenticated private intent from a verified public absence.
+	identity, e := inspectIdentity()
+	if e != nil {
+		t.Fatal(e)
+	}
+	captured, e := nextEvent(identity, "issue.open")
+	if e != nil {
+		t.Fatal(e)
+	}
+	state, e := CanonicalIssueState(IssueState{Title: "Reserved but unpublished", Status: "open"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	captured.Intent = "open"
+	captured.Operation = "private-reservation"
+	captured.Issue = &state
+	captured.Title = state.Title
+	captured.Body = state.Body
+	captured.Parents = []string{}
+	captured.Request, e = IssueRequestDigest(captured)
+	if e != nil {
+		t.Fatal(e)
+	}
+	events, _, e := collectIssueEvents()
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = contributionAuthorizeCandidate(captured, events); e != nil {
+		t.Fatal(e)
+	}
+	plan, e := contributionBeforeNative(captured, identity, events)
+	if e != nil || plan == nil {
+		t.Fatalf("actual private reservation missing: %v", e)
+	}
+	if _, exists, e := refValue(actorRef(actor)); e != nil || exists {
+		t.Fatalf("fixture published a native actor stream: %t %v", exists, e)
+	}
+	before := hostNativeSnapshot(t, f.repo)
+	pending := nativeOK(t, f.requests(nativeLookup("issue", actor, "private-reservation"))[0])
+	if pending["status"] != "uncertain" || pending["reason"] != "private_intent_pending" || pending["event_id"] != nil || pending["resource_id"] != nil || pending["request"] != nil || pending["result"] != nil {
+		t.Fatalf("private reservation was called absent or disclosed: %v", pending)
+	}
+	unrelated := nativeOK(t, f.requests(nativeLookup("issue", actor, "another-key"))[0])
+	if unrelated["status"] != "verified_absent" || unrelated["reason"] != nil {
+		t.Fatalf("complete unrelated-key proof %v", unrelated)
+	}
+	nativeSnapshotEqual(t, f, before)
+}
+
+func (f *nativeHostFixture) assertGovernedCut(family, id string, visible bool, cut any) {
+	f.t.Helper()
+	// Recompute the frozen object from public Git witnesses and the explicit test
+	// policy/selected visibility facts, independently of the adapter's projection.
+	// Project identity is D(raw UTF-8 bytes), rather than D(C(JSON string)).
+	sum := sha256.Sum256([]byte("native-host-policy"))
+	project := "sha256:" + hex.EncodeToString(sum[:])
+	material := f.git("for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/remotes", "refs/hn/contributions/"+project[7:]+"/")
+	refs, retained := []map[string]any{}, []map[string]any{}
+	for _, line := range strings.Split(material, "\n") {
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) != 2 {
+			f.t.Fatal("invalid fixture ref row")
+		}
+		row := map[string]any{"ref": parts[0], "oid": parts[1]}
+		if strings.HasPrefix(parts[0], "refs/hn/actors/") {
+			refs = append(refs, row)
+		} else if strings.HasPrefix(parts[0], "refs/hn/remotes/") {
+			refs = append(refs, row)
+			retained = append(retained, row)
+		} else {
+			retained = append(retained, row)
+		}
+	}
+	sort.Slice(refs, func(i, j int) bool { return refs[i]["ref"].(string) < refs[j]["ref"].(string) })
+	sort.Slice(retained, func(i, j int) bool { return retained[i]["ref"].(string) < retained[j]["ref"].(string) })
+	visibleIDs := []string{}
+	if visible {
+		visibleIDs = append(visibleIDs, id)
+	}
+	view := independentNativeHash(map[string]any{"admitted_ids": []string{id}, "visible_ids": visibleIDs, "retained_refs": retained})
+	policy, e := os.ReadFile(filepath.Join(f.repo, ".hn", "policy.json"))
+	if e != nil {
+		f.t.Fatal(e)
+	}
+	policySum := sha256.Sum256(policy)
+	common, e := filepath.EvalSymlinks(filepath.Join(f.repo, ".git"))
+	if e != nil {
+		f.t.Fatal(e)
+	}
+	repoSum := sha256.Sum256([]byte("hn-extension-repository-v1\x00" + common))
+	want := independentNativeHash(map[string]any{"repository_id": "sha256:" + hex.EncodeToString(repoSum[:]), "refs": refs, "selection": map[string]any{"families": []string{family}, "types": []string{}}, "authority_commit": f.git("rev-parse", "HEAD"), "policy_digest": "sha256:" + hex.EncodeToString(policySum[:]), "view_digest": view})
+	if cut != want {
+		f.t.Fatalf("governed Cut differs from frozen literal object: %v != %s", cut, want)
+	}
 }

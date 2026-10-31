@@ -97,8 +97,15 @@ func extensionNativeDispatch(ctx context.Context, call extension.Invocation) (an
 	}
 	p := call.Request.Params
 	family, _ := p["family"].(string)
-	operation := "read"
-	if call.Request.Method == "resource.mutate" {
+	operation := "list"
+	switch call.Request.Method {
+	case "resource.read":
+		if p["id"] != nil {
+			operation = "show"
+		}
+	case "resource.operation":
+		operation = "operation"
+	case "resource.mutate":
 		operation = p["intent"].(string)
 	}
 	if family == "" {
@@ -241,7 +248,19 @@ func extensionNativeProjectionFor(ctx context.Context, family string) (*extensio
 	}
 	sort.Slice(projection.views, func(i, j int) bool { return projection.views[i].ID < projection.views[j].ID })
 	refs, retained := []extensionNativeRef{}, []extensionNativeRef{}
+	refArgs := []string{"for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/remotes"}
+	if authority != nil && authority.Policy.Contributions != nil {
+		refArgs = append(refArgs, "refs/hn/contributions/"+authority.Policy.Contributions.Project[7:]+"/")
+	}
+	witnesses := 0
 	err = issueGitLines(nil, func(line string) error {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		witnesses++
+		if witnesses > defaultIssueReadLimits().refs+c.MaxGraphRecords {
+			return issueReadFailure("resource_limit", errors.New("native source witnesses exceed verified selection bound"))
+		}
 		fields := strings.Fields(line)
 		if len(fields) != 2 || !validGitOID(fields[1]) {
 			return issueReadFailure("invalid_history", fmt.Errorf("invalid accepted ref"))
@@ -266,7 +285,7 @@ func extensionNativeProjectionFor(ctx context.Context, family string) (*extensio
 			retained = append(retained, row)
 		}
 		return nil
-	}, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/remotes", "refs/hn/contributions")
+	}, refArgs...)
 	if err != nil {
 		return nil, err
 	}
