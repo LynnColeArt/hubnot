@@ -7,7 +7,10 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"os"
+	"os/exec"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -207,5 +210,84 @@ func TestEnvelopeOwnedBounds(t *testing.T) {
 		if n == 9 {
 			requireCode(t, e, "resource_limit")
 		}
+	}
+}
+
+// Run the simultaneous first validations in a fresh process: the other envelope
+// tests must not warm the optional validators before this race check.
+func TestEnvelopeConcurrentFirstUse(t *testing.T) {
+	const child = "HN_ARTIFACT_CONCURRENT_FIRST_USE"
+	if os.Getenv(child) != "1" {
+		cmd := exec.Command(os.Args[0], "-test.run=^TestEnvelopeConcurrentFirstUse$", "-test.count=1")
+		cmd.Env = append(os.Environ(), child+"=1")
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("fresh-process validation: %v\n%s", err, out)
+		}
+		return
+	}
+
+	// A signed list reaches all five grammars, including field and member names.
+	raw, sig := signedFixture(t, func(m map[string]any) {
+		m["kind"] = "record.open"
+		m["payload"] = map[string]any{
+			"shape": "list", "type_id": "example/list", "type_revision": frozenVectors[0].id,
+			"title": "Concurrent first use", "content": "", "fields": map[string]any{"_field.key-1": true},
+			"members":       []any{map[string]any{"member_id": "1.member-key_", "target": frozenVectors[0].id, "target_mode": "revision", "required": false}},
+			"relationships": []any{}, "conversion_sources": []any{},
+		}
+	})
+	start := make(chan struct{})
+	var workers sync.WaitGroup
+	for range 32 {
+		workers.Go(func() {
+			<-start
+			v, err := Verify(raw, sig, nil)
+			if err != nil || !bytes.Equal(v.Bytes(), raw) {
+				t.Errorf("concurrent signed list: %v", err)
+			}
+			for _, f := range frozenVectors {
+				v, err := Verify([]byte(f.raw), f.signature, nil)
+				switch f.name {
+				case "unknown-protocol":
+					requireCode(t, err, "invalid_input")
+				case "actor-key-mismatch":
+					requireCode(t, err, "verification_failure")
+				default:
+					if err != nil || v.ID() != f.id || !bytes.Equal(v.Bytes(), []byte(f.raw)) {
+						t.Errorf("concurrent frozen %s: %s %v", f.name, v.ID(), err)
+					}
+				}
+			}
+		})
+	}
+	close(start)
+	workers.Wait()
+}
+
+func TestEnvelopeIdentifierGrammarRefusals(t *testing.T) {
+	for _, tc := range []struct {
+		name, message string
+		mutate        func(map[string]any)
+	}{
+		{"actor", "actor must be a full lower-case fingerprint", func(m map[string]any) { m["actor"] = strings.Repeat("A", 64) }},
+		{"digest", "sequence and previous disagree", func(m map[string]any) { m["sequence"] = 2; m["previous"] = "sha256:" + strings.Repeat("A", 64) }},
+		{"type", "invalid or reserved type identifier", func(m map[string]any) { m["payload"].(map[string]any)["type_id"] = "example/name\n" }},
+		{"field", "invalid field name", func(m map[string]any) { m["payload"].(map[string]any)["fields"] = map[string]any{"field\n": true} }},
+		{"member", "invalid or duplicate collection member", func(m map[string]any) {
+			m["payload"].(map[string]any)["members"] = []any{map[string]any{"member_id": "member\n", "target": frozenVectors[0].id, "target_mode": "revision", "required": false}}
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			raw, sig := signedFixture(t, func(m map[string]any) {
+				m["kind"] = "record.open"
+				m["payload"] = map[string]any{"shape": "list", "type_id": "example/list", "type_revision": frozenVectors[0].id, "title": "Grammar", "content": "", "fields": map[string]any{}, "members": []any{}, "relationships": []any{}, "conversion_sources": []any{}}
+				tc.mutate(m)
+			})
+			_, err := Verify(raw, sig, nil)
+			requireCode(t, err, "invalid_input")
+			if err.Error() != "invalid_input: "+tc.message {
+				t.Fatalf("changed grammar diagnostic: %v", err)
+			}
+		})
 	}
 }
