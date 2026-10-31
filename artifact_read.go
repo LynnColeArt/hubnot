@@ -24,19 +24,23 @@ type artifactSource struct {
 	OID string `json:"oid"`
 }
 type storedArtifact struct {
-	ID          string         `json:"id"`
-	Envelope    map[string]any `json:"envelope"`
-	Signature   string         `json:"signature"`
-	Validation  string         `json:"validation"`
-	Diagnostics []any          `json:"diagnostics"`
-	commit      string
-	verified    artifact.Verified
+	ID           string         `json:"id"`
+	Envelope     map[string]any `json:"envelope"`
+	Signature    string         `json:"signature"`
+	Validation   string         `json:"validation"`
+	Diagnostics  []any          `json:"diagnostics"`
+	commit       string
+	verified     artifact.Verified
+	parentCommit string
 }
 type artifactHistory struct {
-	Sources []artifactSource
-	ByID    map[string]*storedArtifact
-	Chains  map[string][]*storedArtifact
-	Cut     string
+	Sources     []artifactSource
+	ByID        map[string]*storedArtifact
+	Chains      map[string][]*storedArtifact
+	Cut         string
+	gitDir      string
+	readBytes   int64
+	readObjects map[string]bool
 }
 
 func artifactFailure(code, message string) error {
@@ -232,7 +236,7 @@ func (r *artifactObjectReader) commit(oid string) (*storedArtifact, string, erro
 	if e = d.Decode(&env); e != nil {
 		return nil, "", artifactFailure("invalid_history", "invalid artifact envelope")
 	}
-	return &storedArtifact{v.ID(), env, string(sig), "verified", []any{}, oid, v}, parent, nil
+	return &storedArtifact{ID: v.ID(), Envelope: env, Signature: string(sig), Validation: "verified", Diagnostics: []any{}, commit: oid, verified: v, parentCommit: parent}, parent, nil
 }
 func loadArtifactHistory(ctx context.Context) (*artifactHistory, error) {
 	dir, e := requireGitRepository()
@@ -336,6 +340,7 @@ func loadArtifactHistory(ctx context.Context) (*artifactHistory, error) {
 		return nil, artifactFailure("concurrent_update", "artifact sources changed while reading")
 	}
 	h.Cut, e = h.sourceCut()
+	h.gitDir, h.readBytes, h.readObjects = dir, reader.total, reader.seen
 	return h, e
 }
 func (h *artifactHistory) validate(ctx context.Context) error {

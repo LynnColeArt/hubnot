@@ -43,3 +43,50 @@ func (t TypeDeclaration) ValidateOpening(ctx context.Context, raw []byte) error 
 func ValidateRecordContext(ctx context.Context, value map[string]any) (RecordValidation, error) {
 	return validateRecordValue(ctx, value)
 }
+
+// ValidateIntentPayload checks only the self-contained frozen payload shape and
+// bounds of an immutable private hint. Exact type/history dependencies remain
+// the verified loader's and authorized mutation caller's responsibility.
+func ValidateIntentPayload(ctx context.Context, kind string, raw []byte, parents []string) error {
+	if len(parents) > 1024 {
+		return refuse("resource_limit", "parents exceed 1024 entries")
+	}
+	values := make([]any, len(parents))
+	for i, id := range parents {
+		values[i] = id
+	}
+	if _, err := ids(values); err != nil {
+		return err
+	}
+	switch kind {
+	case "type.publish":
+		if len(parents) > 1 {
+			return refuse("invalid_input", "type publication has at most one parent")
+		}
+		_, err := ValidateType(ctx, raw)
+		return err
+	case "record.open":
+		if len(parents) != 0 {
+			return refuse("invalid_input", "opening cannot have parents")
+		}
+	case "record.revise", "record.convert":
+		if len(parents) != 1 {
+			return refuse("invalid_input", "revision requires one parent")
+		}
+	case "record.resolve":
+		if len(parents) == 0 {
+			return refuse("invalid_input", "resolution requires parents")
+		}
+	default:
+		return refuse("invalid_input", "unsupported artifact kind")
+	}
+	value, err := validationValue(ctx, raw, MaxEnvelopeBytes)
+	if err != nil {
+		return err
+	}
+	payload, ok := value.(map[string]any)
+	if !ok {
+		return refuse("invalid_input", "intent payload must be an object")
+	}
+	return payloadEnvelope(kind, payload, parents)
+}

@@ -154,8 +154,8 @@ func TestArtifactStoreIntentLockAndUncertainCLI(t *testing.T) {
 	v := f.publish(artifactStoreType, "busy", "concurrent_update")
 	artifactErrorShape(t, v, "artifact", "concurrent_update", "retry_identical", nil)
 	f.unchanged(before)
-	// A durable publishing descriptor with an unconfirmed candidate must not be
-	// overwritten, resigned or acknowledged as an absence on a later exact retry.
+	// This forged descriptor names a candidate from a different immutable key.
+	// Genuine pending/lost-ack retries are exercised by ExactRetryRecoveryCLI.
 	existing := filepath.Join(lockdir, strings.TrimPrefix(eventID([]byte("first")), "sha256:")+".json")
 	raw, e := os.ReadFile(existing)
 	if e != nil {
@@ -182,8 +182,8 @@ func TestArtifactStoreIntentLockAndUncertainCLI(t *testing.T) {
 		t.Fatal(e)
 	}
 	before = f.snapshot()
-	v = f.publish(artifactStoreType, "uncertain", "uncertain_operation")
-	artifactErrorShape(t, v, "artifact", "uncertain_operation", "inspect_operation", map[string]any{"protocol": "hn-artifact/1", "actor": f.actor, "operation": "uncertain"})
+	v = f.publish(artifactStoreType, "uncertain", "verification_failure")
+	artifactErrorShape(t, v, "artifact", "verification_failure", "do_not_retry", nil)
 	f.unchanged(before)
 	intent["stage"] = "invented-stage"
 	raw, _ = json.Marshal(intent)
@@ -397,4 +397,481 @@ func TestArtifactStorePrivateIntentByteBudgetCLI(t *testing.T) {
 			f.unchanged(before)
 		}
 	}
+}
+
+func artifactTestDescriptor(t *testing.T, f *artifactCLIFixture, operation string, published bool) (string, map[string]any) {
+	t.Helper()
+	f.publish(artifactStoreType, "descriptor-template", "")
+	dir := filepath.Join(f.repo, ".git", "hn", "artifacts", "intents", f.actor)
+	raw, e := os.ReadFile(filepath.Join(dir, strings.TrimPrefix(eventID([]byte("descriptor-template")), "sha256:")+".json"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	var intent map[string]any
+	if e = json.Unmarshal(raw, &intent); e != nil {
+		t.Fatal(e)
+	}
+	if !published {
+		semantic := intent["semantic_request"].(map[string]any)
+		semantic["operation"] = operation
+		request, _ := json.Marshal(semantic)
+		intent["operation"] = operation
+		intent["request"] = eventID(append([]byte("hn-artifact-request-v1\x00"), request...))
+		intent["stage"] = "prepared"
+		intent["expected_oid"] = f.git("rev-parse", artifactRef(f.actor))
+		intent["candidate"] = nil
+		intent["result"] = nil
+	}
+	return filepath.Join(dir, strings.TrimPrefix(eventID([]byte(operation)), "sha256:")+".json"), intent
+}
+func TestArtifactStoreStrictIntentCLI(t *testing.T) {
+	t.Setenv("HN_WP05_BINARY", artifactStoreBinary(t))
+	// Independent literal closed contract, including explicitly nullable fields.
+	required := []string{"protocol", "repository_id", "actor", "operation", "request", "semantic_request", "stage", "expected_ref", "expected_oid", "candidate", "result"}
+	if len(required) != 11 {
+		t.Fatal("invalid contract mirror")
+	}
+	for _, published := range []bool{false, true} {
+		mode := "pending"
+		if published {
+			mode = "public-replay"
+		}
+		for _, field := range required {
+			t.Run(mode+"/missing-"+field, func(t *testing.T) {
+				f := artifactCLI(t)
+				operation := "strict-pending"
+				if published {
+					operation = "descriptor-template"
+				}
+				path, intent := artifactTestDescriptor(t, f, operation, published)
+				delete(intent, field)
+				raw, _ := json.Marshal(intent)
+				if e := os.WriteFile(path, raw, 0600); e != nil {
+					t.Fatal(e)
+				}
+				before := f.snapshot()
+				v := f.publish(artifactStoreType, operation, "verification_failure")
+				artifactErrorShape(t, v, "artifact", "verification_failure", "do_not_retry", nil)
+				f.unchanged(before)
+			})
+		}
+	}
+	for _, control := range []struct {
+		name string
+		edit func(map[string]any)
+		raw  func([]byte) []byte
+	}{
+		{name: "all-nullable-missing", edit: func(m map[string]any) { delete(m, "expected_oid"); delete(m, "candidate"); delete(m, "result") }},
+		{name: "null-protocol", edit: func(m map[string]any) { m["protocol"] = nil }},
+		{name: "null-semantic", edit: func(m map[string]any) { m["semantic_request"] = nil }},
+		{name: "wrong-expected-oid-type", edit: func(m map[string]any) { m["expected_oid"] = false }},
+		{name: "wrong-candidate-type", edit: func(m map[string]any) { m["candidate"] = []any{} }},
+		{name: "wrong-result-type", edit: func(m map[string]any) { m["result"] = []any{} }},
+		{name: "unknown-key", edit: func(m map[string]any) { m["extra"] = true }},
+		{name: "duplicate-key", raw: func(b []byte) []byte {
+			return bytes.Replace(b, []byte(`"stage":`), []byte(`"stage":"prepared","stage":`), 1)
+		}},
+		{name: "duplicate-semantic-key", raw: func(b []byte) []byte {
+			return bytes.Replace(b, []byte(`"kind":`), []byte(`"kind":"type.publish","kind":`), 1)
+		}},
+		{name: "null-root", raw: func([]byte) []byte { return []byte("null") }},
+		{name: "trailing-json", raw: func(b []byte) []byte { return append(b, []byte(" {}")...) }},
+	} {
+		t.Run(control.name, func(t *testing.T) {
+			f := artifactCLI(t)
+			path, intent := artifactTestDescriptor(t, f, "strict-pending", false)
+			if control.edit != nil {
+				control.edit(intent)
+			}
+			raw, _ := json.Marshal(intent)
+			if control.raw != nil {
+				raw = control.raw(raw)
+			}
+			if e := os.WriteFile(path, raw, 0600); e != nil {
+				t.Fatal(e)
+			}
+			before := f.snapshot()
+			f.publish(artifactStoreType, "strict-pending", "verification_failure")
+			f.unchanged(before)
+		})
+	}
+}
+
+// Faults are real failed Git stages in the current app, not alternate writers or
+// injected callbacks. All child work is complete before the exact retry begins.
+func artifactTestFault(t *testing.T, f *artifactCLIFixture, operation, stage string) map[string]any {
+	t.Helper()
+	git, e := exec.LookPath("git")
+	if e != nil {
+		t.Fatal(e)
+	}
+	wrapper := t.TempDir()
+	marker := filepath.Join(wrapper, "published")
+	script := "#!/bin/sh\nfor arg do\n case \"$arg\" in\n hash-object) [ \"$HN_WP05_STAGE\" = prepared ] && exit 86 ;;\n update-ref)\n  [ \"$HN_WP05_STAGE\" = publishing ] && exit 86\n  if [ \"$HN_WP05_STAGE\" = lost_ack ]; then '" + git + "' \"$@\" || exit $?; : > \"$HN_WP05_PUBLISHED\"; exit 0; fi ;;\n for-each-ref) [ -f \"$HN_WP05_PUBLISHED\" ] && exit 86 ;;\n esac\ndone\nexec '" + git + "' \"$@\"\n"
+	if e = os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); e != nil {
+		t.Fatal(e)
+	}
+	f.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP05_STAGE": stage, "HN_WP05_PUBLISHED": marker}
+	code := "repository_error"
+	if stage == "publishing" {
+		code = "concurrent_update"
+	}
+	if stage == "lost_ack" {
+		code = "uncertain_operation"
+	}
+	v := f.publish(artifactStoreType, operation, code)
+	recovery := "do_not_retry"
+	var op any
+	if code == "concurrent_update" {
+		recovery = "retry_identical"
+	}
+	if code == "uncertain_operation" {
+		recovery = "inspect_operation"
+		op = map[string]any{"protocol": "hn-artifact/1", "actor": f.actor, "operation": operation}
+	}
+	artifactErrorShape(t, v, "artifact", code, recovery, op)
+	f.overrides = nil
+	path := filepath.Join(f.repo, ".git", "hn", "artifacts", "intents", f.actor, strings.TrimPrefix(eventID([]byte(operation)), "sha256:")+".json")
+	raw, e := os.ReadFile(path)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var intent map[string]any
+	if e = json.Unmarshal(raw, &intent); e != nil {
+		t.Fatal(e)
+	}
+	return intent
+}
+func TestArtifactStoreExactRetryRecoveryCLI(t *testing.T) {
+	t.Setenv("HN_WP05_BINARY", artifactStoreBinary(t))
+	for _, stage := range []string{"prepared", "publishing", "lost_ack"} {
+		t.Run(stage, func(t *testing.T) {
+			f := artifactCLI(t)
+			f.publish(artifactStoreType, "base", "")
+			operation := "recover-" + stage
+			original := artifactTestFault(t, f, operation, stage)
+			path := filepath.Join(f.repo, ".git", "hn", "artifacts", "intents", f.actor, strings.TrimPrefix(eventID([]byte(operation)), "sha256:")+".json")
+			if original["stage"] != "prepared" && original["stage"] != "publishing" {
+				t.Fatal("fault did not stop the intended stage", original)
+			}
+			beforeRefs := f.git("for-each-ref", "--format=%(refname) %(objectname)")
+			var candidate map[string]any
+			if stage != "prepared" {
+				candidate = original["candidate"].(map[string]any)
+				git, e := exec.LookPath("git")
+				if e != nil {
+					t.Fatal(e)
+				}
+				wrapper := t.TempDir()
+				marker := filepath.Join(wrapper, "forbidden-rebuild")
+				script := "#!/bin/sh\nfor arg do case \"$arg\" in hash-object|mktree|commit-tree) echo rebuild > \"$HN_WP05_REBUILD\"; exit 87 ;; esac; done\nexec '" + git + "' \"$@\"\n"
+				if e = os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); e != nil {
+					t.Fatal(e)
+				}
+				f.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP05_REBUILD": marker}
+				defer func() {
+					if raw, e := os.ReadFile(marker); !os.IsNotExist(e) {
+						t.Errorf("exact retry rebuilt signed candidate: %v %s", e, raw)
+					}
+				}()
+			}
+			result := f.publish(artifactStoreType, operation, "")["data"].(map[string]any)
+			raw, e := os.ReadFile(path)
+			if e != nil {
+				t.Fatal(e)
+			}
+			var after map[string]any
+			if e = json.Unmarshal(raw, &after); e != nil {
+				t.Fatal(e)
+			}
+			if after["stage"] != "published" || after["result"].(map[string]any)["replayed"] != false {
+				t.Fatal("retry did not persist original result", after)
+			}
+			for _, key := range []string{"protocol", "repository_id", "actor", "operation", "request", "semantic_request", "expected_ref", "expected_oid"} {
+				if !reflect.DeepEqual(original[key], after[key]) {
+					t.Fatal("retry overwrote original witness", key)
+				}
+			}
+			if candidate != nil {
+				if !reflect.DeepEqual(candidate, after["candidate"]) || candidate["id"] != result["event_id"] || candidate["commit"] != f.git("rev-parse", artifactRef(f.actor)) {
+					t.Fatal("retry did not preserve exact signed candidate", result, after)
+				}
+			}
+			if stage == "lost_ack" {
+				if result["replayed"] != true || beforeRefs != f.git("for-each-ref", "--format=%(refname) %(objectname)") {
+					t.Fatal("lost acknowledgement caused another publication", result)
+				}
+			} else if result["replayed"] != false {
+				t.Fatal("unpublished original attempt incorrectly reported replay", result)
+			}
+			f.overrides = nil
+			before := f.snapshot()
+			again := f.publish(artifactStoreType, operation, "")["data"].(map[string]any)
+			if again["event_id"] != result["event_id"] || again["replayed"] != true {
+				t.Fatal(again)
+			}
+			f.unchanged(before)
+		})
+	}
+}
+
+func TestArtifactStoreNoncreatingEvidence(t *testing.T) {
+	f := artifactCLI(t)
+	f.publish(artifactStoreType, "base", "")
+	original, e := os.Getwd()
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = os.Chdir(f.repo); e != nil {
+		t.Fatal(e)
+	}
+	defer func() {
+		if e := os.Chdir(original); e != nil {
+			t.Error(e)
+		}
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	h, e := loadArtifactHistory(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	repo, _, e := artifactRepositoryID()
+	if e != nil {
+		t.Fatal(e)
+	}
+	statuses := map[string]bool{}
+	read := func(key, status, reason string) {
+		t.Helper()
+		before := f.snapshot()
+		evidence, e := readArtifactOperationEvidence(ctx, h, repo, f.actor, key)
+		if e != nil || evidence.Status != status || evidence.Reason != reason {
+			t.Fatal("wrong cut-scoped evidence", e, evidence.Status, evidence.Reason)
+		}
+		statuses[evidence.Status] = true
+		f.unchanged(before)
+	}
+	read("never-used", "verified_absent", "")
+	read("base", "found", "")
+	dir := filepath.Join(f.repo, ".git", "hn", "artifacts", "intents", f.actor)
+	heldPath := filepath.Join(dir, strings.TrimPrefix(eventID([]byte("held")), "sha256:")+".lock")
+	held, e := os.OpenFile(heldPath, os.O_CREATE|os.O_RDWR, 0600)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = artifactTestLock(held); e != nil {
+		t.Fatal(e)
+	}
+	read("held", "uncertain", "publication_unconfirmed")
+	artifactTestUnlock(held)
+	held.Close()
+	path := filepath.Join(dir, strings.TrimPrefix(eventID([]byte("bad")), "sha256:")+".json")
+	for _, control := range []struct {
+		mode       os.FileMode
+		body, code string
+	}{{0600, "{broken", "verification_failure"}, {0400, "{}", "repository_error"}} {
+		if e = os.WriteFile(path, []byte(control.body), 0600); e != nil {
+			t.Fatal(e)
+		}
+		if e = os.Chmod(path, control.mode); e != nil {
+			t.Fatal(e)
+		}
+		before := f.snapshot()
+		_, e = readArtifactOperationEvidence(ctx, h, repo, f.actor, "bad")
+		var failure *artifact.Error
+		if !errors.As(e, &failure) || failure.Code != control.code {
+			t.Fatal("read failure became absence", e)
+		}
+		f.unchanged(before)
+		if e = os.Chmod(path, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	artifactTestFault(t, f, "readonly-pending", "prepared")
+	h, e = loadArtifactHistory(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	read("readonly-pending", "uncertain", "private_intent_pending")
+	// Independent closed inventory from the frozen public operation contract.
+	if len(statuses) != 3 || !statuses["found"] || !statuses["verified_absent"] || !statuses["uncertain"] {
+		t.Fatal("operation status inventory drift", statuses)
+	}
+	git, e := exec.LookPath("git")
+	if e != nil {
+		t.Fatal(e)
+	}
+	wrapper := t.TempDir()
+	racePath := filepath.Join(dir, strings.TrimPrefix(eventID([]byte("racing-absence")), "sha256:")+".lock")
+	script := "#!/bin/sh\nfor arg do if [ \"$arg\" = for-each-ref ]; then : > \"$HN_WP05_NEW_LOCK\"; chmod 600 \"$HN_WP05_NEW_LOCK\"; fi; done\nexec '" + git + "' \"$@\"\n"
+	if e = os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); e != nil {
+		t.Fatal(e)
+	}
+	t.Setenv("PATH", wrapper+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("HN_WP05_NEW_LOCK", racePath)
+	evidence, e := readArtifactOperationEvidence(ctx, h, repo, f.actor, "racing-absence")
+	if e != nil || evidence.Status != "uncertain" || evidence.Reason != "publication_unconfirmed" {
+		t.Fatal("new writer during source recheck became absence", e, evidence)
+	}
+	if _, e = os.Stat(racePath); e != nil {
+		t.Fatal("race control did not create lock", e)
+	}
+}
+
+func TestArtifactStoreStrictNestedIntentCLI(t *testing.T) {
+	t.Setenv("HN_WP05_BINARY", artifactStoreBinary(t))
+	for _, field := range []string{"id", "commit"} {
+		t.Run("candidate/missing-"+field, func(t *testing.T) {
+			f := artifactCLI(t)
+			path, intent := artifactTestDescriptor(t, f, "descriptor-template", true)
+			delete(intent["candidate"].(map[string]any), field)
+			raw, _ := json.Marshal(intent)
+			if e := os.WriteFile(path, raw, 0600); e != nil {
+				t.Fatal(e)
+			}
+			before := f.snapshot()
+			f.publish(artifactStoreType, "descriptor-template", "verification_failure")
+			f.unchanged(before)
+		})
+	}
+	// Literal frozen MutationResult shape; null is permitted only for family and
+	// admission, never inferred from an absent field or an incompatible raw type.
+	resultFields := []string{"protocol", "family", "type_id", "resource_id", "event_id", "replayed", "conflict", "head_count", "admission", "source_cut"}
+	if len(resultFields) != 10 {
+		t.Fatal("invalid result contract mirror")
+	}
+	for _, field := range resultFields {
+		t.Run("result/missing-"+field, func(t *testing.T) {
+			f := artifactCLI(t)
+			path, intent := artifactTestDescriptor(t, f, "descriptor-template", true)
+			delete(intent["result"].(map[string]any), field)
+			raw, _ := json.Marshal(intent)
+			if e := os.WriteFile(path, raw, 0600); e != nil {
+				t.Fatal(e)
+			}
+			before := f.snapshot()
+			f.publish(artifactStoreType, "descriptor-template", "verification_failure")
+			f.unchanged(before)
+		})
+	}
+	for _, control := range []struct {
+		name string
+		edit func(map[string]any)
+		raw  func([]byte) []byte
+	}{
+		{name: "candidate-unknown", edit: func(m map[string]any) { m["candidate"].(map[string]any)["extra"] = true }},
+		{name: "candidate-null-id", edit: func(m map[string]any) { m["candidate"].(map[string]any)["id"] = nil }},
+		{name: "result-null-event", edit: func(m map[string]any) { m["result"].(map[string]any)["event_id"] = nil }},
+		{name: "result-string-count", edit: func(m map[string]any) { m["result"].(map[string]any)["head_count"] = "1" }},
+		{name: "result-wrong-family", edit: func(m map[string]any) { m["result"].(map[string]any)["family"] = "issue" }},
+		{name: "result-wrong-identity", edit: func(m map[string]any) { m["result"].(map[string]any)["event_id"] = "sha256:" + strings.Repeat("1", 64) }},
+		{name: "result-duplicate", raw: func(raw []byte) []byte {
+			return bytes.Replace(raw, []byte(`"head_count":`), []byte(`"head_count":1,"head_count":`), 1)
+		}},
+		{name: "candidate-duplicate", raw: func(raw []byte) []byte {
+			return bytes.Replace(raw, []byte(`"commit":`), []byte(`"commit":"0000000000000000000000000000000000000000","commit":`), 1)
+		}},
+	} {
+		t.Run(control.name, func(t *testing.T) {
+			f := artifactCLI(t)
+			path, intent := artifactTestDescriptor(t, f, "descriptor-template", true)
+			if control.edit != nil {
+				control.edit(intent)
+			}
+			raw, _ := json.Marshal(intent)
+			if control.raw != nil {
+				raw = control.raw(raw)
+			}
+			if e := os.WriteFile(path, raw, 0600); e != nil {
+				t.Fatal(e)
+			}
+			before := f.snapshot()
+			f.publish(artifactStoreType, "descriptor-template", "verification_failure")
+			f.unchanged(before)
+		})
+	}
+}
+
+func artifactTestPendingOpening(t *testing.T, f *artifactCLIFixture, operation string) (string, map[string]any, map[string]any) {
+	t.Helper()
+	path, intent := artifactTestDescriptor(t, f, operation, false)
+	payload := map[string]any{"shape": "document", "type_id": "example.test/note", "type_revision": "sha256:" + strings.Repeat("0", 64), "title": "Unresolved exact schema", "content": "data", "fields": map[string]any{}, "members": []any{}, "relationships": []any{}, "conversion_sources": []any{}}
+	semantic := intent["semantic_request"].(map[string]any)
+	semantic["kind"] = "record.open"
+	semantic["payload"] = payload
+	return path, intent, map[string]any{"record": nil, "parents": []any{}, "payload": payload}
+}
+func artifactTestWriteDescriptor(t *testing.T, path string, intent map[string]any) {
+	t.Helper()
+	semantic, _ := json.Marshal(intent["semantic_request"])
+	intent["request"] = eventID(append([]byte("hn-artifact-request-v1\x00"), semantic...))
+	raw, _ := json.Marshal(intent)
+	if e := os.WriteFile(path, raw, 0600); e != nil {
+		t.Fatal(e)
+	}
+}
+func TestArtifactStoreIntentPayloadShapeCLI(t *testing.T) {
+	t.Setenv("HN_WP05_BINARY", artifactStoreBinary(t))
+	for _, control := range []struct {
+		name string
+		edit func(map[string]any)
+	}{
+		{"members-null", func(s map[string]any) { s["payload"].(map[string]any)["members"] = nil }},
+		{"missing-content", func(s map[string]any) { delete(s["payload"].(map[string]any), "content") }},
+		{"empty-title", func(s map[string]any) { s["payload"].(map[string]any)["title"] = " " }},
+		{"invalid-link", func(s map[string]any) {
+			s["payload"].(map[string]any)["relationships"] = []any{map[string]any{"relation": "example.test/link", "target": "not-an-id", "target_mode": "revision", "required": true}}
+		}},
+		{"convert-no-parent", func(s map[string]any) {
+			s["kind"] = "record.convert"
+			s["record"] = "sha256:" + strings.Repeat("1", 64)
+		}},
+	} {
+		t.Run(control.name, func(t *testing.T) {
+			f := artifactCLI(t)
+			path, intent, input := artifactTestPendingOpening(t, f, "bad-payload")
+			control.edit(intent["semantic_request"].(map[string]any))
+			artifactTestWriteDescriptor(t, path, intent)
+			raw, _ := json.Marshal(input)
+			before := f.snapshot()
+			f.call(string(raw), "verification_failure", "artifact", "open", "--input", "-", "--actor", f.actor, "--operation", "bad-payload", "--json")
+			f.unchanged(before)
+		})
+	}
+}
+func TestArtifactStorePendingContextUnavailable(t *testing.T) {
+	f := artifactCLI(t)
+	path, intent, input := artifactTestPendingOpening(t, f, "missing-exact-schema")
+	artifactTestWriteDescriptor(t, path, intent)
+	original, e := os.Getwd()
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = os.Chdir(f.repo); e != nil {
+		t.Fatal(e)
+	}
+	defer func() {
+		if e := os.Chdir(original); e != nil {
+			t.Error(e)
+		}
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	h, e := loadArtifactHistory(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	repo, _, e := artifactRepositoryID()
+	if e != nil {
+		t.Fatal(e)
+	}
+	before := f.snapshot()
+	evidence, e := readArtifactOperationEvidence(ctx, h, repo, f.actor, "missing-exact-schema")
+	if e != nil || evidence.Status != "uncertain" || evidence.Reason != "private_intent_pending" {
+		t.Fatal("valid unresolved hint claimed schema authority or absence", e, evidence)
+	}
+	f.unchanged(before)
+	raw, _ := json.Marshal(input)
+	f.call(string(raw), "incomplete_dependency", "artifact", "open", "--input", "-", "--actor", f.actor, "--operation", "missing-exact-schema", "--json")
+	f.unchanged(before)
 }

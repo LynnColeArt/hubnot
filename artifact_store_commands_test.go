@@ -291,7 +291,7 @@ func TestArtifactStoreOpenAndRefusalsCLI(t *testing.T) {
 }
 func TestArtifactStoreSelectedPolicyCLI(t *testing.T) {
 	f := artifactCLI(t)
-	f.publish(artifactStoreType, "before-policy", "")
+	typ := f.publish(artifactStoreType, "before-policy", "")["data"].(map[string]any)["event_id"].(string)
 	policy := PolicyDocument{Version: policyVersion, Maintainers: []string{f.actor}, Proposals: ProposalPolicy{RequiredAccepts: 1}, Pipelines: map[string]PipelinePolicy{}, Contributions: &c.Policy{Project: c.Digest([]byte("artifact policy refusal")), Moderators: []string{f.actor}, Rules: []c.Rule{{Operation: c.IssueCreate, Automatic: true}}, Baseline: []string{}, Limits: c.DefaultLimits()}}
 	b, _ := json.Marshal(policy)
 	p := filepath.Join(f.repo, ".hn", "policy.json")
@@ -322,6 +322,10 @@ func TestArtifactStoreSelectedPolicyCLI(t *testing.T) {
 	}
 	before := f.snapshot()
 	v := f.publish(artifactStoreType, "refused-policy", "unsupported_capability")
+	artifactErrorShape(t, v, "host", "unsupported_capability", "do_not_retry", nil)
+	f.unchanged(before)
+	opening := `{"record":null,"parents":[],"payload":{"shape":"document","type_id":"example.test/note","type_revision":"` + typ + `","title":"Selected refusal","content":"","fields":{},"members":[],"relationships":[],"conversion_sources":[]}}`
+	v = f.call(opening, "unsupported_capability", "artifact", "open", "--input", "-", "--actor", f.actor, "--operation", "refused-open-policy", "--json")
 	artifactErrorShape(t, v, "host", "unsupported_capability", "do_not_retry", nil)
 	f.unchanged(before)
 	if _, e := os.Stat(filepath.Join(f.repo, ".git", "hn", "artifacts", "intents", f.actor, strings.TrimPrefix(eventID([]byte("refused-policy")), "sha256:")+".json")); !os.IsNotExist(e) {
