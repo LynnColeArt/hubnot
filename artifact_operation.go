@@ -69,7 +69,7 @@ func inspectArtifactOperation(ctx context.Context, typeID, actor, operation stri
 		result.Reason = &reason
 	}
 	if evidence.Status == "found" {
-		observed := artifactResult(history, evidence.Public, true)
+		observed := artifactResult(history, evidence.Public, false)
 		request := artifactText(evidence.Public.Envelope, "request")
 		result.Request, result.ResourceID, result.EventID = &request, &observed.ResourceID, &observed.EventID
 		result.Result = &observed

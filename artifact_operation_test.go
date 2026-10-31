@@ -71,7 +71,7 @@ func operationStatus(t *testing.T, f *artifactCLIFixture, key, status, reason st
 	} else {
 		result := data["result"].(map[string]any)
 		operationKeys(t, result, []string{"protocol", "family", "type_id", "resource_id", "event_id", "replayed", "conflict", "head_count", "admission", "source_cut"})
-		if result["source_cut"] != data["source_cut"] || result["resource_id"] != data["resource_id"] || result["event_id"] != data["event_id"] || result["replayed"] != true || result["admission"] != nil || !validMemoryDigestID(data["request"].(string)) {
+		if result["source_cut"] != data["source_cut"] || result["resource_id"] != data["resource_id"] || result["event_id"] != data["event_id"] || result["replayed"] != false || result["admission"] != nil || !validMemoryDigestID(data["request"].(string)) {
 			t.Fatal(data)
 		}
 	}

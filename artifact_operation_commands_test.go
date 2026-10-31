@@ -27,6 +27,35 @@ func TestArtifactOperationReadOnlyCLI(t *testing.T) {
 	f.unchanged(before)
 }
 
+func TestArtifactOperationPublishedLookupAndRetryCLI(t *testing.T) {
+	f := artifactCLI(t)
+	original := f.publish(artifactStoreType, "published", "")["data"].(map[string]any)
+	if original["replayed"] != false {
+		t.Fatal("first publication must report a new mutation", original)
+	}
+	// Frozen lookup_conditions reports the original result with replayed=false.
+	// A status read and an explicit mutation retry have distinct meanings.
+	for _, publicOnly := range []bool{false, true} {
+		if publicOnly {
+			if err := os.Remove(operationIntentPath(f, "published")); err != nil {
+				t.Fatal(err)
+			}
+		}
+		before := f.snapshot()
+		lookup := operationCall(f, "published", "example.test/note", "")["data"].(map[string]any)
+		result := lookup["result"].(map[string]any)
+		if lookup["status"] != "found" || result["replayed"] != false || result["event_id"] != original["event_id"] || result["resource_id"] != original["resource_id"] {
+			t.Fatal("lookup changed the original result", publicOnly, lookup, original)
+		}
+		f.unchanged(before)
+		retry := f.publish(artifactStoreType, "published", "")["data"].(map[string]any)
+		if retry["replayed"] != true || retry["event_id"] != original["event_id"] || retry["resource_id"] != original["resource_id"] {
+			t.Fatal("explicit retry did not replay the original mutation", publicOnly, retry, original)
+		}
+		f.unchanged(before)
+	}
+}
+
 func TestArtifactOperationFoundAndSourceCutCLI(t *testing.T) {
 	f := artifactCLI(t)
 	schema := revisionEvent(f.publish(artifactStoreType, "type", ""))
@@ -241,7 +270,10 @@ func TestArtifactOperationInterruptedRestartCLI(t *testing.T) {
 					t.Fatal(original)
 				}
 				if stage == "lost_ack" {
-					operationStatus(t, f, key, "found", "")
+					lookup := operationStatus(t, f, key, "found", "")
+					if lookup["result"].(map[string]any)["replayed"] != false {
+						t.Fatal("post-CAS lost acknowledgment lookup must report the original result", lookup)
+					}
 					if f.git("rev-parse", artifactRef(f.actor)) == beforeRef {
 						t.Fatal("lost acknowledgement control did not publish")
 					}
@@ -391,7 +423,7 @@ func TestArtifactOperationCurrentConflictAndPublicReconstructionCLI(t *testing.T
 	}
 	before := a.snapshot()
 	replay := revisionCall(a, "open", input, "open", "")["data"].(map[string]any)
-	if replay["event_id"] != opening || replay["head_count"] != float64(2) || replay["conflict"] != true {
+	if replay["event_id"] != opening || replay["head_count"] != float64(2) || replay["conflict"] != true || replay["replayed"] != true {
 		t.Fatal(replay)
 	}
 	a.unchanged(before)
@@ -401,7 +433,7 @@ func TestArtifactOperationCurrentConflictAndPublicReconstructionCLI(t *testing.T
 	readerActor := reader.actor
 	reader.actor = a.actor
 	recovered := operationStatus(t, reader, "open", "found", "")
-	if recovered["event_id"] != opening || recovered["request"] != original["request"] || recovered["result"].(map[string]any)["head_count"] != float64(2) {
+	if recovered["event_id"] != opening || recovered["request"] != original["request"] || recovered["result"].(map[string]any)["head_count"] != float64(2) || recovered["result"].(map[string]any)["replayed"] != false {
 		t.Fatal(recovered)
 	}
 	reader.actor = readerActor
