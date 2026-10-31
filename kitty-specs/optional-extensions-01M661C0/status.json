@@ -309,10 +309,20 @@
     },
     "WP10": {
       "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
+      "assignee": "codex",
       "force_count": 0,
       "lane": "in_progress",
       "last_event_id": "01M68185X31QVTM56YAC3V82MJ",
-      "last_transition_at": "2026-10-31T03:49:58.307066+00:00"
+      "last_transition_at": "2026-10-31T03:49:58.307066+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Allocator planning conflict resolved by normal exact recorded-planning merge; sole conflict contained only generated WP09 base metadata, archived byte proof; resume canonical implementation."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer"
     },
     "WP11": {
       "actor": "finalize-tasks",
