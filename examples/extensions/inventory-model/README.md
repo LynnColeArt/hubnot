@@ -149,6 +149,10 @@ Acceptance covers all three shapes/two actors, exact-cause before-effect refusal
 explicit conversion, required schema omission, selected public exchange to an
 independent plugin-free clone, inert/leak detector controls, and removal. Combined
 charter/inventory corpus qualification uses an independently approved public
-charter exchange supplied through the public interface; it introduces no model
-code dependency. Final package/default/performance qualification belongs to the
+charter exchange embedded byte-for-byte as inert test data (original producer
+`4eb5e574`, public bundle SHA256
+`24f344ba260b8a75b28e8c7a7cdcc5a083ab3a1f027e53b9872beda8af95d954`).
+The companion original IDs, payload/order/link expectations and generic queries
+are retained before and after actual publisher removal; no charter code or
+private application state is imported. Final package/default/performance qualification belongs to the
 mission's qualification work packages.
