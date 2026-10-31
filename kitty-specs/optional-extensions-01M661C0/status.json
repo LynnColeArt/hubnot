@@ -370,7 +370,8 @@
       "last_transition_at": "2026-10-31T05:16:48.819800+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: generic list and public recovery CLI; exact source 6b3c5cee, metadata-only delivery ec2ad388, 265-input binding, both supplied release variants plus race and vet pass; external optional-extensions-WP11 evidence retains initial RED and all causes"
+        "Ready for independent review: generic list and public recovery CLI; exact source 6b3c5cee, metadata-only delivery ec2ad388, 265-input binding, both supplied release variants plus race and vet pass; external optional-extensions-WP11 evidence retains initial RED and all causes",
+        "Independent review passed: exact 265-input provenance and 262 inherited union verified; frozen four-contract roundtrip and all eight antipattern checks PASS; supplied standard combined journey/list/cursor/exact8MiB tests and native-only exact8MiB test PASS; independently recomputed25 public vectors and literal keyless reconstruction/cause/no-effects checks on both release variants. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP11/review-renata/review.md. Final full-suite/package/platform/default qualification remains WP24/WP25."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
