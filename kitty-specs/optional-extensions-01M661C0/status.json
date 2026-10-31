@@ -295,7 +295,7 @@
     "WP09": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "architect-alphonso",
       "agent_profile_version": "1.0",
       "force_count": 2,
       "lane": "planned",
@@ -306,7 +306,8 @@
         "Selected artifact Git transfer implemented; exact public CLI/bare-remote reconstruction and refusal/boundary controls, std/native binary execution, focused race and native compatibility pass. Source ebc5074994cfa0b025ee25630a38125dd509db3e; external evidence optional-extensions-WP09; budget decision18db2d22.",
         "Independent review rejected exact accepted Git-body copy restriction at artifact_replication.go:257; feedback commit2e89175a. Evidence review/review.json SHA2569f4e4cb78fa3d44e8bbb0313425b592916db9fff6985eb79c9683c5a453ee847; both supplied binary literal failures and metadata-only comparator retained; focused race passed; runtime slot released.",
         "R1 fixed within artifact-specific raw copy per adjudication1e34f4e4. Old both binaries exact-frozen CLI RED preserved; new both binaries preserve original8 Git bodies/OIDs and signed IDs through live push/fetch with no signer. Frozen literal plus missing-schema/invalid-destination no-copy controls, focused std race/native/nativecompat/static pass; unchanged prior depth/wire evidence retained. Sourcebb7a64462862c0549dc6b1e33a87011760f8ee8c; evidence optional-extensions-WP09/cycle2.",
-        "Independent cycle 2 review passed: R1 resolved; both exact supplied binaries preserve all 8 frozen raw Git bodies/OIDs/signatures through real bare remote/keyless destination, actual Cut and causal no-effect refusals verified. Current focused race: 12 test passes, 0 failures/skips, 3.795s. All eight anti-patterns and four contract round trips PASS. Full review/evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP09/cycle2/review/review.json SHA256 a282c709dfdb0a98d276b038b0621174aac78267b41a97af54b8a1826c33309d. Exact 254 input map a4f35a88f72c0c6c5fb1aa840d2a95bee4ebb7a5ae47cfe4642436f7ebd2689d. Prior unchanged bounds/native evidence retained; final full/platform qualification remains WP25. Runtime slot released."
+        "Independent cycle 2 review passed: R1 resolved; both exact supplied binaries preserve all 8 frozen raw Git bodies/OIDs/signatures through real bare remote/keyless destination, actual Cut and causal no-effect refusals verified. Current focused race: 12 test passes, 0 failures/skips, 3.795s. All eight anti-patterns and four contract round trips PASS. Full review/evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP09/cycle2/review/review.json SHA256 a282c709dfdb0a98d276b038b0621174aac78267b41a97af54b8a1826c33309d. Exact 254 input map a4f35a88f72c0c6c5fb1aa840d2a95bee4ebb7a5ae47cfe4642436f7ebd2689d. Prior unchanged bounds/native evidence retained; final full/platform qualification remains WP25. Runtime slot released.",
+        "Root integration rework from independent static namespace-isolation advisory; no runtime reproduction claimed; preserve earlier exact-source approvals and fix only new artifact accepted-ref transaction boundary."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -316,14 +317,14 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T036": "done",
-        "T037": "done",
-        "T038": "done",
-        "T039": "done"
+        "T036": "planned",
+        "T037": "planned",
+        "T038": "planned",
+        "T039": "planned"
       }
     },
     "WP10": {
