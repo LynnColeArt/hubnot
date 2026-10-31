@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 )
 
 const StartupBudget = 10 * time.Second
@@ -68,9 +69,10 @@ type wireResponse struct {
 	Error     *Error  `json:"error"`
 }
 type frameEvent struct {
-	payload []byte
-	first   time.Time
-	err     error
+	payload  []byte
+	first    time.Time
+	err      error
+	sequence uint64
 }
 
 func sortStrings(values []string) { sort.Strings(values) }
@@ -86,13 +88,26 @@ func writeMessage(file *os.File, deadline time.Time, value any) error {
 	if err != nil {
 		return failure("repository_error", "cannot encode host response")
 	}
+	return writeFrame(file, deadline, data, nil)
+}
+
+// tail records the local final-byte attempt, never peer receipt. Response bytes
+// are encoded/validated once and remain immutable through synchronous settlement.
+func writeFrame(file *os.File, deadline time.Time, data []byte, tail *responseFrontier) error {
 	if len(data) > FrameLimit {
 		return failure("resource_limit", "complete response exceeds frame limit")
 	}
 	_ = file.SetWriteDeadline(deadline)
 	var prefix [4]byte
 	binary.BigEndian.PutUint32(prefix[:], uint32(len(data)))
-	for _, part := range [][]byte{prefix[:], data} {
+	parts := [][]byte{prefix[:], data}
+	if tail != nil {
+		parts = [][]byte{prefix[:], data[:len(data)-1], data[len(data)-1:]}
+	}
+	for i, part := range parts {
+		if tail != nil && i == 2 {
+			tail.reader.mark(tail.offered)
+		}
 		for len(part) > 0 {
 			n, e := file.Write(part)
 			if e != nil {
@@ -107,10 +122,20 @@ func writeMessage(file *os.File, deadline time.Time, value any) error {
 // sessionReader keeps the current request/idle deadline separate from the
 // first-byte partial-frame cap. Extending a mutation budget cannot extend an
 // already-started control prefix/payload beyond the frozen thirty seconds.
+type responseMark struct {
+	at       time.Time
+	sequence uint64
+}
+type responseFrontier struct {
+	reader  *sessionReader
+	offered chan responseMark
+}
+
 type sessionReader struct {
 	file            *os.File
 	mu              sync.Mutex
 	deadline, first time.Time
+	sequence        uint64
 }
 
 func (reader *sessionReader) applyDeadline() {
@@ -129,6 +154,33 @@ func (reader *sessionReader) setDeadline(deadline time.Time) {
 	reader.deadline = deadline
 	reader.applyDeadline()
 }
+
+// Tail publication and joined settlement share the reader's local observation
+// order. The one tail publication has a dedicated buffered slot, so no blocking
+// pipe I/O or writer join occurs under this mutex.
+func (reader *sessionReader) mark(tail chan<- responseMark) responseMark {
+	reader.mu.Lock()
+	defer reader.mu.Unlock()
+	mark := responseMark{time.Now(), reader.sequence}
+	if tail != nil {
+		tail <- mark
+	}
+	return mark
+}
+
+// advance is the admission checkpoint: every already recorded reader event,
+// including an unfinished partial frame, must be disposed of first. A later
+// observation belongs to the next admitted request (or the new idle period).
+func (reader *sessionReader) advance(consumed uint64, deadline time.Time) bool {
+	reader.mu.Lock()
+	defer reader.mu.Unlock()
+	if reader.sequence != consumed {
+		return false
+	}
+	reader.deadline = deadline
+	reader.applyDeadline()
+	return true
+}
 func (reader *sessionReader) read() frameEvent {
 	file := reader.file
 	reader.mu.Lock()
@@ -138,32 +190,36 @@ func (reader *sessionReader) read() frameEvent {
 
 	var prefix [4]byte
 	n, err := file.Read(prefix[:1])
-	first := time.Now()
 	reader.mu.Lock()
+	// Timestamp and sequence are one local observation under the admission
+	// mutex. They do not claim the physical peer-send/syscall-return time.
+	first := time.Now()
 	reader.first = first
+	reader.sequence++
+	sequence := reader.sequence
 	reader.applyDeadline()
 	reader.mu.Unlock()
 	if err != nil {
-		return frameEvent{first: first, err: err}
+		return frameEvent{sequence: sequence, first: first, err: err}
 	}
 	if n != 1 {
-		return frameEvent{first: first, err: io.ErrUnexpectedEOF}
+		return frameEvent{sequence: sequence, first: first, err: io.ErrUnexpectedEOF}
 	}
 	if _, err = io.ReadFull(file, prefix[1:]); err != nil {
-		return frameEvent{first: first, err: sessionReadError(err)}
+		return frameEvent{sequence: sequence, first: first, err: sessionReadError(err)}
 	}
 	size := binary.BigEndian.Uint32(prefix[:])
 	if size == 0 {
-		return frameEvent{first: first, err: failure("invalid_input", "frame payload is empty")}
+		return frameEvent{sequence: sequence, first: first, err: failure("invalid_input", "frame payload is empty")}
 	}
 	if size > FrameLimit {
-		return frameEvent{first: first, err: failure("resource_limit", "frame payload exceeds byte limit")}
+		return frameEvent{sequence: sequence, first: first, err: failure("resource_limit", "frame payload exceeds byte limit")}
 	}
 	payload := make([]byte, int(size))
 	if _, err = io.ReadFull(file, payload); err != nil {
-		return frameEvent{first: first, err: sessionReadError(err)}
+		return frameEvent{sequence: sequence, first: first, err: sessionReadError(err)}
 	}
-	return frameEvent{payload: payload, first: first}
+	return frameEvent{sequence: sequence, payload: payload, first: first}
 }
 func sessionReadError(err error) error {
 	if errors.Is(err, os.ErrDeadlineExceeded) {
@@ -183,6 +239,16 @@ func transportFailure(err error) error {
 }
 func mutation(method string) bool {
 	return method == "resource.mutate" || method == "artifact.mutate" || method == "artifact.type.publish"
+}
+func requestDeadline(r Request, first time.Time) time.Time {
+	budget := ReadBudget
+	if mutation(r.Method) {
+		budget = MutationBudget
+	}
+	if r.TimeoutMS != 0 {
+		budget = time.Duration(r.TimeoutMS) * time.Millisecond
+	}
+	return first.Add(budget)
 }
 func requestOperation(r Request) any {
 	protocol := "hn-artifact/1"
@@ -322,6 +388,17 @@ func capabilities(session Session, r Registration, e EnablementEntry) capabiliti
 // Run is called only by explicit extension run. The watchdog includes validation,
 // startup, each frame/execution/response and idle revocation checks.
 func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr error) {
+	// Only an actual settled typed handler refusal can displace mutation
+	// uncertainty. Keep that same result if a late monitor cause is pending.
+	var settledRefusal *Error
+	mutationFailure := func(request Request, settled error) error {
+		var known *Error
+		if errors.As(settled, &known) && known.Code != "cancelled" && known.Code != "uncertain_operation" {
+			settledRefusal = known
+			return known
+		}
+		return uncertain(request)
+	}
 	started := cfg.Started
 	if started.IsZero() {
 		started = time.Now()
@@ -378,6 +455,17 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 		if e := child.close(); e != nil {
 			if runErr != nil && publicError(runErr).Code == "uncertain_operation" {
 				publicError(runErr).Message = "dispatched mutation requires inspection; child cleanup could not be verified"
+			} else if settledRefusal != nil && runErr == settledRefusal {
+				const suffix = "; child cleanup could not be verified"
+				message := settledRefusal.Message
+				if len(message)+len(suffix) > 4096 {
+					message = message[:4096-len(suffix)-len("…")]
+					for !utf8.ValidString(message) {
+						message = message[:len(message)-1]
+					}
+					message += "…"
+				}
+				settledRefusal.Message = message + suffix
 			} else {
 				runErr = e
 			}
@@ -455,7 +543,7 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 		<-monitorDone
 		select {
 		case cause := <-abort:
-			if runErr == nil || publicError(runErr).Code != "uncertain_operation" {
+			if runErr == nil || (publicError(runErr).Code != "uncertain_operation" && runErr != settledRefusal) {
 				runErr = cause
 			}
 		default:
@@ -488,12 +576,14 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 	if err = writeMessage(child.input, started.Add(StartupBudget), hello); err != nil {
 		return result, err
 	}
+	var consumed uint64
 	select {
 	case <-startup.Done():
 		return result, failure("cancelled", "module startup cancelled")
 	case cause := <-abort:
 		return result, cause
 	case event := <-frames:
+		consumed = event.sequence
 		if event.err != nil {
 			if e, ok := event.err.(*Error); ok && e.Code == "cancelled" {
 				return result, e
@@ -525,6 +615,7 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 			case cause := <-abort:
 				return result, cause
 			case event = <-frames:
+				consumed = event.sequence
 			}
 		}
 
@@ -560,14 +651,7 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 			return result, failure("invalid_input", "request ID was already used")
 		}
 		seen[request.ID] = true
-		budget := ReadBudget
-		if mutation(request.Method) {
-			budget = MutationBudget
-		}
-		if request.TimeoutMS != 0 {
-			budget = time.Duration(request.TimeoutMS) * time.Millisecond
-		}
-		deadline := event.first.Add(budget)
+		deadline := requestDeadline(request, event.first)
 		ctx, requestCancel := context.WithDeadline(sessionCtx, deadline)
 		reader.setDeadline(deadline)
 		e = owner.check()
@@ -627,6 +711,7 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 				interrupted = cause
 				waiting = false
 			case control := <-frames:
+				consumed = control.sequence
 				interrupted = failure("invalid_input", "second business request or invalid cancel control")
 				if control.err != nil {
 					interrupted = transportFailure(control.err)
@@ -643,18 +728,14 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 				completed = <-done
 			}
 			if dispatched && mutation(request.Method) {
-				var known *Error
-				if errors.As(completed.err, &known) && known.Code != "cancelled" && known.Code != "uncertain_operation" {
-					return result, known
-				}
-				return result, uncertain(request)
+				return result, mutationFailure(request, completed.err)
 			}
 			return result, interrupted
 		}
 		if ctx.Err() != nil {
 			requestCancel()
 			if dispatched && mutation(request.Method) {
-				return result, uncertain(request)
+				return result, mutationFailure(request, completed.err)
 			}
 			return result, failure("cancelled", "request deadline expired")
 		}
@@ -671,54 +752,97 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 		}
 		_, e = InspectMessage(encoded, "response", request.ID, method)
 		if e == nil {
+			tail := &responseFrontier{reader, make(chan responseMark, 1)}
 			written := make(chan error, 1)
-			go func() { written <- writeMessage(child.input, deadline, response) }()
-			writing := true
-			for writing {
-				select {
-				case e = <-written:
-					writing = false
-				case <-ctx.Done():
-					e = failure("cancelled", "response deadline expired")
-					_ = child.close()
-					<-written
-					writing = false
-				case cause := <-abort:
-					e = cause
-					_ = child.close()
-					<-written
-					writing = false
-				case control := <-frames:
-					// A completion already published by the writer means this is the next
-					// request. Otherwise it is a control/second request in the active budget.
+			go func() { written <- writeFrame(child.input, deadline, encoded, tail) }()
+			var tailMark, settlement responseMark
+			joined := false
+		responseWrite:
+			for {
+				if joined {
+					// A ready write cannot hide an already observed abort/deadline
+					// when deciding whether the retained candidate may be admitted.
 					select {
-					case e = <-written:
-						pending = &control
-						writing = false
+					case e = <-abort:
+						break responseWrite
 					default:
-						e = failure("invalid_input", "second business request or invalid cancel control")
-						if control.err != nil {
-							e = transportFailure(control.err)
-						} else if _, cancelError := InspectMessage(control.payload, "cancel", request.ID, ""); cancelError == nil {
-							e = failure("cancelled", "request cancelled during response")
-						}
-						requestCancel()
-						_ = child.close()
-						<-written
-						writing = false
+					}
+					if ctx.Err() != nil {
+						e = failure("cancelled", "response deadline expired")
+						break responseWrite
+					}
+					nextDeadline := time.Now().Add(ReadBudget)
+					if pending != nil && pending.err == nil {
+						var next Request
+						_ = json.Unmarshal(pending.payload, &next)
+						nextDeadline = requestDeadline(next, pending.first)
+					}
+					if reader.advance(consumed, nextDeadline) {
+						break
 					}
 				}
+				select {
+				case e = <-written:
+					joined = true
+					written = nil
+					if e != nil {
+						break responseWrite
+					}
+					settlement = reader.mark(nil)
+					if tailMark.at.IsZero() {
+						tailMark = <-tail.offered
+					}
+					continue
+				case <-ctx.Done():
+					e = failure("cancelled", "response deadline expired")
+				case cause := <-abort:
+					e = cause
+				case control := <-frames:
+					consumed = control.sequence
+					if tailMark.at.IsZero() {
+						select {
+						case tailMark = <-tail.offered:
+						default:
+						}
+					}
+					e = failure("invalid_input", "second business request or invalid cancel control")
+					if control.err != nil {
+						if errors.Is(control.err, io.EOF) && pending == nil && !tailMark.at.IsZero() && control.sequence > tailMark.sequence {
+							// EOF is conditional until successful joined writing and
+							// the ordinary outer-loop child exit0 verification.
+							pending = &control
+							e = nil
+							continue
+						}
+						e = transportFailure(control.err)
+					} else if _, cancelError := InspectMessage(control.payload, "cancel", request.ID, ""); cancelError == nil {
+						if settlement.at.IsZero() || control.sequence <= settlement.sequence {
+							e = failure("cancelled", "request cancelled during response")
+						}
+					} else if _, requestError := InspectMessage(control.payload, "request", "", ""); requestError == nil && pending == nil && !tailMark.at.IsZero() && control.sequence > tailMark.sequence {
+						// A single unadmitted candidate is bounded observation,
+						// not proof the peer consumed the preceding response.
+						pending = &control
+						e = nil
+						continue
+					}
+				}
+				requestCancel()
+				_ = child.close()
+				if !joined {
+					<-written
+				}
+				break
 			}
 		}
 
 		requestCancel()
 		if e != nil {
 			if dispatched && mutation(request.Method) {
-				return result, uncertain(request)
+				return result, mutationFailure(request, completed.err)
 			}
 			return result, e
 		}
 		result.CompletedRequests++
-		reader.setDeadline(time.Now().Add(ReadBudget))
 	}
 }
