@@ -148,7 +148,13 @@ func TestExtensionChildAsset(t *testing.T) {
 	}
 	responses := []any{}
 	for _, request := range requests {
-		hostWrite(request)
+		if mode == "frame-at" {
+			data, _ := json.Marshal(request)
+			data = append(data, bytes.Repeat([]byte{' '}, 8388608-len(data))...)
+			_, _ = os.Stdout.Write(protocolRawFrame(data))
+		} else {
+			hostWrite(request)
+		}
 		responses = append(responses, hostRead(os.Stdin))
 	}
 	encoded, _ := json.Marshal(map[string]any{"hello": hello, "responses": responses, "argv": os.Args[at:]})
@@ -296,7 +302,7 @@ func TestExtensionRunCLI(t *testing.T) {
 	assertHostExited(t, waitHostMarker(t, f.marker))
 }
 func TestExtensionRunRefusalsCLI(t *testing.T) {
-	for _, tc := range []struct{ mode, code string }{{"incompatible", "incompatible_version"}, {"crash", "unavailable_module"}, {"oversize", "resource_limit"}, {"zero", "invalid_input"}, {"stderr-over", "resource_limit"}, {"duplicate", "invalid_input"}, {"stderr-at", ""}, {"unsupported", ""}, {"ungranted", ""}, {"ungranted-write", ""}} {
+	for _, tc := range []struct{ mode, code string }{{"incompatible", "incompatible_version"}, {"crash", "unavailable_module"}, {"oversize", "resource_limit"}, {"zero", "invalid_input"}, {"stderr-over", "resource_limit"}, {"duplicate", "invalid_input"}, {"stderr-at", ""}, {"frame-at", ""}, {"unsupported", ""}, {"ungranted", ""}, {"ungranted-write", ""}} {
 		t.Run(tc.mode, func(t *testing.T) {
 			f := newHostFixture(t, tc.mode)
 			before := hostNativeSnapshot(t, f.repo)
