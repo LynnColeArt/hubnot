@@ -135,7 +135,7 @@ func TestExtensionChildAsset(t *testing.T) {
 	}
 	requests := []map[string]any{{"protocol": "hn.extension/1", "request_id": "inventory", "method": "capabilities.list", "params": map[string]any{}}}
 	if mode == "unsupported" {
-		requests = append(requests, map[string]any{"protocol": "hn.extension/1", "request_id": "read", "method": "resource.read", "params": map[string]any{"family": "issue", "id": nil, "limit": 20, "cursor": nil}})
+		requests = append(requests, map[string]any{"protocol": "hn.extension/1", "request_id": "privileged", "method": "memory.mutate", "params": map[string]any{}})
 	}
 	if mode == "ungranted" {
 		requests = append(requests, map[string]any{"protocol": "hn.extension/1", "request_id": "read", "method": "resource.read", "params": map[string]any{"family": "project", "id": nil, "limit": 20, "cursor": nil}})
@@ -148,6 +148,14 @@ func TestExtensionChildAsset(t *testing.T) {
 	}
 	responses := []any{}
 	for _, request := range requests {
+		if mode == "unsupported" && request["method"] == "memory.mutate" {
+			// Pair this exact attempted request marker with the host's terminal
+			// unsupported response, proving the real child reached raw framing.
+			data, _ := json.Marshal(request)
+			if os.WriteFile(marker+".request", data, 0600) != nil {
+				os.Exit(76)
+			}
+		}
 		if mode == "frame-at" {
 			data, _ := json.Marshal(request)
 			data = append(data, bytes.Repeat([]byte{' '}, 8388608-len(data))...)
@@ -302,16 +310,31 @@ func TestExtensionRunCLI(t *testing.T) {
 	assertHostExited(t, waitHostMarker(t, f.marker))
 }
 func TestExtensionRunRefusalsCLI(t *testing.T) {
-	for _, tc := range []struct{ mode, code string }{{"incompatible", "incompatible_version"}, {"crash", "unavailable_module"}, {"oversize", "resource_limit"}, {"zero", "invalid_input"}, {"stderr-over", "resource_limit"}, {"duplicate", "invalid_input"}, {"stderr-at", ""}, {"frame-at", ""}, {"unsupported", ""}, {"ungranted", ""}, {"ungranted-write", ""}} {
+	for _, tc := range []struct{ mode, code string }{{"incompatible", "incompatible_version"}, {"crash", "unavailable_module"}, {"oversize", "resource_limit"}, {"zero", "invalid_input"}, {"stderr-over", "resource_limit"}, {"duplicate", "invalid_input"}, {"stderr-at", ""}, {"frame-at", ""}, {"unsupported", "unsupported_capability"}, {"ungranted", ""}, {"ungranted-write", ""}} {
 		t.Run(tc.mode, func(t *testing.T) {
 			f := newHostFixture(t, tc.mode)
 			before := hostNativeSnapshot(t, f.repo)
-			f.invoke(tc.code, "run", f.module, "--json")
+			outcome := f.invoke(tc.code, "run", f.module, "--json")
 			assertHostExited(t, waitHostMarker(t, f.marker))
 			if !reflect.DeepEqual(before, hostNativeSnapshot(t, f.repo)) {
 				t.Fatal("refusal changed native state")
 			}
-			if tc.mode == "unsupported" || tc.mode == "ungranted" || tc.mode == "ungranted-write" {
+			if tc.mode == "unsupported" {
+				data, err := os.ReadFile(f.marker + ".request")
+				if err != nil {
+					t.Fatalf("child did not reach privileged request: %v", err)
+				}
+				var attempted map[string]any
+				want := map[string]any{"protocol": "hn.extension/1", "request_id": "privileged", "method": "memory.mutate", "params": map[string]any{}}
+				if json.Unmarshal(data, &attempted) != nil || !reflect.DeepEqual(attempted, want) {
+					t.Fatalf("actual raw request %s", data)
+				}
+				public := outcome["error"].(map[string]any)
+				if len(public) != 5 || public["origin"] != "host" || public["recovery"] != "do_not_retry" || public["operation"] != nil {
+					t.Fatalf("terminal unsupported error %v", public)
+				}
+			}
+			if tc.mode == "ungranted" || tc.mode == "ungranted-write" {
 				data, _ := os.ReadFile(f.result)
 				want := "unsupported_capability"
 				if tc.mode == "ungranted" || tc.mode == "ungranted-write" {

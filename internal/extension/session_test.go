@@ -178,3 +178,83 @@ func TestSessionPartialControlKeepsThirtySecondCap(t *testing.T) {
 		t.Fatal("partial control inherited mutation deadline")
 	}
 }
+
+// Hold the actual monitor check across a valid final response and child exit.
+// The CLI's Recheck reports cancellation when its supplied context is cancelled;
+// only the host's intentional shutdown should be invisible to a clean result.
+func TestSessionInFlightRecheckAtShutdown(t *testing.T) {
+	for _, mode := range []string{"clean", "revoked", "repository-error", "parent-cancel", "independent-cancel", "mutation-parent-cancel"} {
+		t.Run(mode, func(t *testing.T) {
+			asset := "clean-shutdown"
+			if mode == "mutation-parent-cancel" {
+				asset = "mutation-shutdown"
+			}
+			cfg, pid := sessionFixture(t, asset)
+			parent, parentCancel := context.WithCancel(context.Background())
+			defer parentCancel()
+			entered, checked := make(chan struct{}), make(chan struct{})
+			original := cfg.Recheck
+			cfg.Recheck = func(ctx context.Context, binding Binding) (Registration, EnablementEntry, error) {
+				// Startup and request checks have deadlines; the periodic monitor does not.
+				if _, bounded := ctx.Deadline(); bounded {
+					return original(ctx, binding)
+				}
+				close(entered)
+				defer close(checked)
+				if mode != "independent-cancel" {
+					<-ctx.Done()
+				}
+				switch mode {
+				case "revoked":
+					return Registration{}, EnablementEntry{}, failure("denied_access", "module epoch changed")
+				case "repository-error":
+					return Registration{}, EnablementEntry{}, failure("repository_error", "cannot validate registration")
+				default:
+					return Registration{}, EnablementEntry{}, failure("cancelled", "host validation cancelled")
+				}
+			}
+			cfg.Dispatch = func(ctx context.Context, call Invocation) (any, error) {
+				if e := AuthorizeRequest(call); e != nil {
+					return nil, e
+				}
+				select {
+				case <-entered:
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				}
+				if mode == "parent-cancel" || mode == "mutation-parent-cancel" {
+					parentCancel()
+				}
+				if mode == "parent-cancel" || mode == "mutation-parent-cancel" || mode == "independent-cancel" {
+					<-ctx.Done()
+					return nil, ctx.Err()
+				}
+				return map[string]any{"items": []any{}, "source_cut": testID, "next_cursor": nil}, nil
+			}
+			result, err := Run(parent, cfg)
+			select {
+			case <-checked:
+			default:
+				t.Fatal("returned without joining in-flight monitor check")
+			}
+			switch mode {
+			case "clean":
+				if err != nil || result.Outcome != "completed" || result.CompletedRequests != 1 || result.ExitCode != 0 {
+					t.Fatalf("clean protocol completion became a monitor failure: result=%#v error=%v", result, err)
+				}
+			case "revoked":
+				expectGrantError(t, err, "denied_access")
+			case "repository-error":
+				expectGrantError(t, err, "repository_error")
+			case "mutation-parent-cancel":
+				var public *Error
+				if !errors.As(err, &public) || public.Code != "uncertain_operation" || public.Recovery != "inspect_operation" || !reflect.DeepEqual(public.Operation, map[string]any{"protocol": "hn/0", "actor": repeatActor(), "operation": "actual-key"}) {
+					t.Fatalf("lost dispatched mutation uncertainty: %#v", err)
+				}
+			default:
+				expectGrantError(t, err, "cancelled")
+			}
+			assertSessionPIDGone(t, pid)
+		})
+	}
+}
