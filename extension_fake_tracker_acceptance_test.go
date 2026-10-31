@@ -1102,3 +1102,201 @@ func TestExtensionFakeTrackerRejectsHostResponseFaults(t *testing.T) {
 		})
 	}
 }
+
+// Complete, correlated uncertainty is a valid host outcome, not malformed wire
+// input or a definitive refusal. These frames drive the supplied executable;
+// they prove its requests/journal, not publication by the scripted host.
+func TestExtensionFakeTrackerConsumedUncertaintyRecovery(t *testing.T) {
+	consumer := fakeTrackerBinary(t)
+	key := bytes.Repeat([]byte{81}, 32)
+	sum := sha256.Sum256(key)
+	actor := hex.EncodeToString(sum[:])
+	id := func(c string) string { return "sha256:" + strings.Repeat(c, 64) }
+	op := func(name string) string {
+		sum := sha256.Sum256([]byte("uncertain-control\x00tracker:item:42\x00" + name))
+		return "tracker-" + hex.EncodeToString(sum[:])
+	}
+	response := func(n int, data, failure any) map[string]any {
+		return map[string]any{"protocol": "hn.extension/1", "request_id": "tracker-" + strconv.Itoa(n), "ok": failure == nil, "data": data, "error": failure}
+	}
+	mutation := func(event string) map[string]any {
+		return map[string]any{"protocol": "hn/0", "family": "issue", "type_id": nil, "resource_id": id("a"), "event_id": id(event), "replayed": false, "conflict": false, "head_count": 1, "admission": nil, "source_cut": id("d")}
+	}
+	hello := map[string]any{"protocol": "hn.extension/1", "hello": map[string]any{"session_id": strings.Repeat("1", 32), "repository_id": id("d"), "module_id": "example.tracker/tool", "module_version": "1", "registration_id": id("e")}, "limits": map[string]any{"frame_bytes": 8388608, "read_timeout_ms": 30000, "mutation_timeout_ms": 240000, "page_max": 200, "one_outstanding": true}}
+	identity := response(1, map[string]any{"initialized": true, "actor": actor, "name": "Native signer", "public_key": base64.RawStdEncoding.EncodeToString(key)}, nil)
+	frame := func(v any) []byte {
+		raw, err := json.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		out := make([]byte, 4+len(raw))
+		binary.BigEndian.PutUint32(out, uint32(len(raw)))
+		copy(out[4:], raw)
+		return out
+	}
+	for _, action := range []string{"import", "update"} {
+		for _, legacy := range []bool{false, true} {
+			for _, outcome := range []string{"found", "verified_absent", "uncertain", "lookup-refused"} {
+				t.Run(action+"/legacy="+strconv.FormatBool(legacy)+"/"+outcome, func(t *testing.T) {
+					var reads, version atomic.Int64
+					version.Store(1)
+					server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						reads.Add(1)
+						if r.Method != "GET" || r.URL.Path != "/item" || r.Header.Get("Authorization") != "Bearer private-uncertain-token" {
+							http.Error(w, "invalid", 400)
+							return
+						}
+						_ = json.NewEncoder(w).Encode(map[string]any{"id": "42", "version": version.Load(), "title": "External version " + strconv.FormatInt(version.Load(), 10), "body": "original source", "author": "external claim", "time": "1901-01-01T00:00:00Z", "comments": []any{map[string]any{"id": "c1", "body": "original comment", "author": "external comment claim", "time": "2099-01-01T00:00:00Z"}}})
+					}))
+					defer server.Close()
+					dir := t.TempDir()
+					cfg, plan, journal, report := filepath.Join(dir, "config"), filepath.Join(dir, "plan"), filepath.Join(dir, "journal"), filepath.Join(dir, "report")
+					fakeWrite(t, cfg, map[string]any{"api": server.URL, "token": "private-uncertain-token", "connection": "uncertain-control", "source": "tracker:item:42", "journal": journal, "report": report})
+					run := func(action string, responses ...map[string]any) ([]map[string]any, error) {
+						t.Helper()
+						fakeWrite(t, plan, map[string]any{"action": action})
+						input := append(frame(hello), frame(identity)...)
+						for _, r := range responses {
+							input = append(input, frame(r)...)
+						}
+						ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+						defer cancel()
+						cmd := exec.CommandContext(ctx, consumer, "--config", cfg, "--plan", plan)
+						cmd.Stdin = bytes.NewReader(input)
+						var stdout, stderr bytes.Buffer
+						cmd.Stdout = &stdout
+						cmd.Stderr = &stderr
+						err := cmd.Run()
+						if ctx.Err() != nil {
+							t.Fatal("uncertainty control did not finish", ctx.Err(), stderr.String())
+						}
+						var frames []map[string]any
+						for stdout.Len() > 0 {
+							var prefix [4]byte
+							if _, e := io.ReadFull(&stdout, prefix[:]); e != nil {
+								t.Fatal(e)
+							}
+							n := binary.BigEndian.Uint32(prefix[:])
+							if n == 0 || n > 8388608 {
+								t.Fatal("invalid consumer frame", n)
+							}
+							raw := make([]byte, n)
+							if _, e := io.ReadFull(&stdout, raw); e != nil {
+								t.Fatal(e)
+							}
+							var v map[string]any
+							if e := json.Unmarshal(raw, &v); e != nil {
+								t.Fatal(e)
+							}
+							frames = append(frames, v)
+						}
+						return frames, err
+					}
+					name, event := "issue", "b"
+					if action == "update" {
+						frames, err := run("import", response(2, mutation("b"), nil), response(3, mutation("c"), nil))
+						if err != nil || len(frames) != 4 {
+							t.Fatal("real executable positive import control", err, frames)
+						}
+						version.Store(2)
+						name, event = "update-2", "f"
+					}
+					failure := map[string]any{"origin": "host", "code": "uncertain_operation", "message": "dispatched mutation outcome requires inspection", "recovery": "inspect_operation", "operation": map[string]any{"protocol": "hn/0", "actor": actor, "operation": op(name)}}
+					frames, err := run(action, response(2, nil, failure))
+					if err == nil || len(frames) != 3 || frames[2]["method"] != "resource.mutate" {
+						t.Fatal("valid uncertainty did not reach actual mutation", err, frames)
+					}
+					before := fakeRead(t, journal)
+					intent := before["native"].(map[string]any)[name].(map[string]any)
+					if intent["refusal"] != nil || !reflect.DeepEqual(intent["unsettled"], failure) || intent["result"] != nil {
+						t.Fatal("valid uncertainty was saved as a settled refusal/result", intent)
+					}
+					original := intent["params"]
+					if legacy {
+						// Recreate exactly the old persisted defect shape, keeping the
+						// original request and response; never synthesize a success.
+						intent["refusal"] = intent["unsettled"]
+						delete(intent, "unsettled")
+						fakeWrite(t, journal, before)
+					}
+					version.Store(3)
+					beforeReads := reads.Load()
+					lookup := map[string]any{"status": outcome, "protocol": "hn/0", "actor": actor, "operation": op(name), "family": "issue", "type_id": nil, "request": nil, "resource_id": nil, "event_id": nil, "result": nil, "source_cut": id("d"), "reason": nil}
+					if outcome == "found" {
+						lookup["request"], lookup["resource_id"], lookup["event_id"], lookup["result"] = id("f"), id("a"), id(event), mutation(event)
+					}
+					if outcome == "uncertain" {
+						lookup["reason"] = "private_intent_pending"
+					}
+					lookupResponse := response(2, lookup, nil)
+					if outcome == "lookup-refused" {
+						lookupResponse = response(2, nil, map[string]any{"origin": "host", "code": "denied_access", "message": "lookup not granted", "recovery": "do_not_retry", "operation": nil})
+					}
+					responses := []map[string]any{lookupResponse, response(3, mutation(event), nil)}
+					if action == "import" {
+						responses = append(responses, response(4, mutation("c"), nil))
+					}
+					frames, err = run(action, responses...)
+					if reads.Load() != beforeReads {
+						t.Fatal("uncertain original operation allowed a fresh source GET", reads.Load()-beforeReads)
+					}
+					if len(frames) < 3 || frames[2]["method"] != "resource.operation" || frames[2]["params"].(map[string]any)["operation"] != op(name) {
+						t.Fatal("original operation was not inspected first", frames)
+					}
+					after := fakeRead(t, journal)
+					saved := after["native"].(map[string]any)[name].(map[string]any)
+					if !reflect.DeepEqual(saved["params"], original) || saved["refusal"] != nil || !reflect.DeepEqual(saved["unsettled"], failure) {
+						t.Fatal("original intent/error evidence changed or lookup refusal became mutation refusal", saved)
+					}
+					if _, exists := after["native"].(map[string]any)["update-3"]; exists {
+						t.Fatal("new key selected before original settlement")
+					}
+					if outcome == "uncertain" || outcome == "lookup-refused" {
+						wantStatus := "native_uncertain"
+						if outcome == "lookup-refused" {
+							wantStatus = "denied_access"
+						}
+						if err == nil || len(frames) != 3 || saved["result"] != nil || saved["baseline_saved"] != false || fakeRead(t, report)["status"] != wantStatus {
+							t.Fatal("unresolved lookup triggered mutation/baseline success", err, frames, saved)
+						}
+						// A read-only lookup refusal cannot close the write intent: a
+						// later explicit invocation must still inspect the same key.
+						frames, err = run(action, lookupResponse)
+						if err == nil || len(frames) != 3 || frames[2]["method"] != "resource.operation" || reads.Load() != beforeReads {
+							t.Fatal("lookup failure stranded/replaced pending intent", err, frames)
+						}
+						if outcome == "lookup-refused" {
+							lookup["status"], lookup["request"], lookup["resource_id"], lookup["event_id"], lookup["result"] = "found", id("f"), id("a"), id(event), mutation(event)
+							recovered := []map[string]any{response(2, lookup, nil), response(3, mutation(event), nil)}
+							if action == "import" {
+								recovered = append(recovered, response(4, mutation("c"), nil))
+							}
+							frames, err = run(action, recovered...)
+							if err != nil || len(frames) < 4 || frames[2]["method"] != "resource.operation" || frames[3]["method"] != "resource.mutate" || !reflect.DeepEqual(frames[3]["params"], original) || reads.Load() != beforeReads {
+								t.Fatal("explicit restart after lookup refusal failed original found recovery", err, frames)
+							}
+							settled := fakeRead(t, journal)
+							if _, exists := settled["native"].(map[string]any)["update-3"]; exists {
+								t.Fatal("lookup refusal minted a new key")
+							}
+						}
+						return
+					}
+					wantFrames := 4
+					if action == "import" {
+						wantFrames = 5
+					}
+					if err != nil || len(frames) != wantFrames || frames[3]["method"] != "resource.mutate" || !reflect.DeepEqual(frames[3]["params"], original) {
+						t.Fatal("original exact replay did not complete", err, frames)
+					}
+					if saved["result"].(map[string]any)["event_id"] != id(event) {
+						t.Fatal("recovery lost original result", saved)
+					}
+					if action == "update" && (after["external_version"] != float64(2) || saved["baseline_saved"] != true) {
+						t.Fatal("recovery adopted newer source version", after)
+					}
+				})
+			}
+		}
+	}
+}

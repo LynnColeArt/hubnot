@@ -294,6 +294,14 @@ func operationKey(parts ...string) string {
 	sum := sha256.Sum256([]byte(strings.Join(parts, "\x00")))
 	return "tracker-" + hex.EncodeToString(sum[:])
 }
+
+// Only a definitive mutation response ends this intent. A lookup refusal says
+// nothing about the original write, and nondefinitive mutation errors preserve
+// its exact actor/key/content until a later explicit invocation reconciles it.
+func definitiveMutationRefusal(failure map[string]any) bool {
+	return failure != nil && failure["recovery"] == "do_not_retry" && failure["code"] != "uncertain_operation" && failure["code"] != "admission_pending"
+}
+
 func (x *client) intent(name string, params map[string]any) (map[string]any, error) {
 	prior := x.j.Native[name]
 	if prior == nil {
@@ -309,7 +317,16 @@ func (x *client) intent(name string, params map[string]any) (map[string]any, err
 			return nil, errors.New("operation_conflict")
 		}
 		if prior.Refusal != nil {
-			return nil, errors.New(textField(prior.Refusal, "code"))
+			if definitiveMutationRefusal(prior.Refusal) {
+				return nil, errors.New(textField(prior.Refusal, "code"))
+			}
+			// Earlier connector versions stored uncertainty in Refusal. Retain
+			// that original response while recovering the existing intent; do
+			// not strand old journals or turn their uncertainty into absence.
+			prior.Unsettled, prior.Refusal = prior.Refusal, nil
+			if err := x.save(); err != nil {
+				return nil, err
+			}
 		}
 		lookup, err := x.ok("resource.operation", map[string]any{"family": "issue", "actor": prior.Params["actor"], "operation": prior.Params["operation"]})
 		if err != nil {
@@ -340,7 +357,12 @@ func (x *client) intent(name string, params map[string]any) (map[string]any, err
 	}
 	result, err := responseData(response)
 	if err != nil {
-		prior.Refusal, _ = response["error"].(map[string]any)
+		failure, _ := response["error"].(map[string]any)
+		if definitiveMutationRefusal(failure) {
+			prior.Refusal = failure
+		} else if prior.Unsettled == nil {
+			prior.Unsettled = failure
+		}
 		if e := x.save(); e != nil {
 			return nil, e
 		}
@@ -426,7 +448,7 @@ func (x *client) importItem(update bool) error {
 		// settle together, including a crash after recording the result alone.
 		pending := ""
 		for name, intent := range x.j.Native {
-			if strings.HasPrefix(name, "update-") && intent != nil && !intent.BaselineSaved && intent.Refusal == nil {
+			if strings.HasPrefix(name, "update-") && intent != nil && !intent.BaselineSaved && !definitiveMutationRefusal(intent.Refusal) {
 				if pending != "" {
 					return errors.New("native_uncertain")
 				}

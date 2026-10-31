@@ -125,6 +125,17 @@ view. A completed replacement removes absent entries from the connector's commit
 accepted-view map. Loss of visibility does not implicitly delete the external issue.
 Full IDs and timestamps are identities/descriptions, never global causal ordering.
 
+A correlated mutation error with `inspect_operation` or `retry_identical` keeps
+the original actor, operation key, parents and content pending. The private
+`unsettled` field retains that response; older journals that put it in `refusal`
+are recovered without discarding the response. A later explicit invocation
+inspects the original operation first: `found` permits exact replay,
+`verified_absent` permits only the same saved request, and `uncertain` stops.
+A read-only lookup refusal also stops and leaves that write pending. Neither
+case permits a fresh source read or a new key. Recovery guidance never starts
+an automatic retry. A definitive mutation refusal with `do_not_retry` remains
+an explicit stop for that intent.
+
 A true concurrent native/external edit yields native `stale_revision` and/or the
 fake API's `external_conflict`. The original native request and failed external
 intent remain inspectable privately. Stop and choose an explicit new intent after

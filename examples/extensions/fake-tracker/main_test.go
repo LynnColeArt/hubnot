@@ -678,64 +678,133 @@ type trackerRoundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f trackerRoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 func TestPendingUpdateSettlesBeforeFreshSourceOrNewOperation(t *testing.T) {
-	for _, status := range []string{"found", "verified_absent", "uncertain", "recorded-result-before-baseline"} {
-		t.Run(status, func(t *testing.T) {
-			dir := t.TempDir()
-			actor := strings.Repeat("a", 64)
-			params := mutation(actor, "original-update-key", "revise", testHostID(), []string{testHostID()}, testHostState(), "")
-			intent := &nativeIntent{Params: params}
-			if status == "recorded-result-before-baseline" {
-				intent.Result = testHostResponse(t, testHostMutation())["data"].(map[string]any)
-			}
-			j := &journal{Actor: actor, Native: map[string]*nativeIntent{"issue": {Result: map[string]any{"resource_id": testHostID()}}, "update-2": intent}, Baseline: map[string][]string{}, ExternalVersion: 1, NativeHead: testHostID()}
-			lookup := map[string]any{"status": status, "protocol": "hn/0", "actor": actor, "operation": "original-update-key", "family": "issue", "type_id": nil, "request": nil, "resource_id": nil, "event_id": nil, "result": nil, "source_cut": testHostID(), "reason": nil}
-			if status == "found" || status == "recorded-result-before-baseline" {
-				lookup["status"] = "found"
-				lookup["request"] = testHostID()
-				lookup["resource_id"] = testHostID()
-				lookup["event_id"] = testHostID()
-				lookup["result"] = testHostMutation()
-			}
-			if status == "uncertain" {
-				lookup["reason"] = "private_intent_pending"
-			}
-			var input, output bytes.Buffer
-			if err := writeFrame(&input, map[string]any{"protocol": protocol, "request_id": "tracker-1", "ok": true, "data": lookup, "error": nil}); err != nil {
-				t.Fatal(err)
-			}
-			if err := writeFrame(&input, map[string]any{"protocol": protocol, "request_id": "tracker-2", "ok": true, "data": testHostMutation(), "error": nil}); err != nil {
-				t.Fatal(err)
-			}
-			reads := 0
-			x := &client{c: config{Journal: filepath.Join(dir, "journal"), Report: filepath.Join(dir, "report")}, j: j, input: &input, output: &output, http: &http.Client{Transport: trackerRoundTripFunc(func(*http.Request) (*http.Response, error) {
-				reads++
-				return nil, fmt.Errorf("fresh source forbidden before pending settlement")
-			})}}
-			err := x.importItem(true)
-			if reads != 0 || len(j.Native) != 2 {
-				t.Fatal("pending update read fresh source or created a new operation", reads, j.Native)
-			}
-			first, frameErr := readFrame(&output)
-			if frameErr != nil || first["method"] != "resource.operation" || first["params"].(map[string]any)["operation"] != "original-update-key" {
-				t.Fatal("original operation was not looked up first", first, frameErr)
-			}
-			if status == "uncertain" {
-				if err == nil || err.Error() != "native_uncertain" || output.Len() != 0 || intent.BaselineSaved || j.ExternalVersion != 1 {
-					t.Fatal("uncertainty became absence/success or another writer", err)
+	for _, legacy := range []bool{false, true} {
+		for _, status := range []string{"found", "verified_absent", "uncertain", "lookup-refused", "recorded-result-before-baseline"} {
+			t.Run(fmt.Sprintf("legacy=%t/%s", legacy, status), func(t *testing.T) {
+				dir := t.TempDir()
+				actor := strings.Repeat("a", 64)
+				params := mutation(actor, "original-update-key", "revise", testHostID(), []string{testHostID()}, testHostState(), "")
+				intent := &nativeIntent{Params: params}
+				uncertainty := map[string]any{"origin": "host", "code": "uncertain_operation", "message": "requires inspection", "recovery": "inspect_operation", "operation": map[string]any{"protocol": "hn/0", "actor": actor, "operation": "original-update-key"}}
+				if legacy {
+					intent.Refusal = uncertainty
+				} else {
+					intent.Unsettled = uncertainty
 				}
-				return
+				if status == "recorded-result-before-baseline" {
+					intent.Result = testHostResponse(t, testHostMutation())["data"].(map[string]any)
+				}
+				j := &journal{Actor: actor, Native: map[string]*nativeIntent{"issue": {Result: map[string]any{"resource_id": testHostID()}}, "update-2": intent}, Baseline: map[string][]string{}, ExternalVersion: 1, NativeHead: testHostID()}
+				lookup := map[string]any{"status": status, "protocol": "hn/0", "actor": actor, "operation": "original-update-key", "family": "issue", "type_id": nil, "request": nil, "resource_id": nil, "event_id": nil, "result": nil, "source_cut": testHostID(), "reason": nil}
+				if status == "found" || status == "recorded-result-before-baseline" {
+					lookup["status"] = "found"
+					lookup["request"] = testHostID()
+					lookup["resource_id"] = testHostID()
+					lookup["event_id"] = testHostID()
+					lookup["result"] = testHostMutation()
+				}
+				if status == "uncertain" {
+					lookup["reason"] = "private_intent_pending"
+				}
+				var input, output bytes.Buffer
+				lookupResponse := map[string]any{"protocol": protocol, "request_id": "tracker-1", "ok": true, "data": lookup, "error": nil}
+				if status == "lookup-refused" {
+					lookupResponse["ok"], lookupResponse["data"], lookupResponse["error"] = false, nil, testHostRefusal()
+				}
+				if err := writeFrame(&input, lookupResponse); err != nil {
+					t.Fatal(err)
+				}
+				if err := writeFrame(&input, map[string]any{"protocol": protocol, "request_id": "tracker-2", "ok": true, "data": testHostMutation(), "error": nil}); err != nil {
+					t.Fatal(err)
+				}
+				reads := 0
+				x := &client{c: config{Journal: filepath.Join(dir, "journal"), Report: filepath.Join(dir, "report")}, j: j, input: &input, output: &output, http: &http.Client{Transport: trackerRoundTripFunc(func(*http.Request) (*http.Response, error) {
+					reads++
+					return nil, fmt.Errorf("fresh source forbidden before pending settlement")
+				})}}
+				err := x.importItem(true)
+				if reads != 0 || len(j.Native) != 2 {
+					t.Fatal("pending update read fresh source or created a new operation", reads, j.Native)
+				}
+				first, frameErr := readFrame(&output)
+				if frameErr != nil || first["method"] != "resource.operation" || first["params"].(map[string]any)["operation"] != "original-update-key" {
+					t.Fatal("original operation was not looked up first", first, frameErr)
+				}
+				if intent.Refusal != nil || !reflect.DeepEqual(intent.Unsettled, uncertainty) {
+					t.Fatal("lost original uncertainty or mistook lookup refusal for mutation refusal", intent)
+				}
+				if status == "uncertain" || status == "lookup-refused" {
+					wantError := "native_uncertain"
+					if status == "lookup-refused" {
+						wantError = "denied_access"
+					}
+					if err == nil || err.Error() != wantError || output.Len() != 0 || intent.BaselineSaved || j.ExternalVersion != 1 {
+						t.Fatal("uncertainty became absence/success or another writer", err)
+					}
+					return
+				}
+				if err != nil || !intent.BaselineSaved || j.ExternalVersion != 2 {
+					t.Fatal("original update result/baseline not settled", err, j)
+				}
+				second, frameErr := readFrame(&output)
+				if frameErr != nil || second["method"] != "resource.mutate" || output.Len() != 0 {
+					t.Fatal("original exact replay missing", second, frameErr)
+				}
+				want, _ := json.Marshal(params)
+				got, _ := json.Marshal(second["params"])
+				if !bytes.Equal(want, got) {
+					t.Fatal("recovery regenerated original actor/key/parents/content")
+				}
+			})
+		}
+	}
+}
+
+func TestNativeMutationErrorKeepsItsRecoveryMeaning(t *testing.T) {
+	for _, tc := range []struct {
+		code, recovery string
+		definitive     bool
+	}{
+		{"uncertain_operation", "inspect_operation", false},
+		{"admission_pending", "inspect_operation", false},
+		{"repository_error", "retry_identical", false},
+		{"stale_revision", "do_not_retry", true},
+	} {
+		t.Run(tc.code, func(t *testing.T) {
+			dir := t.TempDir()
+			params := mutation(strings.Repeat("a", 64), "original-key", "revise", testHostID(), []string{testHostID()}, testHostState(), "")
+			origin := "native"
+			if tc.code == "uncertain_operation" {
+				origin = "host"
 			}
-			if err != nil || !intent.BaselineSaved || j.ExternalVersion != 2 {
-				t.Fatal("original update result/baseline not settled", err, j)
+			failure := map[string]any{"origin": origin, "code": tc.code, "message": "original outcome", "recovery": tc.recovery, "operation": map[string]any{"protocol": "hn/0", "actor": params["actor"], "operation": params["operation"]}}
+			var input, output bytes.Buffer
+			if err := writeFrame(&input, map[string]any{"protocol": protocol, "request_id": "tracker-1", "ok": false, "data": nil, "error": failure}); err != nil {
+				t.Fatal(err)
 			}
-			second, frameErr := readFrame(&output)
-			if frameErr != nil || second["method"] != "resource.mutate" || output.Len() != 0 {
-				t.Fatal("original exact replay missing", second, frameErr)
+			x := &client{c: config{Journal: filepath.Join(dir, "journal"), Report: filepath.Join(dir, "report")}, j: &journal{Native: map[string]*nativeIntent{}}, input: &input, output: &output}
+			if _, err := x.intent("update-2", params); err == nil || err.Error() != tc.code {
+				t.Fatal("wrong mutation outcome", err)
 			}
-			want, _ := json.Marshal(params)
-			got, _ := json.Marshal(second["params"])
-			if !bytes.Equal(want, got) {
-				t.Fatal("recovery regenerated original actor/key/parents/content")
+			var saved journal
+			if err := readPrivate(x.c.Journal, privateBytes, &saved); err != nil {
+				t.Fatal(err)
+			}
+			intent := saved.Native["update-2"]
+			got := intent.Unsettled
+			if tc.definitive {
+				got = intent.Refusal
+			}
+			want, _ := json.Marshal(failure)
+			raw, _ := json.Marshal(got)
+			if !bytes.Equal(want, raw) || definitiveMutationRefusal(intent.Refusal) != tc.definitive {
+				t.Fatal("response recovery lost in durable journal", intent)
+			}
+			if tc.definitive {
+				output.Reset()
+				if _, err := x.intent("update-2", params); err == nil || err.Error() != tc.code || output.Len() != 0 {
+					t.Fatal("definitive mutation refusal retried", err, output.String())
+				}
 			}
 		})
 	}

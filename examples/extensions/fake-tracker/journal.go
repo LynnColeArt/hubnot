@@ -38,6 +38,7 @@ type nativeIntent struct {
 	Result        map[string]any `json:"result"`
 	Lookup        map[string]any `json:"lookup"`
 	Refusal       map[string]any `json:"refusal"`
+	Unsettled     map[string]any `json:"unsettled,omitempty"`
 }
 type externalRequest struct {
 	Key       string   `json:"key"`
