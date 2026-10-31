@@ -28,7 +28,7 @@ hn extension register --manifest /absolute/private/manifest.json \
   --arg --output --arg /absolute/private/result.json --json
 hn extension enable example.inventory/publisher \
   --grant native:identity=read \
-  --grant artifact:example.inventory/*=read,create,revise,type.publish --json
+  --grant artifact:example.inventory/*=create,revise,type.publish --json
 hn extension run example.inventory/publisher --json
 ```
 

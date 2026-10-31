@@ -98,7 +98,7 @@ func inventoryAbsent(path string) error {
 }
 
 func (f *inventoryFixture) grant(resolve bool) {
-	actions := "read,create,revise,type.publish"
+	actions := "create,revise,type.publish"
 	if resolve {
 		actions += ",resolve"
 	}
