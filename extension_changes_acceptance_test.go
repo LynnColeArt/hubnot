@@ -23,6 +23,12 @@ import (
 func changesFixture(t *testing.T, grants ...string) *nativeHostFixture {
 	t.Helper()
 	f := newNativeHostFixture(t, "native:issue=read")
+	config := wp25FixtureConfig(t, f.home)
+	for i, entry := range f.env {
+		if strings.HasPrefix(entry, "XDG_CONFIG_HOME=") {
+			f.env[i] = "XDG_CONFIG_HOME=" + config
+		}
+	}
 	f.command("extension", "remove", "example.native/tool", "--json")
 	manifest := filepath.Join(f.home, "changes-manifest.json")
 	if err := os.WriteFile(manifest, []byte(`{"protocol":"hn.extension-manifest/1","module_id":"example.native/tool","module_version":"1","host_protocol":"hn.extension/1","capabilities":["resource.read","resource.mutate","artifact.read","artifact.mutate","artifact.type.publish","changes.capture","changes.page","changes.since"]}`), 0600); err != nil {
@@ -922,13 +928,15 @@ func TestExtensionChangesNativeDefaultRemainsInert(t *testing.T) {
 	f := changesFixture(t, "native:issue=read,observe")
 	f.actor()
 	id := changesOpenIssue(f, "ordinary native setup")
-	registry := filepath.Join(f.home, "config", "hubnot", "extensions", "registry.json")
-	if _, err := os.Stat(registry); err != nil {
-		t.Fatal("actual registry trap unavailable", err)
+	config := wp25FixtureConfig(t, f.home)
+	registry := filepath.Join(config, "hubnot", "extensions", "registry.json")
+	if raw, err := os.ReadFile(registry); err != nil || len(raw) == 0 {
+		t.Fatal("actual registration did not create selected OS registry", registry, err)
 	}
 	if err := os.WriteFile(registry, []byte("{ deliberately malformed registry"), 0600); err != nil {
 		t.Fatal(err)
 	}
+	wp25MalformedRegistryReadControl(t, f.binary, f.repo, f.home, config)
 	before := hostNativeSnapshot(t, f.repo)
 	child, _ := os.Executable()
 	trace := extensionBaselineTraceRun(t, f.env, f.repo, f.binary, "issue", "show", id, "--json")

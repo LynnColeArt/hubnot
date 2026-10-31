@@ -50,7 +50,7 @@ func charterCLI(t *testing.T, consumer string) *charterFixture {
 	if p := os.Getenv("HN_WP21_BINARY"); p != "" {
 		t.Setenv("HN_WP05_BINARY", p)
 	}
-	f := &charterFixture{artifactCLIFixture: artifactCLI(t), consumer: consumer,
+	f := &charterFixture{artifactCLIFixture: wp25ArtifactCLI(t), consumer: consumer,
 		grants: []string{"native:identity=read", "artifact:example.charter/*=read,create,revise,type.publish"}}
 	f.input, f.output, f.state = filepath.Join(f.home, "input.json"), filepath.Join(f.home, "output.json"), filepath.Join(f.home, "state.json")
 	f.register()
@@ -58,7 +58,9 @@ func charterCLI(t *testing.T, consumer string) *charterFixture {
 }
 func (f *charterFixture) register() {
 	f.t.Helper()
-	b, e := exec.Command(f.consumer, "--manifest").Output()
+	command := exec.Command(f.consumer, "--manifest")
+	command.Env = operationalTestEnvironmentWith(f.home, f.overrides)
+	b, e := command.Output()
 	if e != nil {
 		f.t.Fatal(e)
 	}
@@ -70,6 +72,16 @@ func (f *charterFixture) register() {
 		f.t.Fatal(e)
 	}
 	f.call("", "", "extension", "register", "--manifest", p, "--executable", f.consumer, "--arg", "--input", "--arg", f.input, "--arg", "--output", "--arg", f.output, "--arg", "--state", "--arg", f.state, "--json")
+	// A real registration must trip the same selected-path existence detector
+	// later used to exclude private consumer state from the independent clone.
+	registry := filepath.Join(f.overrides["XDG_CONFIG_HOME"], "hubnot", "extensions", "registry.json")
+	if raw, err := os.ReadFile(registry); err != nil || len(raw) == 0 {
+		f.t.Fatal("real registration missed actual OS registry", registry, err)
+	}
+	if _, err := os.Stat(registry); err != nil {
+		f.t.Fatal("registry absence detector missed actual registration", err)
+	}
+	f.call("", "", "extension", "inspect", "example.charter/model", "--json")
 	f.enable()
 }
 func (f *charterFixture) enable() {
@@ -365,7 +377,7 @@ func TestExtensionCharterStandaloneJourney(t *testing.T) {
 	}
 	// Transfer all current public streams with exact selection still selecting old revisions.
 	a.call("", "", "artifact", "push", "--remote", "public", "--id", charterID, "--id", converted, "--json")
-	dst := artifactCLI(t)
+	dst := wp25ArtifactCLI(t)
 	dst.git("remote", "add", "public", remote)
 	dst.call("", "", "artifact", "fetch", "--remote", "public", "--id", charterID, "--id", converted, "--json")
 	if !reflect.DeepEqual(a.call("", "", "artifact", "history", docID, "--json")["data"].(map[string]any)["items"], dst.call("", "", "artifact", "history", docID, "--json")["data"].(map[string]any)["items"]) {
@@ -403,12 +415,12 @@ func TestExtensionCharterStandaloneJourney(t *testing.T) {
 		f.git("-c", "user.name=Example", "-c", "user.email=example@example.invalid", "commit", "--allow-empty", "-qm", "Native memory anchor")
 		c := exec.Command(f.binary, "memory", "record", "--kind", "decision", "--at", "HEAD", "--applies", "exact", "--content", "Ordinary memory remains usable", "--json")
 		c.Dir = f.repo
-		c.Env = operationalTestEnvironment(f.home)
+		c.Env = operationalTestEnvironmentWith(f.home, f.overrides)
 		if raw, e := c.CombinedOutput(); e != nil {
 			t.Fatalf("native memory: %v %s", e, raw)
 		}
 	}
-	if _, e := os.Stat(filepath.Join(dst.home, ".config", "hubnot", "extensions", "registry.json")); !os.IsNotExist(e) {
+	if _, e := os.Stat(filepath.Join(dst.overrides["XDG_CONFIG_HOME"], "hubnot", "extensions", "registry.json")); !os.IsNotExist(e) {
 		t.Fatal("destination has a consumer registry", e)
 	}
 	for _, f := range []*artifactCLIFixture{a.artifactCLIFixture, b.artifactCLIFixture, dst} {
@@ -479,7 +491,7 @@ func TestExtensionCharterMissingRequiredType(t *testing.T) {
 		}
 	}
 	bundle["refs"] = refs
-	dst := artifactCLI(t)
+	dst := wp25ArtifactCLI(t)
 	before := dst.snapshot()
 	result := dst.call("", "incomplete_dependency", "artifact", "import", "--input", exchangeWrite(t, bundle), "--json")
 	if !strings.Contains(result["error"].(map[string]any)["message"].(string), "schema") {

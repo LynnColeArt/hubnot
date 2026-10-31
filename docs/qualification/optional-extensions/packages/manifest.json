@@ -1,0 +1,4792 @@
+{
+  "schema": "hn.optional-extension-package-qualification/1",
+  "status": "PENDING",
+  "version": "0.0.0-optional-extensions-qualification.1",
+  "compiler": "go1.26.4",
+  "candidate_source": null,
+  "candidate_tree": null,
+  "workflow_source": null,
+  "exact_packages": 8,
+  "separate_reference_executables": 12,
+  "evidence_classification": {
+    "source_suite": "PENDING frozen uncached race execution",
+    "exact_package_rows": "PENDING actual native executions; cross-builds do not qualify rows",
+    "legacy_selected_callers": "assertion-backed public caller evidence; successful stdout not retained unless a named evidence helper emits it",
+    "new_numeric_controls": "raw output and state/ID assertions retained in new-controls.jsonl",
+    "standalone_references": "independently supplied target/source/compiler/hash-bound assets; raw results retained",
+    "fixture_construction": "source-assisted signed public graphs and hostile peers are not shipped binary admission evidence"
+  },
+  "performance_reuse": {
+    "status": "PENDING complete non-test Go/module/embedded equivalence proof",
+    "approved_source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1",
+    "observations": 4320,
+    "budgets_changed": false
+  },
+  "assets": [],
+  "source_checks": [],
+  "limits_reconciliation": [
+    {
+      "id": "A01",
+      "boundary": "Canonical envelope",
+      "bounds": {
+        "max": 1048576,
+        "first_over": 1048577
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactRevisionEnvelopeBytesCLI",
+          "locations": [
+            {
+              "path": "artifact_revision_commands_test.go",
+              "line": 317
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Full canonical envelope equality/+1 is in selected writer test; direct wrapper checks other structural caps.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestCanonicalConsumptionBounds",
+        "TestArtifactRevisionEnvelopeBytesCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A02",
+      "boundary": "Private custom intent",
+      "bounds": {
+        "max": 2097152,
+        "first_over": 2097153
+      },
+      "labels": [
+        "live numeric",
+        "private",
+        "dormant"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactStorePrivateIntentByteBudgetCLI",
+          "locations": [
+            {
+              "path": "artifact_store_test.go",
+              "line": 345
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Prepared private2MiB/+1 is a real writer read boundary with source-assisted private fixture.",
+      "remaining_gaps": [
+        "Post-publication oversize is a separate uncertainty case; published100000 recovery enumeration has no current directory-enumeration loader."
+      ],
+      "legacy_preparation_tests": [
+        "TestArtifactStorePrivateIntentByteBudgetCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A03",
+      "boundary": "Type payload",
+      "bounds": {
+        "max": 131072,
+        "first_over": 131073
+      },
+      "labels": [
+        "dominated",
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Canonical type payload131072 cannot be a valid closed type under schema65536 and bounded other fields. Wrapper tests earlier/later refusal ordering, never valid type admission.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactEnvelopeCLIPublishedBounds",
+        "TestArtifactSchemaCommands"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A04",
+      "boundary": "Included schema",
+      "bounds": {
+        "max": 65536,
+        "first_over": 65537
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25ArtifactLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 949
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Direct envelope canonical schema65536/+1 and standalone raw schema padding65536/+1 controls are present.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestSchemaBounds",
+        "TestArtifactEnvelopeCLIPublishedBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A05",
+      "boundary": "Schema and modeled value depth",
+      "bounds": {
+        "max": 8,
+        "first_over": 9
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25ArtifactLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 949
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Direct envelope modeled-value8/9 and schema utility schema8/9 are distinct actual CLI validators; no source-counter substitution.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestSchemaBounds",
+        "TestArtifactEnvelopeCLIPublishedBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A06",
+      "boundary": "Object properties",
+      "bounds": {
+        "max": 64,
+        "first_over": 65
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25ArtifactLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 949
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "64/65 modeled properties and schema declared properties use distinct actual CLI controls.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestSchemaBounds",
+        "TestArtifactEnvelopeCLIPublishedBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A07",
+      "boundary": "Arrays and declared maxItems",
+      "bounds": {
+        "global_max": 1024,
+        "first_over": 1025,
+        "declared_min": 0,
+        "declared_max": 1024
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25ArtifactLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 949
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Array1024/1025 plus declared maxItems0/1024/1025; empty allowed arrays retained.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestCanonicalConsumptionBounds",
+        "TestSchemaFiniteKeywords",
+        "TestArtifactEnvelopeCLIPublishedBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A08",
+      "boundary": "Artifact parent and conversion-source IDs",
+      "bounds": {
+        "max": 1024,
+        "first_over": 1025
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ArtifactParentLimit",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2464
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactStoreLargeVerifiedParentContextCLI",
+          "locations": [
+            {
+              "path": "artifact_read_test.go",
+              "line": 207
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual1024 concurrent-head resolution with1024 conversion_sources uses explicit host240s mutation route;1025 parent/source controls refuse with exact unchanged-state assertions. Source-assisted selected public graph retained; ordinaryCLI30s prior uncertainty remains historical failed development evidence.",
+      "remaining_gaps": [
+        "Runtime results pending; do not relabel earlier ordinaryCLI uncertainty as the later host mutation pass."
+      ],
+      "legacy_preparation_tests": [
+        "TestArtifactEnvelopeCLIPublishedBounds",
+        "TestSuppliedParentCountBound",
+        "TestArtifactStoreLargeVerifiedParentContextCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A09",
+      "boundary": "Ordered list members and member ID",
+      "bounds": {
+        "members_max": 1024,
+        "members_first_over": 1025,
+        "member_id_min": 1,
+        "member_id_max": 128,
+        "member_id_first_over": 129
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25ArtifactLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 949
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Published list1024/1025 with real required target closure; member ID128/129 uses direct envelope CLI (integrity/structure only).",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRecordContentAndCollectionBounds",
+        "TestArtifactEnvelopeCLIPublishedBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A10",
+      "boundary": "Schema enum and string maxBytes",
+      "bounds": {
+        "enum_min": 1,
+        "enum_max": 1024,
+        "enum_first_over": 1025,
+        "maxBytes_min": 0,
+        "maxBytes_max": 1048576,
+        "declaration_first_over": 1048577
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ArtifactLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 949
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Schema utility enum1024/1025 and maxBytes0/1048576/1048577 declarations; bound declaration is not a promise one value reaches envelope maximum.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestSchemaBounds",
+        "TestSchemaFiniteKeywords"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A11",
+      "boundary": "Relationships",
+      "bounds": {
+        "max": 256,
+        "first_over": 257
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ArtifactLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 949
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Published relationships256/257 with real required targets plus missing-required target refusal.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRecordContentAndCollectionBounds",
+        "TestArtifactEnvelopeCLIPublishedBounds",
+        "TestArtifactClosureLogicalConflictAndCycleCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A12",
+      "boundary": "Artifact title and operation",
+      "bounds": {
+        "title_min": 1,
+        "title_max": 1024,
+        "title_first_over": 1025,
+        "operation_min": 1,
+        "operation_max": 128,
+        "operation_first_over": 129
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactOperationRefusalsAndBoundsCLI",
+          "locations": [
+            {
+              "path": "artifact_operation_commands_test.go",
+              "line": 163
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Title1024/1025 and operation128/129 explicit public validators; ordinary writer semantics selected.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactEnvelopeCLIPublishedBounds",
+        "TestArtifactOperationRefusalsAndBoundsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A13",
+      "boundary": "Namespace/name/field-name",
+      "bounds": {
+        "min": 1,
+        "max": 64,
+        "first_over": 65
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactOperationRefusalsAndBoundsCLI",
+          "locations": [
+            {
+              "path": "artifact_operation_commands_test.go",
+              "line": 163
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Namespace/name/field64/65 direct envelope and operation caller controls.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactEnvelopeCLIPublishedBounds",
+        "TestArtifactOperationRefusalsAndBoundsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A14",
+      "boundary": "Scalar integer/version/sequence/time domain",
+      "bounds": {
+        "integer_min": -9007199254740991,
+        "integer_max": 9007199254740991,
+        "schema_version_min": 1,
+        "schema_version_max": 2147483647,
+        "sequence_min": 1,
+        "sequence_max": 9007199254740991,
+        "year_min": 1,
+        "year_max": 9999
+      },
+      "labels": [
+        "live numeric",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25EnvelopeBounds",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 418
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestCanonicalDomain",
+          "locations": [
+            {
+              "path": "internal/artifact/canonical_test.go",
+              "line": 20
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25RemainingTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3986
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Sequence maxsafe/+1 and schema_version max/+1 current wrapper; generic integer domain has independent source test. Additional current public signed-envelope year0001/9999 and safe integer min/0/max plus invalidfirst-over/domain controls implemented; independent typed/signed syntax only.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestCanonicalDomain",
+        "TestArtifactEnvelopeCLIPublishedBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A15",
+      "boundary": "Inert record validation context",
+      "bounds": {
+        "max": 16777216,
+        "first_over": 16777217
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactSchemaCommands",
+          "locations": [
+            {
+              "path": "artifact_schema_commands_test.go",
+              "line": 108
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactStoreLargeVerifiedParentContextCLI",
+          "locations": [
+            {
+              "path": "artifact_read_test.go",
+              "line": 207
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "16MiB context at/over uses actual supplied schema CLI; large signed graph fixture remains source-assisted.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactSchemaCommands",
+        "TestArtifactStoreLargeVerifiedParentContextCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "T01",
+      "boundary": "Exchange wire",
+      "bounds": {
+        "max": 16777216,
+        "first_over": 16777217
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactExchangeWireBoundCLI",
+          "locations": [
+            {
+              "path": "artifact_exchange_commands_test.go",
+              "line": 299
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactGitWireBudgetBeforeCopyCLI",
+          "locations": [
+            {
+              "path": "artifact_replication_test.go",
+              "line": 425
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Exact16MiB wire/+1 real file/Git callers selected.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactExchangeWireBoundCLI",
+        "TestArtifactGitWireBudgetBeforeCopyCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "T02",
+      "boundary": "Exchange decoded aggregate",
+      "bounds": {
+        "max": 33554432,
+        "first_over": 33554433
+      },
+      "labels": [
+        "dominated",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactExchangePublishedBudget",
+          "locations": [
+            {
+              "path": "artifact_exchange_test.go",
+              "line": 24
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactGitFrozenTransferBounds",
+          "locations": [
+            {
+              "path": "artifact_replication_test.go",
+              "line": 331
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "32MiB decoded cap is dominated by16MiB Base64 file/equivalent-wire; preserve direct counter source evidence and ordinary valid transfer.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactExchangePublishedBudget",
+        "TestArtifactGitFrozenTransferBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "T03",
+      "boundary": "Exchange object count",
+      "bounds": {
+        "max": 4096,
+        "first_over": 4097
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ExchangeObjectLimit",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2422
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "One bundle4096/4097 actual import; selected closure remains one valid type, unreachable extra bodies are hash-checked but not accepted roots.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactExchangeStrictObjectTable",
+        "TestArtifactExchangeOpaqueAggregateAndLockCLI",
+        "TestArtifactExchangeUnreachableObjectsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "T04",
+      "boundary": "Exchange signed records",
+      "bounds": {
+        "max": 2048,
+        "first_over": 2049
+      },
+      "labels": [
+        "dominated",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactExchangePublishedBudget",
+          "locations": [
+            {
+              "path": "artifact_exchange_test.go",
+              "line": 24
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactGitFrozenTransferBounds",
+          "locations": [
+            {
+              "path": "artifact_replication_test.go",
+              "line": 331
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI",
+          "locations": [
+            {
+              "path": "artifact_exchange_commands_test.go",
+              "line": 969
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "At least3 unique required Git objects per distinct verified signed record:2048 requires>=6144>4096 enclosing object cap. Opaque raw commits are not signed records.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactExchangePublishedBudget",
+        "TestArtifactGitFrozenTransferBounds",
+        "TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "T05",
+      "boundary": "Exchange ancestry",
+      "bounds": {
+        "max": 256,
+        "first_over": 257
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactExchangeDepthLiveCLI",
+          "locations": [
+            {
+              "path": "artifact_exchange_commands_test.go",
+              "line": 516
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactGitAncestryLimitCLI",
+          "locations": [
+            {
+              "path": "artifact_replication_test.go",
+              "line": 268
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual256/257 ancestry selected; ordinary catalog read is not restricted to256.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactExchangeAncestryBound",
+        "TestArtifactExchangeDepthLiveCLI",
+        "TestArtifactGitAncestryLimitCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "T06",
+      "boundary": "Validation/copy/read stages",
+      "bounds": {
+        "max": 30
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25LifecycleStageDeadlines",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3053
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25LifecycleExchangeInputDeadline",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3327
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Full real30s blocked stdin and export validation/import quarantine validation/destination-copy Git controls; valid ordinary transfer is separate positive.",
+      "remaining_gaps": [
+        "Runtime results pending; no exact equality-at-deadline successful scheduling claim."
+      ],
+      "legacy_preparation_tests": [
+        "TestArtifactValidationInputCancellation",
+        "TestArtifactExchangeLiveCopyCancellation",
+        "TestArtifactExchangeRefCancellationAfterPublication",
+        "TestArtifactOperationInterruptedRestartCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "R01",
+      "boundary": "Read selected refs",
+      "bounds": {
+        "max": 100000,
+        "first_over": 100001
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25SelectedRefLimit",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 914
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "100000 genuine aliases to one valid signed commit admitted;100001 refused pre-read; actual selected-ref counter, not100000 distinct records.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactStoreSelectedRefBudget",
+        "TestArtifactExchangeRefAliasesBeyondObjectCountCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "R02",
+      "boundary": "Read/catalog records",
+      "bounds": {
+        "max": 100000,
+        "first_over": 100001
+      },
+      "labels": [
+        "live numeric",
+        "enclosing",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ArtifactRecordCountLimit",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3670
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25RecordCountInventory",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3918
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactCatalogCancellationAndBound",
+          "locations": [
+            {
+              "path": "artifact_catalog_test.go",
+              "line": 13
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Constructive100000/100001 full independently signed corpus, raw fast-import wire/ledger and closed object maps implemented. Actual supplied ordinary CLI requires observed30s cancellation at count equality; first-over may show exact same deadline or specifically selected-record guard. No successful at-cap admission claimed. Catalog100001 remains precluded by loader100000.",
+      "remaining_gaps": [
+        "Current runtime result pending; static9 subprocesses/record and byte-fit proof are not observed time domination. Host mutation240s is a distinct caller route and is not covered by an ordinaryCLI30s cancellation claim."
+      ],
+      "legacy_preparation_tests": [
+        "TestArtifactCatalogCancellationAndBound"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS",
+      "code_reviewed_ceiling": {
+        "path": "artifact_read.go",
+        "line": 342,
+        "condition": "len(cache) >= artifactReadEntries immediately before reader.commit; limit100000",
+        "classification": "source-reviewed count ceiling; distinct from runtime observation"
+      },
+      "live_coverage_limitation": "The actual100000 and100001 valid public corpus development calls both cancelled at the enclosing30s read deadline. Neither whole-operation at-cap success nor count-guard crossing was observed. Final frozen/native results must preserve their actual outcomes."
+    },
+    {
+      "id": "R03",
+      "boundary": "Read object and aggregate",
+      "bounds": {
+        "object_max": 8388608,
+        "object_first_over": 8388609,
+        "aggregate_max": 268435456,
+        "aggregate_first_over": 268435457
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ReadBudgets",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1125
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Exact8MiB object/+1 and256MiB unique-object aggregate/+1 are constructed independently and consumed by supplied reader.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactStoreObjectBudgets",
+        "TestExtensionArtifactOpaqueRawCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "Q01",
+      "boundary": "Regex pattern and instructions",
+      "bounds": {
+        "pattern_max": 4096,
+        "pattern_first_over": 4097,
+        "expanded_compiled_instruction_max": 4096,
+        "instruction_first_over": 4097
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactSearchPagingAndRefusalsCLI",
+          "locations": [
+            {
+              "path": "artifact_search_acceptance_test.go",
+              "line": 137
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionArtifactSearchBoundsAndCursorRawCLI",
+          "locations": [
+            {
+              "path": "extension_artifact_acceptance_test.go",
+              "line": 399
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual pattern/instruction bound controls selected.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactSearchPatternBounds",
+        "TestArtifactSearchPublicCLI",
+        "TestArtifactSearchPagingAndRefusalsCLI",
+        "TestArtifactSearchEntireSelectionBudgetCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "Q02",
+      "boundary": "Regex complete-selection work",
+      "bounds": {
+        "max": 67108864,
+        "first_over": 67108865
+      },
+      "labels": [
+        "live numeric",
+        "enclosing",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactSearchEntireSelectionBudgetCLI",
+          "locations": [
+            {
+              "path": "artifact_search_acceptance_test.go",
+              "line": 210
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactSearchCheckedWholeSelectionWork",
+          "locations": [
+            {
+              "path": "artifact_search_test.go",
+              "line": 37
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual complete-selection work equality and first extra input text byte at4096 instructions; numeric+1 counter source-only by contract-product granularity.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactSearchCheckedWholeSelectionWork",
+        "TestArtifactSearchEntireSelectionBudgetCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "Q03",
+      "boundary": "List/search page and complete response",
+      "bounds": {
+        "page_min": 1,
+        "page_max": 200,
+        "first_over": 201,
+        "response_max": 8388608,
+        "response_first_over": 8388609
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactListExactPageBoundCLI",
+          "locations": [
+            {
+              "path": "artifact_commands_test.go",
+              "line": 173
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionArtifactFullResponseAtAndOverRawCLI",
+          "locations": [
+            {
+              "path": "extension_artifact_acceptance_test.go",
+              "line": 453
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionChangesRawEntryCapacity",
+          "locations": [
+            {
+              "path": "extension_changes_acceptance_test.go",
+              "line": 670
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Real200 rows and201 refusal/complete frame equality/+1; changes paging actually returns200.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactListExactPageBoundCLI",
+        "TestArtifactSearchPageResponseBound",
+        "TestArtifactSearchPagingAndRefusalsCLI",
+        "TestExtensionArtifactFullResponseAtAndOverRawCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H01",
+      "boundary": "Host frame payload",
+      "bounds": {
+        "min": 1,
+        "max": 8388608,
+        "first_over": 8388609,
+        "prefix_bytes": 4
+      },
+      "labels": [
+        "live numeric",
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionFrameInspectCLI",
+          "locations": [
+            {
+              "path": "extension_protocol_commands_test.go",
+              "line": 59
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionRunRefusalsCLI",
+          "locations": [
+            {
+              "path": "extension_host_lifecycle_test.go",
+              "line": 323
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Frame8MiB/+1 public CLI/host. Payload1 byte is transport-only valid length, never valid typed object.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestFrameReadBounds",
+        "TestExtensionFrameInspectCLI",
+        "TestExtensionRunRefusalsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H02",
+      "boundary": "Manifest and repository declaration",
+      "bounds": {
+        "max": 131072,
+        "first_over": 131073
+      },
+      "labels": [
+        "live numeric",
+        "dormant"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ManagementLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 699
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual manifest131072 whitespace-padding/+1 register controls. .hn/extensions.json declaration has no production loader; it is inert data.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestManifestStrictPublicContract"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H03",
+      "boundary": "Registry and enablement files",
+      "bounds": {
+        "max": 1048576,
+        "first_over": 1048577
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ManagementLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 699
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Real OS-selected registry/enablement loaders accept1MiB padded files then refuse+1 without rewriting.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRegistryStrictBoundsAndNoRepair",
+        "TestEnablementStrictStorageBoundsAndRevocation"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H04",
+      "boundary": "Registration and enablement entry count",
+      "bounds": {
+        "max": 128,
+        "first_over": 129
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ManagementLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 699
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "128 actual registration+enablement entries;129 registration refused, raw129 entry loader guard tested separately.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRegistryStrictBoundsAndNoRepair",
+        "TestRegistryUpdateBoundsRefuseBeforeReplacement",
+        "TestEnablementStrictStorageBoundsAndRevocation"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H05",
+      "boundary": "Registered argv",
+      "bounds": {
+        "count_max": 64,
+        "count_first_over": 65,
+        "each_max": 4096,
+        "each_first_over": 4097,
+        "aggregate_max": 65536,
+        "aggregate_first_over": 65537
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ManagementLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 699
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual argv64/65,4096/4097 each,65536/65537 aggregate; no module launch.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRegistrationInputBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H06",
+      "boundary": "Executable hashing input",
+      "bounds": {
+        "max": 134217728,
+        "first_over": 134217729
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ManagementLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 699
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual registration hashes128MiB executable-shaped synthetic file and refuses+1; never executes fixture.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRegistrationInputBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H07",
+      "boundary": "Grants/actions",
+      "bounds": {
+        "grants_max": 256,
+        "grants_first_over": 257,
+        "distinct_actions_max": 7
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ManagementLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 699
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "256/257 grants plus independent literal7 actions readback; unknown eighth and duplicate refused before replacement.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestGrantClosedScopesAndRawAuthorization",
+        "TestGrantClosedContractSets"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H08",
+      "boundary": "Request ID/module version/error/token",
+      "bounds": {
+        "request_ID_min": 1,
+        "request_ID_max": 128,
+        "request_ID_first_over": 129,
+        "module_version_min": 1,
+        "module_version_max": 64,
+        "module_version_first_over": 65,
+        "error_message_max": 4096,
+        "token_max": 4096,
+        "first_over_message_token": 4097
+      },
+      "labels": [
+        "live numeric",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ManagementLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 699
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25LifecycleTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2655
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25LifecycleTypedHostTokens",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3299
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25RemainingTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3986
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Module version64/65; requestID128/129; typed token4096 accepted then native invalid_cursor (unissued),4097 refused before dispatch. Additional current public frameinspect error-message4096/4097 typed consumer controls implemented; not a claim actualhost emitted4096-byte diagnostic.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestManifestStrictPublicContract",
+        "TestProtocolPublishedValueBounds",
+        "TestExtensionChangesRawTypedBoundaries"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H09",
+      "boundary": "Startup/idle/read/mutation request deadlines",
+      "bounds": {
+        "startup": 10,
+        "idle_partial_frame": 30,
+        "default_read": 30,
+        "default_mutation": 240,
+        "timeout_ms_min": 1,
+        "timeout_ms_max": 240000,
+        "timeout_ms_first_over": 240001
+      },
+      "labels": [
+        "live numeric",
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionRunStartupDeadlineCLI",
+          "locations": [
+            {
+              "path": "extension_host_lifecycle_test.go",
+              "line": 439
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionRunIdleDeadlineCLI",
+          "locations": [
+            {
+              "path": "extension_host_lifecycle_test.go",
+              "line": 599
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25LifecycleRequestDeadlines",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2950
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25LifecycleTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2655
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Real10s startup/30s idle/read and240s mutation plus typed timeout1/240000/240001. Synchronous native Git settlement is independently recorded after deadline.",
+      "remaining_gaps": [
+        "Full real deadline runtime results pending.1ms is typed admission/utility duration, not promise that real operation completes in1ms."
+      ],
+      "legacy_preparation_tests": [
+        "TestExtensionRunStartupDeadlineCLI",
+        "TestExtensionRunIdleDeadlineCLI",
+        "TestExtensionFrameInspectPartialDeadlineCLI",
+        "TestProtocolPublishedValueBounds",
+        "TestSessionPartialControlKeepsThirtySecondCap",
+        "TestExtensionNativeCancellationSettlementCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H10",
+      "boundary": "Frame inspect utility timeout",
+      "bounds": {
+        "min": 1,
+        "max": 30000,
+        "default": 30000,
+        "first_over": 30001
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25LifecycleTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2655
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Public inspect1/30000 positive,0/30001 refusal, blocked open stdin full30000ms cancellation.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionFrameInspectCLI",
+        "TestExtensionFrameInspectPartialDeadlineCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H11",
+      "boundary": "Stderr",
+      "bounds": {
+        "max": 65536,
+        "first_over": 65537
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionRunRefusalsCLI",
+          "locations": [
+            {
+              "path": "extension_host_lifecycle_test.go",
+              "line": 323
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "65536 bytes child stderr accepted; first-over resource_limit; diagnostics not echoed.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionRunRefusalsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H12",
+      "boundary": "Outstanding/candidate/buffer slots",
+      "bounds": {
+        "admitted_outstanding_max": 1,
+        "tail_candidate_max": 1,
+        "inbound_raw_max": 25165836,
+        "outgoing_raw_max": 8388612
+      },
+      "labels": [
+        "source-only",
+        "private"
+      ],
+      "current_tests": [
+        {
+          "function": "TestSessionPrematureSecondHasOnlyOneWriter",
+          "locations": [
+            {
+              "path": "internal/extension/session_test.go",
+              "line": 473
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestSessionBlockedResponseControls",
+          "locations": [
+            {
+              "path": "internal/extension/session_test.go",
+              "line": 499
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestSessionSequentialResponses",
+          "locations": [
+            {
+              "path": "internal/extension/session_test.go",
+              "line": 435
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Structural raw slot values and completion-order race invariants are source tests, not a measured heap/OS-pipe ceiling.",
+      "remaining_gaps": [
+        "No new exact shipped-binary timing fault-injection proof of all tail races; current source suite remains the authoritative narrow race test."
+      ],
+      "legacy_preparation_tests": [
+        "TestSessionPrematureSecondHasOnlyOneWriter",
+        "TestSessionBlockedResponseControls",
+        "TestSessionSequentialResponses"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H13",
+      "boundary": "Physical repository sessions",
+      "bounds": {
+        "max": 4,
+        "first_over": 5
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionRunDisableAndSlotsCLI",
+          "locations": [
+            {
+              "path": "extension_host_lifecycle_test.go",
+              "line": 361
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Four actual sessions including linked worktree; fifth refused without extra child.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionRunDisableAndSlotsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H14",
+      "boundary": "Cleanup/revocation",
+      "bounds": {
+        "TERM_grace": 2,
+        "exit_budget": 5,
+        "revocation_poll_max": 250
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25LifecycleCleanup",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3132
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionRunCrashCleansPipeOwningDescendantCLI",
+          "locations": [
+            {
+              "path": "extension_host_lifecycle_test.go",
+              "line": 609
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Real disable epoch replacement/child TERM timestamps, ignoreTERM2s grace and joined exit<=5s with TERM-exit causal positive.",
+      "remaining_gaps": [
+        "Runtime pending;2ms observer poll and20ms lower-grace measurement tolerance are explicitly retained, never a shorter production clock."
+      ],
+      "legacy_preparation_tests": [
+        "TestExtensionRunDisableAndSlotsCLI",
+        "TestExtensionRunCrashCleansPipeOwningDescendantCLI",
+        "TestSessionSlotsAndRevocationWait",
+        "TestSessionCleanupFailureCannotBecomeManagementSuccess"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "C01",
+      "boundary": "Capture complete entries/bytes",
+      "bounds": {
+        "entries_max": 10000,
+        "entries_first_over": 10001,
+        "canonical_array_max": 16777216,
+        "canonical_array_first_over": 16777217
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionChangesRawEntryCapacity",
+          "locations": [
+            {
+              "path": "extension_changes_acceptance_test.go",
+              "line": 670
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionChangesRawCanonicalCapacity",
+          "locations": [
+            {
+              "path": "extension_changes_acceptance_test.go",
+              "line": 726
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionChangesRawWireBoundary",
+          "locations": [
+            {
+              "path": "extension_changes_acceptance_test.go",
+              "line": 823
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual10000/10001 entries and16MiB canonical array/+1; full8MiB response distinction preserved.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionChangesRawEntryCapacity",
+        "TestExtensionChangesRawCanonicalCapacity",
+        "TestExtensionChangesCanonicalByteBoundary",
+        "TestExtensionChangesRawWireBoundary"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "C02",
+      "boundary": "Capture lifetime and page",
+      "bounds": {
+        "lifetime": 600,
+        "page_min": 1,
+        "page_max": 200,
+        "page_first_over": 201
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionChangesRealTenMinuteExpiry",
+          "locations": [
+            {
+              "path": "extension_changes_acceptance_test.go",
+              "line": 770
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionChangesRawTypedBoundaries",
+          "locations": [
+            {
+              "path": "extension_changes_acceptance_test.go",
+              "line": 875
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Real600s clock and actual page1/200/201 controls selected; emission source clock is separately labeled.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionChangesRealTenMinuteExpiry",
+        "TestExtensionChangesRawTypedBoundaries",
+        "TestExtensionChangesExpiryAtEmission"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N01",
+      "boundary": "Native authenticated payload",
+      "bounds": {
+        "ordinary_max": 262144,
+        "workflow_max": 2097152,
+        "ordinary_first_over": 262145,
+        "workflow_first_over": 2097153
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeAuthenticatedLimit",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2283
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Exact complete signed ordinary256KiB and workflow2MiB payloads/+1 read by supplied host; fixtures/source signatures are source-assisted, not writer-at-cap claims.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestResourceAuthenticatedPayloadAndAuthority",
+        "TestRichIssueRawSignedPayloadLimit"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N02",
+      "boundary": "Native identifiers and names",
+      "bounds": {
+        "identifier_min": 1,
+        "identifier_max": 64,
+        "first_over": 65,
+        "field_option_view_name_max": 256,
+        "name_first_over": 257
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Identifier64/65 and field/option/view name256/257 pairs through supplied native host; malformed empty/dot names refused.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionNativeSixFamiliesCLI",
+        "TestProtocolNestedTypedShapes"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N03",
+      "boundary": "Project/item counts",
+      "bounds": {
+        "fields_max": 64,
+        "options_per_field_max": 64,
+        "views_max": 16,
+        "values_per_item_max": 64,
+        "first_over_fields_options_values": 65,
+        "first_over_views": 17
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Independent field/options/item-values64/65 and views16/17 with small constituents.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestResourceCollectionDateAndContainerBoundaries"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N04",
+      "boundary": "Project scalar values/position/URL",
+      "bounds": {
+        "text_max": 4096,
+        "number_position_max": 64,
+        "date_spelling_bytes": 10,
+        "external_URL_max": 4096
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "4096 text/URL,64 decimal/position,10-byte real Gregorian date spelling and first-over/malformed controls.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestResourceStrictStates",
+        "TestResourceCollectionDateAndContainerBoundaries"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N05",
+      "boundary": "Native metadata",
+      "bounds": {
+        "entries_max": 64,
+        "entries_first_over": 65,
+        "key_max": 128,
+        "key_first_over": 129,
+        "value_max": 4096,
+        "value_first_over": 4097
+      },
+      "labels": [
+        "live numeric",
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Metadata64/65 entries,128/129 key,4096/4097 value separately. Simultaneous maxima can exceed enclosing signed payload.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRichIssueStateBounds",
+        "TestRichIssueCollectionAndAggregateLimits"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N06",
+      "boundary": "Native issue and ordinary resource text",
+      "bounds": {
+        "title_min": 1,
+        "title_max": 1024,
+        "title_first_over": 1025,
+        "body_max": 65536,
+        "body_first_over": 65537
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Title1024/1025 and body65536/65537 independently across owning families; body empty valid.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRichIssueStateBounds",
+        "TestRichIssueSignedCompatibility"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N07",
+      "boundary": "Issue collections/criteria/labels",
+      "bounds": {
+        "criteria_labels_assignees_max": 64,
+        "first_over": 65,
+        "relations_max": 128,
+        "relations_first_over": 129,
+        "criterion_ID_max": 64,
+        "criterion_text_max": 4096,
+        "label_assignee_max": 256
+      },
+      "labels": [
+        "live numeric",
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Criteria/labels/assignees64/65,relations128/129, nested field lengths with actual valid relation target closure.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestRichIssueCollectionAndAggregateLimits",
+        "TestRichIssueStateBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N08",
+      "boundary": "Native mutation expected parents",
+      "bounds": {
+        "max": 200,
+        "first_over": 201
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeParentLimit",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2215
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "200 genuine concurrent signed heads resolved by supplied host;201 refused with unchanged state.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestProtocolMutationVisibleHeadCount",
+        "TestRichIssueShapeAndOperationValidation"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N09",
+      "boundary": "Discussion/reply text",
+      "bounds": {
+        "category_min": 1,
+        "category_max": 256,
+        "reply_body_min": 1,
+        "reply_body_max": 65536
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Discussion category256/257 and reply body65536/65537, empty lower-bound refusals.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionNativeSixFamiliesCLI",
+        "TestProtocolNestedTypedShapes"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N10",
+      "boundary": "Workflow source/pipeline",
+      "bounds": {
+        "sources_max": 8,
+        "sources_first_over": 9,
+        "source_each_max": 1048576,
+        "source_each_first_over": 1048577,
+        "pipeline_canonical_max": 1048576,
+        "pipeline_first_over": 1048577
+      },
+      "labels": [
+        "live numeric",
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Sources8/9, each1MiB/+1, pipeline canonical1MiB/+1; eight1MiB documents simultaneously dominated by signed2MiB aggregate.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestResourceStrictStates",
+        "TestResourceAuthenticatedPayloadAndAuthority"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "N11",
+      "boundary": "Stored pipeline definition",
+      "bounds": {
+        "steps_min": 1,
+        "steps_max": 64,
+        "steps_first_over": 65,
+        "args_per_step_max": 256,
+        "args_first_over": 257,
+        "argument_max": 16384,
+        "argument_first_over": 16385,
+        "timeout_min": 0,
+        "timeout_max": 3600,
+        "timeout_first_over": 3601,
+        "native_default_timeout": 300
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25NativeLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1663
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Stored pipeline steps1/64/65,args256/257,arg16384/16385,timeout0/3600/3601; stored text never runs.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionNativeSixFamiliesCLI",
+        "TestProtocolNestedTypedShapes"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "D01",
+      "boundary": "Default performance observations",
+      "bounds": {
+        "paired_nonrace_observations": 30,
+        "median_elapsed_delta_percent": 10,
+        "median_elapsed_absolute_ms": 5,
+        "median_peak_RSS_delta_percent": 10,
+        "median_peak_RSS_absolute_bytes": 1048576
+      },
+      "labels": [
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionDefaultPerformanceBudgets",
+          "locations": [
+            {
+              "path": "extension_default_performance_test.go",
+              "line": 28
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionDefaultPerformanceEvidence",
+          "locations": [
+            {
+              "path": "extension_default_performance_test.go",
+              "line": 85
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "WP24 independent4320 observation performance result is reusable only after exact all non-test Go/module/embedded-input equality to approved6b75d9fe; no remeasurement here.",
+      "remaining_gaps": [
+        "Final frozen-source equivalence and honest evidence source/metadata identities must be attached; no new performance pass inferred."
+      ],
+      "legacy_preparation_tests": [],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "D02",
+      "boundary": "Default forbidden effects/platform rows",
+      "bounds": {
+        "native_module_starts": 0,
+        "native_registry_parses": 0,
+        "native_extension_state_writes": 0,
+        "additional_user_setup_steps": 0,
+        "final_native_package_rows": 8
+      },
+      "labels": [
+        "live numeric",
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionPackageQualification",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 38
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25NativePublicJourney",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1322
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionDefaultNativeMatrix",
+          "locations": [
+            {
+              "path": "extension_default_acceptance_test.go",
+              "line": 806
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionDefaultDetectors",
+          "locations": [
+            {
+              "path": "extension_default_acceptance_test.go",
+              "line": 1003
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Eight native package rows, zero module start/registry parse/state writes/additional setup are pending execution and per-runner positive controlled tracing.",
+      "remaining_gaps": [
+        "All8 actual native rows and actual Mac trace capability pending; crossbuild/workflow code is not runtime evidence."
+      ],
+      "legacy_preparation_tests": [],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "I01",
+      "boundary": "Private capture cache eviction",
+      "bounds": {
+        "count": 16,
+        "accounted_bytes": 268435456
+      },
+      "labels": [
+        "private",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionChangesPrivateProofAccountingAndEviction",
+          "locations": [
+            {
+              "path": "extension_changes_test.go",
+              "line": 101
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "16/256MiB private accounted cache eviction; not public admission or heap promise.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionChangesPrivateProofAccountingAndEviction"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "I02",
+      "boundary": "Private checkpoint storage",
+      "bounds": {
+        "descriptor_count": 64,
+        "total_bytes": 134217728,
+        "individual_read_max": 134217728
+      },
+      "labels": [
+        "private",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionChangesPrivateProofAccountingAndEviction",
+          "locations": [
+            {
+              "path": "extension_changes_test.go",
+              "line": 101
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "64 descriptors/128MiB private stored checkpoint accounting; not a new public storage promise.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionChangesPrivateProofAccountingAndEviction"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "I03",
+      "boundary": "Native source witnesses and pending enumeration",
+      "bounds": {
+        "native_read_refs": 100000,
+        "contribution_graph_records": 16384,
+        "native_witnesses_max": 116384,
+        "pending_directory_entries_max": 16384
+      },
+      "labels": [
+        "private",
+        "enclosing",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionChangesPrivateProofAccountingAndEviction",
+          "locations": [
+            {
+              "path": "extension_changes_test.go",
+              "line": 101
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionNativeGovernedCutInputsCLI",
+          "locations": [
+            {
+              "path": "extension_native_adapter_test.go",
+              "line": 251
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Native/contribution witness116384 and pending16384 are defense/enumeration accounting under larger real verification constraints.",
+      "remaining_gaps": [
+        "No literal116384/116385 live numeric pair; label existing governor/source test narrowly."
+      ],
+      "legacy_preparation_tests": [
+        "TestExtensionChangesPrivateProofAccountingAndEviction",
+        "TestExtensionNativeGovernedCutInputsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "I04",
+      "boundary": "Parser safety depth",
+      "bounds": {
+        "artifact_containers": 32,
+        "host_json_recursion_limit": 32
+      },
+      "labels": [
+        "private",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestCanonicalConsumptionBounds",
+          "locations": [
+            {
+              "path": "internal/artifact/canonical_test.go",
+              "line": 31
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "32-container parser defense is source-only; modeled public depth remains8.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestCanonicalConsumptionBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "E01",
+      "boundary": "Inventory demo fields",
+      "bounds": {
+        "free_string_max": 64,
+        "priority_max": 7,
+        "quantity_min": 0
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestInventoryStructuredFieldBounds",
+          "locations": [
+            {
+              "path": "extension_inventory_acceptance_test.go",
+              "line": 644
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Standalone inventory64-byte strings,priority7,quantity0 controls and distinct malformed inputs selected.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestInventoryStructuredFieldBounds"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "E02",
+      "boundary": "Charter demo fields",
+      "bounds": {
+        "free_string_max": 64,
+        "severity_max": 6,
+        "status_max": 8
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestExtensionCharterStandaloneJourney",
+          "locations": [
+            {
+              "path": "extension_charter_acceptance_test.go",
+              "line": 230
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Standalone charter64-byte strings,severity/status finite demo lengths; not generic authority.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestExtensionCharterStandaloneJourney"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "E03",
+      "boundary": "Charter consumer local input/parser",
+      "bounds": {
+        "input_max": 1048576,
+        "first_over": 1048577,
+        "local_JSON_depth": 64,
+        "frame_max": 8388608
+      },
+      "labels": [
+        "live numeric",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ConsumerInputLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1202
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExampleMethodInventoryAndNestingBound",
+          "locations": [
+            {
+              "path": "examples/extensions/charter-model/main_test.go",
+              "line": 354
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25RemainingTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3986
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Supplied charter1MiB/+1 command input; normal real host journey separate. Additional suppliedcharter parser64level acceptance\u2192unknowncommandfield refusal and65level parsernesting refusal implemented; no64level application command success claim.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestLocalInputBound",
+        "TestExampleMethodInventoryAndNestingBound"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "E04",
+      "boundary": "Tracker local HTTP/private consumption",
+      "bounds": {
+        "HTTP_frame_max": 8388608,
+        "HTTP_first_over": 8388609,
+        "config_plan_credential_max": 131072,
+        "input_first_over": 131073,
+        "journal_report_service_state_max": 16777216,
+        "state_first_over": 16777217,
+        "observe_page_min": 1,
+        "observe_page_max": 200,
+        "observe_page_default": 20
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ConsumerInputLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1202
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25TrackerServiceLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3390
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25TrackerClientLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 4217
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25TrackerClientPagePlans",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 4525
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "SuppliedCLIENT controls now cover actual loopbackHTTPresponse8MiB/+1, journalWRITER16MiB/+1 via valid retainedprivatefixture+identitybinding, active reportWRITER16MiB/+1 via two individually<8MiB valid framedresponses, and plan0/default20,1,200,201. Existing service/config/plan/journal-loader/state-writer boundaries remain separatelyattributed.",
+      "remaining_gaps": [
+        "All current caller runtime results pending. Reportatcap activecall cancomplete while final deferred statusupdate exceeds16MiB and preserves prior exactcapfile; retain that narrower observed behavior rather than claiming final statuswaspersisted."
+      ],
+      "legacy_preparation_tests": [
+        "TestPrivateAndWireBounds",
+        "TestFakeAPIReceiptsVersionConflictAndRealResponseLoss",
+        "TestHTTPResponseConsumptionBoundary"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A16",
+      "boundary": "Artifact parent cardinality by operation",
+      "bounds": {
+        "initial_type_parents": 0,
+        "evolution_type_parents": 1,
+        "type_first_over": 2,
+        "open_parents": 0,
+        "revise_convert_parents": 1,
+        "resolve_min": 1,
+        "resolve_max": 1024
+      },
+      "labels": [
+        "live numeric",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactRevisionLiveCLI",
+          "locations": [
+            {
+              "path": "artifact_revision_commands_test.go",
+              "line": 29
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactRevisionCausalRefusalsCLI",
+          "locations": [
+            {
+              "path": "artifact_revision_commands_test.go",
+              "line": 244
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25ArtifactParentLimit",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 2464
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25RemainingTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3986
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Actual ordinary valid cardinalities and1024 resolve publication selected. Additional current envelope0/1/2 cardinality table implemented for all5kinds; semantic writer positives remain selectedexisting journeys.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestEnvelopeTamperAndClosedFields",
+        "TestArtifactRevisionLiveCLI",
+        "TestArtifactRevisionCausalRefusalsCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "H15",
+      "boundary": "Mutation head count and complete revision identities",
+      "bounds": {
+        "head_count_min": 0,
+        "head_count_max": 9007199254740991,
+        "head_count_first_over": 9007199254740992,
+        "revision_ID_array_numeric_cap": "none separate from full frame/capture/read bounds"
+      },
+      "labels": [
+        "live numeric",
+        "source-only",
+        "enclosing"
+      ],
+      "current_tests": [
+        {
+          "function": "TestProtocolMutationVisibleHeadCount",
+          "locations": [
+            {
+              "path": "internal/extension/protocol_test.go",
+              "line": 234
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestProtocolChangeRevisionIdentities",
+          "locations": [
+            {
+              "path": "internal/extension/protocol_test.go",
+              "line": 344
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionNativePendingAndPolicyRefusalCLI",
+          "locations": [
+            {
+              "path": "extension_native_acceptance_test.go",
+              "line": 517
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestExtensionChangesAllVisibleCommentRevisions",
+          "locations": [
+            {
+              "path": "extension_changes_acceptance_test.go",
+              "line": 989
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "wp25RemainingTypedLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 3986
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Zero visible native heads remain positive for pending/hidden; actual1025 visible revision response remains positive, no invented1024 cap. Additional current public frameinspect response0/1/maxsafe/+1 typed consumer controls implemented; emittedcardinality remains distinct.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestProtocolMutationVisibleHeadCount",
+        "TestExtensionNativeGovernedSixFamiliesCLI",
+        "TestExtensionNativePendingAndPolicyRefusalCLI",
+        "TestProtocolChangeRevisionIdentities",
+        "TestProtocolArtifactIDArrayBoundsUnchanged",
+        "TestExtensionChangesAllVisibleCommentRevisions"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "I05",
+      "boundary": "Preserved opaque public index storage",
+      "bounds": {
+        "objects_max": 4096,
+        "decoded_max": 33554432,
+        "wire_file_max": 16777216
+      },
+      "labels": [
+        "private",
+        "dominated",
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "TestArtifactExchangeOpaqueAggregateAndLockCLI",
+          "locations": [
+            {
+              "path": "artifact_exchange_commands_test.go",
+              "line": 472
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "4096 accumulated opaque index objects have live controls; decoded32MiB is dominated by16MiB encoded index, not accepted signed record budget.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestArtifactExchangeOpaqueAggregateAndLockCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "A17",
+      "boundary": "Fixed identity encodings",
+      "bounds": {
+        "SHA256_digest_hex": 64,
+        "D_digest_text_bytes": 71,
+        "actor_hex": 64,
+        "Ed25519_public_raw_bytes": 32,
+        "Ed25519_signature_raw_bytes": 64,
+        "host_random_hex": 32,
+        "host_random_raw_bytes": 16,
+        "Git_OID_hex_allowed": [
+          40,
+          64
+        ]
+      },
+      "labels": [
+        "live numeric",
+        "source-only"
+      ],
+      "current_tests": [
+        {
+          "function": "TestFrozenEnvelopeVectors",
+          "locations": [
+            {
+              "path": "internal/artifact/envelope_test.go",
+              "line": 46
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestRegistrationInstanceEntropyAndRemovedBinding",
+          "locations": [
+            {
+              "path": "internal/extension/registration_test.go",
+              "line": 351
+            }
+          ],
+          "selected_in_exact_mode": false,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        },
+        {
+          "function": "TestArtifactExchangeFrozenTransportBodiesCLI",
+          "locations": [
+            {
+              "path": "artifact_exchange_commands_test.go",
+              "line": 718
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Fixed digest/key/signature/random/Git encodings are structural literal spellings; frozen public vectors and actual transport controls, never arbitrary resource expansion.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestFrozenEnvelopeVectors",
+        "TestRegistrationInstanceEntropyAndRemovedBinding",
+        "TestArtifactExchangeFrozenTransportBodiesCLI"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    },
+    {
+      "id": "E05",
+      "boundary": "Inventory consumer command input",
+      "bounds": {
+        "max": 8388608,
+        "first_over": 8388609
+      },
+      "labels": [
+        "live numeric"
+      ],
+      "current_tests": [
+        {
+          "function": "wp25ConsumerInputLimits",
+          "locations": [
+            {
+              "path": "extension_package_acceptance_test.go",
+              "line": 1202
+            }
+          ],
+          "selected_in_exact_mode": true,
+          "route": "selected supplied-binary qualification when present in TestExtensionPackageQualification; otherwise source-only helper/tests as explicitly labeled",
+          "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
+        }
+      ],
+      "assessment": "Supplied inventory8MiB command/+1 stops before negotiation on first-over; scripted host response proves only consumer input boundary.",
+      "remaining_gaps": [],
+      "legacy_preparation_tests": [
+        "TestInventoryFramingBoundsAndStrictJSON"
+      ],
+      "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS"
+    }
+  ],
+  "blockers": [
+    "Frozen full source checks and eight actual native platform/variant rows are pending.",
+    "Native syscall instrumentation and all required positive controls are pending.",
+    "R02 live record-count guard and successful whole-operation count equality are not observed; source-reviewed ceiling and actual bounded cancellation remain separate for contract/readiness review."
+  ],
+  "closed_inventories": {
+    "classification": "independent literal mirrors and current caller controls; runtime results pending",
+    "sets": [
+      {
+        "name": "methods",
+        "independent_frozen_literal_values": [
+          "capabilities.list",
+          "identity.public",
+          "resource.read",
+          "resource.mutate",
+          "resource.operation",
+          "artifact.read",
+          "artifact.mutate",
+          "artifact.operation",
+          "artifact.search",
+          "artifact.type.read",
+          "artifact.type.publish",
+          "changes.capture",
+          "changes.page",
+          "changes.since"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionRunCLI",
+            "locations": [
+              {
+                "path": "extension_host_lifecycle_test.go",
+                "line": 275
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "unsupported",
+        "independent_frozen_literal_values": [
+          "memory.mutate",
+          "proposal",
+          "review",
+          "decide",
+          "merge",
+          "policy.mutate",
+          "identity.mutate",
+          "run",
+          "runner",
+          "audit",
+          "automerge",
+          "sync.apply",
+          "migration.apply"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionRunCLI",
+            "locations": [
+              {
+                "path": "extension_host_lifecycle_test.go",
+                "line": 275
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionNativeUnboundAndUnsupportedFramesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 860
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": "Actual capabilities result checks all13 unsupported literals, while attempted raw requests in TestExtensionNativeUnboundAndUnsupportedFramesCLI cover8; review/decide/merge/audit/automerge are not each attempted there."
+      },
+      {
+        "name": "message_kinds",
+        "independent_frozen_literal_values": [
+          "hello",
+          "ready",
+          "request",
+          "response",
+          "cancel"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "families",
+        "independent_frozen_literal_values": [
+          "issue",
+          "project",
+          "project-item",
+          "discussion",
+          "discussion-reply",
+          "workflow"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 234
+              }
+            ]
+          },
+          {
+            "function": "wp25NativeLimits",
+            "locations": [
+              {
+                "path": "extension_package_acceptance_test.go",
+                "line": 1662
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "shapes",
+        "independent_frozen_literal_values": [
+          "document",
+          "list",
+          "ticket"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionArtifactModelsRawCLI",
+            "locations": [
+              {
+                "path": "extension_artifact_acceptance_test.go",
+                "line": 240
+              }
+            ]
+          },
+          {
+            "function": "TestArtifactExchangeShapesAndHeadsCLI",
+            "locations": [
+              {
+                "path": "artifact_exchange_commands_test.go",
+                "line": 358
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "operation_protocols",
+        "independent_frozen_literal_values": [
+          "hn/0",
+          "hn-artifact/1"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 234
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionArtifactModelsRawCLI",
+            "locations": [
+              {
+                "path": "extension_artifact_acceptance_test.go",
+                "line": 240
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "recoveries",
+        "independent_frozen_literal_values": [
+          "do_not_retry",
+          "retry_identical",
+          "inspect_operation",
+          "rescan_required"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeUnboundAndUnsupportedFramesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 860
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionArtifactInterruptedRecoveryRawCLI",
+            "locations": [
+              {
+                "path": "extension_artifact_acceptance_test.go",
+                "line": 562
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionChangesStalePageAndSafeRescan",
+            "locations": [
+              {
+                "path": "extension_changes_acceptance_test.go",
+                "line": 363
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "artifact_read_modes",
+        "independent_frozen_literal_values": [
+          "view",
+          "heads",
+          "history",
+          "inspect"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionArtifactTypeReadRawCLI",
+            "locations": [
+              {
+                "path": "extension_artifact_acceptance_test.go",
+                "line": 204
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionArtifactModelsRawCLI",
+            "locations": [
+              {
+                "path": "extension_artifact_acceptance_test.go",
+                "line": 240
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "artifact_mutation_kinds",
+        "independent_frozen_literal_values": [
+          "record.open",
+          "record.revise",
+          "record.resolve",
+          "record.convert"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionArtifactModelsRawCLI",
+            "locations": [
+              {
+                "path": "extension_artifact_acceptance_test.go",
+                "line": 240
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "native_intents",
+        "independent_frozen_literal_values": [
+          "open",
+          "revise",
+          "resolve"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 234
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionNativeConflictAndResolveGrantCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 765
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "issue_intents",
+        "independent_frozen_literal_values": [
+          "open",
+          "revise",
+          "resolve",
+          "comment"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 234
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionChangesAllVisibleCommentRevisions",
+            "locations": [
+              {
+                "path": "extension_changes_acceptance_test.go",
+                "line": 989
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "error_origins",
+        "independent_frozen_literal_values": [
+          "host",
+          "native",
+          "artifact"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "host_error_codes",
+        "independent_frozen_literal_values": [
+          "denied_access",
+          "incompatible_version",
+          "unavailable_module",
+          "unsupported_capability",
+          "resource_limit",
+          "cancelled",
+          "uncertain_operation",
+          "checkpoint_invalidated",
+          "verification_failure",
+          "invalid_input",
+          "not_found",
+          "repository_error"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "native_error_codes",
+        "independent_frozen_literal_values": [
+          "actor_mismatch",
+          "admission_pending",
+          "admission_refused",
+          "ambiguous_id",
+          "concurrent_update",
+          "invalid_cursor",
+          "invalid_history",
+          "invalid_input",
+          "issue_conflict",
+          "not_found",
+          "operation_conflict",
+          "permission_denied",
+          "repository_error",
+          "resource_conflict",
+          "resource_limit",
+          "stale_cursor",
+          "stale_revision"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "artifact_error_codes",
+        "independent_frozen_literal_values": [
+          "invalid_input",
+          "resource_limit",
+          "verification_failure",
+          "invalid_history",
+          "incomplete_dependency",
+          "unsupported_schema",
+          "actor_stream_conflict",
+          "operation_conflict",
+          "stale_revision",
+          "resource_conflict",
+          "concurrent_update",
+          "not_found",
+          "repository_error",
+          "cancelled",
+          "uncertain_operation"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "diagnostic_codes",
+        "independent_frozen_literal_values": [
+          "incomplete_dependency",
+          "unsupported_schema",
+          "target_conflict",
+          "missing_optional",
+          "invalid_history",
+          "opaque_unverified"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "native_admission",
+        "independent_frozen_literal_values": [
+          "admitted",
+          "pending",
+          "hidden"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeGovernedSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 439
+              }
+            ]
+          },
+          {
+            "function": "TestExtensionNativePendingAndPolicyRefusalCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 517
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "operation_statuses",
+        "independent_frozen_literal_values": [
+          "found",
+          "verified_absent",
+          "uncertain"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativePrivateReservationLookupCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 934
+              }
+            ]
+          },
+          {
+            "function": "TestArtifactOperationReadOnlyCLI",
+            "locations": [
+              {
+                "path": "artifact_operation_commands_test.go",
+                "line": 20
+              }
+            ]
+          },
+          {
+            "function": "TestArtifactOperationFoundAndSourceCutCLI",
+            "locations": [
+              {
+                "path": "artifact_operation_commands_test.go",
+                "line": 59
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "operation_reasons",
+        "independent_frozen_literal_values": [
+          "incomplete_selection",
+          "unavailable_history",
+          "private_intent_pending",
+          "visibility_restricted",
+          "publication_unconfirmed"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "availability",
+        "independent_frozen_literal_values": [
+          "observed",
+          "not_probed",
+          "unavailable"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "signed_validation",
+        "independent_frozen_literal_values": [
+          "verified",
+          "unsupported",
+          "incomplete"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "artifact_envelope_kinds",
+        "independent_frozen_literal_values": [
+          "type.publish",
+          "record.open",
+          "record.revise",
+          "record.resolve",
+          "record.convert"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestArtifactRevisionLiveCLI",
+            "locations": [
+              {
+                "path": "artifact_revision_commands_test.go",
+                "line": 29
+              }
+            ]
+          },
+          {
+            "function": "TestArtifactStoreTypeEvolutionCLI",
+            "locations": [
+              {
+                "path": "artifact_store_commands_test.go",
+                "line": 336
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "target_modes",
+        "independent_frozen_literal_values": [
+          "logical",
+          "revision"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestArtifactExchangeShapesAndHeadsCLI",
+            "locations": [
+              {
+                "path": "artifact_exchange_commands_test.go",
+                "line": 358
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "schema_node_types",
+        "independent_frozen_literal_values": [
+          "object",
+          "array",
+          "string",
+          "integer",
+          "boolean",
+          "null"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "native_statuses",
+        "independent_frozen_literal_values": [
+          "open",
+          "closed"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 234
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "native_relation_kinds",
+        "independent_frozen_literal_values": [
+          "blocks",
+          "related",
+          "parent"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "wp25NativeLimits",
+            "locations": [
+              {
+                "path": "extension_package_acceptance_test.go",
+                "line": 1662
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "project_value_types",
+        "independent_frozen_literal_values": [
+          "text",
+          "number",
+          "date",
+          "single_select"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "wp25NativeLimits",
+            "locations": [
+              {
+                "path": "extension_package_acceptance_test.go",
+                "line": 1662
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "project_layouts",
+        "independent_frozen_literal_values": [
+          "table",
+          "board"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 234
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      },
+      {
+        "name": "project_target_kinds",
+        "independent_frozen_literal_values": [
+          "issue",
+          "proposal",
+          "discussion",
+          "draft",
+          "external"
+        ],
+        "label": "source-only literal equality; live participation separately listed",
+        "source_tests": [
+          {
+            "function": "frozenProtocolInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 595
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolClosedInventories",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 660
+              }
+            ]
+          },
+          {
+            "function": "TestProtocolInventoryMirrorsDetectDrift",
+            "locations": [
+              {
+                "path": "internal/extension/protocol_test.go",
+                "line": 683
+              }
+            ]
+          }
+        ],
+        "current_live_participation_functions": [
+          {
+            "function": "TestExtensionNativeSixFamiliesCLI",
+            "locations": [
+              {
+                "path": "extension_native_acceptance_test.go",
+                "line": 234
+              }
+            ]
+          },
+          {
+            "function": "wp25NativeLimits",
+            "locations": [
+              {
+                "path": "extension_package_acceptance_test.go",
+                "line": 1662
+              }
+            ]
+          }
+        ],
+        "remaining_gap": "No observed current/frozen-source/native result in this audit. Literal mirror equality is not proof every value was emitted/refused by an exact package; live functions listed are participation, not exhaustive literal attributions.",
+        "specific_note": null
+      }
+    ],
+    "grant_actions": [
+      {
+        "action": "read",
+        "source_literal_test": "TestGrantClosedContractSets",
+        "live_management_literal_inventory": "wp25ManagementLimits/grants-and-independent-actions",
+        "live_authorized_caller_functions": [
+          "TestExtensionNativeSixFamiliesCLI",
+          "TestExtensionArtifactTypeReadRawCLI"
+        ],
+        "unknown_action_control": "execute and eight-action/duplicate grant refusals in wp25ManagementLimits",
+        "status": "STATIC_ROUTE_PRESENT; FINAL_EXACT_PACKAGE_RESULTS_PENDING"
+      },
+      {
+        "action": "observe",
+        "source_literal_test": "TestGrantClosedContractSets",
+        "live_management_literal_inventory": "wp25ManagementLimits/grants-and-independent-actions",
+        "live_authorized_caller_functions": [
+          "TestExtensionChangesPagingAndDurableNativeAppend"
+        ],
+        "unknown_action_control": "execute and eight-action/duplicate grant refusals in wp25ManagementLimits",
+        "status": "STATIC_ROUTE_PRESENT; FINAL_EXACT_PACKAGE_RESULTS_PENDING"
+      },
+      {
+        "action": "create",
+        "source_literal_test": "TestGrantClosedContractSets",
+        "live_management_literal_inventory": "wp25ManagementLimits/grants-and-independent-actions",
+        "live_authorized_caller_functions": [
+          "TestExtensionNativeSixFamiliesCLI",
+          "TestExtensionArtifactModelsRawCLI"
+        ],
+        "unknown_action_control": "execute and eight-action/duplicate grant refusals in wp25ManagementLimits",
+        "status": "STATIC_ROUTE_PRESENT; FINAL_EXACT_PACKAGE_RESULTS_PENDING"
+      },
+      {
+        "action": "revise",
+        "source_literal_test": "TestGrantClosedContractSets",
+        "live_management_literal_inventory": "wp25ManagementLimits/grants-and-independent-actions",
+        "live_authorized_caller_functions": [
+          "TestExtensionNativeSixFamiliesCLI",
+          "TestExtensionArtifactModelsRawCLI"
+        ],
+        "unknown_action_control": "execute and eight-action/duplicate grant refusals in wp25ManagementLimits",
+        "status": "STATIC_ROUTE_PRESENT; FINAL_EXACT_PACKAGE_RESULTS_PENDING"
+      },
+      {
+        "action": "resolve",
+        "source_literal_test": "TestGrantClosedContractSets",
+        "live_management_literal_inventory": "wp25ManagementLimits/grants-and-independent-actions",
+        "live_authorized_caller_functions": [
+          "TestExtensionNativeConflictAndResolveGrantCLI",
+          "TestExtensionArtifactConflictRawCLI"
+        ],
+        "unknown_action_control": "execute and eight-action/duplicate grant refusals in wp25ManagementLimits",
+        "status": "STATIC_ROUTE_PRESENT; FINAL_EXACT_PACKAGE_RESULTS_PENDING"
+      },
+      {
+        "action": "type.publish",
+        "source_literal_test": "TestGrantClosedContractSets",
+        "live_management_literal_inventory": "wp25ManagementLimits/grants-and-independent-actions",
+        "live_authorized_caller_functions": [
+          "TestExtensionArtifactModelsRawCLI"
+        ],
+        "unknown_action_control": "execute and eight-action/duplicate grant refusals in wp25ManagementLimits",
+        "status": "STATIC_ROUTE_PRESENT; FINAL_EXACT_PACKAGE_RESULTS_PENDING"
+      },
+      {
+        "action": "raw.inspect",
+        "source_literal_test": "TestGrantClosedContractSets",
+        "live_management_literal_inventory": "wp25ManagementLimits/grants-and-independent-actions",
+        "live_authorized_caller_functions": [
+          "TestExtensionArtifactOpaqueRawCLI"
+        ],
+        "unknown_action_control": "execute and eight-action/duplicate grant refusals in wp25ManagementLimits",
+        "status": "STATIC_ROUTE_PRESENT; FINAL_EXACT_PACKAGE_RESULTS_PENDING"
+      }
+    ]
+  },
+  "dominated_bounds": {
+    "T04": {
+      "status": "INDEPENDENT_COMBINATORIAL_DOMINATION_PROOF",
+      "premises": [
+        "A valid distinct signed record has a distinct canonical envelope blob under the repository content-address identity model.",
+        "The required artifact tree contains exactly artifact.json and signature and therefore is distinct when artifact.json OID is distinct.",
+        "The required commit names that distinct tree and is therefore distinct.",
+        "All three objects must be included by the complete accepted exchange closure; aliases/raw opaque commit bodies cannot count as additional verified signed records."
+      ],
+      "unique_required_objects_min_per_record": 3,
+      "at_2048_min_objects": 6144,
+      "at_2049_min_objects": 6147,
+      "enclosing_bundle_object_max": 4096,
+      "safe_upper_bound_signed_records_under_object_cap": 1365,
+      "conclusion": "2048/2049 verified signed-record admission is structurally unreachable under4096 raw objects. Keep source counter bound and real ordinary accepted exchange; never manufacture at-cap success."
+    }
+  },
+  "R02_evidence_scope": "Actual100000/100001 record corpus results must distinguish count-guard observation, deadline cancellation and whole-operation success. No throughput promise or success is inferred from a timeout."
+}

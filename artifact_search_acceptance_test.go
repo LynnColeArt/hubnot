@@ -300,8 +300,8 @@ func TestArtifactSearchConflictAndUnselectedCLI(t *testing.T) {
 }
 
 func TestArtifactSearchInertConsumerControlCLI(t *testing.T) {
-	f := artifactCLI(t)
-	config := filepath.Join(f.home, "config")
+	f := wp25ArtifactCLI(t)
+	config := wp25FixtureConfig(t, f.home)
 	f.overrides = map[string]string{"XDG_CONFIG_HOME": config}
 	registry := filepath.Join(config, "hubnot", "extensions", "registry.json")
 	marker := filepath.Join(t.TempDir(), "consumer-started")
@@ -309,11 +309,24 @@ func TestArtifactSearchInertConsumerControlCLI(t *testing.T) {
 	if err := os.WriteFile(consumer, []byte("#!/bin/sh\nprintf started > '"+marker+"'\nexit 7\n"), 0700); err != nil {
 		t.Fatal(err)
 	}
+	// A real registration must create the exact path used by the read detector.
+	manifest := filepath.Join(f.home, "search-control-manifest.json")
+	if err := os.WriteFile(manifest, []byte(`{"protocol":"hn.extension-manifest/1","module_id":"example.search/control","module_version":"1","host_protocol":"hn.extension/1","capabilities":["artifact.read"]}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	f.call("", "", "extension", "register", "--manifest", manifest, "--executable", consumer, "--json")
+	if raw, err := os.ReadFile(registry); err != nil || len(raw) == 0 {
+		t.Fatal("real registration missed actual OS registry", registry, err)
+	}
+	f.call("", "", "extension", "inspect", "example.search/control", "--json")
+	if err := os.Remove(registry); err != nil {
+		t.Fatal(err)
+	}
 	schema := revisionEvent(f.publish(artifactStoreType, "type", ""))
 	content := "$(" + consumer + ")\n<script>throw 1</script>\n\x1b[31m inert-consumer-token"
 	id := revisionEvent(revisionCall(f, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, content)), "inert", ""))
 	// Exercise absent, disabled, crashing and malformed private consumer state. The
-	// trap names the actual host registry path; no registrar is needed for reads.
+	// trap names the actual host registry path verified by registration above.
 	for _, state := range []string{"absent", "disabled", "crashing", "malformed"} {
 		if state != "absent" {
 			if err := os.MkdirAll(filepath.Dir(registry), 0700); err != nil {
@@ -347,9 +360,18 @@ func TestArtifactSearchInertConsumerControlCLI(t *testing.T) {
 		}
 		f.unchanged(before)
 	}
+	wp25MalformedRegistryReadControl(t, f.binary, f.repo, f.home, config)
+	if *extensionBaselineTrace != "" {
+		trace := extensionBaselineTraceRun(t, operationalTestEnvironmentWith(f.home, f.overrides), f.repo, "cat", registry)
+		if !strings.Contains(trace, registry) {
+			t.Fatal("registry read detector missed deliberate actual-path read", trace)
+		}
+	}
 	// The real process deliberately violates the prohibition. Prove the marker
 	// detector observes that exact effect, even though this consumer crashes.
-	if err := exec.Command(consumer).Run(); err == nil {
+	control := exec.Command(consumer)
+	control.Env = operationalTestEnvironmentWith(f.home, f.overrides)
+	if err := control.Run(); err == nil {
 		t.Fatal("control did not crash")
 	}
 	if raw, err := os.ReadFile(marker); err != nil || string(raw) != "started" {

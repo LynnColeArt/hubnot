@@ -20,7 +20,47 @@ import (
 )
 
 func TestArtifactGitIndependentClonesCLI(t *testing.T) {
-	src, dst := artifactCLI(t), artifactCLI(t)
+	src, dst := wp25ArtifactCLI(t), wp25ArtifactCLI(t)
+	// The destination is independently initialized and must retain its own
+	// legitimate signer. Resolve the selected Git directory rather than HOME.
+	sourceGitDir := src.git("rev-parse", "--absolute-git-dir")
+	destinationGitDir := dst.git("rev-parse", "--absolute-git-dir")
+	sourceKey := filepath.Join(sourceGitDir, "hn", "identities", src.actor+".json")
+	sourceKeyBytes, sourceKeyError := os.ReadFile(sourceKey)
+	var sourceIdentityRecord struct {
+		PrivateKey string `json:"privateKey"`
+	}
+	if sourceKeyError != nil || json.Unmarshal(sourceKeyBytes, &sourceIdentityRecord) != nil || sourceIdentityRecord.PrivateKey == "" {
+		t.Fatal("source private key fixture unavailable", sourceKeyError)
+	}
+	if src.actor == dst.actor {
+		t.Fatal("independent destination reused source actor")
+	}
+	destinationSourceKey := filepath.Join(destinationGitDir, "hn", "identities", src.actor+".json")
+	sourceKeyAbsent := func() bool {
+		_, err := os.Lstat(destinationSourceKey)
+		if err != nil && !os.IsNotExist(err) {
+			t.Fatal("inspect source-key absence", err)
+		}
+		return os.IsNotExist(err)
+	}
+	if !sourceKeyAbsent() {
+		t.Fatal("source key already present in independent destination")
+	}
+	destinationKeyring := func() map[string]string {
+		out := map[string]string{}
+		for path, digest := range dst.snapshot() {
+			root := filepath.Join(destinationGitDir, "hn")
+			if strings.HasPrefix(path, filepath.Join(root, "identities")+string(os.PathSeparator)) || path == filepath.Join(root, "active") || path == filepath.Join(root, "rotation.json") || path == filepath.Join(root, "identity.json") {
+				out[path] = digest
+			}
+		}
+		return out
+	}
+	destinationIdentity := destinationKeyring()
+	if destinationIdentity[filepath.Join(destinationGitDir, "hn", "identities", dst.actor+".json")] == "" || destinationIdentity[filepath.Join(destinationGitDir, "hn", "active")] == "" {
+		t.Fatal("destination legitimate identity fixture unavailable")
+	}
 	remote := filepath.Join(t.TempDir(), "public.git")
 	src.git("init", "--bare", "--quiet", remote)
 	src.git("remote", "add", "public", remote)
@@ -71,10 +111,30 @@ func TestArtifactGitIndependentClonesCLI(t *testing.T) {
 		t.Fatal("local signing refs changed")
 	}
 	dst.call("", "not_found", "artifact", "show", tail, "--json")
-	for _, path := range []string{filepath.Join(dst.repo, ".git", "hn", "artifacts", "intents", src.actor), filepath.Join(dst.home, ".config", "hubnot", "identity")} {
-		if _, err := os.Stat(path); err == nil {
+	for _, path := range []string{filepath.Join(destinationGitDir, "hn", "artifacts", "intents", src.actor)} {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			t.Fatal("source private state copied", path)
 		}
+	}
+	if !sourceKeyAbsent() {
+		t.Fatal("source actor private key copied into destination keyring")
+	}
+	if !reflect.DeepEqual(destinationIdentity, destinationKeyring()) {
+		t.Fatal("fetch changed destination legitimate actor or private-key bytes")
+	}
+	// A harmless private test marker at exactly the source actor's destination
+	// key path must trip the detector. Never copy source signing material.
+	if err := os.WriteFile(destinationSourceKey, []byte("PRIVATE SOURCE-KEY DETECTOR CONTROL"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if sourceKeyAbsent() {
+		t.Fatal("source-key absence detector missed deliberate selected-path file")
+	}
+	if err := os.Remove(destinationSourceKey); err != nil {
+		t.Fatal(err)
+	}
+	if !sourceKeyAbsent() || !reflect.DeepEqual(destinationIdentity, destinationKeyring()) {
+		t.Fatal("source-key control failed to restore independent destination identity")
 	}
 	actualObjects := strings.Fields(dst.git("rev-list", "--objects", "--no-object-names", tip))
 	sort.Strings(actualObjects)

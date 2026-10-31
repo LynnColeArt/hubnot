@@ -110,10 +110,12 @@ func TestArtifactSchemaCommands(t *testing.T) {
 	root := t.TempDir()
 	repo := filepath.Join(root, "repo")
 	home := filepath.Join(root, "home")
+	config := wp25FixtureConfig(t, home)
+	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
 	if out, e := exec.Command("git", "init", "--quiet", repo).CombinedOutput(); e != nil {
 		t.Fatalf("fixture Git: %v %s", e, out)
 	}
-	for _, p := range []string{filepath.Join(repo, ".hn", "extensions.json"), filepath.Join(repo, ".git", "hn", "extensions", "enabled.json"), filepath.Join(repo, ".git", "hn", "artifacts", "intents", "sentinel.json"), filepath.Join(home, ".config", "hubnot", "extensions", "registry.json")} {
+	for _, p := range []string{filepath.Join(repo, ".hn", "extensions.json"), filepath.Join(repo, ".git", "hn", "extensions", "enabled.json"), filepath.Join(repo, ".git", "hn", "artifacts", "intents", "sentinel.json"), filepath.Join(config, "hubnot", "extensions", "registry.json"), filepath.Join(home, ".config", "hubnot", "extensions", "registry.json")} {
 		if e := os.MkdirAll(filepath.Dir(p), 0700); e != nil {
 			t.Fatal(e)
 		}
@@ -143,6 +145,7 @@ func TestArtifactSchemaCommands(t *testing.T) {
 		}
 		return out
 	}
+	wp25MalformedRegistryReadControl(t, binary, repo, home, config)
 	before := snapshot()
 	call := func(group, input, code string, extra ...string) map[string]any {
 		t.Helper()
@@ -150,7 +153,7 @@ func TestArtifactSchemaCommands(t *testing.T) {
 		args = append(args, extra...)
 		cmd := exec.Command(binary, args...)
 		cmd.Dir = repo
-		cmd.Env = operationalTestEnvironment(home)
+		cmd.Env = env
 		cmd.Stdin = strings.NewReader(input)
 		out, e := cmd.Output()
 		var result map[string]any
@@ -311,7 +314,7 @@ func TestArtifactSchemaCommands(t *testing.T) {
 	}
 	cmd := exec.Command(binary, "artifact", "schema", "validate", "--input", inputFile, "--json")
 	cmd.Dir = repo
-	cmd.Env = operationalTestEnvironment(home)
+	cmd.Env = env
 	if out, e := cmd.Output(); e != nil || !bytes.Contains(out, []byte(`"schema_validation":"verified"`)) {
 		t.Fatalf("file input: %v %s", e, out)
 	}

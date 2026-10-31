@@ -14,7 +14,7 @@ import (
 func TestExtensionArtifactReadGrantCLI(t *testing.T) {
 	binary := extensionTestBinary(t)
 	home, repo := t.TempDir(), t.TempDir()
-	config := filepath.Join(home, "config")
+	config := wp25FixtureConfig(t, home)
 	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
 	git := exec.Command("git", "init", "-q", repo)
 	git.Env = env
@@ -71,8 +71,8 @@ func TestExtensionArtifactReadGrantCLI(t *testing.T) {
 	inspect(readGrant)
 	registryPath := filepath.Join(config, "hubnot", "extensions", "registry.json")
 	registryBefore, err := os.ReadFile(registryPath)
-	if err != nil {
-		t.Fatal(err)
+	if err != nil || len(registryBefore) == 0 {
+		t.Fatal("registration did not create the actual OS registry", registryPath, err)
 	}
 	for _, grant := range []string{"artifact:example/type=raw.inspect", "artifact:example/*=raw.inspect"} {
 		before := extensionPrivateSnapshot(t, repo)
@@ -130,7 +130,8 @@ func TestExtensionArtifactReadGrantCLI(t *testing.T) {
 func TestExtensionEnablementCLI(t *testing.T) {
 	binary := extensionTestBinary(t)
 	home, repo := t.TempDir(), t.TempDir()
-	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": filepath.Join(home, "config")})
+	config := wp25FixtureConfig(t, home)
+	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
 	git := func(args ...string) string {
 		t.Helper()
 		cmd := exec.Command("git", args...)

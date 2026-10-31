@@ -332,14 +332,35 @@ func TestArtifactStoreCorruptGitObjectCLI(t *testing.T) {
 	f.unchanged(before)
 }
 
+// Pin the product child configuration before initialization and keep the pin on
+// the fixture, so creating a second actor cannot redirect the first actor.
+func wp25ArtifactCLI(t *testing.T) *artifactCLIFixture {
+	t.Helper()
+	root := t.TempDir()
+	f := &artifactCLIFixture{t: t, binary: artifactStoreBinary(t), repo: filepath.Join(root, "repo"), home: filepath.Join(root, "home")}
+	// A normal user HOME exists before product invocation; create only the
+	// fixture parent, without registry, enablement or identity state.
+	if err := os.MkdirAll(f.home, 0700); err != nil {
+		t.Fatal(err)
+	}
+	config := wp25FixtureConfig(t, f.home)
+	f.overrides = map[string]string{"XDG_CONFIG_HOME": config}
+	f.git("init", "--quiet")
+	f.call("", "", "init", "--name", "Artifact author")
+	f.actor = f.call("", "", "identity", "show", "--json")["data"].(map[string]any)["actor"].(string)
+	return f
+}
+
 func TestArtifactStoreKeylessReadCLI(t *testing.T) {
 	root := t.TempDir()
 	f := &artifactCLIFixture{t: t, binary: artifactStoreBinary(t), repo: filepath.Join(root, "repo"), home: filepath.Join(root, "home")}
+	config := wp25FixtureConfig(t, f.home)
+	f.overrides = map[string]string{"XDG_CONFIG_HOME": config}
 	f.git("init", "--quiet")
 	ref := artifactFrozenRef(t, f)
 	commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
 	f.git("update-ref", ref, commit)
-	for _, path := range []string{filepath.Join(f.repo, ".hn", "extensions.json"), filepath.Join(f.home, ".config", "hubnot", "extensions", "registry.json")} {
+	for _, path := range []string{filepath.Join(f.repo, ".hn", "extensions.json"), filepath.Join(config, "hubnot", "extensions", "registry.json"), filepath.Join(f.home, ".config", "hubnot", "extensions", "registry.json")} {
 		if e := os.MkdirAll(filepath.Dir(path), 0700); e != nil {
 			t.Fatal(e)
 		}
@@ -347,6 +368,7 @@ func TestArtifactStoreKeylessReadCLI(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
+	wp25MalformedRegistryReadControl(t, f.binary, f.repo, f.home, config)
 	before := f.snapshot()
 	f.call("", "", "artifact", "type", "show", artifactVectorID, "--json")
 	f.unchanged(before)
