@@ -60,8 +60,11 @@ func TestSessionProcessAsset(t *testing.T) {
 		}
 	}
 	request := map[string]any{"protocol": HostProtocol, "request_id": "write", "method": "resource.mutate", "timeout_ms": 100, "params": map[string]any{"family": "issue", "intent": "open", "id": nil, "expected": []any{}, "actor": repeatActor(), "operation": "actual-key", "state": map[string]any{"title": "ticket", "body": "", "status": "open", "criteria": []any{}, "labels": []any{}, "assignees": []any{}, "relations": []any{}, "metadata": map[string]any{}}, "comment": ""}}
-	if mode == "read-timeout" {
+	if mode == "read-timeout" || mode == "clean-shutdown" {
 		request = map[string]any{"protocol": HostProtocol, "request_id": "read", "method": "resource.read", "timeout_ms": 100, "params": map[string]any{"family": "issue", "id": nil, "cursor": nil, "limit": 20}}
+	}
+	if mode == "clean-shutdown" || mode == "mutation-shutdown" {
+		request["timeout_ms"] = 2000
 	}
 	assetWrite(request)
 	switch mode {
