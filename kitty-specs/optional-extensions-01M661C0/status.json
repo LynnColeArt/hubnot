@@ -330,7 +330,7 @@
     "WP10": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "architect-alphonso",
       "agent_profile_version": "1.0",
       "assignee": "codex",
       "force_count": 1,
@@ -341,23 +341,25 @@
       "notes": [
         "Allocator planning conflict resolved by normal exact recorded-planning merge; sole conflict contained only generated WP09 base metadata, archived byte proof; resume canonical implementation.",
         "Ready for independent review: bounded accepted and opaque file exchange; exact public reconstruction, strict limits, CAS and lost acknowledgement controls validated in standard and native-only binaries.",
-        "Independent review passed: source29b5ef86, exact256 inputs and252 unchanged inherited; all8 anti-pattern checks PASS. Supplied standard/native x SHA1/SHA256 independent14-public-vector Ed25519/ID/raw56-object reconstruction and strict refusal/opaque/unreachable controls PASS. 13 focused tests plus2 subtests each variant PASS; supplied actual-race6 transaction/index/cancellation tests PASS. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP10/review-01/review.md. Normal gate no_coverage is unavailable Python coverage; no full-suite/platform/adopter claim."
+        "Independent review passed: source29b5ef86, exact256 inputs and252 unchanged inherited; all8 anti-pattern checks PASS. Supplied standard/native x SHA1/SHA256 independent14-public-vector Ed25519/ID/raw56-object reconstruction and strict refusal/opaque/unreachable controls PASS. 13 focused tests plus2 subtests each variant PASS; supplied actual-race6 transaction/index/cancellation tests PASS. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP10/review-01/review.md. Normal gate no_coverage is unavailable Python coverage; no full-suite/platform/adopter claim.",
+        "Root integration rework from independent static namespace-isolation advisory; preserve exact earlier source approval; protect only newly introduced artifact import named accepted-ref publication."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP10-artifact-file-exchange/review-cycle-2.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP10-artifact-file-exchange/review-cycle-2.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T040": "done",
-        "T041": "done",
-        "T042": "done",
-        "T043": "done"
+        "T040": "planned",
+        "T041": "planned",
+        "T042": "planned",
+        "T043": "planned"
       }
     },
     "WP11": {
