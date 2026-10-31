@@ -314,8 +314,11 @@ func TestInventoryStandalonePublicJourney(t *testing.T) {
 		c["operation"] = "right-" + model
 		c["content"] = text + "\nB revision"
 		right := extensionArtifactEvent(b.command(c, ""))
-		inventoryRemote(b.artifactCLIFixture, "push", right)
-		inventoryRemote(a.artifactCLIFixture, "fetch", right)
+		// Keep the exact shared opening cut explicitly selected. Pushing only
+		// an earlier record dependency would correctly refuse to rewind the
+		// remote actor stream that already includes all three openings.
+		b.call("", "", "artifact", "push", "--remote", "public", "--id", opening["stock"], "--id", right, "--json")
+		a.call("", "", "artifact", "fetch", "--remote", "public", "--id", opening["stock"], "--id", right, "--json")
 		view := revisionReadView(a.artifactCLIFixture, opening[model])
 		heads := []string{left, right}
 		sort.Strings(heads)
@@ -728,9 +731,13 @@ func inventoryCombinedCorpora(t *testing.T, src, dst *artifactCLIFixture, public
 		ids = append(ids, id)
 	}
 	sort.Strings(ids)
+	// This unchanged original selected root contains every exact public
+	// dependency. Transfer it once; separately pushing older record IDs in
+	// digest order could correctly refuse a rewind of its own actor stream.
+	selected := "sha256:a95d403301ef60ac8c6667ac65a1f026a740a119192cd96545c8923e3eb844ac"
+	inventoryRemote(src, "push", selected)
+	inventoryRemote(dst, "fetch", selected)
 	for _, id := range ids {
-		inventoryRemote(src, "push", id)
-		inventoryRemote(dst, "fetch", id)
 		got := inventorySelected(t, dst, id)["envelope"].(map[string]any)
 		wantRaw, _ := json.Marshal(records[id])
 		gotRaw, _ := json.Marshal(got)
