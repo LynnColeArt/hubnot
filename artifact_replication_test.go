@@ -474,3 +474,21 @@ func TestArtifactGitRefGrammar(t *testing.T) {
 		}
 	}
 }
+
+func TestArtifactGitDispatchedPushFailureIsUncertainCLI(t *testing.T) {
+	f := artifactCLI(t)
+	id := revisionEvent(f.publish(artifactStoreType, "schema", ""))
+	remote := filepath.Join(t.TempDir(), "public.git")
+	f.git("init", "--bare", "--quiet", remote)
+	f.git("remote", "add", "public", remote)
+	if e := os.WriteFile(filepath.Join(remote, "hooks", "pre-receive"), []byte("#!/bin/sh\nexit 1\n"), 0700); e != nil {
+		t.Fatal(e)
+	}
+	before := f.snapshot()
+	v := f.call("", "uncertain_operation", "artifact", "push", "--remote", "public", "--id", id, "--json")
+	artifactErrorShape(t, v, "artifact", "uncertain_operation", "inspect_operation", nil)
+	f.unchanged(before)
+	if got := f.git("--git-dir="+remote, "for-each-ref", "--format=%(refname)", "refs/hn/artifacts/"); got != "" {
+		t.Fatal("rejecting remote control published", got)
+	}
+}

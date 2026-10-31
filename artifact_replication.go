@@ -351,10 +351,9 @@ func replicateArtifacts(ctx context.Context, action, remote string, ids []string
 			args = append(args, source.Ref+":"+source.Ref)
 		}
 		if _, err = projectGit(ctx, stage, nil, 4096, args...); err != nil {
-			if ctx.Err() != nil {
-				return nil, artifactFailure("uncertain_operation", "artifact push dispatched; remote publication is unconfirmed")
-			}
-			return nil, artifactFailure("concurrent_update", "artifact push failed expected-old atomic publication")
+			// A transport failure can lose the acknowledgement after remote CAS.
+			// Never infer remote absence from a nonzero client exit status.
+			return nil, artifactFailure("uncertain_operation", "artifact push dispatched; remote publication is unconfirmed")
 		}
 		if ctx.Err() != nil {
 			return nil, artifactFailure("uncertain_operation", "artifact push dispatched; remote publication is unconfirmed")
