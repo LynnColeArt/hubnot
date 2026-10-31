@@ -392,10 +392,10 @@ func extensionChangesObserve(ctx context.Context, call extension.Invocation, sel
 // evidence that its old coherent view is lost. New capture/since reads retain
 // their native/artifact retry semantics; other refusals keep their own cause.
 func extensionChangesSourceRace(err error) bool {
-	var native *IssueReadError
-	var command *issueCommandError
-	var custom *artifact.Error
-	return errors.As(err, &native) && native.Code == "concurrent_update" || errors.As(err, &command) && command.Code == "concurrent_update" || errors.As(err, &custom) && custom.Code == "concurrent_update"
+	// Classify the same public cause as dispatch. In particular an enclosing
+	// invalid-history refusal must not be weakened by a nested race diagnostic.
+	public, ok := extensionChangesError(err, extension.Invocation{}).(*extension.Error)
+	return ok && public.Code == "concurrent_update" && (public.Origin == "native" || public.Origin == "artifact")
 }
 
 func extensionChangesDispatch(ctx context.Context, call extension.Invocation) (data any, err error) {

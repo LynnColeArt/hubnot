@@ -240,7 +240,7 @@ func TestExtensionChangesSourceRaceClassification(t *testing.T) {
 			t.Fatal("lost source-race cause", err)
 		}
 	}
-	for _, err := range []error{context.Canceled, issueFailure("invalid_history", errors.New("bad signature")), &artifact.Error{Code: "unsupported_schema", Message: "unsupported"}, extensionChangesInvalid(), errors.New("plain repository failure")} {
+	for _, err := range []error{context.Canceled, issueFailure("invalid_history", errors.New("bad signature")), issueReadFailure("invalid_history", issueFailure("concurrent_update", errors.New("underlying race is not accepted verification"))), &artifact.Error{Code: "unsupported_schema", Message: "unsupported"}, extensionChangesInvalid(), errors.New("plain repository failure")} {
 		if extensionChangesSourceRace(err) {
 			t.Fatal("arbitrary refusal became page race", err)
 		}
