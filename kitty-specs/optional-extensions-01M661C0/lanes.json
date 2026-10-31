@@ -548,10 +548,13 @@
         "docs/qualification/optional-extensions/default/matrix.json",
         "docs/qualification/optional-extensions/default/metrics.csv",
         "extension_default_acceptance_test.go",
-        "extension_default_performance_test.go"
+        "extension_default_performance_test.go",
+        "optional_bootstrap.go",
+        "optional_bootstrap_test.go"
       ],
       "predicted_surfaces": [
         "api",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -615,10 +618,10 @@
       "parallel_group": 16
     }
   ],
-  "computed_at": "2026-10-31T15:00:15.294725+00:00",
+  "computed_at": "2026-10-31T20:47:47.295091+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [
     "WP02"
   ],
-  "planning_commit_sha": "747ac262f65385963bb0eece217409621af3a003"
+  "planning_commit_sha": "457ba25e4ec4257009a552640ec7303ef3e1ee42"
 }
