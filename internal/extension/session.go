@@ -390,8 +390,11 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 		default:
 		}
 	}()
-	sessionCtx, cancel := context.WithCancel(parent)
-	defer cancel()
+	// A private cause distinguishes cancelling our own completed session from
+	// parent cancellation or a runtime abort observed by an in-flight Recheck.
+	shutdown := errors.New("host session shutdown")
+	sessionCtx, cancel := context.WithCancelCause(parent)
+	defer cancel(shutdown)
 	// A separate watchdog remains active during blocked reads AND writes. It
 	// closes only owned handles; the request goroutine is still joined below.
 	abort := make(chan error, 1)
@@ -430,24 +433,34 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 				cause = owner.check()
 				if cause == nil {
 					_, _, cause = cfg.Recheck(sessionCtx, binding)
+					var public *Error
+					if context.Cause(sessionCtx) == shutdown && parent.Err() == nil && errors.As(cause, &public) && public.Origin == "host" && public.Code == "cancelled" {
+						return
+					}
 				}
 			}
 			if cause != nil {
 				abort <- cause
-				cancel()
+				cancel(context.Canceled)
 				_ = child.close()
 				return
 			}
 		}
 	}()
-	defer func() { cancel(); <-monitorDone }()
 	defer func() {
+		cancel(shutdown)
+		// Join before reading abort: an in-flight check may still report a real
+		// revocation or validation failure, which must not become clean success.
+		<-monitorDone
 		select {
 		case cause := <-abort:
 			if runErr == nil || publicError(runErr).Code != "uncertain_operation" {
 				runErr = cause
 			}
 		default:
+		}
+		if runErr == nil && parent.Err() != nil {
+			runErr = failure("cancelled", "host session cancelled")
 		}
 	}()
 
@@ -469,7 +482,7 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 			}
 		}
 	}()
-	defer func() { cancel(); _ = child.output.Close(); <-readerDone }()
+	defer func() { cancel(shutdown); _ = child.output.Close(); <-readerDone }()
 	hello := map[string]any{"protocol": HostProtocol, "hello": map[string]any{"session_id": session.SessionID, "repository_id": session.RepositoryID, "module_id": session.ModuleID, "module_version": session.ModuleVersion, "registration_id": session.RegistrationID}, "limits": map[string]any{"frame_bytes": FrameLimit, "read_timeout_ms": 30000, "mutation_timeout_ms": 240000, "page_max": 200, "one_outstanding": true}}
 	if err = writeMessage(child.input, started.Add(StartupBudget), hello); err != nil {
 		return result, err
