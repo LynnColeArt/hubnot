@@ -199,7 +199,11 @@ jobs:
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > "$evidence/run.json"
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" > "$evidence/jobs-at-start.json"
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$CANDIDATE_ARTIFACT" > "$evidence/candidate-artifact.json"
-          jq -e --argjson id "$CANDIDATE_ARTIFACT" --argjson run "$GITHUB_RUN_ID" --arg digest "$CANDIDATE_ARTIFACT_DIGEST" '.id == $id and .expired == false and .workflow_run.id == $run and .digest == $digest' "$evidence/candidate-artifact.json"
+          case "$CANDIDATE_ARTIFACT_DIGEST" in
+            sha256:*) transport_digest="$CANDIDATE_ARTIFACT_DIGEST" ;;
+            *) transport_digest="sha256:$CANDIDATE_ARTIFACT_DIGEST" ;;
+          esac
+          jq -e --argjson id "$CANDIDATE_ARTIFACT" --argjson run "$GITHUB_RUN_ID" --argjson repo '${{ github.repository_id }}' --arg digest "$transport_digest" --arg caller "$CALLER_SOURCE" --arg name "optional-extensions-assets-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" '.id == $id and .expired == false and .name == $name and .workflow_run.id == $run and .workflow_run.head_sha == $caller and .workflow_run.repository_id == $repo and .workflow_run.head_repository_id == $repo and .digest == $digest' "$evidence/candidate-artifact.json"
           jq -n --arg caller "$CALLER_SOURCE" --arg workflow_sha "$CALLER_WORKFLOW_SHA" --arg workflow_ref "$CALLER_WORKFLOW_REF" --arg candidate "$CANDIDATE_SOURCE" --arg tree "$CANDIDATE_TREE" --arg artifact "$CANDIDATE_ARTIFACT" --arg digest "$CANDIDATE_ARTIFACT_DIGEST" --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" --arg job "$GITHUB_JOB" --arg target "$EXPECTED_TARGET" '{caller_source:$caller,caller_workflow_sha:$workflow_sha,caller_workflow_ref:$workflow_ref,candidate_source:$candidate,candidate_tree:$tree,candidate_artifact_id:$artifact,candidate_artifact_digest:$digest,run_id:$run,run_attempt:$attempt,job:$job,target:$target,dispatch_inputs:{qualification:"optional-extensions",extension_source:$candidate}}' > "$evidence/binding.json"
           test "$(shasum -a 256 "$assets/candidate/PROVENANCE.json" | cut -d ' ' -f1)" = "$CANDIDATE_PROVENANCE"
           test "$(shasum -a 256 "$assets/references/manifest.json" | cut -d ' ' -f1)" = "$REFERENCE_MANIFEST"
@@ -275,6 +279,8 @@ jobs:
                 strace -f -qq -e trace=%file,process -o "$work/$label.trace" -- "$@" > "$work/$label.out" 2> "$work/$label.err"
                 printf 'strace -f; candidate process and descendants\n' > "$work/$label.scope.txt"
               else
+                shasum -a 256 /usr/bin/fs_usage > "$work/tool.sha256"
+                /usr/bin/fs_usage -h > "$work/tool.txt" 2>&1 || true
                 # Gate exec until fs_usage is attached to this exact PID. The
                 # descendant control below detects whether this scope suffices.
                 gate="$work/$label.gate"
@@ -282,7 +288,7 @@ jobs:
                 /bin/sh -c 'read -r token < "$1"; shift; exec "$@"' wp25 "$gate" "$@" > "$work/$label.out" 2> "$work/$label.err" &
                 subject=$!
                 printf 'candidate/launcher PID=%s; fs_usage PID filter; descendant coverage requires positive control\n' "$subject" > "$work/$label.scope.txt"
-                sudo -n /usr/bin/fs_usage -w -f filesystem -t 5 "$subject" > "$work/$label.trace" 2> "$work/$label.tool.err" &
+                sudo -n /usr/bin/fs_usage -w -f filesys -t 5 "$subject" > "$work/$label.trace" 2> "$work/$label.tool.err" &
                 tracer=$!
                 sleep 1
                 printf 'execute\n' > "$gate"
