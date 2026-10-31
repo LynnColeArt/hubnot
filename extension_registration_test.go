@@ -56,11 +56,22 @@ type extensionCLIResult struct {
 	} `json:"error"`
 }
 
+func extensionTestConfigDir(t *testing.T, home string) string {
+	t.Helper()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "config"))
+	config, err := os.UserConfigDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return config
+}
+
 func TestExtensionRegistrationCLI(t *testing.T) {
 	binary := extensionTestBinary(t)
 	home := t.TempDir()
 	dir := t.TempDir()
-	config := filepath.Join(home, "config")
+	config := extensionTestConfigDir(t, home)
 	environment := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
 	invoke := func(wantCode string, args ...string) extensionCLIResult {
 		t.Helper()
@@ -175,7 +186,10 @@ func TestExtensionRegistrationCLI(t *testing.T) {
 		t.Fatalf("unsupported inventory: %v", unsupported)
 	}
 	registry := filepath.Join(config, "hubnot", "extensions", "registry.json")
-	before, _ := os.ReadFile(registry)
+	before, err := os.ReadFile(registry)
+	if err != nil {
+		t.Fatal(err)
+	}
 	decodeRegistry := func() map[string]any {
 		t.Helper()
 		var value map[string]any
@@ -418,7 +432,7 @@ func TestExtensionNativeReadDetector(t *testing.T) {
 	binary := extensionTestBinary(t)
 	home := t.TempDir()
 	dir := t.TempDir()
-	config := filepath.Join(home, "config")
+	config := extensionTestConfigDir(t, home)
 	registry := filepath.Join(config, "hubnot", "extensions", "registry.json")
 	if err := os.MkdirAll(filepath.Dir(registry), 0700); err != nil {
 		t.Fatal(err)
@@ -498,7 +512,7 @@ func TestExtensionRegistryRawArrayTypesCLI(t *testing.T) {
 	binary := extensionTestBinary(t)
 	home := t.TempDir()
 	dir := t.TempDir()
-	config := filepath.Join(home, "config")
+	config := extensionTestConfigDir(t, home)
 	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
 	git := exec.Command("git", "init", "-q", dir)
 	git.Env = env
