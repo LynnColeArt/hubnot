@@ -13,25 +13,24 @@ import (
 	"time"
 )
 
-var digestPattern = newLazyPattern(`^sha256:[0-9a-f]{64}$`)
-var actorPattern = newLazyPattern(`^[0-9a-f]{64}$`)
-var typePattern = newLazyPattern(`^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`)
-var fieldPattern = newLazyPattern(`^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`)
-var memberPattern = newLazyPattern(`^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`)
+var digestPattern = lazyPattern{pattern: `^sha256:[0-9a-f]{64}$`}
+var actorPattern = lazyPattern{pattern: `^[0-9a-f]{64}$`}
+var typePattern = lazyPattern{pattern: `^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`}
+var fieldPattern = lazyPattern{pattern: `^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`}
+var memberPattern = lazyPattern{pattern: `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`}
 
-// Optional validators compile only when used, so native commands do not pay
-// their construction cost. OnceValue also serializes concurrent first use.
+// The cache starts as static data: linking this optional package does not
+// construct validators. Pointer receivers keep the Once state in one place.
 type lazyPattern struct {
-	compiled func() *regexp.Regexp
+	pattern  string
+	once     sync.Once
+	compiled *regexp.Regexp
 }
 
-func newLazyPattern(pattern string) lazyPattern {
-	return lazyPattern{sync.OnceValue(func() *regexp.Regexp {
-		return regexp.MustCompile(pattern)
-	})}
+func (p *lazyPattern) MatchString(s string) bool {
+	p.once.Do(func() { p.compiled = regexp.MustCompile(p.pattern) })
+	return p.compiled.MatchString(s)
 }
-
-func (p lazyPattern) MatchString(s string) bool { return p.compiled().MatchString(s) }
 
 // Verified attests exact signed bytes and envelope invariants only. Type/schema,
 // record lineage and accepted repository visibility require additional context.
