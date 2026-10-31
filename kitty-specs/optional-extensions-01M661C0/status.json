@@ -234,23 +234,25 @@
       "last_transition_at": "2026-10-31T03:21:05.803938+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: exact read-only operation CLI; actual type/open/revise interruption restart and immutable replay; 47 focused race events plus23 retained actual trace calls each standard/native-only; all248 inherited06 inputs identical; evidence optional-extensions-WP07/implementation-evidence.md"
+        "Ready for independent review: exact read-only operation CLI; actual type/open/revise interruption restart and immutable replay; 47 focused race events plus23 retained actual trace calls each standard/native-only; all248 inherited06 inputs identical; evidence optional-extensions-WP07/implementation-evidence.md",
+        "Independent review rejected: R1 frozen found-lookup result.replayed=false, actual true in both supplied binaries; feedback committed bcca828d; approved06 input snapshot preserved; WP11 must integrate corrected delivery"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP07-artifact-operation-recovery/review-cycle-1.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP07-artifact-operation-recovery/review-cycle-1.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T028": "done",
-        "T029": "done",
-        "T030": "done",
-        "T031": "done"
+        "T028": "planned",
+        "T029": "planned",
+        "T030": "planned",
+        "T031": "planned"
       }
     },
     "WP08": {
