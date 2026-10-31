@@ -365,7 +365,7 @@
     "WP11": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "architect-alphonso",
       "agent_profile_version": "1.0",
       "force_count": 1,
       "lane": "planned",
@@ -374,23 +374,25 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Ready for independent review: generic list and public recovery CLI; exact source 6b3c5cee, metadata-only delivery ec2ad388, 265-input binding, both supplied release variants plus race and vet pass; external optional-extensions-WP11 evidence retains initial RED and all causes",
-        "Independent review passed: exact 265-input provenance and 262 inherited union verified; frozen four-contract roundtrip and all eight antipattern checks PASS; supplied standard combined journey/list/cursor/exact8MiB tests and native-only exact8MiB test PASS; independently recomputed25 public vectors and literal keyless reconstruction/cause/no-effects checks on both release variants. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP11/review-renata/review.md. Final full-suite/package/platform/default qualification remains WP24/WP25."
+        "Independent review passed: exact 265-input provenance and 262 inherited union verified; frozen four-contract roundtrip and all eight antipattern checks PASS; supplied standard combined journey/list/cursor/exact8MiB tests and native-only exact8MiB test PASS; independently recomputed25 public vectors and literal keyless reconstruction/cause/no-effects checks on both release variants. Evidence /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP11/review-renata/review.md. Final full-suite/package/platform/default qualification remains WP24/WP25.",
+        "Administrative integration refresh after scoped WP09/WP10 named-ref repair; no new query defect; preserve old exact-source approval and requalify new approved dependency bytes before downstream final work."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP11-generic-artifact-cli/review-cycle-2.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP11-generic-artifact-cli/review-cycle-2.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T044": "done",
-        "T045": "done",
-        "T046": "done",
-        "T047": "done"
+        "T044": "planned",
+        "T045": "planned",
+        "T046": "planned",
+        "T047": "planned"
       }
     },
     "WP12": {
