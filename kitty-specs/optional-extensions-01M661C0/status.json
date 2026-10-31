@@ -201,6 +201,9 @@
       "last_event_id": "01M67XXQ0TQP136DFV9CRYASDN",
       "last_transition_at": "2026-10-31T02:51:49.658295+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for independent review: live successor CLI/catalog; tested ec99da3c; both exact variants, focused race/vet, public IDs/cuts and immutable candidate controls passed. Evidence optional-extensions-WP06/handoff.json."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 22770,
