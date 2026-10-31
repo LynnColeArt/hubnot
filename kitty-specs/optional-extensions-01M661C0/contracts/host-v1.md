@@ -625,3 +625,79 @@ Required live checks include raw ungranted write before journal/signer effects,
 exact/changed replay, publication interruption, partial/blocked frame cancellation,
 disable ownership, unrelated native and second-module progress, governed admission,
 visibility hide/restore without edits and atomic interrupted-rescan behavior.
+
+### 7.1 Inert frame-inspection slice
+
+WP15 registers the literal frame subcommand through compiled
+extensionSubcommands, with no initialization-time I/O:
+
+- `hn extension frame inspect --input FILE|- --kind hello|ready|request|response|cancel [--expected-request-id ID] [--method METHOD] [--timeout-ms MS] [--json]`
+
+FILE is exactly one explicit local regular file, or `-` for stdin consumed once.
+The input is raw bytes: one unsigned four-byte big-endian length followed by one
+UTF-8 JSON message, not Base64, a JSON descriptor, a frame list or unframed JSON.
+Require EOF after that one frame; a second frame or any trailing byte refuses.
+--input and --kind are required and occur once; all other flags occur at most once.
+Unknown flags/positionals/kinds refuse invalid_input. MS is integer1..30000;
+default30000 uses the existing30-second read budget. Its absolute timer covers
+opening/reading the input, partial prefix/payload and the final EOF check. Timeout
+or caller cancellation is host/cancelled, with no dispatched operation. A named
+nonregular input refuses before consuming its stream. No input bytes are echoed.
+
+Reject zero length as invalid_input and length>8388608 as resource_limit before
+payload allocation. Partial prefix/payload, malformed Unicode/JSON, duplicate
+keys, nonobjects, trailing data, unknown top-level or nested typed fields, wrong
+primitive/null/array types and malformed correlation fields refuse invalid_input.
+The same bounded transport JSON rules and first-host message/param/result shapes
+from sections2/4 apply, including method membership, value bounds and nullability.
+Unknown protocol is incompatible_version; an unknown method is
+unsupported_capability. This validates transport and closed typed message shape,
+not schema semantics, signature integrity or business preconditions.
+
+--kind selects exactly the existing hello, ready, business-request, ordinary-
+response or cancel-control shape, without sending it or creating a session.
+Correlation flags have this closed matrix:
+
+- hello/ready: neither --expected-request-id nor --method is permitted.
+- request: neither flag is permitted; its own known method selects the exact
+  params shape and its own request_id must satisfy the protocol grammar.
+- cancel: --expected-request-id is required and must equal cancel; --method is
+  forbidden. This proves only supplied ID equality, not an outstanding request.
+- response with a nonnull request_id: --expected-request-id is required and must
+  match exactly. A successful response additionally requires --method to select
+  its exact success data shape. A failed response forbids --method and validates
+  the existing closed error shape, including data=null and actual origin/code.
+- terminal response with request_id=null: both flags are forbidden; it must be a
+  failed response with data=null and a valid closed error. A success with null
+  request_id is invalid_input.
+
+Wrong supplied correlation or a flag combination outside this matrix refuses
+invalid_input. A request's timeout_ms, if present, retains its existing protocol
+bounds; it is data being inspected, not this utility's read timeout. Responses
+must preserve the existing ok/data/error consistency. No supplied method or ID
+substitutes for a host-selected repository, module, grants or durable actor/key.
+
+Success uses the ordinary management JSON/exit0 wrapper; data is exactly
+{frame_bytes:integer,payload_bytes:integer,message_kind:Kind,
+request_id:string|null,method:string|null,validation:"frame_and_typed_message",
+session_state:"not_checked",authorization:"not_checked",
+semantic_validation:"not_checked",signature_integrity:"not_checked",
+dispatch:"not_performed"}. frame_bytes=payload_bytes+4. request_id is the actual
+request/response ID or cancel target, otherwise null. method is the request's
+method or the supplied successful-response method, otherwise null. A known
+business refusal inside an otherwise valid response is inspect success: the tool
+validates that response's shape, not the success of its business operation.
+Failure uses exit1,ok=false,data=null and the existing host-origin closed error
+set, with recovery=do_not_retry,operation=null. Sanitized input I/O failure is
+host/repository_error. This adds no error origin/code and no host method.
+
+The utility never parses registration/enablement, authorizes or dispatches a
+business call, loads identity/accepted state, signs, writes an intent/ref/public
+object, launches a module, or applies transport. It does not assert handshake
+order, request-ID uniqueness across a session, one-outstanding-request state,
+response ordering, cancellation of a live writer, session cleanup or deadlines
+of an actual child. Those require WP16+ real-session qualification. This current
+slice exposes only bounded frame/message value inspection: do not introduce an
+unused public encoder/session-writer API or an artificial encode/decode call
+merely to anticipate the later real child writer. The native
+outer-lock rules remain unchanged; no default native work or lock bypass is added.
