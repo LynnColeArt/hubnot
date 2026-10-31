@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-extensions-01M661C0
 mission_id: 01M661C0T0E4DS0AXBCXG7WCAX
-generated_at: '2026-10-31T21:35:33.419678+00:00'
+generated_at: '2026-10-31T23:31:37.109040+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
@@ -21,51 +21,55 @@ input_artifacts:
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
 verdict: ready
 issue_counts:
-  medium: 0
-  high: 0
-  critical: 0
   low: 0
+  high: 0
+  medium: 0
+  critical: 0
   info: 0
 findings: []
 ---
 
 ## Specification Analysis Report
 
-Fresh planning consistency analysis after root's complete zero-startup amendment 2f1a65668fcf41e80fdfb6143deff8f5d67e1d97 and supported finalizer 6a22105e507d7874159c3555afd480c8956567ad. READY permits only continued authorized implementation. It is not correction approval, WP24 approval, performance/package/platform acceptance or release authorization.
+Fresh planning consistency analysis for prospective WP25 count-preflight amendment d3fd4a0db6f16da143e87110f6c50eb8245fe86b, normally finalized by af6c7b85242733a6419142a16c75aff55f1ecec3. READY authorizes only continued implementation within the exact root scope. It is not a source correction pass, numeric-bound pass, WP25 verdict, package/platform acceptance or release authorization.
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |---|---|---|---|---|---|
-| — | — | — | — | No open planning ownership, dependency or coverage inconsistency | Implement exact authorized regions and satisfy all remaining gates |
+| — | — | — | — | No open planning ownership, dependency or coverage inconsistency | Implement exact authorized regions and complete new-source qualification |
 
-### Selected scope and dated supersession
+### Root decision and exact source boundaries
 
-The authoritative prospective record is tasks/WP24-default-workflow-qualification/integration-zero-startup.md, with integration-zero-startup-regions.json and integration-zero-startup-routing.json. Root's2026-10-31 decision supersedes ONLY the earlier two eager router-key storage representation. Every older scope, binding, source-only review and capture record remains immutable historical evidence. All21 artifact/3type/8extension/13adapter/2router effective handler bindings and closure arguments stay exact, including search-help, exchange-inspect, inspect/list and cleanup wrappers. Public help must remain byte-identical; actual native-map entries keep generic/function/nil override precedence.
+The authoritative prospective scope is tasks/WP25-exact-package-qualification/integration-count-preflight.md, with its regions and recapture JSON. Root selects a bounded unique selected-immutable-tip commit-count preflight at loadArtifactHistoryFromSources. It retains the existing count defense, source witnesses,30-second stage and every subsequent object/tree/hash/signature/schema/continuity verification. Shallow/grafted views use the safe old raw-parent fallback; multiple-parent malformed streams are rejected consistently and graph failures never become empty/success. Cancellation, bounded input/output, scrubbed/no-replace/no-lazy-fetch Git and child reaping remain required. Count admission is not accepted-view trust. Independent source-only review must assess exact overbound diagnostic and mixed-invalid precedence before freeze; no new public error/policy is preapproved.
 
-The complete source inventory found104 original global/init declarations unchanged and58 additions fully classified (34 inert constants,23 variables,1 init). The selected lifecycle correction removes seven fixed-set constructors, the empty capture-map constructor and the sole optional two-key registration init. Seven vocabularies become canonical fixed-array values plus pure membership in original files. The capture map stays nil until make immediately before its existing mutex-held sole write. Native-first lookup falls back to the same two optional handlers only when a map key is absent; a present nil remains present. Help uses the actual-key/fallback union with no new map and retains existing sort/printing. Every other business-body token remains unchanged outside the explicitly enumerated expressions and methodNames representation. No startup saving is forecast.
+There are exactly TWO region exceptions without ownership transfer: artifact_read.go production region (WP05 approved/inactive), and extension_default_performance_test.go TEST-ONLY closed source union (WP24 approved/inactive) adding only extension_package_acceptance_test.go. Original14 WP25 owned paths and create_intent, every authoritative surface, graph and107 tasks remain exact; no new Go file. Existing owned artifact_read_test.go and extension_package_acceptance_test.go exercise actual boundaries. The production exception supersedes only the earlier no-production-edit prohibition for that exact reader region. No persistent object-reader/batching refactor, new mandatory dependency or optional startup construction is authorized. An owner reopening or further source path/count/fix requires root coordination.
 
-Only internal/extension/vocabulary_test.go is NEW WP24 owned/create-intent source. Thirteen exact old-path region exceptions preserve original owners/authoritative surfaces; three already-owned source files receive their bounded amendments. Approved/inactive original owners WP10/WP11/WP13/WP14/WP15/WP16/WP19 are not reopened or transferred. WP24 alone executes the authorized regions; an owner reopening pauses that path. Comment-only protocol_test scope stays comment-only. Existing github_import example-local dispatch and extension_changes eviction fixtures remain unchanged.
+### Numeric boundary remains unqualified until actual proof
 
-Prospective source is316=311dependency+5WP24 inputs. The exact311 count and every input-hash equality remain binding; only the new test joins the existing four owned-source union. Because reviewed exception edits change dependency bytes, root must issue a fresh exact311-input attestation after independent source-only correction review and freeze the new candidate. Do not reuse old candidate hashes/binary/flag identities, widen source guards, relax thresholds or bypass a blocking guard. Installed warn diagnostics remain transparent; no policy/auth/sync/consent/framework/config or checkout-mode change is authorized.
+Intermediate source0886fe80d8de29a5df3b880cf5e8cc6864ce3afd has317 closed source inputs and currently unchanged production relative to approved WP24. Its real signed100000/100001 public calls both cancelled at30seconds. Those observations establish observed deadline/no-effect behavior, not the numeric record-count gate. Preserve the intermediate source, its hosted run, all raw evidence and the independent count-contract review as historical inputs, not new-source passes.
+
+The actual new100000 call must causally pass the COUNT gate; later independently established30-second full-verification cancellation may be labeled narrowly and cannot be called complete100000-record read acceptance.100001 must return resource_limit with exact message selected artifact record limit exceeded and unchanged protected state. A99999 threshold fault control must change the equality result to that asserted count refusal. No helper-only counter, prefilled cache, Git stub, extended context, success-on-timeout or skipped verification substitutes. Original-source RED, fixed-source GREEN, duplicate/overlapping tip counting, malformed/multi-parent/shallow/grafted graph behavior, cancellation/reaping and source-witness regression evidence remain required.
+
+### Fresh-source default/performance obligations and immutable approval
+
+WP24 approval event01M6A1E4SYYNVZ65GT410JW3EE remains approved and unchanged in canonical history. Its root-verified review SHA509f327d09c9d6c5277d44c00c98870d44b5230ba8f6fc15bf15757cb64a0ab4 and source-specific evidence are not rewritten. Once production artifact_read.go bytes change, historical production-equivalence reuse for default/performance is invalid; the old approval is not relabeled as new candidate acceptance.
+
+After independent SOURCE-ONLY correction review, root must construct a NEW exact317-input source/tree freeze and fresh inherited311 path-to-hash map at reviewed bytes, including the eight previously transferred fixtures and the authorized reader delta. The capture guard remains317=311inherited+5WP24+1WP25, with len(approved_inputs)==311 and equality of EVERY inherited input. Never reuse historical hashes, widen path sets or relax guards. No capture before review and root attestation.
+
+WP25 executes fresh affected default/native/history/failure/no-registry/no-effect cases and causal detector/budget controls on matching new binaries, plus the COMPLETE unchanged paired performance gate:4,320 observations,30pairs per group, both frozen-cgo1 and packager-cgo0 settings, standard/native-only variants, nine representative cases, absent/large-unrelated states. Baseline assets, sample selection, flags, collectors, math, failure retention, elapsed max(10%,5ms) and RSS max(10%,1MiB) remain exact. Preserve ALL prior failed captures, including2d92/76cd/414d/d0f4 and17,280 observations, as immutable failures. New external output only; no retry-to-green, partial matrix, favorable build or old-candidate substitution. WP25-owned new package evidence references exact new source/default/performance artifacts without overwriting historical WP24 default reports.
+
+New frozen-source full suite/race/vet/build/format and all EIGHT actual distributed native platform/variant package rows remain mandatory, alongside every original T100–T103 obligation and normal independent final WP25 review. Missing actual hardware/platform execution, source fallbacks or old intermediate hosted observations cannot become passes. No subtask/status/verdict is advanced by planning. WP26, all final gates, beta/main boundaries and release restrictions remain unchanged.
 
 ### Verified planning invariants
 
-Normal mission finalize-tasks --validate-only passed with zero ownership/requirement/post-integration warnings. Normal finalize-tasks --refresh-planning-commit succeeded with zero newly seeded WPs, zero dependency-frontmatter rewrites and zero lane collapses. All26 WP/lane memberships, dependencies and parallel groups remain exact;107 unique T001–T107 tasks retain owners and the graph is acyclic. Only WP24's lane write scope adds the new test. The supported ancestor-checked planning SHA advances from457ba25e4ec4257009a552640ec7303ef3e1ee42 to2f1a65668fcf41e80fdfb6143deff8f5d67e1d97; no lane/status hand edit or original ownership transfer occurred.
+Supported mission finalize-tasks --validate-only passed with zero ownership/requirement/post-integration warnings. Normal finalize-tasks --refresh-planning-commit succeeded with zero newly seeded WPs, zero dependency/frontmatter rewrites and zero lane collapses. All26 lane IDs/memberships/dependencies/parallel groups/write scopes, original ownership/create_intent and107 unique T001–T107 assignments remain exact. The graph is acyclic and every original42 FR/NFR/C mapping remains intact. The supported ancestor-checked recorded planning SHA advances from2f1a65668fcf41e80fdfb6143deff8f5d67e1d97 tod3fd4a0db6f16da143e87110f6c50eb8245fe86b.
 
-Canonical state was read at the absolute coordination worktree status.events.jsonl path. All original event bytes remain an exact prefix and every lifecycle/verdict event remains unchanged. Current states: WP01–WP23 approved, WP24 in_progress, WP25/WP26 planned. The adopted WP07/WP15 dated maintenance history at a4f576f12b2e21c5cfa8263dda7fa411047ace93 remains byte-identical and committed; it was not treated as working dirt or reverted.
+Canonical lifecycle was read from the absolute coordination worktree status.events.jsonl. All original event bytes remain an exact prefix and every transition/verdict remains unchanged. Current state is WP01–WP24 approved, WP25 in_progress, WP26 planned. Adopted WP07/WP15 activity history remains exact. This refresh edits no status/events, auth/sync consent, policy, framework or lane state by hand and uses no force/skip/checkout override.
 
-All four frozen contracts and65 literal host/fixture JSON blocks remain exact. All220 primary Go/module blobs, including105 production/module inputs, remain unchanged. Implementation remains in runtime-owned lanes; primary-source equality does not claim implementation integration/qualification. This planning amendment authored no Go source/test code and ran no build, application test or measurement. Normal finalization may regenerate its derived dossier; pre-existing unrelated dossier bytes and76 untracked review projections were separately archived/hash/mode/read-back verified and preserved before commands, then restored independently of the planning commits.
-
-### Failed evidence and required next gates
-
-Frozen d0f40fc96560f6d58f5b63a0eefe71d6635d2523 remains FAIL: its complete4,320-observation capture exceeds unchanged RSS bounds in two native-only CGO0 issue groups by8/68KiB. All four failed captures and17,280 observations remain immutable failures. The diagnostic constructor evidence does not predict an RSS result. Elapsed max(10%,5ms) and RSS max(10%,1MiB), source/build variants, sample counts and all existing gates remain unchanged.
-
-The implementer must retain original-source RED/fixed-source GREEN, exact-set equality/uniqueness for all38 values, sorted fresh methodNames, cold construction and no native-map growth, exact help and generic/nil override behavior, nil-safe capture lookups and mutex-safe first retain, focused race and live CLI/host checks, and a complete before/after scope/body-token/binding/state proof. A fresh independent SOURCE-ONLY correction review and root source/input attestation precede one complete new fixed-source paired gate and every original final functional/history/fault/detector/budget/race/package/review requirement. No T096–T099 completion, for_review or WP24 approval is asserted now.
-
-WP25 package/platform and assigned detector maintenance obligations and WP26 independent native-user/extension-author observations remain planned and unwaived; omitted observations cannot become passes. Normal final independent WP24 review, all approvals, accept, feature-target integration, post-merge mission review and retrospective remain required. No protocol closure rewrite, semantic-compression activation, source padding, GC/flag/budget/capability/API/authority/error/data/dependency/default-setup change, beta/main change or release publication belongs to this correction.
+All220 primary Go/module input blobs, including105 production/module inputs, remain exact. All four frozen contracts and65 literal host/fixture JSON blocks remain unchanged. This planning refresh writes no Go/test code and runs no build, application test or measurement. The unrelated pre-existing dossier and77 review projections were archived/hash/mode/read-back verified and preserved before normal commands, then restored exactly; normal finalization may regenerate only its derived dossier. No historical source/evidence file was overwritten.
 
 ### Coverage Summary Table
 
-All42 FR/NFR/C keys retain the same accountable WPs. These are planning mappings, not runtime passes; all ten SC outcomes retain their original required evidence.
+Canonical requirement owners remain unchanged. WP25's expressly delegated fresh-source default/performance reruns additionally revalidate the inherited NFR-001/NFR-002 gates after production drift; historical WP24 coverage/approval is not transferred or reused. All ten original SC outcomes remain binding; numeric record evidence is still required.
 
 | Requirement Key | Has Task? | Work packages | Notes |
 |---|---|---|---|
@@ -103,8 +107,8 @@ All42 FR/NFR/C keys retain the same accountable WPs. These are planning mappings
 | FR-022 | Yes | WP21 | Original requirement scope and final reviewed evidence retained |
 | FR-023 | Yes | WP22 | Original requirement scope and final reviewed evidence retained |
 | FR-024 | Yes | WP02, WP23, WP25, WP26 | Original requirement scope and final reviewed evidence retained |
-| NFR-001 | Yes | WP01, WP13, WP16, WP24, WP26 | Original requirement scope and final reviewed evidence retained |
-| NFR-002 | Yes | WP01, WP24 | Original requirement scope and final reviewed evidence retained |
+| NFR-001 | Yes | WP01, WP13, WP16, WP24, WP26 | Original mapping retained; WP25 additionally reruns inherited gate on changed source |
+| NFR-002 | Yes | WP01, WP24 | Original mapping retained; WP25 additionally reruns inherited gate on changed source |
 | NFR-003 | Yes | WP02, WP03, WP04, WP05, WP06, WP08, WP09, WP10, WP12, WP15, WP16, WP19, WP24, WP25 | Original requirement scope and final reviewed evidence retained |
 | NFR-004 | Yes | WP16, WP24, WP25 | Original requirement scope and final reviewed evidence retained |
 | NFR-005 | Yes | WP01, WP05, WP09, WP24 | Original requirement scope and final reviewed evidence retained |
@@ -114,15 +118,15 @@ All42 FR/NFR/C keys retain the same accountable WPs. These are planning mappings
 
 ### Exact amendment inputs
 
-Canonical recorder hashes were recomputed from the current spec/plan/tasks/charter. The following supplementary hashes bind the new WP24 authorization explicitly:
+Canonical recorder hashes are freshly recomputed from spec/plan/tasks/charter. Supplementary hashes bind the prospective WP25 authorization explicitly:
 
 | Artifact | SHA256 |
 |---|---|
-| kitty-specs/optional-extensions-01M661C0/tasks/WP24-default-workflow-qualification.md | ef3d03b3a0758ba44ad74c2f91c8a85aff43d86d4039fbf5f86fa62292f9a32c |
-| kitty-specs/optional-extensions-01M661C0/tasks/WP24-default-workflow-qualification/integration-zero-startup.md | cfabad2c904164f77edc9d0bd6b7f5512b96f6ce5c1ce4ba38be9910a730c2ed |
-| kitty-specs/optional-extensions-01M661C0/tasks/WP24-default-workflow-qualification/integration-zero-startup-regions.json | 1c55a61c112793e16c69a2dfd23a9484e65fbfce441405204fd2056ca08cc5db |
-| kitty-specs/optional-extensions-01M661C0/tasks/WP24-default-workflow-qualification/integration-zero-startup-routing.json | 1543d8a26f6139e6fe5c1380816ad9648114c271f2f864e43007994773c571a4 |
+| kitty-specs/optional-extensions-01M661C0/tasks/WP25-exact-package-qualification.md | 195209e97676d69528d1bcf99125d7089da98d4dad56317c850f66a3b25721b9 |
+| kitty-specs/optional-extensions-01M661C0/tasks/WP25-exact-package-qualification/integration-count-preflight.md | af80fd20de34dc817842ae58ae5b0c2d5da638f5052844484f0f6eca0b78e536 |
+| kitty-specs/optional-extensions-01M661C0/tasks/WP25-exact-package-qualification/integration-count-preflight-regions.json | fa7ab2e075b7d569add2310f64d59ec6b7a942521a08c9ddcc225abbcb375b20 |
+| kitty-specs/optional-extensions-01M661C0/tasks/WP25-exact-package-qualification/integration-count-preflight-recapture.json | ce75ef198a7e463b85c2ea7e83053b2174b8df8e8eb7ad498ff729447a0d863f |
 
 ### Verdict
 
-READY for continued implementation within the exact prospective root authorization. Existing failures and all remaining review/qualification obligations remain binding.
+READY for continued work within the exact root authorization. The numeric-bound obligation, independent correction review, new-source attestation and every affected/default/performance/full-suite/package gate remain open until actual evidence is produced and reviewed.
