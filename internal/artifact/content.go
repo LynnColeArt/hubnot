@@ -67,9 +67,24 @@ func ValidateRecord(ctx context.Context, raw []byte) (RecordValidation, error) {
 	if e != nil {
 		return RecordValidation{}, e
 	}
+	return validateRecordValue(ctx, v)
+}
+
+// validateRecordValue shares the same record rules with internal readers whose
+// bounded loader has already parsed the JSON value domain and individual signed
+// envelopes. Its context is not serialized through the inert CLI's wire cap.
+func validateRecordValue(ctx context.Context, v any) (RecordValidation, error) {
+	if e := cancelled(ctx); e != nil {
+		return RecordValidation{}, e
+	}
 	m, ok := v.(map[string]any)
 	if !ok || !closed(m, "artifact", "type", "parents", "opening") {
 		return RecordValidation{}, refuse("invalid_input", "record validation requires artifact, type, parents and opening")
+	}
+	// The CLI token parser enforces this before semantic work. Parsed-context
+	// callers preserve the same limit before allocation or signature checking.
+	if parents, ok := m["parents"].([]any); ok && len(parents) > 1024 {
+		return RecordValidation{}, refuse("resource_limit", "array exceeds 1024 entries")
 	}
 	candidate, e := checkSupplied(ctx, m["artifact"])
 	if e != nil {
