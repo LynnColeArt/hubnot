@@ -844,3 +844,24 @@ func TestArtifactGitFetchNamedNamespaceRace(t *testing.T) {
 	}
 	assertArtifactNamespaceResult(t, f, before)
 }
+
+func TestArtifactGitNamedTransactionStaleOldIsAtomic(t *testing.T) {
+	f := newArtifactNamespaceFixture(t)
+	// Make only the verified public successor objects available; publication is
+	// still exclusively the transaction under test, with one deliberately stale
+	// expected value. The unrelated sentinel is public data throughout.
+	f.dst.git("fetch", "--no-tags", "--no-write-fetch-head", f.src.repo, f.newTip)
+	other := strings.Replace(f.accepted, "/public/", "/other/", 1)
+	f.dst.git("symbolic-ref", f.accepted, f.sentinel)
+	f.dst.git("update-ref", other, f.oldTip)
+	before := f.dst.snapshot()
+	t.Chdir(f.dst.repo)
+	e := promoteReplicationRefs([]replicationPromotion{{Ref: f.accepted, NewOID: f.newTip, OldOID: f.oldTip}, {Ref: other, NewOID: f.newTip, OldOID: strings.Repeat("0", len(f.oldTip))}})
+	if e == nil || !strings.Contains(e.Error(), "atomically promote accepted refs") {
+		t.Fatal("wrong expected-old refusal", e)
+	}
+	f.dst.unchanged(before)
+	if f.dst.git("rev-parse", f.sentinel) != f.oldTip || f.dst.git("symbolic-ref", f.accepted) != f.sentinel || f.dst.git("rev-parse", other) != f.oldTip {
+		t.Fatal("stale transaction partially published")
+	}
+}
