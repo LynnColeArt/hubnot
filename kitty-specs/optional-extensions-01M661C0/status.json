@@ -1,7 +1,7 @@
 {
-  "event_count": 176,
-  "last_event_id": "01M688FDJYCQZ31T8N3E6DVZ46",
-  "materialized_at": "2026-10-31T05:56:15.570255+00:00",
+  "event_count": 177,
+  "last_event_id": "01M688X9MT0E1NJKCJAYBK4WDY",
+  "materialized_at": "2026-10-31T06:03:50.298176+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 3,
+    "for_review": 1,
+    "in_progress": 2,
     "in_review": 0,
     "planned": 10
   },
@@ -298,9 +298,9 @@
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 3,
-      "lane": "in_progress",
-      "last_event_id": "01M688FDJYCQZ31T8N3E6DVZ46",
-      "last_transition_at": "2026-10-31T05:56:15.570255+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M688X9MT0E1NJKCJAYBK4WDY",
+      "last_transition_at": "2026-10-31T06:03:50.298176+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Selected artifact Git transfer implemented; exact public CLI/bare-remote reconstruction and refusal/boundary controls, std/native binary execution, focused race and native compatibility pass. Source ebc5074994cfa0b025ee25630a38125dd509db3e; external evidence optional-extensions-WP09; budget decision18db2d22.",
@@ -324,10 +324,10 @@
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
-        "T036": "planned",
-        "T037": "planned",
-        "T038": "planned",
-        "T039": "planned"
+        "T036": "done",
+        "T037": "done",
+        "T038": "done",
+        "T039": "done"
       }
     },
     "WP10": {
