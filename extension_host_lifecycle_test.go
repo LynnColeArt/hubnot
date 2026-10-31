@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -185,6 +186,11 @@ func newHostFixture(t *testing.T, mode string) *hostFixture {
 	}
 	f := &hostFixture{t: t, binary: bin, home: t.TempDir(), repo: t.TempDir(), module: "example.host/tool"}
 	f.config = filepath.Join(f.home, "config")
+	if runtime.GOOS == "darwin" {
+		// Match os.UserConfigDir under the child's isolated HOME. Darwin
+		// ignores XDG_CONFIG_HOME, including for the malformed-registry control.
+		f.config = filepath.Join(f.home, "Library", "Application Support")
+	}
 	f.manifest = filepath.Join(f.home, "manifest.json")
 	f.marker = filepath.Join(f.home, "started")
 	f.result = filepath.Join(f.home, "result.json")
@@ -567,6 +573,9 @@ func TestExtensionRunIdleDoesNotHoldNativeLockCLI(t *testing.T) {
 	if e = os.WriteFile(filepath.Join(f.config, "hubnot", "extensions", "registry.json"), []byte("malformed optional registry"), 0600); e != nil {
 		t.Fatal(e)
 	}
+	// The explicit path must consume this exact poisoned registry, while the
+	// ordinary native command remains independent of it on each platform.
+	f.invoke("invalid_input", "list", "--json")
 	native(false, "identity", "show", "--json")
 }
 

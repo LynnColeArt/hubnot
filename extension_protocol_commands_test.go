@@ -60,7 +60,7 @@ func TestExtensionFrameInspectCLI(t *testing.T) {
 	binary := extensionProtocolBinary(t)
 	repo := t.TempDir()
 	home := t.TempDir()
-	config := filepath.Join(home, "config")
+	config := extensionTestConfigDir(t, home)
 	registry := filepath.Join(config, "hubnot", "extensions", "registry.json")
 	if out, err := exec.Command("git", "init", "-q", repo).CombinedOutput(); err != nil {
 		t.Fatalf("init: %v %s", err, out)
@@ -75,6 +75,17 @@ func TestExtensionFrameInspectCLI(t *testing.T) {
 	}
 	beforeRepo, beforeHome := protocolTree(t, repo), protocolTree(t, home)
 	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
+	// Prove the trap is at the registry selected by the CLI on this OS.
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+	defer cancel()
+	inspect := exec.CommandContext(ctx, binary, "extension", "inspect", "--json")
+	inspect.Dir = repo
+	inspect.Env = env
+	output, inspectErr := inspect.Output()
+	var registryResult extensionCLIResult
+	if ctx.Err() != nil || inspectErr == nil || json.Unmarshal(output, &registryResult) != nil || registryResult.OK || registryResult.Data != nil || registryResult.Error.Origin != "host" || registryResult.Error.Code != "invalid_input" || registryResult.Error.Recovery != "do_not_retry" {
+		t.Fatalf("malformed registry control: %v %s", inspectErr, output)
+	}
 	invoke := func(raw []byte, want string, args ...string) map[string]any {
 		t.Helper()
 		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)

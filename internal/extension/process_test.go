@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strconv"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -76,19 +77,88 @@ func TestSessionProcessAsset(t *testing.T) {
 		}
 		os.Exit(0)
 	}
+	if mode == "sequential-response" || mode == "sequential-exit" {
+		observed := []map[string]any{}
+		ids := []string{"sequence-0", "sequence-1", "sequence-2", "sequence-3"}
+		if mode == "sequential-exit" {
+			ids = ids[:1]
+		}
+		for _, id := range ids {
+			assetWrite(map[string]any{"protocol": HostProtocol, "request_id": id, "method": "resource.read", "params": map[string]any{"family": "issue", "id": nil, "limit": 20, "cursor": nil}})
+			// Read prefix AND payload, validate correlation and success, then send
+			// the next request. There is no timing delay or retry in this peer.
+			response := assetRead()
+			encoded, err := json.Marshal(response)
+			if err != nil {
+				os.Exit(65)
+			}
+			if _, err = InspectMessage(encoded, "response", id, "resource.read"); err != nil || response["ok"] != true {
+				os.Exit(66)
+			}
+			observed = append(observed, response)
+			encoded, _ = json.Marshal(observed)
+			if os.WriteFile(os.Getenv("HN_SESSION_PID")+".responses", encoded, 0600) != nil {
+				os.Exit(67)
+			}
+		}
+		os.Exit(0)
+	}
 	if mode == "idle" {
 		for {
 			time.Sleep(time.Hour)
 		}
 	}
 	request := map[string]any{"protocol": HostProtocol, "request_id": "write", "method": "resource.mutate", "timeout_ms": 100, "params": map[string]any{"family": "issue", "intent": "open", "id": nil, "expected": []any{}, "actor": repeatActor(), "operation": "actual-key", "state": map[string]any{"title": "ticket", "body": "", "status": "open", "criteria": []any{}, "labels": []any{}, "assignees": []any{}, "relations": []any{}, "metadata": map[string]any{}}, "comment": ""}}
-	if mode == "read-timeout" || mode == "clean-shutdown" {
+	if mode == "read-timeout" || mode == "clean-shutdown" || strings.HasPrefix(mode, "blocked-response-") {
 		request = map[string]any{"protocol": HostProtocol, "request_id": "read", "method": "resource.read", "timeout_ms": 100, "params": map[string]any{"family": "issue", "id": nil, "cursor": nil, "limit": 20}}
 	}
 	if mode == "clean-shutdown" || mode == "mutation-shutdown" {
 		request["timeout_ms"] = 2000
 	}
+	if strings.HasPrefix(mode, "blocked-response-") {
+		request["timeout_ms"] = 2000
+	}
+	if mode == "lost-response" {
+		// Establish response loss before the host can read/dispatch the request.
+		_ = os.Stdin.Close()
+	}
 	assetWrite(request)
+	if mode == "premature-second" {
+		request["request_id"] = "second"
+		assetWrite(request)
+	}
+	if strings.HasPrefix(mode, "blocked-response-") {
+		// Read only the response prefix. The multi-MiB payload cannot fit the
+		// private pipe, so the host remains in a real blocked response write.
+		var prefix [4]byte
+		if _, err := io.ReadFull(os.Stdin, prefix[:]); err != nil || binary.BigEndian.Uint32(prefix[:]) < 1048576 {
+			os.Exit(68)
+		}
+		if mode == "blocked-response-eof" {
+			// Isolate stdout EOF from stdin response loss: leaving the read
+			// end open keeps the bulk writer blocked until host cleanup.
+			_ = os.Stdout.Close()
+		}
+		if mode == "blocked-response-cancel" || mode == "blocked-response-wrong-cancel" {
+			target := "read"
+			if mode == "blocked-response-wrong-cancel" {
+				target = "wrong"
+			}
+			assetWrite(map[string]any{"protocol": HostProtocol, "cancel": target})
+		} else if mode == "blocked-response-second" {
+			request["request_id"] = "second"
+			assetWrite(request)
+		}
+		// Block without draining payload; host-owned cleanup must terminate us.
+		blocked, keepOpen, err := os.Pipe()
+		if err != nil {
+			os.Exit(69)
+		}
+		defer keepOpen.Close()
+		var next [1]byte
+		_, _ = blocked.Read(next[:])
+		os.Exit(69)
+	}
 	switch mode {
 	case "cancel":
 		time.Sleep(20 * time.Millisecond)
@@ -103,7 +173,6 @@ func TestSessionProcessAsset(t *testing.T) {
 		os.Exit(0)
 	}
 	if mode == "lost-response" {
-		_ = os.Stdin.Close()
 		for {
 			time.Sleep(time.Hour)
 		}
