@@ -532,7 +532,7 @@
     "WP16": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "architect-alphonso",
       "agent_profile_version": "1.0",
       "force_count": 1,
       "lane": "planned",
@@ -541,23 +541,25 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods.",
-        "Independent review passed at exact source 320e212b26a5f151b1af09083895d479b4a8396f; all242 input digests and supplied binary hashes independently recomputed. Forty-six focused race test/subtest PASS events, zero fail/skip; supplied standard and combined-native actual-child CLI, raw ungranted writes, frame/stderr bounds, four shared physical slots, finite TERM-ignore/global/descendant cleanup, native lock negative control and syscall no-loader controls; synchronous cancellation/actor-key uncertainty and partial-frame30s cap pass. Handwritten pipelined second-request probe20/20 invalid_input. Anti-pattern1 dead code PASS;2 synthetic fixture PASS;3 silent empty PASS;4 FR coverage PASS;5 frozen surface PASS;6 locked decision PASS;7 shared ownership PASS;8 production fragility PASS. Only seven owned source paths; exact main.go lock exclusion. Same-user boundary and synchronous I/O caveat preserved; WP17/18/19 domain adapters and final platform/performance qualification pending. External evidence optional-extensions-WP16/reviewer-evidence.json; execution slot released; no reviewer fixes."
+        "Independent review passed at exact source 320e212b26a5f151b1af09083895d479b4a8396f; all242 input digests and supplied binary hashes independently recomputed. Forty-six focused race test/subtest PASS events, zero fail/skip; supplied standard and combined-native actual-child CLI, raw ungranted writes, frame/stderr bounds, four shared physical slots, finite TERM-ignore/global/descendant cleanup, native lock negative control and syscall no-loader controls; synchronous cancellation/actor-key uncertainty and partial-frame30s cap pass. Handwritten pipelined second-request probe20/20 invalid_input. Anti-pattern1 dead code PASS;2 synthetic fixture PASS;3 silent empty PASS;4 FR coverage PASS;5 frozen surface PASS;6 locked decision PASS;7 shared ownership PASS;8 production fragility PASS. Only seven owned source paths; exact main.go lock exclusion. Same-user boundary and synchronous I/O caveat preserved; WP17/18/19 domain adapters and final platform/performance qualification pending. External evidence optional-extensions-WP16/reviewer-evidence.json; execution slot released; no reviewer fixes.",
+        "Administrative dependency refresh after independently approved WP15 native result correction; retain host lifecycle source, qualify exact updated union before adapters."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/lynn/projects/nichthub/kitty-specs/optional-extensions-01M661C0/tasks/WP16-extension-host-lifecycle/review-cycle-2.md",
         "reference": "review-cycle://optional-extensions-01M661C0/WP16-extension-host-lifecycle/review-cycle-2.md",
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T064": "done",
-        "T065": "done",
-        "T066": "done",
-        "T067": "done"
+        "T064": "planned",
+        "T065": "planned",
+        "T066": "planned",
+        "T067": "planned"
       }
     },
     "WP17": {
