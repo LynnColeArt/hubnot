@@ -2,15 +2,119 @@ package extension
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/exec"
 	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
+
+// Profile a fresh process before any protocol operation. This catches eager
+// construction itself, independently of allocator-size or RSS thresholds.
+func TestProtocolUnusedConstruction(t *testing.T) {
+	if os.Getenv("HN_WP15_STARTUP_PROFILE") != "1" {
+		executable, err := os.Executable()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, executable, "-test.run=^TestProtocolUnusedConstruction$", "-test.v")
+		cmd.Env = append(os.Environ(), "HN_WP15_STARTUP_PROFILE=1", "GODEBUG=memprofilerate=1")
+		if output, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("unused protocol startup: %v\n%s", err, output)
+		}
+		return
+	}
+	if runtime.MemProfileRate != 1 {
+		t.Fatal("startup allocation profiling is not enabled")
+	}
+	n, _ := runtime.MemProfile(nil, true)
+	profile := make([]runtime.MemProfileRecord, n+64)
+	n, ok := runtime.MemProfile(profile, true)
+	if !ok {
+		t.Fatal("startup allocation profile grew beyond buffer")
+	}
+	for _, record := range profile[:n] {
+		frames := runtime.CallersFrames(record.Stack())
+		for {
+			frame, more := frames.Next()
+			if strings.HasSuffix(frame.File, "/internal/extension/protocol.go") &&
+				(strings.HasSuffix(frame.Function, ".init") || strings.Contains(frame.Function, ".map.init.")) {
+				t.Errorf("unused protocol constructed at startup: %s (%d allocated objects)", frame.Function, record.AllocObjects)
+				break
+			}
+			if !more {
+				break
+			}
+		}
+	}
+}
+
+// Run alone under the race detector: inventories, every static rule wrapper,
+// and public inspection must all be safe as independent concurrent first users.
+func TestProtocolCachesMixedFirstUse(t *testing.T) {
+	cases := []struct {
+		rule wireRule
+		good any
+		bad  any
+	}{
+		{nullRule, nil, true}, {booleanRule, true, nil},
+		{idRule, testID, "sha256:invalid"}, {actorRule, testActor, "invalid"},
+		{sessionIDRule, strings.Repeat("a", 32), "short"}, {requestIDRule, "r", ""},
+		{moduleVersionRule, "1.0", ""}, {typeIDRule, "example.test/item", "hn/reserved"},
+		{familyRule, "issue", "unknown"}, {shapeRule, "document", "unknown"},
+		{protocolRule, "hn/0", "unknown"}, {recoveryRule, "do_not_retry", "unknown"},
+		{tokenRule, "", nil}, {decimalRule, "0", "-0"},
+		{dateRule, "2026-10-31", "2026-02-30"}, {urlRule, "https://example.invalid/", "file:///tmp/x"},
+		{pageLimit, json.Number("200"), json.Number("0")},
+		{idsRule, []any{testID}, []any{"bad"}}, {nativeIdentifier, "field-id", ".."},
+		{fieldNameRule, "_field", "1field"}, {timestampRule, "2026-10-31T12:00:00Z", "2026-10-31"},
+	}
+	request := []byte(`{"protocol":"hn.extension/1","request_id":"r","method":"resource.read","params":{"family":"issue","id":null,"limit":200,"cursor":null}}`)
+	badRequest := []byte(`{"protocol":"hn.extension/1","request_id":"r","method":"resource.read","params":{"family":"unknown","id":null,"limit":200,"cursor":null}}`)
+	expected := frozenProtocolInventories()
+	start := make(chan struct{})
+	var workers sync.WaitGroup
+	for range 16 {
+		workers.Go(func() {
+			<-start
+			for name, values := range runtimeProtocolInventories() {
+				if err := protocolInventoryDifference(values, expected[name]); err != nil {
+					t.Errorf("first-use inventory %s: %v", name, err)
+				}
+			}
+			requireCode(t, inventoryRule("families")("unknown"), "invalid_input")
+		})
+		workers.Go(func() {
+			<-start
+			if _, err := InspectMessage(request, "request", "", ""); err != nil {
+				t.Errorf("first-use request: %v", err)
+			}
+			_, err := InspectMessage(badRequest, "request", "", "")
+			requireCode(t, err, "invalid_input")
+		})
+		for _, tc := range cases {
+			workers.Go(func() {
+				<-start
+				if err := tc.rule(tc.good); err != nil {
+					t.Errorf("first-use rule: %v", err)
+				}
+				requireCode(t, tc.rule(tc.bad), "invalid_input")
+			})
+		}
+	}
+	close(start)
+	workers.Wait()
+}
 
 // An invalid pattern makes compilation observable without depending on compiler
 // allocation sizes. Creating an unused optional rule must not compile it.
@@ -543,8 +647,9 @@ func protocolInventoryDifference(actual, expected []string) error {
 }
 
 func runtimeProtocolInventories() map[string][]string {
-	actual := make(map[string][]string, len(protocolInventories)+1)
-	for name, values := range protocolInventories {
+	inventories := protocolInventories()
+	actual := make(map[string][]string, len(inventories)+1)
+	for name, values := range inventories {
 		actual[name] = values
 	}
 	// The existing WP13 method map remains the source used by requests and the
