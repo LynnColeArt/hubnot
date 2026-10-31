@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"reflect"
 	"strings"
@@ -15,6 +16,78 @@ func TestSessionBudgetsMirrorFrozenContract(t *testing.T) {
 	if StartupBudget != 10*time.Second || ReadBudget != 30*time.Second || MutationBudget != 240*time.Second || StderrLimit != 65536 || SessionLimit != 4 || RevocationInterval != 250*time.Millisecond || TerminateGrace != 2*time.Second || ExitBudget != 5*time.Second {
 		t.Fatal("host-v1 frozen lifecycle bounds drifted")
 	}
+}
+
+func TestSessionReaderDeadlineAndEOF(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		prefix      []byte
+		closeOutput bool
+		code        string
+	}{
+		{"first-byte-deadline", nil, false, "cancelled"},
+		{"prefix-deadline", []byte{0}, false, "cancelled"},
+		{"payload-deadline", []byte{0, 0, 0, 2, '{'}, false, "cancelled"},
+		{"clean-eof", nil, true, ""},
+		{"prefix-eof", []byte{0}, true, "invalid_input"},
+		{"payload-eof", []byte{0, 0, 0, 2, '{'}, true, "invalid_input"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			input, output, err := os.Pipe()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer input.Close()
+			defer output.Close()
+			if len(tc.prefix) != 0 {
+				if _, err = output.Write(tc.prefix); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if tc.closeOutput {
+				if err = output.Close(); err != nil {
+					t.Fatal(err)
+				}
+			}
+			reader := &sessionReader{file: input}
+			deadline := time.Now().Add(100 * time.Millisecond)
+			if tc.name == "first-byte-deadline" {
+				// No context/timer select participates: the real pipe's OS deadline
+				// must itself produce the host cancellation before any ready frame.
+				deadline = time.Now().Add(-time.Second)
+			}
+			reader.setDeadline(deadline)
+			event := reader.read()
+			if event.sequence != 1 || event.first.IsZero() || event.payload != nil {
+				t.Fatalf("incomplete read observation %#v", event)
+			}
+			if tc.code == "" {
+				if event.err != io.EOF {
+					t.Fatalf("clean EOF identity changed: %v", event.err)
+				}
+				return
+			}
+			var public *Error
+			if !errors.As(event.err, &public) || public.Origin != "host" || public.Code != tc.code || public.Recovery != "do_not_retry" || public.Operation != nil {
+				t.Fatalf("%s must be host/%s/do_not_retry without operation: %#v", tc.name, tc.code, event.err)
+			}
+		})
+	}
+	t.Run("closed-input", func(t *testing.T) {
+		input, output, err := os.Pipe()
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer output.Close()
+		if err = input.Close(); err != nil {
+			t.Fatal(err)
+		}
+		event := (&sessionReader{file: input}).read()
+		var public *Error
+		if !errors.Is(event.err, os.ErrClosed) || errors.As(event.err, &public) {
+			t.Fatalf("other first-byte I/O error was reclassified: %v", event.err)
+		}
+	})
 }
 func TestSessionSynchronousCancellationAndUncertainty(t *testing.T) {
 	for _, mode := range []string{"timeout", "cancel", "second", "wrong-cancel", "eof", "read-timeout"} {

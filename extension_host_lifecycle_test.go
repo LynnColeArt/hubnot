@@ -70,8 +70,13 @@ func TestExtensionChildAsset(t *testing.T) {
 		}
 	}
 	hello := hostRead(os.Stdin)
-	if mode == "startup-hang" {
-		_, _ = os.Stdout.Write([]byte{0, 0, 0})
+	if mode == "startup-eof" {
+		os.Exit(0)
+	}
+	if mode == "startup-hang" || mode == "startup-silent" {
+		if mode == "startup-hang" {
+			_, _ = os.Stdout.Write([]byte{0, 0, 0})
+		}
 		for {
 			time.Sleep(time.Hour)
 		}
@@ -316,7 +321,7 @@ func TestExtensionRunCLI(t *testing.T) {
 	assertHostExited(t, waitHostMarker(t, f.marker))
 }
 func TestExtensionRunRefusalsCLI(t *testing.T) {
-	for _, tc := range []struct{ mode, code string }{{"incompatible", "incompatible_version"}, {"crash", "unavailable_module"}, {"oversize", "resource_limit"}, {"zero", "invalid_input"}, {"stderr-over", "resource_limit"}, {"duplicate", "invalid_input"}, {"stderr-at", ""}, {"frame-at", ""}, {"unsupported", "unsupported_capability"}, {"ungranted", ""}, {"ungranted-write", ""}} {
+	for _, tc := range []struct{ mode, code string }{{"startup-eof", "unavailable_module"}, {"incompatible", "incompatible_version"}, {"crash", "unavailable_module"}, {"oversize", "resource_limit"}, {"zero", "invalid_input"}, {"stderr-over", "resource_limit"}, {"duplicate", "invalid_input"}, {"stderr-at", ""}, {"frame-at", ""}, {"unsupported", "unsupported_capability"}, {"ungranted", ""}, {"ungranted-write", ""}} {
 		t.Run(tc.mode, func(t *testing.T) {
 			f := newHostFixture(t, tc.mode)
 			before := hostNativeSnapshot(t, f.repo)
@@ -432,13 +437,25 @@ func TestExtensionRunNoImplicitLaunchCLI(t *testing.T) {
 	f.invoke("not_found", "run", f.module, "--json")
 }
 func TestExtensionRunStartupDeadlineCLI(t *testing.T) {
-	f := newHostFixture(t, "startup-hang")
-	start := time.Now()
-	f.invoke("cancelled", "run", f.module, "--json")
-	if d := time.Since(start); d < 9*time.Second || d > 15*time.Second {
-		t.Fatalf("startup budget %s", d)
+	for _, mode := range []string{"startup-silent", "startup-hang"} {
+		t.Run(mode, func(t *testing.T) {
+			f := newHostFixture(t, mode)
+			before := hostNativeSnapshot(t, f.repo)
+			start := time.Now()
+			outcome := f.invoke("cancelled", "run", f.module, "--json")
+			if d := time.Since(start); d < 9*time.Second || d > 15*time.Second {
+				t.Fatalf("startup budget %s", d)
+			}
+			public := outcome["error"].(map[string]any)
+			if public["origin"] != "host" || public["recovery"] != "do_not_retry" || public["operation"] != nil {
+				t.Fatalf("pre-dispatch startup cancellation %v", public)
+			}
+			assertHostExited(t, waitHostMarker(t, f.marker))
+			if !reflect.DeepEqual(before, hostNativeSnapshot(t, f.repo)) {
+				t.Fatal("startup cancellation changed native state")
+			}
+		})
 	}
-	assertHostExited(t, waitHostMarker(t, f.marker))
 }
 
 func hostNativeSnapshot(t *testing.T, repo string) map[string]string {
