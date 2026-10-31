@@ -434,6 +434,32 @@ func replicateArtifacts(ctx context.Context, action, remote string, ids []string
 		return nil, artifactFailure("cancelled", "artifact transport cancelled")
 	}
 	if err = promoteReplicationRefs(promotions); err != nil {
+		// A joined Git error can lose the acknowledgement after atomic commit.
+		// Inspect only the bounded selected names. A visible successor or an
+		// unsettled witness cannot establish a pre-publication refusal.
+		for _, promotion := range promotions {
+			witness, witnessErr := projectGit(ctx, main, nil, 1024, "for-each-ref", "--count=2", "--format=%(refname) %(objectname)", promotion.Ref)
+			found := false
+			if witnessErr == nil {
+				for _, line := range strings.Split(strings.TrimSpace(string(witness)), "\n") {
+					fields := strings.Fields(line)
+					if len(fields) != 2 || !validGitOID(fields[1]) {
+						witnessErr = errors.New("unavailable selected ref witness")
+						break
+					}
+					if fields[0] == promotion.Ref {
+						if found || fields[1] == promotion.NewOID {
+							witnessErr = errors.New("selected publication may have committed")
+							break
+						}
+						found = true
+					}
+				}
+			}
+			if witnessErr != nil || !found {
+				return nil, artifactFailure("uncertain_operation", "artifact fetch dispatched; accepted publication is unconfirmed")
+			}
+		}
 		return nil, artifactFailure("concurrent_update", "artifact accepted-ref expected-old transaction failed")
 	}
 	// A quarantine Cut is internal-only. Publish the destination's actual accepted

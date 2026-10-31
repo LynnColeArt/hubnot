@@ -300,7 +300,12 @@ accepted. Ordinary inspect retains its 100000-record, 8 MiB-object, 256 MiB-tota
 bounds. Git network download has no pre-download byte quota. Synchronous I/O may
 outlast cancellation; processes are waited before returning. A failed atomic CAS
 may leave unreachable public object bytes, but never a partially promoted selected
-ref transaction. A post-promotion acknowledgement failure reports uncertain_operation.
+ref transaction. A post-promotion acknowledgement failure reports uncertain_operation. A local
+Git error alone does not prove non-publication: fetch retains
+`uncertain_operation`/`inspect_operation` when a selected successor is visible or
+its bounded target witnesses cannot settle the outcome. A confirmed stale-old
+refusal retains `concurrent_update`/`retry_identical`. Transport never invents a
+mutation actor/key or retries the selected intent automatically.
 
 Unknown protocols, missing/corrupt objects, bad signatures, unsupported schemas and
 incomplete required closure refuse accepted transfer. They do not become empty
