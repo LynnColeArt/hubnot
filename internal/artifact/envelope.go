@@ -9,14 +9,29 @@ import (
 	"encoding/json"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
-var digestPattern = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
-var actorPattern = regexp.MustCompile(`^[0-9a-f]{64}$`)
-var typePattern = regexp.MustCompile(`^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`)
-var fieldPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`)
-var memberPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`)
+var digestPattern = newLazyPattern(`^sha256:[0-9a-f]{64}$`)
+var actorPattern = newLazyPattern(`^[0-9a-f]{64}$`)
+var typePattern = newLazyPattern(`^[a-z][a-z0-9.-]{0,63}/[a-z][a-z0-9.-]{0,63}$`)
+var fieldPattern = newLazyPattern(`^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`)
+var memberPattern = newLazyPattern(`^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`)
+
+// Optional validators compile only when used, so native commands do not pay
+// their construction cost. OnceValue also serializes concurrent first use.
+type lazyPattern struct {
+	compiled func() *regexp.Regexp
+}
+
+func newLazyPattern(pattern string) lazyPattern {
+	return lazyPattern{sync.OnceValue(func() *regexp.Regexp {
+		return regexp.MustCompile(pattern)
+	})}
+}
+
+func (p lazyPattern) MatchString(s string) bool { return p.compiled().MatchString(s) }
 
 // Verified attests exact signed bytes and envelope invariants only. Type/schema,
 // record lineage and accepted repository visibility require additional context.
