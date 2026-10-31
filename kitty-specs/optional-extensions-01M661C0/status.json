@@ -355,6 +355,9 @@
       "last_event_id": "01M67V5QE38D4TQ9BQ543KQKYX",
       "last_transition_at": "2026-10-31T02:03:46.499263+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Explicit real-child lifecycle complete; final source320e212b, standard/native supplied binaries and retained race assets qualified; cancellation races corrected with preserved failures. Evidence optional-extensions-WP16/final-source.json and *final3.log. Native/artifact adapters remain explicitly unsupported pending WP17/WP18; no new wire methods."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 22770,
