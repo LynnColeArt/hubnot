@@ -589,6 +589,12 @@ func AuditRequestWithIntent(commit, rule, policyRef, intent, operation string, i
 	if err != nil {
 		return nil, err
 	}
+
+	if source := auth.Event.Audit.Source; source != nil && source.Kind == "workflow" {
+		if err := contributionRequireVisibleRevision(events, source.Revision); err != nil {
+			return nil, err
+		}
+	}
 	e, err := nextEvent(id, "audit.request")
 	if err != nil {
 		return nil, err
@@ -644,6 +650,11 @@ func ValidateAuditExecution(requestID, actor, policyRef string) (*AuditExecution
 	if auth.ID != f.Authorization {
 		return nil, fmt.Errorf("audit request names a stale rule authorization")
 	}
+	if source := auth.Event.Audit.Source; source != nil && source.Kind == "workflow" {
+		if err := contributionRequireVisibleRevision(events, source.Revision); err != nil {
+			return nil, err
+		}
+	}
 	pipeline, err := auditPipeline([]byte(auth.Event.Audit.Definition))
 	if err != nil {
 		return nil, err
@@ -693,7 +704,7 @@ func selectAuditWorkflow(revision string, events []StoredEvent) (*workflowSelect
 	if !validEventID(revision) {
 		return nil, fmt.Errorf("audit workflow requires exact revision")
 	}
-	catalog, err := BuildResourceCatalog(events)
+	catalog, err := buildGovernedResourceCatalog(events)
 	if err != nil {
 		return nil, err
 	}
