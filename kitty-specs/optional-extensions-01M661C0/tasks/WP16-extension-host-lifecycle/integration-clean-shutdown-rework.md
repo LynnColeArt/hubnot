@@ -30,3 +30,15 @@ Finish the normal gate and independent review. WP17 and WP18 must then normally
 resume and integrate the exact newly approved WP16 source, preserving their own
 in-progress work, before final qualification/review. No task ownership, dependency,
 lane, limit, default workflow or final acceptance requirement is relaxed.
+
+WP17 also identified one obsolete partial-host assertion in the same owner's
+`extension_host_lifecycle_test.go`: TestExtensionRunRefusalsCLI's unsupported case
+sends a valid granted resource.read(issue) and expects the formerly absent adapter.
+That operation must succeed once WP17 is integrated. Keep a genuine unsupported
+control by selecting a permanently unsupported frozen privileged surface, such as
+memory.mutate, using the actual raw framing boundary and expected terminal refusal.
+Verify the child really starts/sends the request and the correct host error/no
+business effects occur; do not merely remove the assertion or assert a missing
+result file. Preserve the existing ungranted and other refusal cases unchanged.
+This test correction removes an obsolete implementation-stage assumption and does
+not relax the final public contract or add a privileged method.
