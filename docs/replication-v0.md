@@ -255,3 +255,53 @@ or that a remote cannot advertise hostile data. Its guarantee is narrower:
 selected data is not an accepted projection root until bounded validation and
 atomic promotion succeed. Memory recall consumes only local and promoted
 accepted roots, never quarantine.
+
+## Explicit custom artifact transfer
+
+Custom histories use the additive `hn-artifact/1` protocol. Native `hn sync`
+selection, including compatibility-all, continues to select only the established
+native actor/proposal/memory families. Inspect, search and observation never fetch.
+An extension-aware client needs no specialized module or source signing key to
+read the resulting public records.
+
+```sh
+hn artifact push --remote origin --id sha256:<full-artifact-digest> --json
+hn artifact fetch --remote origin --id sha256:<full-artifact-digest> --json
+```
+
+Repeat `--id` for distinct exact immutable artifact IDs. A remote is an existing
+Git remote name of at most 64 ASCII letters/digits/dots/hyphens/underscores, beginning
+with a letter/digit; `..` and `.lock` suffixes refuse. There is no implicit-all or
+opaque fallback. Selected contribution policy currently refuses both commands
+with host/unsupported_capability before transport or publication.
+
+The shared verified closure includes stream predecessors, exact type declarations,
+record parents, conversions and required links. A required logical target includes
+all selected current heads. Optional target IDs and collection order remain signed
+public data; optional absence and target conflicts remain diagnostics. Export tips
+are derived minimal actor prefixes; computing them never rewinds source refs.
+
+Push stages only the exact public object inventory and atomically publishes the
+canonical prefix refs with expected-old leases. Fetch downloads advertised custom
+sources into an application-owned quarantine, verifies their exact ref witnesses,
+selects the requested closure, verifies the projected destination view and copies
+only its public inventory. Atomic expected-old promotion writes only
+`refs/hn/remotes/REMOTE/artifacts/ACTOR/STREAMHEX`. Existing local signing roots
+are preserved. An older/divergent selection cannot rewind an accepted prefix or a
+remote publication. The returned fetch source_cut is the destination's actual
+accepted view after promotion, with a nonempty physical-repository-bound Cut.
+
+Each validation/copy invocation has a 30-second cancellation deadline. Selected
+transfer limits are 4096 objects, 2048 signed records, 256 stream ancestry depth,
+32 MiB decoded aggregate and16 MiB equivalent canonical exchange bytes; equality is
+accepted. Ordinary inspect retains its 100000-record, 8 MiB-object, 256 MiB-total read
+bounds. Git network download has no pre-download byte quota. Synchronous I/O may
+outlast cancellation; processes are waited before returning. A failed atomic CAS
+may leave unreachable public object bytes, but never a partially promoted selected
+ref transaction. A post-promotion acknowledgement failure reports uncertain_operation.
+
+Unknown protocols, missing/corrupt objects, bad signatures, unsupported schemas and
+incomplete required closure refuse accepted transfer. They do not become empty
+success or relax native `hn/0`/`hn-memory/0` readers. Private identity keys, grants,
+registration, mutation intents and journals are excluded from the public inventory.
+Opaque file preservation is a separate explicitly selected exchange operation.

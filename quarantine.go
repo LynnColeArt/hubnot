@@ -1725,7 +1725,9 @@ func promoteReplicationRefs(promotions []replicationPromotion) error {
 		_, _, actorDestination := parseAcceptedActorRef(promotion.Ref)
 		_, _, proposalDestination := parseAcceptedProposalRef(promotion.Ref)
 		_, _, _, memoryDestination := parseAcceptedMemoryRef(promotion.Ref)
-		if (!actorDestination && !proposalDestination && !memoryDestination) || !validGitOID(promotion.NewOID) {
+		_, artifactDestination := parseArtifactRef(promotion.Ref)
+		artifactDestination = artifactDestination && strings.HasPrefix(promotion.Ref, "refs/hn/remotes/")
+		if (!actorDestination && !proposalDestination && !memoryDestination && !artifactDestination) || !validGitOID(promotion.NewOID) {
 			return fmt.Errorf("invalid replication promotion")
 		}
 		if promotion.OldOID == "" {
