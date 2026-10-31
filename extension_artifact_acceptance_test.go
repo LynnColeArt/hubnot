@@ -903,3 +903,24 @@ func TestExtensionArtifactPostProjectionSourceRecheckRawCLI(t *testing.T) {
 		t.Fatal("wrong witness changed")
 	}
 }
+
+func TestExtensionArtifactReplayIntentFieldsRawCLI(t *testing.T) {
+	f := extensionArtifactCLI(t, "artifact:example.test/note=read,create,revise,type.publish")
+	typ := revisionEvent(f.publish(artifactStoreType, "schema-one", ""))
+	p := revisionPayload(typ, "immutable content")
+	opening := extensionArtifactEvent(f.request("artifact.mutate", extensionArtifactMutationParams(f, "record.open", nil, []string{}, p, "pinned-open"), ""))
+	evolved := strings.Replace(strings.Replace(artifactStoreType, `"parents":[]`, `"parents":["`+typ+`"]`, 1), `"schema_version":1`, `"schema_version":2`, 1)
+	typ2 := revisionEvent(f.publish(evolved, "schema-two", ""))
+	// Both schemas admit a fresh opening. Only the immutable actor/key binding
+	// makes this otherwise valid new-schema opening a changed-request refusal.
+	schemaChanged := revisionPayload(typ2, "immutable content")
+	f.request("artifact.mutate", extensionArtifactMutationParams(f, "record.open", nil, []string{}, schemaChanged, "pinned-open"), "operation_conflict")
+	revised := revisionPayload(typ, "next immutable content")
+	next := extensionArtifactEvent(f.request("artifact.mutate", extensionArtifactMutationParams(f, "record.revise", opening, []string{opening}, revised, "pinned-revise"), ""))
+	// The replacement parent is the actual current head, making this a valid
+	// successor with a fresh key; reusing the original key must still refuse.
+	f.request("artifact.mutate", extensionArtifactMutationParams(f, "record.revise", opening, []string{next}, revised, "pinned-revise"), "operation_conflict")
+	// Positive controls prove the two candidate intents are otherwise admissible.
+	f.request("artifact.mutate", extensionArtifactMutationParams(f, "record.open", nil, []string{}, schemaChanged, "fresh-schema-key"), "")
+	f.request("artifact.mutate", extensionArtifactMutationParams(f, "record.revise", opening, []string{next}, revised, "fresh-parent-key"), "")
+}
