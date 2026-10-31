@@ -6,6 +6,14 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      qualification:
+        description: Explicit qualification surface (beta remains the default)
+        type: choice
+        options: [beta, optional-extensions]
+        default: beta
+      extension_source:
+        description: Exact optional-extension candidate commit (40 lowercase hex digits)
+        type: string
       candidate_mode:
         description: Build a new candidate or reuse immutable existing assets
         type: choice
@@ -85,7 +93,7 @@ jobs:
 
   candidate-request:
     name: Validate optional candidate request
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -124,7 +132,7 @@ jobs:
   candidate-build:
     name: Freeze one candidate bundle
     needs: candidate-request
-    if: needs.candidate-request.outputs.mode == 'build'
+    if: github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions' && needs.candidate-request.outputs.mode == 'build'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
@@ -178,7 +186,7 @@ jobs:
   candidate-reuse:
     name: Resolve existing immutable candidate
     needs: candidate-request
-    if: needs.candidate-request.outputs.mode == 'reuse'
+    if: github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions' && needs.candidate-request.outputs.mode == 'reuse'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -253,7 +261,7 @@ jobs:
 
   candidate-native:
     name: Exact candidate (${{ matrix.target }})
-    if: always() && github.event_name == 'workflow_dispatch' && needs.candidate-request.result == 'success' && ((needs.candidate-build.result == 'success' && needs.candidate-reuse.result == 'skipped') || (needs.candidate-reuse.result == 'success' && needs.candidate-build.result == 'skipped'))
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions' && needs.candidate-request.result == 'success' && ((needs.candidate-build.result == 'success' && needs.candidate-reuse.result == 'skipped') || (needs.candidate-reuse.result == 'success' && needs.candidate-build.result == 'skipped'))
     needs: [candidate-request, candidate-build, candidate-reuse]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
@@ -413,3 +421,10 @@ jobs:
           path: ${{ runner.temp }}/native-evidence/
           if-no-files-found: error
           retention-days: 30
+
+  optional-extensions:
+    name: Optional extension exact-package qualification
+    if: github.event_name == 'workflow_dispatch' && inputs.qualification == 'optional-extensions'
+    uses: ./.github/workflows/optional-extensions-qualification.yml
+    with:
+      candidate_source: ${{ inputs.extension_source }}
