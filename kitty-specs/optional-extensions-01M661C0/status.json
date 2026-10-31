@@ -720,10 +720,20 @@
     },
     "WP22": {
       "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
+      "assignee": "codex",
       "force_count": 0,
       "lane": "in_progress",
       "last_event_id": "01M68W0DDHA667XX76BJTVR479",
-      "last_transition_at": "2026-10-31T11:37:35.409723+00:00"
+      "last_transition_at": "2026-10-31T11:37:35.409723+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Administrative allocation recovery only: after normal retry retained lane-u, followed printed exact18f10 planning merge at7bf1569b. Archived all stages; WP20 conflict is only three generated fields, WP21 preserves exact canonical root correction committed0a439ea7. Indexed/working220 Go-module inputs exactly equal recorded planning18, not yet approved19; no manual product edits/tests. Resume proper action claim for dependency merge and require actual299 equality before author dispatch."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer"
     },
     "WP23": {
       "actor": "finalize-tasks",
