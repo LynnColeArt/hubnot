@@ -15,6 +15,7 @@ import (
 	"strings"
 	"testing"
 
+	c "hubnot/internal/contribution"
 	"hubnot/internal/extension"
 )
 
@@ -205,6 +206,20 @@ func TestExtensionNativeCutMatchesFrozenObject(t *testing.T) {
 	if projection.cut != want {
 		t.Fatalf("Cut used another shape/selection: %s != %s", projection.cut, want)
 	}
+	input := projection.cutInputs
+	if input.RepositoryID != repo || input.AuthorityCommit != "" || input.PolicyDigest != "" || !reflect.DeepEqual(input.Selection.Families, []string{"issue"}) || input.Selection.Types == nil || len(input.Selection.Types) != 0 {
+		t.Fatalf("retained Cut binding inputs changed: %+v", input)
+	}
+	if !reflect.DeepEqual(input.AdmittedIDs, []string{id}) || !reflect.DeepEqual(input.VisibleIDs, []string{id}) || input.RetainedRefs == nil || len(input.RetainedRefs) != 0 {
+		t.Fatalf("retained Cut view inputs changed: %+v", input)
+	}
+	inputRefs := []map[string]any{}
+	for _, ref := range input.Refs {
+		inputRefs = append(inputRefs, map[string]any{"ref": ref.Ref, "oid": ref.OID})
+	}
+	if !reflect.DeepEqual(inputRefs, refs) {
+		t.Fatalf("retained source witnesses differ: %v != %v", inputRefs, refs)
+	}
 }
 func TestExtensionNativeErrorRecoveryClosedInventory(t *testing.T) {
 	cases := []struct{ code, recovery string }{
@@ -230,5 +245,55 @@ func TestExtensionNativeErrorRecoveryClosedInventory(t *testing.T) {
 	e := extensionNativeError(fmt.Errorf("plain private failure /secret/path"), nil).(*extension.Error)
 	if e.Code != "repository_error" || strings.Contains(e.Message, "secret") {
 		t.Fatal(e)
+	}
+}
+
+func TestExtensionNativeGovernedCutInputsCLI(t *testing.T) {
+	f := newNativeHostFixture(t, "native:issue=read,create")
+	actor := f.actor()
+	f.policy(actor, []c.Rule{{Operation: c.IssueCreate, Automatic: true}})
+	opened := nativeOK(t, f.requests(nativeMutation("issue", actor, "retained-inputs", nativeIssueState("Typed inputs")))[0])
+	id := opened["event_id"].(string)
+	t.Chdir(f.repo)
+	projection, e := extensionNativeProjectionFor(context.Background(), "issue")
+	if e != nil {
+		t.Fatal(e)
+	}
+	input := projection.cutInputs
+	policy, e := os.ReadFile(filepath.Join(f.repo, ".hn", "policy.json"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	policySum := sha256.Sum256(policy)
+	if input.AuthorityCommit != f.git("rev-parse", "HEAD") || input.PolicyDigest != "sha256:"+hex.EncodeToString(policySum[:]) || !reflect.DeepEqual(input.AdmittedIDs, []string{id}) || !reflect.DeepEqual(input.VisibleIDs, []string{id}) || !reflect.DeepEqual(input.Selection.Families, []string{"issue"}) || len(input.Selection.Types) != 0 {
+		t.Fatalf("verified governed inputs were not retained: %+v", input)
+	}
+	expectedRefs, expectedRetained := []extensionNativeRef{}, []extensionNativeRef{}
+	project := sha256.Sum256([]byte("native-host-policy"))
+	prefix := "refs/hn/contributions/" + hex.EncodeToString(project[:]) + "/"
+	raw := f.git("for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/remotes", prefix)
+	for _, line := range strings.Split(raw, "\n") {
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		ref := extensionNativeRef{Ref: parts[0], OID: parts[1]}
+		if strings.HasPrefix(ref.Ref, "refs/hn/actors/") {
+			expectedRefs = append(expectedRefs, ref)
+		} else if strings.HasPrefix(ref.Ref, "refs/hn/remotes/") {
+			expectedRefs = append(expectedRefs, ref)
+			expectedRetained = append(expectedRetained, ref)
+		} else {
+			expectedRetained = append(expectedRetained, ref)
+		}
+	}
+	sort.Slice(expectedRefs, func(i, j int) bool { return expectedRefs[i].Ref < expectedRefs[j].Ref })
+	sort.Slice(expectedRetained, func(i, j int) bool { return expectedRetained[i].Ref < expectedRetained[j].Ref })
+	if !reflect.DeepEqual(input.Refs, expectedRefs) || !reflect.DeepEqual(input.RetainedRefs, expectedRetained) || len(input.Refs) != 2 || len(input.RetainedRefs) != 2 {
+		t.Fatalf("accepted/retained preimage inputs changed: %+v", input)
+	}
+	f.assertGovernedCut("issue", id, true, projection.cut)
+	if projection.cut != opened["source_cut"] {
+		t.Fatalf("typed input retention changed current wire Cut: %s != %v", projection.cut, opened["source_cut"])
 	}
 }

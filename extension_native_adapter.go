@@ -156,7 +156,28 @@ type extensionNativeView struct {
 	State    any    `json:"state"`
 	Comments []any  `json:"comments"`
 }
+
+// These are the exact verified inputs consumed by the current single-family
+// Cut. They belong to this captured observation; composition must copy arrays
+// and verify matching repository/source/authority inputs before unioning them.
+// Keeping the preimage beside its hash avoids reconstructing authority or
+// visibility from raw history or from a digest in later current callers.
+type extensionNativeCutInputs struct {
+	RepositoryID    string
+	Refs            []extensionNativeRef
+	Selection       extensionNativeReadSelection
+	AuthorityCommit string
+	PolicyDigest    string
+	AdmittedIDs     []string
+	VisibleIDs      []string
+	RetainedRefs    []extensionNativeRef
+}
+type extensionNativeReadSelection struct {
+	Families []string `json:"families"`
+	Types    []string `json:"types"`
+}
 type extensionNativeProjection struct {
+	cutInputs extensionNativeCutInputs
 	events    []StoredEvent
 	views     []extensionNativeView
 	cut       string
@@ -336,12 +357,13 @@ func extensionNativeProjectionFor(ctx context.Context, family string) (*extensio
 	}
 	sort.Strings(admitted)
 	sort.Strings(visible)
-	viewRaw, _ := json.Marshal(map[string]any{"admitted_ids": admitted, "visible_ids": visible, "retained_refs": retained})
-	commit, policy := "", ""
+	projection.cutInputs = extensionNativeCutInputs{RepositoryID: repo, Refs: refs, Selection: extensionNativeReadSelection{Families: []string{family}, Types: []string{}}, AdmittedIDs: admitted, VisibleIDs: visible, RetainedRefs: retained}
+	input := &projection.cutInputs
 	if authority != nil {
-		commit, policy = authority.Commit, authority.PolicyDigest
+		input.AuthorityCommit, input.PolicyDigest = authority.Commit, authority.PolicyDigest
 	}
-	raw, _ := json.Marshal(map[string]any{"repository_id": repo, "refs": refs, "selection": map[string]any{"families": []string{family}, "types": []string{}}, "authority_commit": commit, "policy_digest": policy, "view_digest": eventID(viewRaw)})
+	viewRaw, _ := json.Marshal(map[string]any{"admitted_ids": input.AdmittedIDs, "visible_ids": input.VisibleIDs, "retained_refs": input.RetainedRefs})
+	raw, _ := json.Marshal(map[string]any{"repository_id": input.RepositoryID, "refs": input.Refs, "selection": input.Selection, "authority_commit": input.AuthorityCommit, "policy_digest": input.PolicyDigest, "view_digest": eventID(viewRaw)})
 	projection.cut = eventID(raw)
 	if err := ctx.Err(); err != nil {
 		return nil, err
