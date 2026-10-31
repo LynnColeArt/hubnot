@@ -193,6 +193,7 @@ func TestArtifactSearchPagingAndRefusalsCLI(t *testing.T) {
 		{"--literal", "x", "--limit", "201"},
 		{"--regex", strings.Repeat("😀", 1024) + "a", "--limit", "1"},
 		{"--regex", strings.Repeat("a", 4095), "--limit", "1"},
+		{"--regex", `(?:` + strings.Repeat("a", 2000) + `){3}`, "--limit", "1"},
 		{"--literal", "x", "--limit", "1", "--cursor", strings.Repeat("x", 4097)},
 	} {
 		artifactSearchCall(f, "resource_limit", args...)
