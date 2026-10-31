@@ -68,6 +68,7 @@ func TestExtensionArtifactChild(t *testing.T) {
 type extensionArtifactFixture struct {
 	*artifactCLIFixture
 	input, output, module string
+	expectedExternalRef   string
 }
 
 func extensionArtifactCLI(t *testing.T, grants ...string) *extensionArtifactFixture {
@@ -213,7 +214,7 @@ func TestExtensionArtifactTypeReadRawCLI(t *testing.T) {
 func (f *extensionArtifactFixture) protectedSnapshot() map[string]string {
 	values := f.snapshot()
 	for path := range values {
-		if strings.HasPrefix(path, f.output) || path == f.input || strings.Contains(path, "/extensions/session-") || strings.Contains(path, "/extensions/owners-") {
+		if strings.HasPrefix(path, f.output) || path == f.input || path == f.expectedExternalRef || strings.Contains(path, "/extensions/session-") || strings.Contains(path, "/extensions/owners-") {
 			delete(values, path)
 		}
 	}
@@ -352,8 +353,17 @@ func TestExtensionArtifactGrantRefusalsRawCLI(t *testing.T) {
 	for _, mode := range []string{"view", "heads", "history", "inspect"} {
 		result := f.request("artifact.read", extensionArtifactReadParams(id, nil, mode), "")
 		raw, _ := json.Marshal(result)
-		if bytes.Contains(raw, []byte("UNGRANTED-SAME-STREAM-BODY")) || bytes.Contains(raw, []byte(hiddenID)) {
-			t.Fatal("ungranted prefix exported", string(raw))
+		if bytes.Contains(raw, []byte("UNGRANTED-SAME-STREAM-BODY")) {
+			t.Fatal("ungranted prefix body exported", string(raw))
+		}
+		// An authorized immutable envelope must retain its signed previous ID, even
+		// when that previous artifact's body is outside the read grant. Reject body
+		// export or an extra selected item, not its legitimate provenance reference.
+		for _, value := range extensionArtifactItems(result) {
+			item := value.(map[string]any)
+			if item["id"] == hiddenID {
+				t.Fatal("ungranted prefix item exported", item)
+			}
 		}
 		f.request("artifact.read", extensionArtifactReadParams(hiddenID, nil, mode), "denied_access")
 	}
@@ -853,5 +863,43 @@ func TestExtensionArtifactEmptyNamespaceCutRawCLI(t *testing.T) {
 	opaqueWant := extensionArtifactExpectedCut(t, f, nil, nil, false)
 	if len(data["items"].([]any)) != 0 || data["next_cursor"] != nil || data["source_cut"] != want || want == opaqueWant {
 		t.Fatal("empty observed namespace lost accepted witnesses or implied all", data)
+	}
+}
+
+func TestExtensionArtifactPostProjectionSourceRecheckRawCLI(t *testing.T) {
+	f := extensionArtifactCLI(t, "artifact:example.test/note=read")
+	typ := revisionEvent(f.publish(artifactStoreType, "type", ""))
+	opening := revisionEvent(revisionCall(f.artifactCLIFixture, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "current view")), "open", ""))
+	// The remote is a real accepted witness of the same verified actor chain.
+	localRef := artifactRef(f.actor)
+	remoteRef := strings.Replace(localRef, "refs/hn/artifacts/", "refs/hn/remotes/public/artifacts/", 1)
+	tip := f.git("rev-parse", localRef)
+	prior := f.git("rev-parse", localRef+"^")
+	f.git("update-ref", remoteRef, tip)
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrapper := t.TempDir()
+	counter := filepath.Join(wrapper, "count")
+	marker := filepath.Join(wrapper, "changed")
+	// The shared loader has completed both coherent full enumerations; change the
+	// third (post-projection) observation. An ordinary snapshot-only reader misses it.
+	script := "#!/bin/sh\nfor arg do if [ \"$arg\" = for-each-ref ]; then n=0; [ -f \"$HN_WP18_COUNT\" ] && n=$(cat \"$HN_WP18_COUNT\"); n=$((n+1)); echo \"$n\" > \"$HN_WP18_COUNT\"; if [ \"$n\" = 3 ]; then '" + git + "' -c core.logAllRefUpdates=false update-ref \"$HN_WP18_REF\" \"$HN_WP18_PRIOR\" || exit $?; : > \"$HN_WP18_CHANGED\"; fi; fi; done\nexec '" + git + "' \"$@\"\n"
+	if err = os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	f.overrides["PATH"] = wrapper + string(os.PathListSeparator) + os.Getenv("PATH")
+	f.overrides["HN_WP18_COUNT"], f.overrides["HN_WP18_CHANGED"], f.overrides["HN_WP18_REF"], f.overrides["HN_WP18_PRIOR"] = counter, marker, remoteRef, prior
+	// Exempt only the exact test-controlled ref. Every object, signer, intent and
+	// other path remains under the normal after-handshake no-effect comparison.
+	f.expectedExternalRef = filepath.Join(f.repo, ".git", filepath.FromSlash(remoteRef))
+	f.request("artifact.read", extensionArtifactReadParams(opening, nil, "view"), "concurrent_update")
+	if _, err = os.Stat(marker); err != nil {
+		t.Fatal("post-projection control did not execute", err)
+	}
+	delete(f.overrides, "PATH")
+	if f.git("rev-parse", remoteRef) != prior || f.git("rev-parse", localRef) != tip {
+		t.Fatal("wrong witness changed")
 	}
 }
