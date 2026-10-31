@@ -1,0 +1,7 @@
+# OS-aware malformed registry test fixture
+
+Root decision, 2026-10-31, following the independent config-fixture portability audit and WP13 decision 6047396b. WP15-owned extension_protocol_commands_test.go TestExtensionFrameInspectCLI creates its malformed registry below HOME/config. On Darwin os.UserConfigDir selects HOME/Library/Application Support instead. The native frame CLI must ignore optional state; placing malformed state at a different location cannot prove that obligation on Darwin.
+
+Reopen WP15 only for a test-fixture correction in this owned root test file. Resolve the actual OS configuration directory under the isolated test HOME/XDG environment before creating the trap. Preserve malformed registry/declaration/enablement values, public frame semantics, full before/after tree checks and every existing literal boundary control. No production or contract change is authorized or needed. This static observation is not a Mac runtime result. Follow normal owner validation and fresh independent review before final package qualification. Avoid a dependency on a new unapproved helper from another owner; keep narrow fixture logic in this owned test or integrate an already approved shared test seam.
+
+Independent audit: /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-config-fixture-audit/audit.md. Sole heavy slot remains with WP16 until root explicitly transfers it.
