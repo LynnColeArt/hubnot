@@ -443,7 +443,7 @@
     "WP13": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
+      "agent_profile": "architect-alphonso",
       "agent_profile_version": "1.0",
       "force_count": 4,
       "lane": "planned",
@@ -458,7 +458,8 @@
         "Independent corrected-source review passed at b37261cb7642474daca093660334bd12f714d00e: null argv now refuses inspect/register/remove without repair; both exact supplied variants pass 48 malformed controls, valid empty-argument/lifecycle controls and focused native-read/race checks; all eight anti-pattern checks PASS. Scoped report external optional-extensions-WP13/cycle2/reviewer/review.md; future grant/session/full-mission qualification remains pending.",
         "Root test-only portability correction decision6047396b; static audit, no Mac runtime pass; no production semantics changes.",
         "Ready for fresh independent review: isolated OS config-directory fixture correction; Linux standard/combined-native CLI and strace controls pass at a10d40a6, Darwin runtime pending final qualification",
-        "Review passed: independent reviewer-renata approves only the isolated OS config fixture repair a10d40a6 (+18/-4 root test). All226 inputs match fixed source, all108 production inputs unchanged. Supplied standard/combined-native live CLI strict registration/raw-array/malformed-state/process/absolute-relative strace controls pass with no skips; focused race and vet pass. All8 anti-pattern checks PASS. Normal gate event01M6913NZYMNTQZ2NY24CS3YHV is no_coverage/missingframework, not Go qualification; Darwin runtime pending WP25; historical production approval unchanged. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP13-config-fixture-review/review.md SHA256 80eefd595827cfe35273d66a84c561d7a0973ff5ad3051529bac1cdbd3880e75"
+        "Review passed: independent reviewer-renata approves only the isolated OS config fixture repair a10d40a6 (+18/-4 root test). All226 inputs match fixed source, all108 production inputs unchanged. Supplied standard/combined-native live CLI strict registration/raw-array/malformed-state/process/absolute-relative strace controls pass with no skips; focused race and vet pass. All8 anti-pattern checks PASS. Normal gate event01M6913NZYMNTQZ2NY24CS3YHV is no_coverage/missingframework, not Go qualification; Darwin runtime pending WP25; historical production approval unchanged. Report /home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP13-config-fixture-review/review.md SHA256 80eefd595827cfe35273d66a84c561d7a0973ff5ad3051529bac1cdbd3880e75",
+        "Administrative post-approval maintenance: actual WP24 default RSS failure and eager optional validator initialization; preserve old verdicts; fresh owner fix and independent review required."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -468,14 +469,14 @@
         "reviewer": "codex",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 22770,
-      "shell_pid_created_at": "1793287708.21",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T052": "done",
-        "T053": "done",
-        "T054": "done",
-        "T055": "done"
+        "T052": "planned",
+        "T053": "planned",
+        "T054": "planned",
+        "T055": "planned"
       }
     },
     "WP14": {
