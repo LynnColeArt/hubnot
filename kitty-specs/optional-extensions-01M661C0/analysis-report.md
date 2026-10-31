@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-extensions-01M661C0
 mission_id: 01M661C0T0E4DS0AXBCXG7WCAX
-generated_at: '2026-10-31T01:19:22.090972+00:00'
+generated_at: '2026-10-31T01:51:34.885646+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -12,18 +12,18 @@ input_artifacts:
     sha256: de1d9ef9995b6a84cabafdfa3c15371badb7ac6721fe389dbc20c1933c7c266f
   plan.md:
     path: kitty-specs/optional-extensions-01M661C0/plan.md
-    sha256: fd6dff59c4e4d6bfc8e001b1258a207475df50daca3e77848be7bd502c3d8637
+    sha256: 2f2e6751b9f73bb4b83d884fed497b42fac3a53527dd3ab59917fa4537d8c2e9
   tasks.md:
     path: kitty-specs/optional-extensions-01M661C0/tasks.md
-    sha256: 24dee29de763e530f1026867ca9f6179841b9964cf07cad69c7879bb50ee8fbd
+    sha256: 63363f642708ec889b04d144e080360065e95fd7ad8f23d77c07c9dc367f4217
   charter:
     path: .kittify/charter/charter.yaml
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
 verdict: ready
 issue_counts:
   medium: 0
-  critical: 0
   low: 0
+  critical: 0
   high: 0
   info: 0
 findings: []
@@ -31,45 +31,48 @@ findings: []
 
 ## Specification Analysis Report
 
-Fresh nonremediating analysis after integration-core clarification 4f7c7edfb3af9e7ae74a8291e5859e76dc53a70a. No open cross-artifact finding. Planning readiness permits continued authorized rework; it does not approve the unfinished WP04 dependency or authorize WP05's new bridge before that approval.
+Fresh nonremediating cross-artifact analysis after planning amendment18f10ce2d6779509722021e84031db620b75c58e. No open planning inconsistency or coverage gap found. Readiness permits continued authorized implementation/rework; it does not approve the current WP05 code or waive its independently reproduced defect.
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |---|---|---|---|---|---|
-| — | — | — | — | No open analysis finding | Preserve actual rework and independent approval gates |
+| — | — | — | — | No open analysis finding | Continue actual implementation and independent review gates |
 
-### Scope and actual integration failure
+### Exact scope and current caller correction
 
-The clarification changes only plan.md and the existing canonical_export.go path description in WP05's task body. Every WP frontmatter ownership/create_intent/dependency/requirement field remains equal to the previously analyzed73886126 baseline. It adds no owner or lane. WP04 retains internal/artifact/content.go and its tests; WP05 retains its already-owned internal/artifact/canonical_export.go. All26 lane identities, memberships, dependency edges and parallel depths remain unchanged and disjoint.
+The amendment changes only five planning documents: plan.md, tasks.md, and WP05/WP06/WP07 guidance. The sole ownership/create_intent change adds internal/artifact/revision_export.go and revision_export_test.go to WP06. Every other owner, requirement reference, dependency, task ID and execution mode remains unchanged. No WP07 shared earlier-file ownership is added. All scopes remain disjoint; computed mapping preserves all26 actual lane IDs, membership, DAG and parallel depths. The independent pure preview in sequential-ownership-advisory showed why overlap would either create a lane cycle or renumber active lanes without a supported migration; this amendment chooses actual current-owner factoring instead.
 
-Preserved root feedback c5c2ab810d27a9cb8762d53bb50fbc7eb18de02f and external optional-extensions-WP05/large-context-red.log bind an actual public-read failure: TestArtifactStoreLargeVerifiedParentContextCLI returned artifact/resource_limit, validation input exceeds byte limit. The source binding and log hashes are recorded in clarification-audit.json. This analysis reads that evidence and does not execute the test or reinterpret the RED as a pass.
+WP05 current type.publish/open retry callers must now implement a complete, currently-used shared recovery boundary in their existing owned writer/test files: bounded noncreating strict eleven-field private descriptor/public-history evidence classification; one lock-owning mutation attempt that reconciles exact immutable request before replay and mutable-head checks; and the existing sole append/finish path. Candidate is durable before CAS; result is durable before acknowledgement. Required nullable property presence and raw type are validated before effects. A missing required nullable field is not equivalent to present null. No dormant callback, mutable global injection, alternate writer or second signer is authorized.
 
-The frozen contract independently sets the inert record validation composite-input cap at16MiB while selected read/catalog aggregate data may reach256MiB. It also bounds individual signed envelopes, parent count, schema/model shape and validation time. A valid selected history with roughly19MiB combined supplied parent context can therefore exceed the inert utility's composite-input cap without violating the selected-history budget. Serializing that verified context back through ValidateRecord's utility input path incorrectly imposes one boundary's cap on another. This is a real integration defect requiring correction, not permission to increase a cap or waive the failed read.
+This is a real sequencing correction, not merely an interface extraction. Today's prepared-only uncertainty handling cannot be left for WP07 to patch in an earlier owner's file. Complete mutation-side retry/reconciliation semantics must be exercised now through current type/open callers and independently reviewed in WP05. The reported missing expected_oid/candidate/result acceptance and subsequent publication was independently rejected at source e8115442/event01M67T2SWCTN3AZQDV4D96TY5F; normal reclaimed WP05 remains responsible for proving the correction. Planning readiness neither downgrades nor closes that implementation finding.
 
-The plan assigns one private validateRecordValue/context core to WP04's existing content.go. Existing ValidateRecord retains its exact strict parsing,16MiB consumption limit and public error behavior, then calls the same core. Signature/ID, exact schema, immediate-parent/opening, conversion, closed-field, cancellation and all structural refusals remain required. No validator/parser copy or second semantics path is authorized.
+WP06 successors reuse the same live evidence/begin/replay/append path, with their own actual successor input/head/lineage/conversion composition. Its newly owned narrow unsigned-successor bridge uses existing strict validationValue/payloadEnvelope/private schema validation, safe zero declaration/schema refusal, explicit supported kind and bounded sorted full-ID parents/cardinality before indexing or signing. The exact declaration/type/shape/lineage checks remain; no fabricated signed candidate or copied parser/schema validator is allowed. New production APIs require immediate successor CLI use, not future SDK debt.
 
-Only AFTER fresh independent WP04 approval may WP05 expose a minimal current-reader ValidateRecordContext bridge in its already-owned canonical_export.go. The bounded, independently verified history loader supplies its values without giant composite serialization. Per-envelope, parent-count, schema/model and time limits remain binding. The bridge does not itself establish accepted visibility, current heads, complete history, closure or write authority. WP05 must integrate the freshly approved dependency and turn the retained larger-history public read green; static planning readiness supplies neither result.
+WP07 keeps only its own operation/status files and exposes read-only lookup/classification plus actual interruption/restart proof through the existing type/open/successor callers. Read-only status creates no lock/directory, does not load signer material unnecessarily, repairs nothing and treats errors/pending publication as uncertainty or proper verification failure rather than absence. Explicit identical mutation retry is the authorized recovery path, using the same original semantic request/actor/key and one writer. Task T028 guidance honestly says consume/verify the already-live journal rather than produce a second journal.
 
-Existing Canonical(raw) and TypeDeclaration.ValidateOpening(ctx,raw) obligations also remain: reuse strict existing parsing and complete record.open payload/type/schema validation before signer selection or prepared intent, with safe zero-value refusal and immediate mutation CLI/store callers. There is no fields-only API, future-only SDK, new signed wire, limit, default behavior or native dependency.
+The unchanged frozen contract still requires verified public operation lookup before mutable-head comparison, full selected-history and exact immutable request checks, supported grant/policy before private effects, original public identity on replay, expected-old CAS without automatic reload/re-sign, and correct pending/settlement evidence. If verified absence permits a fresh CAS under the frozen contract, unchanged resource-parent checks and immutable semantic request still apply; the plan grants no silent overwrite of an unresolved original descriptor/candidate. One lock must cover reconciliation/publication without reacquisition. Queries cannot manufacture publication absence from a missing private file, incomplete history, visibility restriction or unresolved writer.
 
-Canonical tracer design-decisions-240ef6c4a124 at f6ca6f5d8d4e75caaf34e171d3c722a7775eccdc records this integration-rework distinction and preserves the original approval history. It issues no retroactive approval or implementation verdict.
+Canonical tracer design-decisions-47ba2f6325a6 at 183a4b7ea69ade11de336caf5986dbe722da0940 documents this exact sequencing/scope correction and real rejection history. It does not record an implementation approval or retroactively change original WP02 acceptance.
 
-### Finalization, source identity and contract continuity
+### Canonical finalization and immutable bindings
 
-Normal validate-only passed for26 packages with zero warnings. Finalizer 4d840a2ae8cdb3d7d22c060eea010a868494708c advanced planning from73886126ea4803bbe2f84e57041b70dad2929fed to4f7c7edfb3af9e7ae74a8291e5859e76dc53a70a. It seeded zero lifecycle events and collapsed zero lanes. Independent comparison found no scope change and all computed scopes match WP declarations. There remain26 WPs,107 unique T001–T107 subtasks and only WP02 planning_artifact.
+Validate-only passed with zero warnings. Normal finalizer a5819915d4e409c87bbb17fbba2f1fcb75940987 advanced planning from4f7c7edfb3af9e7ae74a8291e5859e76dc53a70a to18f10ce2d6779509722021e84031db620b75c58e. There are26 WPs,107 unique T001–T107 subtasks,26 lanes and only WP02 planning_artifact. All actual lane identities/membership/DAG/depths are preserved; only lane-e/WP06 scope gains its two explicit new files. No overlap, bootstrap event, collapse or lane relabel occurs. Requirements, default/native workflow and all later acceptance gates remain unchanged.
 
-New planning contains the approved native foundation, qualified f8 runtime, approved WP01 lane-a, original WP02 acad3958, all scoped contract supplements and prior738/8aa planning. Incomplete beta WP09 89ce723ca53e1daa5c58105e6010569d1fe73de8 remains excluded. Every current contract file equals exact8aa and newplanning bytes; no signed fixture or contract amendment occurred here. Prior raw65 JSON-body equality and original verification evidence remain evidence for unchanged bytes; no crypto verifier is rerun.
+Ancestry verifies prior4f7/738/8aa planning, approved WP01 lane-a, qualified f8 runtime, original WP02 acad3958 and supplemental contract commits within the new planning SHA. Incomplete beta WP09 89ce723ca53e1daa5c58105e6010569d1fe73de8 remains excluded. Every complete current contract file equals exact8aa and newplanning bytes. Static extraction independently confirms all65 literal JSON bodies are unchanged; no cryptographic verifier is rerun and no new signing pass is inferred.
 
-The primary/planning baseline still has220 Go/module inputs equal to approved WP01 frozen eb3f4932, with105 non-test Go/module inputs equal to qualified f8. This claim applies only to primary/planning. Separate active feature branches contain actual approved features, the WP05 internal checkpoint7412ee5c and current WP04/WP15 rework; their committed branch identities/counts are externally bound. This is no whole-mission source-unchanged claim and no code review of those drafts.
+Primary/planning still has220 Go/module inputs equal to approved WP01 frozen eb3f4932, with105 non-test Go/module inputs equal to f8. This is restricted to primary/planning. Actual feature code exists in separate approved and active branches, including WP05 rework and WP16 host work; external evidence binds committed branch identities/counts without claiming uncommitted author work unchanged, whole-mission source equality or feature approval.
 
-### Honest lifecycle and prior findings
+### Real lifecycle snapshot and prior gates
 
-WP01,WP02,WP03,WP13 and WP14 remain approved; WP14 approval event01M67R19NAGKJB8NXZXCJ4ABZ8 is preserved. WP04 was normally reopened approved→planned event01M67R6J3RAG2BPHX51QP7DYC7 and normally reclaimed in_progress. WP05 and WP15 are in_progress at the observed snapshot. The old WP04 source e8856690 approval remains historical evidence for its inert CLI scope and is not a current approval of the changed dependency. Finalizer does not restore its obsolete approved state. The exact real states/events and any concurrent author changes are externally preserved. No status/event is hand-edited and no WP claim is made by this analysis.
+At the observed snapshot WP01,WP02,WP03,WP04,WP13,WP14,WP15 are actually approved. WP05 was independently rejected and normally reclaimed as codex/implementer-ivan; WP05 and WP16 are in_progress. Other17 packages remain planned. Actual events and any concurrent author transitions are externally bound. No old approval is reconstructed, no status/event is hand-edited and no new package is claimed by this analysis. Updated metadata must reach active lanes through the normal workflow before their gates.
 
-Original WP02 fourP1/oneP2 and C1–C4 findings were closed by independent original contract review only. Supplemental T015/private registration/inert CLI bytes have their own scoped reviews/tracers; no new bytes or feature approval is inferred here. Previous O1 remains resolved by frozen shared Context/Background wrappers plus WP17 ownership of resource_engine.go,issue_commands.go,contribution_moderation.go; WP16 retains main.go. No global mutable context, duplicate writer or detached completion is permitted.
+Original WP02 fourP1/oneP2 and C1–C4 were closed at original contract acceptance only; T015/private-registration/inert CLI additions have separately scoped independent reviews/tracers. Their implementation conformance remains required. Prior O1 remains resolved by frozen Context/Background wrappers and WP17 ownership of the real native writers; no global context or duplicated publication is permitted.
 
-WP25 still exclusively owns portability.yml and new optional-extensions-qualification.yml with create_intent only for the new file. Beta defaults/manual and PR/push behavior remain unchanged; explicit extension selection suppresses all beta manual jobs and binds same-commit workflow/caller separately from candidate identity. All8 actual platform/variant candidates and separate target-bound reference assets require execution. WP01's full initial charter gate, WP24 final fixed-source checks and WP25 exact package checks are unchanged. Missing adopter/platform evidence remains pending.
+Existing context-core correction remains binding: inert ValidateRecord retains its16MiB composite input cap while bounded verified selected-history context uses the same private value core under its existing256MiB aggregate budget. Complete unsigned opening validation precedes signer/prepared intent. The retained larger-history read and all meaningful refusal controls need actual evidence; unchanged signed bounds/default behavior are not waived by this amendment.
+
+WP25 still exclusively owns portability.yml and new optional-extensions-qualification.yml, create_intent only for the new file. Beta defaults/manual and PR/push behavior remain preserved; explicit extension selection suppresses all beta manual jobs and binds same-commit workflow/caller separately from candidate identity. All8 actual platform/variant candidates and target-bound separate reference assets need execution. WP01's full initial charter gate, WP24 final fixed-source checks, WP25 exact package checks and WP26 actual independent trials remain required; missing/failing evidence stays pending.
 
 ### Coverage Summary Table
+
 
 
 
@@ -132,16 +135,17 @@ Rows identify accountable work, not observed runtime passes. FR/NFR/C mappings a
 
 
 
+
 ### Charter alignment, unmapped tasks and metrics
 
-No charter conflict or unmapped task found. HN-001 native Go/Git independence, HN-002 exact evidence identity, HN-003 hostile-input/least authority, HN-004 immutable recovery and HN-005 synchronized protocol/documentation retain explicit owners. The plan fixes an implementation integration mismatch while retaining every published refusal/budget, signer ordering, native default and fresh-review requirement.
+No charter conflict or unmapped task found. HN-001 native Go/Git independence; HN-002 immutable exact evidence binding; HN-003 bounded hostile-input/least authority; HN-004 immutable recovery and HN-005 synchronized protocol/documentation remain explicit obligations. This amendment assigns current production recovery to its actual writer owner while preserving every published protocol/refusal/grant/effect boundary.
 
-All24FR,8NFR,10C and10SC retain accountable work:52/52 coverage and32/32 FR/NFR coverage;26WPs/lanes,107subtasks;0 ownership overlaps,0cycles,0changed dependency edges;0open critical/high/medium/low findings,0new ambiguity/duplication. Coverage is responsibility mapping, not observed execution or approval.
+All24FR,8NFR,10C and10SC retain accountable work:52/52 coverage,32/32 FR/NFR coverage;26WPs/lanes,107subtasks;0overlaps,0cycles,0changed dependencies or lane IDs;0open planning critical/high/medium/low findings and0new ambiguity/duplication. These metrics map responsibility, not tests or runtime approvals.
 
 ### Evidence binding and limits
 
-External context-core-refresh/clarification-audit.json binds exact two-file amendment, unchanged frontmatter/scopes, boundary rationale, preserved RED log/source hashes and review feedback. analysis-evidence.json binds current spec/plan/tasks/WPs/contracts/charter hashes, advance-only planning ancestry, unchanged lanes/scopes, real states and primary versus active source snapshots. Normal profile/context/prerequisite/tracer/finalizer outputs are preserved. The canonical recorder computes current input hashes, verdict/freshness and wrapped report commit. No Go/application/test/build/probe, crypto rerun, product edit, extra claim, status/event hand-edit,force/skip/guard waiver,upgrade/auth/sync consent change performed.
+External recovery-seam-refresh/amendment-audit.json binds exact five-file amendment, sole WP06 ownership/create_intent additions, unchanged other frontmatter, prior advisory and all65 raw JSON hashes. analysis-evidence.json binds exact current spec/plan/tasks/WPs/contracts/charter hashes, advance-only planning ancestry, unchanged lane identities/DAG, real states and primary versus active committed source snapshots. Normal profile/context/prerequisite/tracer/finalizer commands and output are preserved. Recorder computes fresh input hashes, verdict/staleness and wrapped report commit. No Go/application/test/build/probe, crypto rerun, product edit, extra claim, status/event hand-edit, force/skip/guard waiver, upgrade/auth/sync-consent change performed.
 
 ### Next actions
 
-Continue WP04's currently authorized rework and obtain an actual fresh independent verdict. WP05 remains held at the bridge integration boundary until approved dependency source is merged; then prove the retained actual public larger-history read passes while the inert utility over-limit refusal remains. Root continues the canonical mission with independent reviews and serialized heavy work. Planning readiness grants no release, beta acceptance, publication or main integration.
+Continue WP05's real strict-intent/recovery rework and WP16's authorized host implementation under serialized heavy execution. Require actual independent WP05 approval before WP06; after additive export ownership is recorded, normal WP06 implementation must consume the existing live writer and prove successors. WP07 then adds its current read-only status caller and fault/restart evidence without earlier-owner edits. Preserve actual dependency approvals and unchanged default/platform/adopter gates. No beta acceptance, release, publication or main integration is supplied by planning readiness.
