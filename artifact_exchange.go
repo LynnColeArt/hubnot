@@ -1004,9 +1004,10 @@ func exportArtifactOpaque(ctx context.Context, ids []string) (*artifactExchange,
 	return b, nil
 }
 
-// Borrow only the already admitted physical common ODB. A retained promisor
-// marker can coexist with a fully materialized verified view; that layout uses
-// the exact public inventory fallback instead. Inspection errors never do.
+// Borrow only the already admitted physical common ODB. Layouts that cannot
+// safely be represented/borrowed use the exact verified inventory instead:
+// multiline paths, pack-directory links and retained promisor markers. Actual
+// admission, path-resolution, inspection/I/O and cancellation errors propagate.
 func artifactImportBorrowObjects(ctx context.Context, common, stage string) (bool, error) {
 	failure := func() error {
 		return artifactTransportError(ctx, "repository_error", "cannot inspect import projection object store")
@@ -1018,15 +1019,30 @@ func artifactImportBorrowObjects(ctx context.Context, common, stage string) (boo
 		return false, failure()
 	}
 	objects, e := safepath.Canonical(filepath.Join(common, "objects"))
-	if e != nil || !filepath.IsAbs(objects) || strings.ContainsAny(objects, "\n\r") {
+	if e != nil || !filepath.IsAbs(objects) {
 		return false, failure()
 	}
 	if e = safepath.CheckDir(objects, false); e != nil {
 		return false, failure()
 	}
+	if ctx.Err() != nil {
+		return false, failure()
+	}
+	if strings.ContainsAny(objects, "\n\r") {
+		return false, nil // Safe physical path, unsafe alternates serialization.
+	}
 	pack := filepath.Join(objects, "pack")
-	if _, e = os.Lstat(pack); !os.IsNotExist(e) {
-		if e != nil || safepath.CheckDir(pack, false) != nil {
+	if info, err := os.Lstat(pack); !os.IsNotExist(err) {
+		if err != nil {
+			return false, failure()
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			if ctx.Err() != nil {
+				return false, failure()
+			}
+			return false, nil // Do not follow an otherwise admitted pack link.
+		}
+		if safepath.CheckDir(pack, false) != nil {
 			return false, failure()
 		}
 		f, err := os.Open(pack)

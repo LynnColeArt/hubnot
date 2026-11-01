@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	c "hubnot/internal/contribution"
+	"hubnot/internal/safepath"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -1288,8 +1289,9 @@ exec "$HN_IU_GIT" "$@"
 }
 
 func exchangeImportStagingCLI(t *testing.T) {
+	t.Run("fallback-layouts", exchangeImportFallbackLayoutsCLI)
 	for _, format := range []string{"sha1", "sha256"} {
-		for _, mode := range []string{"healthy", "retained-promisor", "linked-worktree", "self-import", "error", "cancel"} {
+		for _, mode := range []string{"healthy", "retained-promisor", "interior-cr", "interior-lf", "pack-symlink", "linked-worktree", "lexical-parent-alias", "self-import", "error", "cancel"} {
 			// One real30s cancellation is enough to exercise the same stage; both
 			// object formats retain all signed admission/borrowing controls.
 			if mode == "cancel" && format == "sha256" {
@@ -1303,6 +1305,21 @@ func exchangeImportStagingCLI(t *testing.T) {
 				common := filepath.Join(receiver.repo, ".git")
 				currentOID := receiver.git("rev-parse", artifactRef(receiver.actor))
 				original := receiver
+				physical := ""
+				if mode == "interior-cr" || mode == "interior-lf" || mode == "pack-symlink" {
+					physical = exchangeImportFallbackLayout(t, receiver, mode)
+					common = filepath.Join(receiver.repo, ".git")
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				}
+				if mode == "lexical-parent-alias" {
+					alias := filepath.Join(t.TempDir(), "parent-alias")
+					if err := os.Symlink(filepath.Dir(receiver.repo), alias); err != nil {
+						t.Fatal(err)
+					}
+					receiver.repo = filepath.Join(alias, filepath.Base(receiver.repo))
+					common = filepath.Join(receiver.repo, ".git")
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				}
 				if mode == "retained-promisor" {
 					receiver.git("repack", "-ad")
 					packs, err := filepath.Glob(filepath.Join(common, "objects", "pack", "*.pack"))
@@ -1326,8 +1343,25 @@ func exchangeImportStagingCLI(t *testing.T) {
 					path, _ = exchangeExport(receiver, x)
 					y = x
 				}
+				physicalCommon := receiver.git("rev-parse", "--path-format=absolute", "--git-common-dir")
+				physicalObjects, err := safepath.Canonical(filepath.Join(physicalCommon, "objects"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if mode == "lexical-parent-alias" {
+					if physicalObjects == filepath.Join(common, "objects") {
+						t.Fatal("parent alias control did not distinguish lexical/physical paths")
+					}
+					t.Logf("local parent-alias control lexical=%q physical=%q; fixture keeps lexical path", common, physicalObjects)
+				}
 				ledger := exchangeImportStagePeer(t, receiver, mode, currentOID)
-				before, commonBefore := receiver.snapshot(), original.snapshot()
+				var before, commonBefore map[string]string
+				if mode == "pack-symlink" {
+					before = exchangeImportLayoutSnapshot(t, receiver, physical)
+					commonBefore = exchangeImportLayoutSnapshot(t, original, physical)
+				} else {
+					before, commonBefore = receiver.snapshot(), original.snapshot()
+				}
 				code := ""
 				if mode == "error" {
 					code = "verification_failure"
@@ -1349,8 +1383,8 @@ func exchangeImportStagingCLI(t *testing.T) {
 				if _, err = os.Stat(strings.TrimSpace(string(stage))); !os.IsNotExist(err) {
 					t.Fatal("quarantine owner did not remove stage", err)
 				}
-				want := filepath.Join(common, "objects") + "\n"
-				if mode == "retained-promisor" {
+				want := physicalObjects + "\n"
+				if mode == "retained-promisor" || mode == "interior-cr" || mode == "interior-lf" || mode == "pack-symlink" {
 					want = "inventory\n"
 				}
 				if string(observed) != want {
@@ -1381,7 +1415,7 @@ func exchangeImportUnsafeCLI(t *testing.T) {
 	sender := artifactCLI(t)
 	y := revisionEvent(sender.publish(artifactStoreType, "incoming", ""))
 	path, _ := exchangeExport(sender, y)
-	for _, mode := range []string{"shallow", "grafts", "alternates", "promisor-config", "objects-symlink", "pack-symlink"} {
+	for _, mode := range []string{"shallow", "grafts", "alternates", "promisor-config", "objects-symlink"} {
 		t.Run(mode, func(t *testing.T) {
 			receiver := artifactCLI(t)
 			x := revisionEvent(receiver.publish(artifactStoreType, "current", ""))
@@ -1405,11 +1439,8 @@ func exchangeImportUnsafeCLI(t *testing.T) {
 				write(filepath.Join(common, "objects", "info", "alternates"), filepath.Join(sender.repo, ".git", "objects")+"\n")
 			case "promisor-config":
 				receiver.git("config", "remote.retained.promisor", "true")
-			case "objects-symlink", "pack-symlink":
+			case "objects-symlink":
 				leaf := filepath.Join(common, "objects")
-				if mode == "pack-symlink" {
-					leaf = filepath.Join(leaf, "pack")
-				}
 				target := filepath.Join(t.TempDir(), "physical")
 				physical = target
 				if err := os.Rename(leaf, target); err != nil {
@@ -1479,4 +1510,108 @@ func exchangeImportLayoutSnapshot(t *testing.T, f *artifactCLIFixture, physical 
 		}
 	}
 	return out
+}
+
+// These layouts pass the original physical common/objects admission. They must
+// use verified inventory when read-only borrowing cannot represent them safely.
+func exchangeImportFallbackLayout(t *testing.T, f *artifactCLIFixture, layout string) string {
+	t.Helper()
+	if layout == "interior-cr" || layout == "interior-lf" {
+		separator := "\r"
+		if layout == "interior-lf" {
+			separator = "\n"
+		}
+		parent := filepath.Join(t.TempDir(), "physical"+separator+"parent")
+		if err := os.Mkdir(parent, 0700); err != nil {
+			t.Fatal(err)
+		}
+		repo := filepath.Join(parent, "repo")
+		if err := os.Rename(f.repo, repo); err != nil {
+			t.Fatal(err)
+		}
+		f.repo = repo
+		return ""
+	}
+	if layout != "pack-symlink" {
+		t.Fatal("unknown admitted fallback layout", layout)
+	}
+	f.git("repack", "-ad")
+	pack := filepath.Join(f.repo, ".git", "objects", "pack")
+	physical := filepath.Join(t.TempDir(), "physical-pack")
+	if err := os.Rename(pack, physical); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(physical, pack); err != nil {
+		t.Fatal(err)
+	}
+	return physical
+}
+
+func exchangeImportFallbackLayoutsCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		for _, layout := range []string{"interior-cr", "interior-lf", "pack-symlink"} {
+			t.Run(format+"/"+layout, func(t *testing.T) {
+				t.Run("compatible-import", func(t *testing.T) {
+					receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+					x := revisionEvent(receiver.publish(artifactStoreType, "current", ""))
+					y := revisionEvent(sender.publish(artifactStoreType, "incoming", ""))
+					path, _ := exchangeExport(sender, y)
+					physical := exchangeImportFallbackLayout(t, receiver, layout)
+					// Successful ordinary read AFTER layout mutation establishes
+					// actual admission/verification, not a guessed unsafe label.
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+					before := exchangeImportLayoutSnapshot(t, receiver, physical)
+					cmd := exec.Command(receiver.binary, "artifact", "import", "--input", path, "--json")
+					cmd.Dir, cmd.Env = receiver.repo, operationalTestEnvironment(receiver.home)
+					output, err := cmd.Output()
+					t.Logf("signed admitted-layout=%s format=%s repo=%q X=%s Y=%s public-import exit=%v output=%s protected_equal=%t", layout, format, receiver.repo, x, y, err, output, reflect.DeepEqual(before, exchangeImportLayoutSnapshot(t, receiver, physical)))
+					var result map[string]any
+					if je := json.Unmarshal(output, &result); je != nil {
+						t.Fatal(je)
+					}
+					if err != nil || result["ok"] != true {
+						t.Errorf("otherwise admitted verified layout must import through inventory fallback")
+					} else {
+						receiver.call("", "", "artifact", "type", "show", y, "--json")
+					}
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				})
+				t.Run("invalid-union", func(t *testing.T) {
+					receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+					x := revisionEvent(receiver.publish(artifactStoreType, "receiver-X", ""))
+					y := revisionEvent(sender.publish(artifactStoreType, "sender-Y", ""))
+					payload := revisionPayload(y, "fallback optional target")
+					payload["relationships"] = []any{map[string]any{"relation": "example.test/optional", "target": x, "target_mode": "revision", "required": false}}
+					r := revisionEvent(revisionCall(sender, "open", revisionInput(t, nil, []string{}, payload), "sender-R", ""))
+					path, _ := exchangeExport(sender, r)
+					raw, err := os.ReadFile(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					physical := exchangeImportFallbackLayout(t, receiver, layout)
+					ordinary := receiver.call("", "", "artifact", "type", "show", x, "--json")
+					before := exchangeImportLayoutSnapshot(t, receiver, physical)
+					result := receiver.call("", "invalid_history", "artifact", "import", "--input", path, "--json")
+					artifactErrorShape(t, result, "artifact", "invalid_history", "do_not_retry", nil)
+					if !reflect.DeepEqual(before, exchangeImportLayoutSnapshot(t, receiver, physical)) || !reflect.DeepEqual(ordinary, receiver.call("", "", "artifact", "type", "show", x, "--json")) {
+						t.Fatal("fallback invalid union changed protected bytes/modes/dirs or ordinary read")
+					}
+					missing := artifactCLIFormat(t, format)
+					exchangeImportFallbackLayout(t, missing, layout)
+					positive := missing.call("", "", "artifact", "import", "--input", path, "--json")
+					if !reflect.DeepEqual(revisionReadView(sender, r), revisionReadView(missing, r)) {
+						t.Fatal("fallback changed signed optional target")
+					}
+					diagnostics, err := json.Marshal(positive["data"].(map[string]any)["diagnostics"])
+					if err != nil || !bytes.Contains(diagnostics, []byte(`"missing_optional"`)) {
+						t.Fatal("fallback failed same-wire missing_optional positive", positive, err)
+					}
+					if after, err := os.ReadFile(path); err != nil || !bytes.Equal(raw, after) {
+						t.Fatal("fallback changed bundle bytes", err)
+					}
+					t.Logf("signed fallback union layout=%s format=%s wire_digest=%s invalid_history/no-effects/ordinary-read unchanged; identical-wire positive=%s", layout, format, eventID(raw), diagnostics)
+				})
+			})
+		}
+	}
 }
