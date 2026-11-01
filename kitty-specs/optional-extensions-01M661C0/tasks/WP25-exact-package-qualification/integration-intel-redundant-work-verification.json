@@ -1,0 +1,229 @@
+{
+  "schema": "wp25.intel-redundant-work.verification.v2",
+  "status": "PROSPECTIVE_UNEXECUTED; exact v2 review pending; no implementation/runtime/WP approval",
+  "source_baseline": "c0ccb40a02d7ef3a3cb72724de8e7e0e6bd0d388",
+  "source_tree": "6a95ccc56ab253c4b390cc6c35fbc27edefe0f14",
+  "evidence_inputs": {
+    "root_design": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-qualification-triage/root-redundant-work-design-decision.json",
+      "sha256": "27b1a7592f6bc79b9b09fbdd4046eee8e79843aca774ecfdbd240ee9a1a99859",
+      "bytes": 5072
+    },
+    "root_live_read_clarification": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-qualification-triage/root-current-authority-live-read-design-clarification.json",
+      "sha256": "0dc12e8a0a75c7c2d23ddee075612eb0fa2c812d215742ba4e910cb8f6488456",
+      "bytes": 3596
+    },
+    "approved_baseline": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/root-approved-darwin-fixture-c0ccb40a.json",
+      "sha256": "26c9b0a30408c9919a1fc07530cbfe7889097c4ac47f691d89d4b01b35f09693",
+      "bytes": 2088
+    },
+    "source_review": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/darwin-fixture-source-review/source-review-c0ccb40a.md",
+      "sha256": "18970452a8d963556bec8b540da20f5e833d4d18cc44116d938df95bbaab5b71",
+      "bytes": 11916
+    },
+    "source_review_binding": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/darwin-fixture-source-review/source-binding-c0ccb40a.json",
+      "sha256": "d53724d84baf4571dae43c8e92653fbdef22f4ca0b6d3bbd1f5013863dcb56bd",
+      "bytes": 78368
+    },
+    "root317": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/darwin-fixture-correction/root-source-inputs-c0ccb40a.json",
+      "sha256": "5987bd233177e3ff40523e59af8e5879d62923045dc10b14fc928f96f6ab48af",
+      "bytes": 33206
+    },
+    "root311": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/approved-c0ccb40a-311-inputs.json",
+      "sha256": "c2723e3068c57afe8bffcec9738368bad680bb44b9173d21851c19bef4cfd4c9",
+      "bytes": 31598
+    },
+    "advisory": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-qualification-triage/advisory.md",
+      "sha256": "a9da18279db2edd86f52129775adc27b63546340518f1aabf640fdf4d5f37138",
+      "bytes": 20435
+    },
+    "duration_ledger": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-qualification-triage/duration-ledger.md",
+      "sha256": "a10224d14b0c6955c90c4f372d75b13ab8b03230c13335008264f34030a0b15e",
+      "bytes": 5951
+    },
+    "retained_index": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-qualification-triage/retained-analysis-index.json",
+      "sha256": "14a1a72ce3a7472fa7c05a05b1c168473c497b2e2a3dc2f457b2629e1291e9cd",
+      "bytes": 1209133
+    },
+    "primary_installed_revision_documentation": {
+      "path": "/usr/share/man/man7/gitrevisions.7.gz",
+      "sha256": "d866f87f68c946748e56f4be97d8ac00ac17ef0578c1b3787b36a4a5553599f0",
+      "bytes": 6904,
+      "uncompressed_sha256": "37e0032c2b8c4d8b1eb4079c055ee167b743b402e4c2ee5349305efbdb8fb61b",
+      "typed_peel_section_offset": 10406,
+      "path_section_offset": 12735,
+      "scope": "Primary installed Git revision grammar; not a newly executed Git2.55 compatibility observation."
+    },
+    "root_pair_wave_direction": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-qualification-triage/root-pair-wave-prospective-design-direction.json",
+      "sha256": "714a725d6dd8def1a8e37d6fd61413bac975a739683a6eeb5cc7a843601c78bd",
+      "bytes": 3370
+    },
+    "third_witness_design": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/witness-transport-design-check/third-design-check.md",
+      "sha256": "a1adf28cb62d7e128d3ad837b5b70cd58d990098bb94912b852b776479d8057f",
+      "bytes": 11602
+    },
+    "root_adoption_baseline_v2": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-redundant-work-amendment-adoption-v2/baseline.json",
+      "sha256": "82fa2e6f5e8c3a0214b2495ad3190b49523645c89451d9329aa6986c89a2498f",
+      "bytes": 150204
+    },
+    "independent_concept_report": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-amendment-independent-design-review/design-review.md",
+      "sha256": "b1a1ae766f6ecde73a5cdf82e27165e32ef3145e878b9587b22eeb9f4a1cd3b3",
+      "bytes": 17243
+    },
+    "independent_concept_binding": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-amendment-independent-design-review/binding.json",
+      "sha256": "4ff1e3f189896e30330112838c1ce64fb9740a5ed1ffab01b6dbbee776575668",
+      "bytes": 5775
+    },
+    "root_concept_readback": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-amendment-independent-design-review/root-readback.json",
+      "sha256": "3425c3c141b2d0fbe5d33ab0294a08f349dc2018619739aadf60d5d6a5108885",
+      "bytes": 747
+    },
+    "prior_witness_cat_file_report": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/witness-transport-design-check/design-check.md",
+      "sha256": "c1f5ff507a2aa6e4b6625821b3ec1b9995edb954d807390de546b10ea88c8281",
+      "bytes": 11943
+    },
+    "prior_witness_packed_report": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/witness-transport-design-check/second-design-check.md",
+      "sha256": "3526ca63aa0636c776412ebff4e40305c6caecce5626fba81cd1259d661af2db",
+      "bytes": 11195
+    },
+    "root_transport_disposition": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-qualification-triage/root-transport-design-disposition-20261101.json",
+      "sha256": "dc8416bc0d460c009625eed4dc1539d7bd43236c113c20b4c302f8718bb92d5a",
+      "bytes": 2754
+    },
+    "immutable_v1_index": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/intel-redundant-work-proposal/proposal-index.json",
+      "sha256": "87bc05535354db0c1cb8a42e9be480b762de48b5f285051f05d89ec6d11003f5",
+      "bytes": 7511
+    }
+  },
+  "rows": [
+    {
+      "id": "PW01",
+      "case": "Actual overlap, reversed completion and no replenishment",
+      "expected": "Use real controlled/delegating Git child PIDs in >=4 GLOBAL64 blocks. Hold G0, finish G1 first; require real process overlap and G0 outcome first. Withhold pair release; assert G2/G3 never start while either slot/fallback/parser remains. Final odd/partial block same original argv. Mechanism control intentionally distinguishes old sequential schedule; it is not an old semantic-defect or fabricated productRED claim."
+    },
+    {
+      "id": "PW02",
+      "case": "Ordered raw parser and global wanted",
+      "expected": "Actual successful G0 emits changed globally selected G1 ref then malformed line: original concurrent_update wins. Cover earlier malformed vs later error/success and later error finishing first; preserve blank/extra-unselected two-field/duplicate global wanted behavior. No rebucketing/clean replay or worker fail-fast."
+    },
+    {
+      "id": "PW03",
+      "case": "Original fallback and65 sentinel",
+      "expected": "Changed/missing same ORIGINAL block with real prefix descendants/fallback65 outputs: sentinel resource_limit wins before parser. Failed primary partial bytes stay nil as projectGit specifies. During fallback hold later primary alive and prove <=2 total producers/no next pair. Final partial fallback still count65/cap33280."
+    },
+    {
+      "id": "PW04",
+      "case": "Parent entry/consumption expiry and error priority",
+      "expected": "Zero children on cancelled/empty entry. Parent expires with successful prefetch already done: cancelled before its parser. Cancel during primary/fallback; keep old failed-command checks. Once parser selects error, cleanup cannot replace it. No new postparse/fallback-success timeout check or cancellation-only failure after final accepted observation; fresh next-block boundary check remains."
+    },
+    {
+      "id": "PW05",
+      "case": "Complete ownership/reap and constrained resource failures",
+      "expected": "For success, semantic/parser/sentinel/missing failure, primary/fallback failure, output overflow32768/+1 or33280/+1, setup/Start/exec/E2BIG, parent expiry and lowFD: save outcome, cancel and join all launched jobs, real direct children Wait-reaped, no stranded sender/goroutine or escaped desc after return, complete FD-set recovery. Use child-only controlled resource/env faults and compiled-self existing-root reentry if needed; do not change parent/default limits/environment or original native helper controls. Old low-resource success is not promised with2 producers; route remains ordered legacy handling."
+    },
+    {
+      "id": "PW06",
+      "case": "Same selected refs/caps/identity, independent phases",
+      "expected": "Real SHA1/SHA256,0/1/63/64/65/127/128/129/191/192/193 source sets, same-OID distinct refs/global cut keys, exact missing/DWIM alias-only/unavailable/corrupt/promisor-no-fetch, explicit subset with unrelated malformed accepted refs. Per-command exact argv/output bound unchanged; no stdin transport/broader namespace. Both witness passes and raw-protocol refusals independent."
+    },
+    {
+      "id": "AU01",
+      "case": "Fresh typed policy-read compatibility and actual faults",
+      "expected": "Real SHA1/SHA256 legacy C:path vs C^{commit}:path exact bytes; tree/blob/tag/dangling/malformed commit behavior; missing/corrupt commit/policy after authority load; strict shape/end/digest/enabled/project/maintainers. Direct controls label source-assisted; actual final graph/public rows prove supplied executable path."
+    },
+    {
+      "id": "AU02",
+      "case": "Every-call guards, old history and contexts",
+      "expected": "Fresh repository/pending state changes after constructor and between records/plans; disappearance/substitution; exact commit+digest only; wrongdigest/noncurrent legacy ancestry tail byte-exact; invalid ref/limits/rawrepo/expiry at old merge-base boundary and typed-read cancellation map same routes. No shared context/value/cache. Reducer record diagnostics/moderator/maintainer/revocations/checkpoints unchanged."
+    },
+    {
+      "id": "AU03",
+      "case": "Two plan observations and real work accounting",
+      "expected": "Existing actual public retained one-record fixture; first plan and register recapture independently repeat pending/policy reads. Scope a real delegating Git ledger after constructor and count old N repository+N merge-base+N show versus new N repository+N typed show. No parser-only helper tests or eliminated-command-only synthetic fault as product failure; identity/maps/genuine receipts unchanged."
+    },
+    {
+      "id": "Q01",
+      "case": "Existing gates and actual efficacy remain mandatory",
+      "expected": "Bind original default_contract and root direction unchanged, no repeated waiver. Actual final Intel100000 positive under original30s/100001 exact refusal, whole graph16384/+1/recovery exact maps/genuine receipts and full roots/standalones/search/all8 still required. Fresh clean source review/root311+317 and unchanged default/COMPLETE4320/fullsource/race/static/build/cold-agent trials/52acceptance remain. No source algebra/historical partial/Linux substitute."
+    },
+    {
+      "id": "Q02",
+      "case": "Ordinary diagnostics only after separate authorization",
+      "expected": "Any bounded old/new local diagnostic uses existing public fixtures/budgets and honest counts/Cmd.Run timing; no new preliminary Intel profiling workflow gate, collector change, syntheticRED or retry-to-green. No control ran during design."
+    }
+  ],
+  "default_contract": {
+    "roots": [
+      "TestExtensionDefaultNativeMatrix",
+      "TestExtensionDefaultHistoricalMatrix",
+      "TestExtensionDefaultFailureConfigurations",
+      "TestExtensionDefaultDetectors",
+      "TestExtensionDefaultControl",
+      "TestExtensionDefaultPerformanceBudgets"
+    ],
+    "collector": "TestExtensionDefaultPerformanceCapture",
+    "complete_observations": 4320,
+    "pairs": 2160,
+    "groups": 72,
+    "criteria": 144,
+    "unchanged_source_sha256": {
+      "extension_default_acceptance_test.go": "f49579362a84d7c9532a0b3432c33bda3ef52d4715ab4ca2b338f18f6c6cc1a9",
+      "extension_default_performance_test.go": "e7804b23bf3cb78e1834ebb9c8d78ee2d796d2ecfe43f0c33042e20a4094fcc8",
+      "extension_package_acceptance_test.go": "d1112a8d34d89f5de6aa6cc6afff7b18393f3be2eb2426556a6f98da3f4ca91d"
+    },
+    "actual_native_rows": 8,
+    "cold_agent_trials_and_52_acceptance_requirements_held": true
+  },
+  "ordered_handoffs": [
+    "Independent exact-v2 source-only scope/payload readback, distinct from the bound concept report.",
+    "Root inactive-owner exceptions and original78/current220/317/24review preservation, normal exact metadata adoption/finalizer/fresh actual independent analysis/record/reentry.",
+    "Separate bounded implementation/diagnostic authorization; meaningful semantic/mechanism/resource/type controls first, no current code/runtime authority.",
+    "Independent clean final-source exact-diff/source-only review and fresh root311+317 before unchanged complete qualification.",
+    "Original full qualification and true cold-agent trials/52acceptance/formalWP review/accept/featuremerge/postreview/retro as separately authorized."
+  ],
+  "source_only_checks": {
+    "root317_and_C0_v1_bound_maps_agree": true,
+    "old87bc_files_immutable_verified": true,
+    "concept_verdict": "SOURCE_DESIGN_FEASIBLE_NO_BLOCKING_FINDINGS",
+    "concept_does_not_approve_exact_v2_or_future_code": true,
+    "runtime_or_stage_profile_executed": false,
+    "runtime_sufficiency_claim": false
+  },
+  "actual_architect_governance": {
+    "resolver": "spec-kitty agent profile show architect-alphonso --json",
+    "role": "Architect Alphonso, builtin, architect",
+    "initialization": "I design scalable, maintainable system architectures and traceable decisions; collaborate with reviewers/implementers; I do not write implementation code.",
+    "focus": "System architecture, technical design decisions and component boundaries",
+    "avoidance": "Direct implementation/routine fixes/project management",
+    "modes": [
+      "analysis",
+      "design",
+      "review"
+    ],
+    "action_context": "spec-kitty charter context --action plan --json --no-mark-loaded; success schema1.2.0; project HN001..005 and specification fidelity/locality/evidence/hostile-input bounds applied",
+    "mode_scope": "Source/data-only architecture, no code or lifecycle authority"
+  },
+  "gate_budget_threshold_cardinality_environment_collector_change": false,
+  "cancellation_semantics_explicit_new_boundary_checks": true,
+  "literal_observation_timeline_or_low_resource_success_equivalence_claim": false,
+  "authority": "Only exact reviewed later root adoption/reentry plus separate implementation authorization can activate these regions. Concept verdict alone cannot."
+}
