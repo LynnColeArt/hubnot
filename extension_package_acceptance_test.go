@@ -122,7 +122,7 @@ func TestExtensionPackageQualification(t *testing.T) {
 		if err := os.MkdirAll(evidence, 0700); err != nil {
 			t.Fatal(err)
 		}
-		report := map[string]any{"schema": "hn.extension-package-row/1", "source_commit": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD")), "source_tree": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD^{tree}")), "target": runtime.GOOS + "/" + runtime.GOARCH, "harness_compiler": runtime.Version(), "harness_sha256": wp25Digest(t, wp25Self(t)), "variant": variant, "executable": binary, "executable_sha256": wp25Digest(t, binary), "references": references, "source_fallback": false, "result": "PASS"}
+		report := map[string]any{"schema": "hn.extension-package-row/1", "source_commit": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD")), "source_tree": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD^{tree}")), "target": runtime.GOOS + "/" + runtime.GOARCH, "harness_compiler": runtime.Version(), "qualified_git_version": strings.TrimSpace(runOperationalGit(t, ".", "--version")), "harness_sha256": wp25Digest(t, wp25Self(t)), "variant": variant, "executable": binary, "executable_sha256": wp25Digest(t, binary), "references": references, "source_fallback": false, "result": "PASS"}
 		raw, _ := json.MarshalIndent(report, "", "  ")
 		if err := os.WriteFile(filepath.Join(evidence, variant+"-row.json"), append(raw, '\n'), 0600); err != nil {
 			t.Fatal(err)
@@ -272,6 +272,10 @@ var wp25PublicJourneys = []wp25Journey{
 	{"TestArtifactStoreExplicitPublicSources", TestArtifactStoreExplicitPublicSources},
 	{"TestArtifactStoreSourceChangesDuringRead", TestArtifactStoreSourceChangesDuringRead},
 	{"TestArtifactStoreCountPreflightGraphCLI", TestArtifactStoreCountPreflightGraphCLI},
+	{"TestArtifactStoreCountPreflightBatchProtocolCLI", TestArtifactStoreCountPreflightBatchProtocolCLI},
+	{"TestArtifactStoreCountPreflightBeforeBodyCLI", TestArtifactStoreCountPreflightBeforeBodyCLI},
+	{"TestArtifactStoreCountPreflightUniqueCommitBytesCLI", TestArtifactStoreCountPreflightUniqueCommitBytesCLI},
+	{"TestArtifactStoreCountPreflightRawParentCLI", TestArtifactStoreCountPreflightRawParentCLI},
 	{"TestArtifactStoreCountPreflightCancellationCLI", TestArtifactStoreCountPreflightCancellationCLI},
 	{"TestArtifactClosureCausalRefusalsCLI", TestArtifactClosureCausalRefusalsCLI},
 	{"TestArtifactClosureMissingGitObjectCLI", TestArtifactClosureMissingGitObjectCLI},

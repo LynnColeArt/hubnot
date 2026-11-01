@@ -1035,7 +1035,7 @@
           "observed_result": "NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT"
         }
       ],
-      "assessment": "Genuine independently signed100000/100001 corpus with complete wire/ledger/object maps. Authorized immutable-tip bounded preflight must admit100000 at the count gate and refuse100001 with exact selected artifact record limit exceeded. Threshold99999 and preflight-removal source-overlay public controls establish causality separately; later ordinary30s verification cancellation is not whole-history success.",
+      "assessment": "Genuine independently signed100000/100001 corpus with complete wire/ledger/object maps. Scoped metadata-first raw-parent preflight must admit100000 at the count gate and refuse100001 with exact selected artifact record limit exceeded. Exact per-object/unique-commit-subset metadata guards precede body requests; body/hash/framing checks precede parent interpretation. Threshold99999 and preflight-removal source-overlay public controls separately establish causality; later30s full verification cancellation is not whole-history success.",
       "remaining_gaps": [
         "Independent correction review, final clean source attestation, fixed-source and all eight actual native package observations remain required."
       ],
@@ -1045,7 +1045,7 @@
       "current_status": "PENDING_FIXED_SOURCE_AND_EIGHT_NATIVE_ROWS",
       "code_reviewed_ceiling": {
         "path": "artifact_read.go",
-        "line": 346,
+        "line": 349,
         "condition": "len(cache) >= artifactReadEntries immediately before reader.commit; limit100000",
         "classification": "source-reviewed count ceiling; distinct from runtime observation"
       },
@@ -4799,5 +4799,23 @@
     "classification": "immutable intermediate source-specific evidence; not final new-source qualification",
     "native_jobs": "all four failed before journey execution because preinstalled test2json was absent; zero native package passes",
     "tracing": "Linux scoped controls succeeded; Darwin actual Go registry-read positive was not observed; descendant/negative proof unavailable there"
+  },
+  "rejected_count_intermediate": {
+    "source": "79c3cf1e793136a57329450a323a084c40bbeae2",
+    "review_sha256": "152bc75db392e4ca51ceb506ba3d7001c4f90fe70bd8d04b8cd70e1945e5e185",
+    "finding": "rev-list can parse oversized raw commits before the original8MiB metadata guard",
+    "qualification": "rejected source-only; causal results retained as intermediate history"
+  },
+  "private_count_transport": {
+    "classification": "private implementation defenses, not new public limits or whole-history throughput promises",
+    "metadata_line_bytes": 256,
+    "stderr_bytes": 8192,
+    "scoped_children": 1,
+    "info_before_contents": true,
+    "body_object_limit": 8388608,
+    "unique_commit_subset_limit": 268435456,
+    "hash_before_parent": true,
+    "later_full_verifier_preserved": true,
+    "status": "PENDING independent corrected-source review and final qualification"
   }
 }

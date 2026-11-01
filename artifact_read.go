@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/sha1"
@@ -10,7 +11,9 @@ import (
 	"fmt"
 	"hash"
 	"hubnot/internal/artifact"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -406,99 +409,282 @@ func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []a
 	return h, nil
 }
 
-// This is only an early ceiling check over captured immutable tips. Admission
-// grants no trust: the raw-object reader still verifies the entire graph.
-// Git's shallow/graft views can hide raw parents, so those views use the
-// original reader. Failed or malformed traversal never admits a partial count.
+// Count only authenticated raw commit ancestry, never a Git graph/cache view.
+// Admission grants no trust: the original full verifier still checks every
+// object, tree, signature, actor, schema and continuity rule afterward.
 func artifactPreflightRecordCount(ctx context.Context, dir string, sources []artifactSource, oidLength int) error {
 	if len(sources) == 0 {
 		return nil
 	}
-	readError := func() error {
-		if ctx.Err() != nil {
-			return artifactFailure("cancelled", "artifact read cancelled")
-		}
-		return artifactFailure("verification_failure", "accepted artifact object unavailable; no fetch attempted")
-	}
-	shallow, e := projectGit(ctx, dir, nil, 16, "rev-parse", "--is-shallow-repository")
+	session, e := newArtifactPreflightSession(ctx, dir)
 	if e != nil {
-		return readError()
+		return e
 	}
-	switch string(shallow) {
-	case "true\n":
-		return nil // Full raw-parent verification, including hidden parents.
-	case "false\n":
-	default:
-		return readError()
-	}
-	graftPath, e := projectGit(ctx, dir, nil, 65536, "rev-parse", "--path-format=absolute", "--git-path", "info/grafts")
-	if e != nil {
-		return readError()
-	}
-	path := strings.TrimSuffix(string(graftPath), "\n")
-	if !filepath.IsAbs(path) {
-		return readError()
-	}
-	if _, e = os.Lstat(path); e == nil {
-		return nil // Grafts never substitute for the signed raw-parent stream.
-	} else if !os.IsNotExist(e) {
-		return readError()
-	}
-	var tips bytes.Buffer
+	defer session.close()
+	// A visiting node is not a completed overlapping prefix. Retain only the
+	// small authenticated OIDs, not slices into commit bodies.
+	seen := map[string]byte{}
+	total := int64(0)
 	for _, source := range sources {
-		tips.WriteString(source.OID)
-		tips.WriteByte('\n')
-	}
-	// A sole-parent stream needs at most two OIDs per row. Allow a third to
-	// diagnose a merge, but cap traversal and transport at one past the ceiling.
-	// Larger malformed rows fail closed within that same transport bound.
-	raw, e := projectGit(ctx, dir, tips.Bytes(), int64((oidLength+1)*3*(artifactReadEntries+1)), "-c", "core.commitGraph=false", "rev-list", "--parents", "--max-count="+strconv.Itoa(artifactReadEntries+1), "--stdin")
-	if e != nil {
-		return readError()
-	}
-	if len(raw) == 0 || raw[len(raw)-1] != '\n' {
-		return readError()
-	}
-	seen := map[string]bool{}
-	parents := []string{}
-	for _, line := range strings.Split(string(raw[:len(raw)-1]), "\n") {
-		if ctx.Err() != nil {
-			return artifactFailure("cancelled", "artifact read cancelled")
-		}
-		fields := strings.Fields(line)
-		if len(fields) == 0 {
-			return readError()
-		}
-		for _, oid := range fields {
-			if len(oid) != oidLength || !validGitOID(oid) || oid != strings.ToLower(oid) {
-				return readError()
+		chain := []string{}
+		for oid := source.OID; oid != ""; {
+			if ctx.Err() != nil {
+				return session.readError()
 			}
+			if seen[oid] == 1 {
+				return artifactFailure("invalid_history", "cyclic artifact stream")
+			}
+			if seen[oid] == 2 {
+				break
+			}
+			n, header, err := session.info(oid)
+			if err != nil {
+				return err
+			}
+			if n > artifactReadObjectBytes {
+				return artifactFailure("resource_limit", "artifact object exceeds read limit")
+			}
+			if n > artifactReadTotalBytes-total {
+				return artifactFailure("resource_limit", "artifact aggregate exceeds read limit")
+			}
+			if len(seen) >= artifactReadEntries {
+				return artifactFailure("resource_limit", "selected artifact record limit exceeded")
+			}
+			total += n
+			body, err := session.contents(oid, n, header)
+			if err != nil {
+				return err
+			}
+			parent, err := artifactPreflightParent(body, oidLength)
+			if err != nil {
+				return err
+			}
+			seen[oid] = 1
+			chain = append(chain, oid)
+			oid = parent
 		}
-		if seen[fields[0]] {
-			return readError()
-		}
-		seen[fields[0]] = true
-		if len(fields) > 2 {
-			return artifactFailure("actor_stream_conflict", "artifact stream has multiple Git parents")
-		}
-		if len(fields) == 2 {
-			parents = append(parents, fields[1])
-		}
-		if len(seen) > artifactReadEntries {
-			return artifactFailure("resource_limit", "selected artifact record limit exceeded")
+		for _, oid := range chain {
+			seen[oid] = 2
 		}
 	}
-	for _, parent := range parents {
-		if !seen[parent] {
-			return readError()
+	return session.finish()
+}
+
+// One owner handles setup, every descriptor, context cancellation and Wait.
+// No worker or process is shared with the later full-object verifier.
+type artifactPreflightSession struct {
+	ctx             context.Context
+	cancel          context.CancelFunc
+	cmd             *exec.Cmd
+	stdin           io.WriteCloser
+	stdout          io.ReadCloser
+	childStdin      *os.File
+	childStdout     *os.File
+	reader          *bufio.Reader
+	started, waited bool
+}
+
+type artifactPreflightStderr struct {
+	left   int
+	cancel context.CancelFunc
+}
+
+func (w *artifactPreflightStderr) Write(raw []byte) (int, error) {
+	if len(raw) > w.left {
+		w.cancel()
+		return 0, fmt.Errorf("artifact preflight Git stderr exceeds transport bound")
+	}
+	w.left -= len(raw)
+	return len(raw), nil
+}
+
+func newArtifactPreflightSession(ctx context.Context, dir string) (*artifactPreflightSession, error) {
+	childCtx, cancel := context.WithCancel(ctx)
+	s := &artifactPreflightSession{ctx: ctx, cancel: cancel}
+	s.cmd = exec.CommandContext(childCtx, "git", "--git-dir="+dir, "cat-file", "--batch-command")
+	// Match projectGit exactly; no replacement, ambient object-store override,
+	// lazy fetch, global/system config or prompt may alter explicit raw reads.
+	env := []string{}
+	for _, value := range os.Environ() {
+		key, _, _ := strings.Cut(value, "=")
+		if !strings.HasPrefix(key, "GIT_") {
+			env = append(env, value)
 		}
 	}
-	for _, source := range sources {
-		if !seen[source.OID] {
-			return readError()
+	s.cmd.Env = append(env, "GIT_NO_REPLACE_OBJECTS=1", "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+os.DevNull, "GIT_TERMINAL_PROMPT=0", "GIT_NO_LAZY_FETCH=1")
+	s.cmd.Stderr = &artifactPreflightStderr{left: 8192, cancel: cancel}
+	var err error
+	var input, output *os.File
+	s.childStdin, input, err = os.Pipe()
+	if input != nil {
+		s.stdin = input
+	}
+	if err == nil {
+		output, s.childStdout, err = os.Pipe()
+		if output != nil {
+			s.stdout = output
 		}
+	}
+	if err == nil {
+		s.cmd.Stdin, s.cmd.Stdout = s.childStdin, s.childStdout
+		err = s.cmd.Start()
+		s.started = err == nil
+	}
+	if err != nil {
+		s.close()
+		return nil, s.readError()
+	}
+	// Close the parent's copies of the child's ends after Start. Explicit pipe
+	// ownership also closes every acquired end if a later setup step fails.
+	_ = s.childStdin.Close()
+	_ = s.childStdout.Close()
+	s.childStdin, s.childStdout = nil, nil
+	s.reader = bufio.NewReaderSize(s.stdout, 256)
+	return s, nil
+}
+
+func (s *artifactPreflightSession) readError() error {
+	if s.ctx.Err() != nil {
+		return artifactFailure("cancelled", "artifact read cancelled")
+	}
+	return artifactFailure("verification_failure", "accepted artifact object unavailable; no fetch attempted")
+}
+
+func (s *artifactPreflightSession) request(command, oid string) error {
+	input := command + " " + oid + "\n"
+	n, err := io.WriteString(s.stdin, input)
+	if err != nil || n != len(input) {
+		return s.readError()
 	}
 	return nil
+}
+
+func (s *artifactPreflightSession) header() ([]byte, error) {
+	line, err := s.reader.ReadSlice('\n')
+	if err != nil || len(line) > 256 {
+		return nil, s.readError()
+	}
+	return line, nil
+}
+
+func (s *artifactPreflightSession) info(oid string) (int64, string, error) {
+	if err := s.request("info", oid); err != nil {
+		return 0, "", err
+	}
+	line, err := s.header()
+	if err != nil {
+		return 0, "", err
+	}
+	parts := strings.Split(strings.TrimSuffix(string(line), "\n"), " ")
+	if len(parts) == 2 && parts[0] == oid && parts[1] == "missing" {
+		return 0, "", artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
+	}
+	if len(parts) != 3 || parts[0] != oid {
+		return 0, "", s.readError()
+	}
+	if parts[1] != "commit" {
+		return 0, "", artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
+	}
+	n, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil || n < 0 || strconv.FormatInt(n, 10) != parts[2] {
+		return 0, "", artifactFailure("verification_failure", "invalid Git object size")
+	}
+	return n, string(line), nil
+}
+
+func (s *artifactPreflightSession) contents(oid string, n int64, expected string) ([]byte, error) {
+	if err := s.request("contents", oid); err != nil {
+		return nil, err
+	}
+	line, err := s.header()
+	if err != nil || string(line) != expected {
+		return nil, s.readError()
+	}
+	// n was admitted by info and both byte guards before this request/allocation.
+	body := make([]byte, int(n)+1)
+	if _, err = io.ReadFull(s.reader, body); err != nil || body[n] != '\n' {
+		return nil, s.readError()
+	}
+	body = body[:n]
+	var digest hash.Hash = sha1.New()
+	if len(oid) == 64 {
+		digest = sha256.New()
+	}
+	fmt.Fprintf(digest, "commit %d\x00", n)
+	_, _ = digest.Write(body)
+	if hex.EncodeToString(digest.Sum(nil)) != oid {
+		return nil, artifactFailure("verification_failure", "accepted Git object hash mismatch")
+	}
+	return body, nil
+}
+
+func artifactPreflightParent(body []byte, oidLength int) (string, error) {
+	headers, _, ok := bytes.Cut(body, []byte("\n\n"))
+	if !ok {
+		return "", artifactFailure("invalid_history", "invalid artifact commit")
+	}
+	parent := ""
+	hasParent := false
+	for len(headers) != 0 {
+		line, rest, found := bytes.Cut(headers, []byte{'\n'})
+		if found {
+			headers = rest
+		} else {
+			headers = nil
+		}
+		if !bytes.HasPrefix(line, []byte("parent ")) {
+			continue
+		}
+		if hasParent {
+			return "", artifactFailure("actor_stream_conflict", "artifact stream has multiple Git parents")
+		}
+		hasParent = true
+		candidate := string(line[len("parent "):])
+		if len(candidate) != oidLength || !validGitOID(candidate) || candidate != strings.ToLower(candidate) {
+			return "", artifactFailure("invalid_history", "invalid Git object identity")
+		}
+		parent = strings.Clone(candidate)
+	}
+	return parent, nil
+}
+
+func (s *artifactPreflightSession) finish() error {
+	if err := s.stdin.Close(); err != nil {
+		return s.readError()
+	}
+	s.stdin = nil
+	if _, err := s.reader.ReadByte(); err != io.EOF {
+		return s.readError()
+	}
+	err := s.cmd.Wait()
+	s.waited = true
+	if err != nil {
+		return s.readError()
+	}
+	return nil
+}
+
+func (s *artifactPreflightSession) close() {
+	s.cancel()
+	if s.childStdin != nil {
+		_ = s.childStdin.Close()
+	}
+	if s.childStdout != nil {
+		_ = s.childStdout.Close()
+	}
+	if s.stdin != nil {
+		_ = s.stdin.Close()
+	}
+	if s.stdout != nil {
+		_ = s.stdout.Close()
+	}
+	if s.started {
+		_ = s.cmd.Process.Kill()
+		if !s.waited {
+			_ = s.cmd.Wait()
+			s.waited = true
+		}
+	}
 }
 
 // Ref metadata is checked independently of object availability so a retained

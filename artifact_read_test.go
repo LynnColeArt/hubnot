@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"compress/zlib"
 	"context"
@@ -18,6 +19,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -601,7 +603,14 @@ func TestArtifactStoreSourceChangesDuringRead(t *testing.T) {
 // These controls exercise the actual public reader. Git-only graph construction
 // and a bounded Git peer isolate traversal from the subsequent signed verifier.
 func TestArtifactStoreCountPreflightGraphCLI(t *testing.T) {
-	f := wp25ArtifactCLI(t)
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) { artifactCountGraphCLI(t, format) })
+	}
+}
+func artifactCountGraphCLI(t *testing.T, format string) {
+	f := artifactCLIFormat(t, format)
+	config := wp25FixtureConfig(t, f.home)
+	f.overrides = map[string]string{"XDG_CONFIG_HOME": config}
 	ref := artifactFrozenRef(t, f)
 	root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
 	f.git("update-ref", ref, root)
@@ -645,7 +654,7 @@ func TestArtifactStoreCountPreflightGraphCLI(t *testing.T) {
 	if err := os.WriteFile(graphPath, corrupt, 0600); err != nil {
 		t.Fatal(err)
 	}
-	wp25Record(t, map[string]any{"control": "count-preflight-real-commit-graph", "path": graphPath, "valid_sha256": wp25RecordCountHash(graph), "corrupt_sha256": wp25RecordCountHash(corrupt), "corruption": "replace CGPH header with BAD!; remaining bytes exact", "argv_config": "-c core.commitGraph=false"})
+	wp25Record(t, map[string]any{"control": "count-preflight-real-commit-graph", "path": graphPath, "valid_sha256": wp25RecordCountHash(graph), "corrupt_sha256": wp25RecordCountHash(corrupt), "corruption": "replace CGPH header with BAD!; remaining bytes exact", "traversal": "raw cat-file commit bytes; commit-graph is not count authority"})
 	verify := exec.Command("git", "-C", f.repo, "-c", "core.commitGraph=true", "commit-graph", "verify")
 	verify.Env = operationalTestEnvironmentWith(f.home, f.overrides)
 	verifyRaw, verifyErr := verify.CombinedOutput()
@@ -686,89 +695,733 @@ func TestArtifactStoreCountPreflightGraphCLI(t *testing.T) {
 	f.git("update-ref", ref, merge)
 	check(t, "actor_stream_conflict", "artifact stream has multiple Git parents")
 	f.git("update-ref", ref, root)
-	git, err := exec.LookPath("git")
+	check(t, "", "")
+}
+
+// The peer is supplemental, source-assisted protocol evidence. Its config
+// contains only independently obtained public commit bytes and selected fault
+// responses. All ordinary Git calls and all signed/tree verification remain
+// real Git. Real-Git/public byte controls below run separately, without a peer.
+type artifactCountBatchPeerConfig struct {
+	Mode        string            `json:"mode"`
+	Ledger      string            `json:"ledger"`
+	Objects     map[string][]byte `json:"objects"`
+	Sizes       map[string]int    `json:"sizes,omitempty"`
+	ObjectFiles map[string]string `json:"object_files,omitempty"`
+}
+
+func TestArtifactStoreCountPreflightBatchPeer(t *testing.T) {
+	for i, arg := range os.Args {
+		if arg == "--" && i+1 < len(os.Args) {
+			raw, err := os.ReadFile(os.Args[i+1])
+			if err != nil {
+				os.Exit(72)
+			}
+			var cfg artifactCountBatchPeerConfig
+			if json.Unmarshal(raw, &cfg) != nil || cfg.Ledger == "" {
+				os.Exit(73)
+			}
+			os.Exit(artifactCountBatchPeer(cfg, os.Args[i+2:]))
+		}
+	}
+}
+func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int {
+	log := func(event map[string]any) {
+		raw, _ := json.Marshal(event)
+		file, err := os.OpenFile(cfg.Ledger, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			os.Exit(74)
+		}
+		_, err = file.Write(append(raw, '\n'))
+		file.Close()
+		if err != nil {
+			os.Exit(75)
+		}
+	}
+	log(map[string]any{"event": "start", "pid": os.Getpid(), "argv": argv, "source_assisted": true})
+	command, unbuffered, explicit := false, false, false
+	for _, arg := range argv {
+		if arg == "cat-file" {
+			command = true
+		}
+		if arg == "--batch-command" {
+			unbuffered = true
+		}
+		if arg == "--buffer" {
+			return 76
+		}
+		if strings.HasPrefix(arg, "--git-dir=") {
+			explicit = true
+		}
+	}
+	if !command || !unbuffered || !explicit || os.Getenv("GIT_NO_LAZY_FETCH") != "1" || os.Getenv("GIT_NO_REPLACE_OBJECTS") != "1" {
+		log(map[string]any{"event": "unsafe-argv-or-environment"})
+		return 77
+	}
+	if cfg.Mode == "failure" {
+		return 71
+	}
+	if cfg.Mode == "empty" {
+		return 0
+	}
+	if cfg.Mode == "stderr" {
+		_, _ = os.Stderr.Write(bytes.Repeat([]byte("S"), 1<<20))
+		return 71
+	}
+	reader := bufio.NewReaderSize(os.Stdin, 512)
+	for {
+		line, err := reader.ReadSlice('\n')
+		if err == io.EOF && len(line) == 0 {
+			log(map[string]any{"event": "stdin-eof"})
+			if cfg.Mode == "stall-eof" {
+				time.Sleep(60 * time.Second)
+			}
+			if cfg.Mode == "exit-error" {
+				return 71
+			}
+			return 0
+		}
+		if err != nil || len(line) > 80 {
+			log(map[string]any{"event": "invalid-input", "raw": string(line), "error": fmt.Sprint(err)})
+			return 78
+		}
+		fields := strings.Fields(string(line))
+		if len(fields) != 2 || (fields[0] != "info" && fields[0] != "contents") {
+			return 79
+		}
+		action, oid := fields[0], fields[1]
+		log(map[string]any{"event": "request", "action": action, "oid": oid, "raw": string(line)})
+		body, exists := cfg.Objects[oid]
+		if cfg.Mode == "hash-with-invalid-parent" {
+			// Correlated headers announce this injected body's exact length. The
+			// selected real OID deliberately remains unchanged, so hash verification
+			// must win over the independently malformed raw parent.
+			separator := bytes.Index(body, []byte("\n\n"))
+			if separator < 0 {
+				return 84
+			}
+			changed := append([]byte{}, body[:separator+1]...)
+			changed = append(changed, []byte("parent not-an-oid\n")...)
+			body = append(changed, body[separator+1:]...)
+			log(map[string]any{"event": "mixed-hash-parent-fault", "oid": oid, "body_raw": string(body), "body_sha256": wp25RecordCountHash(body)})
+		}
+		n := len(body)
+		if size, ok := cfg.Sizes[oid]; ok {
+			n = size
+		}
+		header := fmt.Sprintf("%s commit %d\n", oid, n)
+		if action == "info" {
+			switch cfg.Mode {
+			case "stall-info":
+				time.Sleep(60 * time.Second)
+			case "info-missing":
+				header = oid + " missing\n"
+			case "info-type":
+				header = fmt.Sprintf("%s blob %d\n", oid, n)
+			case "info-negative":
+				header = oid + " commit -1\n"
+			case "info-nonnumeric":
+				header = oid + " commit not-a-size\n"
+			case "info-overflow":
+				header = oid + " commit 9223372036854775808\n"
+			case "info-oid":
+				header = strings.Repeat("0", len(oid)) + " commit 1\n"
+			case "info-extra":
+				header = strings.TrimSuffix(header, "\n") + " extra\n"
+			case "info-short":
+				header = strings.TrimSuffix(header, "\n")
+				fmt.Fprint(os.Stdout, header)
+				return 0
+			case "info-long":
+				fmt.Fprint(os.Stdout, strings.Repeat("H", 257)+"\n")
+				return 0
+			case "info-error":
+				header = "fatal: deliberate peer error\n"
+			}
+			if !exists {
+				header = oid + " missing\n"
+			}
+			log(map[string]any{"event": "header", "action": action, "raw": header})
+			fmt.Fprint(os.Stdout, header)
+			if cfg.Mode == "exit-after-info" {
+				return 71
+			}
+			continue
+		}
+		switch cfg.Mode {
+		case "contents-oid":
+			header = strings.Repeat("0", len(oid)) + " commit " + strconv.Itoa(n) + "\n"
+		case "contents-type":
+			header = fmt.Sprintf("%s blob %d\n", oid, n)
+		case "contents-size":
+			header = fmt.Sprintf("%s commit %d\n", oid, n+1)
+		case "contents-negative":
+			header = oid + " commit -1\n"
+		case "contents-extra":
+			header = strings.TrimSuffix(header, "\n") + " extra\n"
+		case "contents-long":
+			header = strings.Repeat("H", 257) + "\n"
+		case "contents-short-header":
+			fmt.Fprint(os.Stdout, strings.TrimSuffix(header, "\n"))
+			return 0
+		}
+		log(map[string]any{"event": "header", "action": action, "raw": header})
+		fmt.Fprint(os.Stdout, header)
+		if cfg.Mode == "stall-body" {
+			time.Sleep(60 * time.Second)
+		}
+		if path := cfg.ObjectFiles[oid]; path != "" {
+			// Fixture bytes are read only after the real host separately authorizes
+			// contents. The peer never preloads aggregate bodies during info.
+			file, err := os.Open(path)
+			if err != nil {
+				return 81
+			}
+			body, err = io.ReadAll(io.LimitReader(file, 9437185))
+			closeErr := file.Close()
+			if err != nil || closeErr != nil || len(body) > 9437184 {
+				return 82
+			}
+			log(map[string]any{"event": "fixture-body-open", "oid": oid, "bytes": len(body), "path": path})
+		} else if n > len(body) {
+			// Withheld over-limit fixtures deliberately cannot supply a body. A
+			// faulty host issuing contents gets header then EOF immediately, which
+			// makes the cap-removal control fail causally rather than waiting30s.
+			log(map[string]any{"event": "withheld-body-requested", "oid": oid, "declared": n, "available": len(body)})
+			return 83
+		}
+		if cfg.Mode == "short-body" {
+			if len(body) > 0 {
+				os.Stdout.Write(body[:len(body)-1])
+			}
+			return 0
+		}
+		if cfg.Mode == "hash" {
+			body = append([]byte{}, body...)
+			if len(body) > 0 {
+				body[len(body)-1] ^= 1
+			}
+		}
+		if _, err := os.Stdout.Write(body); err != nil {
+			return 80
+		}
+		log(map[string]any{"event": "body", "oid": oid, "bytes": len(body), "sha256": wp25RecordCountHash(body)})
+		if cfg.Mode == "missing-lf" {
+			return 0
+		}
+		if cfg.Mode == "wrong-lf" {
+			os.Stdout.Write([]byte("X"))
+			return 0
+		}
+		os.Stdout.Write([]byte("\n"))
+		if cfg.Mode == "trailing" {
+			fmt.Fprint(os.Stdout, "unexpected trailing output\n")
+		}
+	}
+}
+func artifactCountBatchRaw(t *testing.T, f *artifactCLIFixture, oid string) []byte {
+	t.Helper()
+	cmd := exec.Command("git", "-C", f.repo, "cat-file", "commit", oid)
+	cmd.Env = operationalTestEnvironmentWith(f.home, f.overrides)
+	raw, err := cmd.Output()
 	if err != nil {
 		t.Fatal(err)
 	}
-	baseOverrides := f.overrides
-	for _, mode := range []string{"failure", "empty", "unterminated", "malformed", "duplicate", "missing-parent", "omitted-tip"} {
-		t.Run(mode, func(t *testing.T) {
-			wrapper := t.TempDir()
-			marker := filepath.Join(wrapper, "observed")
-			body := "exit 71"
-			switch mode {
-			case "empty":
-				body = "exit 0"
-			case "unterminated":
-				body = "printf '" + root + "'"
-			case "omitted-tip":
-				body = "printf '" + other + "\\n'"
-			case "malformed":
-				body = "printf 'not-an-oid\\n'"
-			case "duplicate":
-				body = "printf '" + root + "\\n" + root + "\\n'"
-			case "missing-parent":
-				body = "printf '" + root + " " + strings.Repeat("f", 40) + "\\n'"
+	return raw
+}
+func artifactCountBatchPeerInstall(t *testing.T, f *artifactCLIFixture, mode string, objects map[string][]byte, sizes map[string]int, bodyFiles ...map[string]string) (string, string, map[string]string) {
+	t.Helper()
+	actual, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	self, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	ledger := filepath.Join(dir, "ledger.jsonl")
+	noFetch := filepath.Join(dir, "forbidden-fetch")
+	cfg := artifactCountBatchPeerConfig{Mode: mode, Ledger: ledger, Objects: objects, Sizes: sizes}
+	if len(bodyFiles) > 0 {
+		cfg.ObjectFiles = bodyFiles[0]
+	}
+	raw, _ := json.Marshal(cfg)
+	config := filepath.Join(dir, "peer.json")
+	if err := os.WriteFile(config, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	quote := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'" }
+	script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = fetch ]; then printf forbidden > " + quote(noFetch) + "; fi\n if [ \"$arg\" = --batch-command ]; then exec " + quote(self) + " '-test.run=^TestArtifactStoreCountPreflightBatchPeer$' -- " + quote(config) + " \"$@\"; fi\ndone\nexec " + quote(actual) + " \"$@\"\n"
+	if err := os.WriteFile(filepath.Join(dir, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	overrides := map[string]string{}
+	for k, v := range f.overrides {
+		overrides[k] = v
+	}
+	overrides["PATH"] = dir + string(os.PathListSeparator) + os.Getenv("PATH")
+	wp25Record(t, map[string]any{"control": "count-preflight-batch-peer-config", "source_assisted": true, "mode": mode, "objects": sizes, "public_body_count": len(objects), "config_sha256": wp25RecordCountHash(raw), "script_raw": script, "real_git": actual, "compiled_peer": self})
+	return ledger, noFetch, overrides
+}
+func artifactCountBatchLedger(t *testing.T, path, noFetch string) []map[string]any {
+	t.Helper()
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal("batch peer never started", err)
+	}
+	lines := bytes.Split(bytes.TrimSpace(raw), []byte("\n"))
+	events := []map[string]any{}
+	starts := 0
+	pending := map[string]bool{}
+	for _, line := range lines {
+		var event map[string]any
+		if json.Unmarshal(line, &event) != nil {
+			t.Fatal("peer ledger invalid JSON", string(raw))
+		}
+		events = append(events, event)
+		if event["event"] == "start" {
+			starts++
+			pid := strconv.Itoa(int(event["pid"].(float64)))
+			ps := exec.Command("ps", "-p", pid, "-o", "pid=,ppid=,comm=")
+			out, err := ps.CombinedOutput()
+			wp25Record(t, map[string]any{"control": "count-preflight-batch-reaping", "pid": pid, "ps_raw": string(out), "ps_error": fmt.Sprint(err)})
+			if err == nil || len(bytes.TrimSpace(out)) != 0 {
+				t.Fatal("batch peer survived public return", pid, string(out))
 			}
-			script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = rev-list ]; then\n  printf observed > '" + marker + "'\n  " + body + "\n  exit 0\n fi\ndone\nexec '" + git + "' \"$@\"\n"
-			if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
-				t.Fatal(err)
+		}
+		if event["event"] == "request" {
+			oid := event["oid"].(string)
+			if event["action"] == "info" {
+				if pending[oid] {
+					t.Fatal("same unique object metadata requested twice", oid)
+				}
+				pending[oid] = true
+			} else if !pending[oid] {
+				t.Fatal("contents request preceded object info", oid)
 			}
-			wp25Record(t, map[string]any{"control": "count-preflight-graph-peer", "mode": mode, "script_raw": script, "real_git": git})
-			f.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH"), "XDG_CONFIG_HOME": baseOverrides["XDG_CONFIG_HOME"]}
-			check(t, "verification_failure", "accepted artifact object unavailable; no fetch attempted")
-			if raw, err := os.ReadFile(marker); err != nil || string(raw) != "observed" {
-				t.Fatal("graph peer was not actually consumed", err)
+		}
+	}
+	if starts != 1 {
+		t.Fatal("nonempty traversal did not have exactly one scoped batch child", starts)
+	}
+	if content, err := os.ReadFile(noFetch); !os.IsNotExist(err) {
+		t.Fatal("batch caller fetched", err, string(content))
+	}
+	wp25Record(t, map[string]any{"control": "count-preflight-batch-peer-ledger", "source_assisted": true, "raw": string(raw), "events": events, "ledger_sha256": wp25RecordCountHash(raw)})
+	return events
+}
+func artifactCountBatchCheck(t *testing.T, f *artifactCLIFixture, code, message string) {
+	t.Helper()
+	f.t = t
+	before := f.snapshot()
+	result := wp25ArtifactCall(f, "", code, "artifact", "type", "show", artifactVectorID, "--json")
+	if code != "" {
+		problem := result["error"].(map[string]any)
+		if len(problem) != 5 || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil || problem["message"] != message {
+			t.Fatal("batch refusal identity", result)
+		}
+	} else {
+		items := result["data"].(map[string]any)["items"].([]any)
+		if len(items) != 1 || items[0].(map[string]any)["id"] != artifactVectorID {
+			t.Fatal("batch success lost signed identity", result)
+		}
+	}
+	wp25Unchanged(f, before)
+}
+func TestArtifactStoreCountPreflightBatchProtocolCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f := artifactCLIFormat(t, format)
+			f.overrides = map[string]string{"XDG_CONFIG_HOME": wp25FixtureConfig(t, f.home)}
+			ref := artifactFrozenRef(t, f)
+			root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			f.git("update-ref", ref, root)
+			body := artifactCountBatchRaw(t, f, root)
+			base := f.overrides
+			artifactCountBatchCheck(t, f, "", "") // Mandatory real-Git positive before peers.
+			modes := []string{"pass", "failure", "empty", "info-missing", "info-type", "info-negative", "info-nonnumeric", "info-overflow", "info-oid", "info-extra", "info-short", "info-long", "info-error", "exit-after-info", "contents-oid", "contents-type", "contents-size", "contents-negative", "contents-extra", "contents-long", "contents-short-header", "short-body", "missing-lf", "wrong-lf", "hash", "hash-with-invalid-parent", "trailing", "exit-error", "stderr"}
+			for _, mode := range modes {
+				t.Run(mode, func(t *testing.T) {
+					f.t = t
+					ledger, noFetch, overrides := artifactCountBatchPeerInstall(t, f, mode, map[string][]byte{root: body}, nil)
+					f.overrides = overrides
+					defer func() { f.overrides = base }()
+					code, message := "verification_failure", "accepted artifact object unavailable; no fetch attempted"
+					switch mode {
+					case "pass":
+						code, message = "", ""
+					case "info-missing", "info-type":
+						message = "accepted artifact object is missing or has wrong type"
+					case "info-negative", "info-nonnumeric", "info-overflow":
+						message = "invalid Git object size"
+					case "hash", "hash-with-invalid-parent":
+						message = "accepted Git object hash mismatch"
+					}
+					artifactCountBatchCheck(t, f, code, message)
+					events := artifactCountBatchLedger(t, ledger, noFetch)
+					if strings.HasPrefix(mode, "info-") || mode == "empty" || mode == "failure" || mode == "stderr" {
+						for _, event := range events {
+							if event["event"] == "request" && event["action"] == "contents" {
+								t.Fatal("invalid metadata authorized a contents request", mode, events)
+							}
+						}
+					}
+					if mode == "pass" {
+						infos, contents, eof := 0, 0, 0
+						for _, event := range events {
+							if event["event"] == "request" {
+								if event["action"] == "info" {
+									infos++
+								} else {
+									contents++
+								}
+							}
+							if event["event"] == "stdin-eof" {
+								eof++
+							}
+						}
+						if infos != 1 || contents != 1 || eof != 1 {
+							t.Fatal("one-object scoped protocol did not complete exact session", events)
+						}
+					}
+					f.overrides = base
+				})
+				f.t = t
 			}
-			f.overrides = baseOverrides
-			check(t, "", "")
+			// Overlapping captured tips retain the same raw ancestor once. The real
+			// Git positive is followed by a supplemental ledger over identical bytes.
+			child := artifactRawCommit(t, f, artifactSecondVector, artifactSecondSignature, root, "hn artifact "+wp25RecordCountHash([]byte(artifactSecondVector)), false)
+			alias := strings.Replace(ref, "refs/hn/", "refs/hn/remotes/overlap/", 1)
+			f.git("update-ref", ref, child)
+			f.git("update-ref", alias, root)
+			artifactCountBatchCheck(t, f, "", "")
+			overlapObjects := map[string][]byte{root: body, child: artifactCountBatchRaw(t, f, child)}
+			overlapLedger, overlapFetch, overlapEnv := artifactCountBatchPeerInstall(t, f, "pass", overlapObjects, nil)
+			f.overrides = overlapEnv
+			artifactCountBatchCheck(t, f, "", "")
+			events := artifactCountBatchLedger(t, overlapLedger, overlapFetch)
+			counts := map[string]int{}
+			for _, event := range events {
+				if event["event"] == "request" {
+					key := event["action"].(string) + " " + event["oid"].(string)
+					counts[key]++
+				}
+			}
+			for oid := range overlapObjects {
+				if counts["info "+oid] != 1 || counts["contents "+oid] != 1 {
+					t.Fatal("overlapping ancestors were counted or charged more than once", counts)
+				}
+			}
+			f.overrides = base
+			f.git("update-ref", ref, root)
+			f.git("update-ref", "-d", alias)
+			// An empty accepted selection must not start a batch child at all.
+			f.git("update-ref", "-d", ref)
+			ledger, noFetch, overrides := artifactCountBatchPeerInstall(t, f, "failure", nil, nil)
+			f.overrides = overrides
+			before := f.snapshot()
+			result := wp25ArtifactCall(f, "", "", "artifact", "list", "--limit", "1", "--json")
+			if len(result["data"].(map[string]any)["items"].([]any)) != 0 {
+				t.Fatal("empty selection gained items", result)
+			}
+			wp25Unchanged(f, before)
+			if _, err := os.Stat(ledger); !os.IsNotExist(err) {
+				t.Fatal("empty selection started batch process", err)
+			}
+			if _, err := os.Stat(noFetch); !os.IsNotExist(err) {
+				t.Fatal("empty selection fetched", err)
+			}
+			f.overrides = base
+			f.git("update-ref", ref, root)
+			artifactCountBatchCheck(t, f, "", "")
 		})
-		f.t = t
+	}
+}
+func TestArtifactStoreCountPreflightCancellationCLI(t *testing.T) {
+	for _, mode := range []string{"stall-info", "stall-body", "stall-eof"} {
+		t.Run(mode, func(t *testing.T) {
+			f := wp25ArtifactCLI(t)
+			ref := artifactFrozenRef(t, f)
+			commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			f.git("update-ref", ref, commit)
+			body := artifactCountBatchRaw(t, f, commit)
+			base := f.overrides
+			ledger, noFetch, overrides := artifactCountBatchPeerInstall(t, f, mode, map[string][]byte{commit: body}, nil)
+			f.overrides = overrides
+			defer func() { f.overrides = base }()
+			started := time.Now()
+			artifactCountBatchCheck(t, f, "cancelled", "artifact read cancelled")
+			elapsed := time.Since(started)
+			if elapsed < 29*time.Second || elapsed > 45*time.Second {
+				t.Fatal("batch cancellation did not use actual normal30s stage", elapsed)
+			}
+			events := artifactCountBatchLedger(t, ledger, noFetch)
+			wp25Record(t, map[string]any{"control": "count-preflight-batch-cancellation", "mode": mode, "elapsed_ns": elapsed.Nanoseconds(), "events": events})
+			f.overrides = base
+			artifactCountBatchCheck(t, f, "", "")
+		})
+	}
+}
+func TestArtifactStoreCountPreflightBeforeBodyCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f := artifactCLIFormat(t, format)
+			f.overrides = map[string]string{"XDG_CONFIG_HOME": wp25FixtureConfig(t, f.home)}
+			ref := artifactFrozenRef(t, f)
+			root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			tree := f.git("rev-parse", root+"^{tree}")
+			base := f.overrides
+			for _, n := range []int{8388608, 8388609, 9437184} {
+				for _, position := range []string{"tip", "ancestor"} {
+					t.Run(fmt.Sprintf("%d-%s", n, position), func(t *testing.T) {
+						f.t = t
+						prefix := "tree " + tree + "\nauthor Fixture <fixture@hn.invalid> 1793433600 +0000\ncommitter Fixture <fixture@hn.invalid> 1793433600 +0000\n\n"
+						body := []byte(prefix + strings.Repeat("x", n-len(prefix)))
+						big := f.gitInput(string(body), "hash-object", "--literally", "-t", "commit", "-w", "--stdin")
+						tip := big
+						objects := map[string][]byte{big: body}
+						sizes := map[string]int{big: n}
+						if position == "ancestor" {
+							tip = artifactRawCommit(t, f, artifactVector, artifactVectorSignature, big, "hn artifact "+artifactVectorID, false)
+							objects[tip] = artifactCountBatchRaw(t, f, tip)
+							sizes[tip] = len(objects[tip])
+						}
+						f.git("update-ref", ref, tip)
+						code, message := "resource_limit", "artifact object exceeds read limit"
+						if n == 8388608 {
+							code, message = "invalid_history", "artifact commit message mismatch"
+						}
+						// Actual real Git + actual supplied reader, without any peer substitution.
+						artifactCountBatchCheck(t, f, code, message)
+						wp25Record(t, map[string]any{"control": "count-preflight-real-Git-bounded-commit", "position": position, "commit_bytes": n, "commit_oid": big, "selected_tip": tip, "commit_body_sha256": wp25RecordCountHash(body), "real_git": true, "expected_code": code, "expected_message": message})
+						// Supplemental request ledger replays the exact real metadata and bounded
+						// raw bodies. Oversized body is intentionally unavailable to this peer.
+						if n > 8388608 {
+							objects[big] = nil
+						}
+						ledger, noFetch, overrides := artifactCountBatchPeerInstall(t, f, "pass", objects, sizes)
+						f.overrides = overrides
+						defer func() { f.overrides = base }()
+						artifactCountBatchCheck(t, f, code, message)
+						events := artifactCountBatchLedger(t, ledger, noFetch)
+						info, contents := 0, 0
+						for _, event := range events {
+							if event["event"] == "request" && event["oid"] == big {
+								if event["action"] == "info" {
+									info++
+								} else {
+									contents++
+								}
+							}
+						}
+						if info != 1 || (n > 8388608 && contents != 0) || (n == 8388608 && contents != 1) {
+							t.Fatal("metadata gate did not precede bounded body authorization", n, position, events)
+						}
+						f.overrides = base
+						f.git("update-ref", ref, root)
+						artifactCountBatchCheck(t, f, "", "")
+					})
+					f.t = t
+				}
+			}
+		})
 	}
 }
 
-func TestArtifactStoreCountPreflightCancellationCLI(t *testing.T) {
-	f := wp25ArtifactCLI(t)
-	ref := artifactFrozenRef(t, f)
-	commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
-	f.git("update-ref", ref, commit)
-	git, err := exec.LookPath("git")
-	if err != nil {
-		t.Fatal(err)
+func TestArtifactStoreCountPreflightRawParentCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f := artifactCLIFormat(t, format)
+			f.overrides = map[string]string{"XDG_CONFIG_HOME": wp25FixtureConfig(t, f.home)}
+			ref := artifactFrozenRef(t, f)
+			root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			tree := f.git("rev-parse", root+"^{tree}")
+			for _, mode := range []string{"invalid-parent", "missing-parent", "missing-separator", "message-parent", "continuation-parent"} {
+				t.Run(mode, func(t *testing.T) {
+					f.t = t
+					body := "tree " + tree + "\nauthor Fixture <fixture@hn.invalid> 1793433600 +0000\ncommitter Fixture <fixture@hn.invalid> 1793433600 +0000\n\nhn artifact " + artifactVectorID + "\n"
+					code, message := "invalid_history", "invalid Git object identity"
+					switch mode {
+					case "invalid-parent":
+						body = "tree " + tree + "\nparent not-an-oid\n\nhn artifact " + artifactVectorID + "\n"
+					case "missing-parent":
+						body = "tree " + tree + "\nparent " + strings.Repeat("f", len(root)) + "\n\nhn artifact " + artifactVectorID + "\n"
+						code, message = "verification_failure", "accepted artifact object is missing or has wrong type"
+					case "missing-separator":
+						body = "tree " + tree + "\n"
+						message = "invalid artifact commit"
+					case "message-parent":
+						body = "tree " + tree + "\nauthor Fixture <fixture@hn.invalid> 1793433600 +0000\ncommitter Fixture <fixture@hn.invalid> 1793433600 +0000\n\nparent " + strings.Repeat("f", len(root)) + "\nhn artifact " + artifactVectorID + "\n"
+						message = "artifact commit message mismatch"
+					case "continuation-parent":
+						body = "tree " + tree + "\nauthor Fixture <fixture@hn.invalid> 1793433600 +0000\ncommitter Fixture <fixture@hn.invalid> 1793433600 +0000\nx-wp25 inert\n parent " + strings.Repeat("f", len(root)) + "\n\nhn artifact " + artifactVectorID + "\n"
+						code, message = "", ""
+					}
+					oid := f.gitInput(body, "hash-object", "--literally", "-t", "commit", "-w", "--stdin")
+					// SOURCE-ASSISTED malformed-ref setup: real Git's update-ref refuses
+					// malformed commit syntax before the public reader can inspect it.
+					// Select the existing real Git object by a physical accepted ref only.
+					gitDir := f.git("rev-parse", "--absolute-git-dir")
+					selectedRefPath := filepath.Join(gitDir, filepath.FromSlash(ref))
+					if err := os.MkdirAll(filepath.Dir(selectedRefPath), 0700); err != nil {
+						t.Fatal(err)
+					}
+					if err := os.WriteFile(selectedRefPath, []byte(oid+"\n"), 0600); err != nil {
+						t.Fatal(err)
+					}
+					wp25Record(t, map[string]any{"control": "count-preflight-raw-parent-real-Git", "mode": mode, "oid": oid, "body_raw": body, "body_sha256": wp25RecordCountHash([]byte(body)), "format": format, "selected_ref_path": selectedRefPath, "ref_setup": "source-assisted physical accepted ref; actual Git object and supplied public caller"})
+					artifactCountBatchCheck(t, f, code, message)
+					if err := os.WriteFile(selectedRefPath, []byte(root+"\n"), 0600); err != nil {
+						t.Fatal(err)
+					}
+					artifactCountBatchCheck(t, f, "", "")
+				})
+				f.t = t
+			}
+		})
 	}
-	wrapper := t.TempDir()
-	pidPath := filepath.Join(wrapper, "child.pid")
-	noFetch := filepath.Join(wrapper, "forbidden-fetch")
-	script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = fetch ]; then printf forbidden > '" + noFetch + "'; fi\n if [ \"$arg\" = rev-list ]; then if [ \"$GIT_NO_LAZY_FETCH\" != 1 ]; then printf forbidden > '" + noFetch + "'; fi; printf '%s' \"$$\" > '" + pidPath + "'; exec /bin/sleep 60; fi\ndone\nexec '" + git + "' \"$@\"\n"
-	if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
-		t.Fatal(err)
+}
+
+// These sources deliberately share the same signed genesis while differing in
+// non-semantic Git header bytes. They are NOT an accepted whole actor history:
+// after equality passes the private count gate, the retained full verifier must
+// still refuse divergent raw actor roots. That is a narrow admission witness.
+func TestArtifactStoreCountPreflightUniqueCommitBytesCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f := artifactCLIFormat(t, format)
+			f.overrides = map[string]string{"XDG_CONFIG_HOME": wp25FixtureConfig(t, f.home)}
+			baseOverrides := f.overrides
+			ref := artifactFrozenRef(t, f)
+			root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			tree := f.git("rev-parse", root+"^{tree}")
+			sources := []string{}
+			objects := map[string][]byte{}
+			sizes := map[string]int{}
+			bodyFiles := map[string]string{}
+			bodyDigests := map[string]string{}
+			fixtureDir := t.TempDir()
+			small := 512
+			total := 0
+			makeBody := func(index, n int) (string, string) {
+				prefix := fmt.Sprintf("tree %s\nauthor WP25 <fixture@hn.invalid> 1793433600 +0000\ncommitter WP25 <fixture@hn.invalid> 1793433600 +0000\nx-wp25 %02d ", tree, index)
+				suffix := "\n\nhn artifact " + artifactVectorID + "\n"
+				padding := n - len(prefix) - len(suffix)
+				if padding < 0 {
+					t.Fatal("aggregate commit fixture underflow", n)
+				}
+				raw := []byte(prefix + strings.Repeat("x", padding) + suffix)
+				if len(raw) != n {
+					t.Fatal("aggregate raw commit size", len(raw), n)
+				}
+				path := filepath.Join(fixtureDir, fmt.Sprintf("commit-%02d-%d.raw", index, n))
+				if err := os.WriteFile(path, raw, 0600); err != nil {
+					t.Fatal(err)
+				}
+				oid := f.git("hash-object", "--literally", "-t", "commit", "-w", path)
+				bodyDigests[oid] = wp25RecordCountHash(raw)
+				return oid, path
+			}
+			//31 full8MiB bodies, one8MiB-minus512 body and one512B body.
+			// Every individual object remains at or below the independent8MiB cap.
+			for i := 0; i < 33; i++ {
+				n := 8388608
+				if i == 31 {
+					n -= small
+				}
+				if i == 32 {
+					n = small
+				}
+				oid, path := makeBody(i, n)
+				if _, duplicate := objects[oid]; duplicate {
+					t.Fatal("aggregate fixture object unexpectedly duplicated")
+				}
+				source := strings.Replace(ref, "refs/hn/", fmt.Sprintf("refs/hn/remotes/aggr%02d/", i), 1)
+				f.git("update-ref", source, oid)
+				sources = append(sources, source)
+				objects[oid] = nil
+				sizes[oid] = n
+				bodyFiles[oid] = path
+				total += n
+			}
+			if total != 268435456 || len(objects) != 33 {
+				t.Fatal("aggregate independent source dimensions", total, len(objects))
+			}
+			duplicate := strings.Replace(ref, "refs/hn/", "refs/hn/remotes/aggrzz/", 1)
+			first := f.git("rev-parse", sources[0])
+			f.git("update-ref", duplicate, first)
+			wp25Record(t, map[string]any{"control": "count-preflight-unique-commit-aggregate-fixture", "format": format, "source_assisted_construction": true, "sources": sources, "duplicate_alias": duplicate, "duplicate_oid": first, "objects": sizes, "raw_commit_body_sha256": bodyDigests, "unique_commit_bytes": total, "individual_commit_cap": 8388608, "aggregate_cap": 268435456, "whole_history_is_valid": false, "later_expected": "actor_stream_conflict/divergent accepted actor streams", "private_gate_only_admission": true})
+			// Mandatory real-Git/public equality, with duplicate source selected. The
+			// later exact conflict proves this check grants no accepted-view trust.
+			artifactCountBatchCheck(t, f, "actor_stream_conflict", "divergent accepted actor streams")
+			ledger, noFetch, overrides := artifactCountBatchPeerInstall(t, f, "pass", objects, sizes, bodyFiles)
+			f.overrides = overrides
+			defer func() { f.overrides = baseOverrides }()
+			artifactCountBatchCheck(t, f, "actor_stream_conflict", "divergent accepted actor streams")
+			events := artifactCountBatchLedger(t, ledger, noFetch)
+			info, contents, eof := map[string]int{}, map[string]int{}, 0
+			for _, event := range events {
+				if event["event"] == "request" {
+					oid := event["oid"].(string)
+					if event["action"] == "info" {
+						info[oid]++
+					} else {
+						contents[oid]++
+					}
+				}
+				if event["event"] == "stdin-eof" {
+					eof++
+				}
+			}
+			for oid := range objects {
+				if info[oid] != 1 || contents[oid] != 1 {
+					t.Fatal("aggregate equality or duplicate charging failed", oid, info[oid], contents[oid])
+				}
+			}
+			if eof != 1 {
+				t.Fatal("aggregate equality session did not finish and reap", events)
+			}
+			f.overrides = baseOverrides
+			// Grow only the final small raw body by one byte. This is still a valid
+			// bounded commit object; the unique subset is now exactly256MiB+1.
+			oldLast := f.git("rev-parse", sources[32])
+			overOID, overFile := makeBody(32, small+1)
+			f.git("update-ref", sources[32], overOID)
+			delete(objects, oldLast)
+			delete(sizes, oldLast)
+			delete(bodyFiles, oldLast)
+			objects[overOID] = nil
+			sizes[overOID] = small + 1
+			wp25Record(t, map[string]any{"control": "count-preflight-unique-commit-aggregate-first-over", "format": format, "selected_last_ref": sources[32], "selected_last_oid": overOID, "raw_last_sha256": bodyDigests[overOID], "raw_last_bytes": small + 1, "raw_last_file": overFile, "unique_commit_bytes": 268435457, "whole_history_is_valid": false, "expected_code": "resource_limit", "expected_message": "artifact aggregate exceeds read limit"})
+			// Actual real Git observes the exact aggregate refusal independently.
+			artifactCountBatchCheck(t, f, "resource_limit", "artifact aggregate exceeds read limit")
+			// The supplemental peer has all authorized predecessor bodies, but withholds
+			// the first-over target. It must see info and must never see contents for it.
+			ledger, noFetch, overrides = artifactCountBatchPeerInstall(t, f, "pass", objects, sizes, bodyFiles)
+			f.overrides = overrides
+			artifactCountBatchCheck(t, f, "resource_limit", "artifact aggregate exceeds read limit")
+			events = artifactCountBatchLedger(t, ledger, noFetch)
+			info, contents = map[string]int{}, map[string]int{}
+			for _, event := range events {
+				if event["event"] == "request" {
+					oid := event["oid"].(string)
+					if event["action"] == "info" {
+						info[oid]++
+					} else {
+						contents[oid]++
+					}
+				}
+			}
+			if info[overOID] != 1 || contents[overOID] != 0 {
+				t.Fatal("aggregate guard authorized first-over contents", info[overOID], contents[overOID], events)
+			}
+			for oid := range bodyFiles {
+				if info[oid] != 1 || contents[oid] != 1 {
+					t.Fatal("aggregate refusal did not follow exact bounded prefix", oid, info[oid], contents[oid])
+				}
+			}
+			f.overrides = baseOverrides
+		})
 	}
-	before := f.snapshot()
-	baseOverrides := f.overrides
-	f.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH"), "XDG_CONFIG_HOME": baseOverrides["XDG_CONFIG_HOME"]}
-	started := time.Now()
-	result := wp25ArtifactCall(f, "", "cancelled", "artifact", "type", "show", artifactVectorID, "--json")
-	elapsed := time.Since(started)
-	problem := result["error"].(map[string]any)
-	if elapsed < 29*time.Second || elapsed > 45*time.Second || len(problem) != 5 || problem["message"] != "artifact read cancelled" || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil {
-		t.Fatal("preflight normal30s cancellation identity", elapsed, result)
-	}
-	rawPID, err := os.ReadFile(pidPath)
-	if err != nil {
-		t.Fatal("preflight child was never run", err)
-	}
-	// The Git wrapper execs sleep at the same PID, so no detached grandchild is
-	// introduced by this control. ps sees that exact process only.
-	ps := exec.Command("ps", "-p", string(rawPID), "-o", "pid=,ppid=,comm=")
-	psRaw, psErr := ps.CombinedOutput()
-	wp25Record(t, map[string]any{"control": "count-preflight-cancellation-reaping", "script_raw": script, "real_git": git, "child_pid": string(rawPID), "elapsed_ns": elapsed.Nanoseconds(), "ps_argv": ps.Args, "ps_stdout_stderr_raw": string(psRaw), "ps_error": fmt.Sprint(psErr)})
-	if psErr == nil || len(bytes.TrimSpace(psRaw)) != 0 {
-		t.Fatal("cancelled preflight child remains observable", psErr, string(psRaw))
-	}
-	if raw, err := os.ReadFile(noFetch); !os.IsNotExist(err) {
-		t.Fatal("preflight fetched or admitted lazy fetch", err, string(raw))
-	}
-	f.overrides = baseOverrides
-	wp25Unchanged(f, before)
-	wp25ArtifactCall(f, "", "", "artifact", "type", "show", artifactVectorID, "--json")
 }
