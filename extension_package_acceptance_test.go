@@ -5313,7 +5313,10 @@ func wp25TopLevelFixtureJourney(t *testing.T, name string) {
 	if os.Getenv("GORACE") != "atexit_sleep_ms=0" {
 		t.Fatal("qualification race harness requires its recorded exit-delay-only option")
 	}
-	args := []string{"-test.run=^" + name + "$", "-test.v", "-test.count=1", "-test.timeout=15m"}
+	configuredTrace := *extensionBaselineTrace
+	// Preserve the exact explicitly requested instrumentation in the child.
+	// An empty selection remains empty; it is never credited as syscall proof.
+	args := []string{"-test.run=^" + name + "$", "-test.v", "-test.count=1", "-test.timeout=15m", "-hn-baseline-trace", configuredTrace}
 	self := wp25Self(t)
 	expectedHarness := wp25Digest(t, self)
 	ctx, cancel := context.WithTimeout(context.Background(), 16*time.Minute)
@@ -5339,7 +5342,7 @@ func wp25TopLevelFixtureJourney(t *testing.T, name string) {
 			skips++
 		}
 	}
-	wp25Record(t, map[string]any{"control": "unchanged-top-level-fixture-journey", "test_name": name, "harness_executable": self, "harness_sha256": wp25Digest(t, self), "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_ns": time.Since(started).Nanoseconds(), "GORACE": os.Getenv("GORACE"), "candidate": os.Getenv("HN_WP17_BINARY"), "candidate_sha256": wp25Digest(t, os.Getenv("HN_WP17_BINARY")), "consumer": os.Getenv("HN_WP20_CONSUMER"), "consumer_sha256": wp25Digest(t, os.Getenv("HN_WP20_CONSUMER")), "named_runs": runs, "named_passes": passes, "fail_events": failures, "skip_events": skips, "classification": "actual supplied candidate/reference native-default assertions; compiled-self source test peer; independent standalone consumer journeys remain separate"})
+	wp25Record(t, map[string]any{"control": "unchanged-top-level-fixture-journey", "test_name": name, "harness_executable": self, "harness_sha256": wp25Digest(t, self), "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_ns": time.Since(started).Nanoseconds(), "GORACE": os.Getenv("GORACE"), "configured_trace_executable": configuredTrace, "forwarded_trace_executable": args[len(args)-1], "candidate": os.Getenv("HN_WP17_BINARY"), "candidate_sha256": wp25Digest(t, os.Getenv("HN_WP17_BINARY")), "consumer": os.Getenv("HN_WP20_CONSUMER"), "consumer_sha256": wp25Digest(t, os.Getenv("HN_WP20_CONSUMER")), "named_runs": runs, "named_passes": passes, "fail_events": failures, "skip_events": skips, "classification": "actual supplied candidate/reference native-default assertions; compiled-self source test peer; independent standalone consumer journeys remain separate"})
 	if wp25Digest(t, self) != expectedHarness {
 		t.Fatal("compiled-self fixture harness changed during execution")
 	}
