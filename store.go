@@ -632,25 +632,29 @@ func requireFullEventID(query string) error {
 }
 
 func validateActorChains(events []StoredEvent) error {
-	byActor := make(map[string][]StoredEvent)
-	for _, event := range events {
-		byActor[event.Event.Actor] = append(byActor[event.Event.Actor], event)
+	byActor := make(map[string][]int)
+	for index := range events {
+		actor := events[index].Event.Actor
+		byActor[actor] = append(byActor[actor], index)
 	}
 	for actor, chain := range byActor {
-		sort.Slice(chain, func(i, j int) bool { return chain[i].Event.Sequence < chain[j].Event.Sequence })
-		seen := make(map[uint64]string)
-		for index, stored := range chain {
-			if existing, ok := seen[stored.Event.Sequence]; ok && existing != stored.ID {
+		sort.Slice(chain, func(i, j int) bool { return events[chain[i]].Event.Sequence < events[chain[j]].Event.Sequence })
+		for index, eventIndex := range chain {
+			stored := &events[eventIndex]
+			var previous *StoredEvent
+			if index > 0 {
+				previous = &events[chain[index-1]]
+			}
+			if previous != nil && previous.Event.Sequence == stored.Event.Sequence && previous.ID != stored.ID {
 				return fmt.Errorf("actor %s has conflicting sequence %s", shortID(actor), strconv.FormatUint(stored.Event.Sequence, 10))
 			}
-			seen[stored.Event.Sequence] = stored.ID
 			wantSequence := uint64(index + 1)
 			if stored.Event.Sequence != wantSequence {
 				return fmt.Errorf("actor %s has invalid sequence %s", shortID(actor), strconv.FormatUint(stored.Event.Sequence, 10))
 			}
 			wantPrevious := ""
-			if index > 0 {
-				wantPrevious = chain[index-1].ID
+			if previous != nil {
+				wantPrevious = previous.ID
 			}
 			if stored.Event.Previous != wantPrevious {
 				return fmt.Errorf("actor %s has a broken event chain at sequence %s", shortID(actor), strconv.FormatUint(stored.Event.Sequence, 10))
