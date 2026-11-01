@@ -211,9 +211,43 @@ jobs:
           for archive in "$assets/candidate"/hubnot_"$QUALIFICATION_VERSION"_"${EXPECTED_TARGET%/*}"_"${EXPECTED_TARGET#*/}"*.tar.gz; do
             tar -xzf "$archive" -C "$RUNNER_TEMP/unpacked"
           done
-          # Artifact ZIP transport does not preserve executable mode. Restore it
-          # without changing the executable bytes bound by the frozen manifest.
-          chmod 0755 "$assets/references/${EXPECTED_TARGET/\//_}/fake-tracker" "$assets/references/${EXPECTED_TARGET/\//_}/charter" "$assets/references/${EXPECTED_TARGET/\//_}/inventory"
+          # Artifact ZIP transport does not preserve executable mode. Validate
+          # the closed twelve-asset inventory and bytes before restoring all
+          # modes: the harness validates the complete matrix on every runner.
+          python3 - "$assets/references" "$evidence" "$CANDIDATE_SOURCE" "$CANDIDATE_TREE" "$QUALIFICATION_COMPILER" <<'PY'
+          import hashlib, json, os, pathlib, stat, sys
+          root, evidence = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+          manifest = json.loads((root / 'manifest.json').read_text())
+          assert manifest['schema'] == 'hn.extension-references/1'
+          assert (manifest['source_commit'], manifest['source_tree'], manifest['compiler']) == tuple(sys.argv[3:6])
+          packages = {'fake-tracker':'./examples/extensions/fake-tracker', 'charter':'./examples/extensions/charter-model', 'inventory':'./examples/extensions/inventory-model'}
+          expected = {target.replace('/', '_') + '/' + sample: (target, sample, package) for target in ('linux/amd64', 'linux/arm64', 'darwin/amd64', 'darwin/arm64') for sample, package in packages.items()}
+          rows = manifest['assets']
+          assert len(rows) == 12 and {row['name'] for row in rows} == set(expected)
+          inventory = {'manifest.json'} | set(expected) | {name + '.buildinfo' for name in expected}
+          assert not any(path.is_symlink() for path in root.rglob('*'))
+          assert {str(path.relative_to(root)) for path in root.rglob('*') if path.is_file()} == inventory
+          def snapshot():
+              result = []
+              for row in rows:
+                  assert (row['target'], row['sample'], row['package']) == expected[row['name']]
+                  for suffix, key in (('', 'sha256'), ('.buildinfo', 'build_info_sha256')):
+                      path = root / (row['name'] + suffix)
+                      mode = path.lstat().st_mode
+                      assert stat.S_ISREG(mode)
+                      digest = hashlib.sha256(path.read_bytes()).hexdigest()
+                      assert digest == row[key]
+                      result.append({'name':row['name'] + suffix, 'mode':oct(stat.S_IMODE(mode)), 'sha256':digest})
+              return result
+          before = snapshot()
+          (evidence / 'reference-transport-modes.before.json').write_text(json.dumps(before, indent=2) + '\n')
+          for name in expected:
+              os.chmod(root / name, 0o755)
+          after = snapshot()
+          assert [(row['name'], row['sha256']) for row in before] == [(row['name'], row['sha256']) for row in after]
+          assert all(stat.S_IMODE((root / name).stat().st_mode) == 0o755 for name in expected)
+          (evidence / 'reference-transport-modes.after.json').write_text(json.dumps(after, indent=2) + '\n')
+          PY
           git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source-inputs.before.sha256"
           printf '%s\n' 'go test -race -c -o "$RUNNER_TEMP/qualification-harness" .' > "$evidence/harness-command.txt"
           go test -race -c -o "$RUNNER_TEMP/qualification-harness" .
@@ -293,7 +327,16 @@ jobs:
           printf "pid=%s ppid=%s role=%s\n" "$$" "${PPID-unavailable}" "$role" > "$identity"
           read -r token < "$gate" || exit 81
           case "$role" in
-            same-pid-read) IFS= read -r line < "$registry" || exit 82; printf "%s\n" "$line" > "$readout"; test -s "$readout" ;;
+            same-pid-read)
+              line=; read_status=0
+              IFS= read -r line < "$registry" || read_status=$?
+              printf "%s\n" "$read_status" > "$readout.status"
+              case "$read_status" in
+                0) printf "%s\n" "$line" > "$readout" ;;
+                1) test -n "$line" || exit 82; printf "%s" "$line" > "$readout" ;;
+                *) exit 82 ;;
+              esac
+              test -s "$readout" ;;
             descendant-read)
               "$shell" -c '\''gate=$1; identity=$2; reader=$3; registry=$4; output=$5
               printf "pid=%s ppid=%s role=child-reader-before-exec\n" "$$" "${PPID-unavailable}" > "$identity"
@@ -475,6 +518,15 @@ jobs:
               if [ "$mode" != strace ]; then wait "$tracer" || tracer_status=$?; fi
               printf 'subject_or_strace_exit=%s\nfs_usage_exit=%s\nowned_child_ppid_verified=%s\n' "$subject_status" "$tracer_status" "$child_scope" > "$stem.exits"
               if [ "$subject_status" = 0 ] && [ "$tracer_status" = 0 ]; then printf '0\n' > "$stem.exit"; else printf '1\n' > "$stem.exit"; fi
+              if [ "$role" = same-pid-read ]; then
+                # Compare after tracing; only shell builtins perform this
+                # positive read. EOF is valid only for complete nonempty bytes.
+                if cmp "$registry" "$readout" > "$stem.read-compare.log" 2>&1; then
+                  printf 'exact registry bytes\n' > "$stem.read-compare.validated"
+                else
+                  printf '1\n' > "$stem.exit"; boundary=1
+                fi
+              fi
               if [ "$role" = descendant-read ] && { [ "$child_scope" != 1 ] || ! cmp -s "$registry" "$readout"; }; then printf '1\n' > "$stem.exit"; fi
             }
             registry_read_seen() {
