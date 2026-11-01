@@ -491,6 +491,16 @@ var wp25PublicJourneys = []wp25Journey{
 	{"TestArtifactStoreOpeningReplayObservesImportedHeadsCLI", TestArtifactStoreOpeningReplayObservesImportedHeadsCLI},
 	{"TestArtifactStoreExplicitPublicSources", TestArtifactStoreExplicitPublicSources},
 	{"TestArtifactStoreSourceChangesDuringRead", TestArtifactStoreSourceChangesDuringRead},
+	{"TestNativeContributionClosureProtocolCLI", TestNativeContributionClosureProtocolCLI},
+	{"TestNativeContributionLegacyFaultsCLI", TestNativeContributionLegacyFaultsCLI},
+	{"TestNativeRetainedClosurePublicCLI", TestNativeRetainedClosurePublicCLI},
+	{"TestNativeContributionClassicGitProgress", TestNativeContributionClassicGitProgress},
+	{"TestNativeContributionClosureCancellationCLI", TestNativeContributionClosureCancellationCLI},
+	{"TestNativeContributionStderrHolderCLI", TestNativeContributionStderrHolderCLI},
+	{"TestNativeContributionPrivateHelperBounds", TestNativeContributionPrivateHelperBounds},
+	{"TestNativeContributionLargeBlobPublicCLI", TestNativeContributionLargeBlobPublicCLI},
+	{"TestNativeContributionWorkerSetupOwnership", TestNativeContributionWorkerSetupOwnership},
+	{"TestExtensionChangesPrivateProofAccountingAndEviction", TestExtensionChangesPrivateProofAccountingAndEviction},
 	{"TestArtifactStoreCountPreflightGraphCLI", TestArtifactStoreCountPreflightGraphCLI},
 	{"TestArtifactStoreFullReaderProtocolCLI", TestArtifactStoreFullReaderProtocolCLI},
 	{"TestArtifactFullReaderOwnerFinalizationCLI", TestArtifactFullReaderOwnerFinalizationCLI},
@@ -4880,8 +4890,9 @@ func wp25PublicCountCall(t *testing.T, f *wp25PublicCountFixture, scope string, 
 	cmd.Stdout, cmd.Stderr = &out, &stderr
 	start := time.Now()
 	err := cmd.Run()
+	commandElapsed := time.Since(start)
 	after := f.snapshot()
-	wp25Record(t, map[string]any{"control": scope, "candidate_observation": true, "source_assisted": false, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "cwd": f.repo, "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "watchdog_nanoseconds": int64(budget), "elapsed_nanoseconds": int64(time.Since(start)), "protected_before_sha256": wp25NativeSnapshotDigest(before), "protected_after_sha256": wp25NativeSnapshotDigest(after), "protected_before": before, "protected_after": after, "configured_budget_isolation": strings.HasPrefix(scope, "contribution-graph-")})
+	wp25Record(t, map[string]any{"control": scope, "candidate_observation": true, "source_assisted": false, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "cwd": f.repo, "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "watchdog_nanoseconds": int64(budget), "elapsed_nanoseconds": int64(time.Since(start)), "command_elapsed_nanoseconds": int64(commandElapsed), "protected_before_sha256": wp25NativeSnapshotDigest(before), "protected_after_sha256": wp25NativeSnapshotDigest(after), "protected_before": before, "protected_after": after, "configured_budget_isolation": strings.HasPrefix(scope, "contribution-graph-")})
 	if ctx.Err() != nil || (err == nil) != ok {
 		t.Fatalf("%s candidate %q: %v watchdog=%v\n%s\n%s", scope, args, err, ctx.Err(), &out, &stderr)
 	}
@@ -5334,12 +5345,13 @@ func wp25PublicGraphPending(t *testing.T, f *wp25PublicCountFixture, authority w
 	cmd.Stdout, cmd.Stderr = &out, &stderr
 	start := time.Now()
 	err := cmd.Run()
+	commandElapsed := time.Since(start)
 	after := f.snapshot()
 	stage := "actual Reduce complete view"
 	if over {
 		stage = "contributionRecords aggregate loader before Reduce"
 	}
-	wp25Record(t, map[string]any{"control": fmt.Sprintf("contribution-graph-%d", len(expected)), "candidate_observation": true, "source_assisted": false, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "cwd": f.repo, "argv": []string{"contribution", "pending"}, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_nanoseconds": int64(time.Since(start)), "protected_before_sha256": wp25NativeSnapshotDigest(before), "protected_after_sha256": wp25NativeSnapshotDigest(after), "protected_before": before, "protected_after": after, "expected_target_record_map": expected, "graph_family": "all-envelope specialization of published combined cap", "envelope_records": len(expected), "native_dependency_facts": 0, "observation_stage": stage, "configured_policy_milliseconds": 3600000, "configured_budget_isolation": true, "default_or_host_throughput_claim": false})
+	wp25Record(t, map[string]any{"control": fmt.Sprintf("contribution-graph-%d", len(expected)), "candidate_observation": true, "source_assisted": false, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "cwd": f.repo, "argv": []string{"contribution", "pending"}, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_nanoseconds": int64(time.Since(start)), "command_elapsed_nanoseconds": int64(commandElapsed), "protected_before_sha256": wp25NativeSnapshotDigest(before), "protected_after_sha256": wp25NativeSnapshotDigest(after), "protected_before": before, "protected_after": after, "expected_target_record_map": expected, "graph_family": "all-envelope specialization of published combined cap", "envelope_records": len(expected), "native_dependency_facts": 0, "observation_stage": stage, "configured_policy_milliseconds": 3600000, "configured_budget_isolation": true, "default_or_host_throughput_claim": false})
 	if !reflect.DeepEqual(before, after) {
 		t.Fatal("actual graph threshold caller changed accepted/private/config/key bytes")
 	}

@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"hubnot/internal/artifact"
+	"hubnot/internal/migration"
 	"io"
 	"os"
 	"os/exec"
@@ -2375,6 +2376,1592 @@ func TestArtifactStoreCountPreflightUniqueCommitBytesCLI(t *testing.T) {
 				}
 			}
 			f.overrides = baseOverrides
+		})
+	}
+}
+
+// Native retained-contribution transport has its own error and stderr policy.
+// These source-assisted peers cross the actual supplied CLI boundary; they are
+// separate from the artifact --batch-command peers above.
+func nativeClosureRawFixture(t *testing.T, binary, format string) (*wp25PublicCountFixture, string, string, string) {
+	t.Helper()
+	f := wp25PublicCountNew(t, binary, "native-closure-"+format)
+	if format == "sha256" {
+		if err := os.RemoveAll(filepath.Join(f.repo, ".git")); err != nil {
+			t.Fatal(err)
+		}
+		f.git(nil, "init", "-q", "--initial-branch=main", "--object-format=sha256")
+		f.git(nil, "-c", "user.name=Native closure fixture", "-c", "user.email=fixture@hn.invalid", "commit", "-qm", "fixture", "--allow-empty")
+	}
+	// Command-lock creation is legitimate setup, not an effect of the observed
+	// raw read. No private ledger, authority or registration is manufactured.
+	wp25PublicCountCall(t, f, "native-closure-command-lock-setup", false, false, time.Minute, "contribution", "pending")
+	seed := sha256.Sum256([]byte("WP25 native closure independent signer"))
+	key := ed25519.NewKeyFromSeed(seed[:])
+	public := key.Public().(ed25519.PublicKey)
+	actorHash := sha256.Sum256(public)
+	signer := wp25PublicGraphSigner{hex.EncodeToString(actorHash[:]), public, key}
+	project := wp25NativeDigest([]byte("WP25 native closure public raw scope"))
+	authority := wp25PublicGraphAuthority{f.git(nil, "rev-parse", "HEAD"), wp25NativeDigest([]byte("inert raw authority binding"))}
+	head := wp25PublicGraphManifestBuild(t, f, project, authority, signer, 0, 1, "native-closure-one-record")
+	id := ""
+	for _, value := range head.expected {
+		id = value
+	}
+	if id == "" {
+		t.Fatal("independent signed selection empty")
+	}
+	return f, project, id, head.tip
+}
+
+func nativeClosurePeerInstall(t *testing.T, f *wp25PublicCountFixture, head, mode string) (string, string) {
+	t.Helper()
+	actualGit, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	objects := map[string]map[string]any{}
+	roots := strings.Fields(head)
+	ids := []string{}
+	if len(roots) > 0 {
+		ids = strings.Fields(f.git(nil, append([]string{"rev-list", "--objects", "--no-object-names"}, roots...)...))
+	}
+	sort.Strings(ids)
+	for _, oid := range ids {
+		kind := f.git(nil, "cat-file", "-t", oid)
+		cmd := exec.Command(actualGit, "cat-file", kind, oid)
+		cmd.Dir, cmd.Env = f.repo, f.env
+		raw, e := cmd.Output()
+		if e != nil {
+			t.Fatal(e)
+		}
+		objects[oid] = map[string]any{"kind": kind, "size": len(raw), "body": base64.StdEncoding.EncodeToString(raw)}
+	}
+	root := t.TempDir()
+	ledger, state := filepath.Join(root, "native-peer.jsonl"), filepath.Join(root, "state.json")
+	targetRole := "contribution"
+	if len(roots) > 1 {
+		targetRole = "retained"
+	}
+	configuration := map[string]any{"git": actualGit, "mode": mode, "ledger": ledger, "state": state, "objects": objects, "target_role": targetRole}
+	raw, err := json.Marshal(configuration)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config := filepath.Join(root, "config.json")
+	if err = os.WriteFile(config, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	wrapper := filepath.Join(root, "git")
+	self, err := filepath.Abs(os.Args[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	quote := func(value string) string { return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'" }
+	configuredRace, raceSet := os.LookupEnv("GORACE")
+	prefix := "#!/bin/sh\nunset GORACE\n"
+	if raceSet {
+		prefix = "#!/bin/sh\nexport GORACE=" + quote(configuredRace) + "\n"
+	}
+	script := prefix + "exec " + quote(self) + " '-test.run=^TestNativeContributionClosurePeer$' -- " + quote(config) + " \"$@\"\n"
+	if err = os.WriteFile(wrapper, []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	for i, value := range f.env {
+		if strings.HasPrefix(value, "PATH=") {
+			f.env[i] = "PATH=" + root + string(os.PathListSeparator) + strings.TrimPrefix(value, "PATH=")
+		}
+	}
+	wp25Record(t, map[string]any{"control": "native-closure-peer-configuration", "source_assisted": true, "candidate_observation": false, "mode": mode, "configuration_raw": string(raw), "wrapper_raw": script, "wrapper_sha256": wp25Digest(t, wrapper), "actual_git": actualGit, "actual_git_sha256": wp25Digest(t, actualGit), "configured_gorace_set": raceSet, "configured_gorace": configuredRace, "forwarded_gorace_set": raceSet, "forwarded_gorace": configuredRace, "separate_native_policy": "stderr discarded without cap; not artifact transport", "expected_sorted_oids": ids})
+	t.Cleanup(func() {
+		raw, readErr := os.ReadFile(ledger)
+		wp25Record(t, map[string]any{"control": "native-closure-peer-ledger-final", "mode": mode, "raw": string(raw), "read_error": fmt.Sprint(readErr), "source_assisted": mode != "real-git"})
+	})
+	return ledger, state
+}
+
+// This source-assisted protocol helper is inert in ordinary source test runs.
+// Configured invocations exit directly so testing output cannot enter Git stdout.
+func TestNativeContributionClosurePeer(t *testing.T) {
+	if len(os.Args) < 4 || os.Args[1] != "-test.run=^TestNativeContributionClosurePeer$" || os.Args[2] != "--" {
+		t.Skip("source-assisted native closure peer; requires explicit fixture configuration")
+	}
+	raw, err := os.ReadFile(os.Args[3])
+	if err != nil {
+		os.Exit(72)
+	}
+	var cfg nativeClosurePeerConfig
+	if json.Unmarshal(raw, &cfg) != nil || cfg.Git == "" || cfg.Ledger == "" || cfg.State == "" {
+		os.Exit(73)
+	}
+	if len(os.Args) == 6 && os.Args[4] == "--stderr-holder" {
+		os.Exit(nativeClosurePeerStderrHolder(cfg, os.Args[3], os.Args[5]))
+	}
+	os.Exit(nativeClosurePeerRun(cfg, os.Args[3], os.Args[4:]))
+}
+
+type nativeClosurePeerConfig struct {
+	Git        string `json:"git"`
+	Mode       string `json:"mode"`
+	Ledger     string `json:"ledger"`
+	State      string `json:"state"`
+	TargetRole string `json:"target_role"`
+	Objects    map[string]struct {
+		Kind string `json:"kind"`
+		Size int    `json:"size"`
+		Body []byte `json:"body"`
+	} `json:"objects"`
+}
+
+type nativeClosurePeerState struct {
+	Invocation  int    `json:"invocation"`
+	Role        string `json:"role"`
+	MetadataPID *int   `json:"metadata_pid,omitempty"`
+	Session     int    `json:"session,omitempty"`
+}
+
+func nativeClosurePeerLog(cfg nativeClosurePeerConfig, event string, fields map[string]any) {
+	if fields == nil {
+		fields = map[string]any{}
+	}
+	fields["event"], fields["pid"], fields["ppid"] = event, os.Getpid(), os.Getppid()
+	fields["mode"], fields["at_ns"] = cfg.Mode, time.Now().UnixNano()
+	race, raceSet := os.LookupEnv("GORACE")
+	fields["gorace_value"], fields["gorace_set"] = race, raceSet
+	raw, err := json.Marshal(fields)
+	if err != nil {
+		os.Exit(74)
+	}
+	file, err := os.OpenFile(cfg.Ledger, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		os.Exit(74)
+	}
+	_, err = file.Write(append(raw, '\n'))
+	closeErr := file.Close()
+	if err != nil || closeErr != nil {
+		os.Exit(75)
+	}
+}
+
+func nativeClosurePeerLoad(cfg nativeClosurePeerConfig) nativeClosurePeerState {
+	state := nativeClosurePeerState{Role: "contribution"}
+	raw, err := os.ReadFile(cfg.State)
+	if os.IsNotExist(err) {
+		return state
+	}
+	if err != nil || json.Unmarshal(raw, &state) != nil {
+		os.Exit(76)
+	}
+	return state
+}
+
+func nativeClosurePeerSave(cfg nativeClosurePeerConfig, state nativeClosurePeerState) {
+	raw, err := json.Marshal(state)
+	if err != nil || os.WriteFile(cfg.State, raw, 0600) != nil {
+		os.Exit(77)
+	}
+}
+
+func nativeClosurePeerWrite(file *os.File, raw []byte) {
+	if _, err := file.Write(raw); err != nil {
+		os.Exit(78)
+	}
+}
+
+func nativeClosurePeerExec(cfg nativeClosurePeerConfig, argv []string) int {
+	if err := syscall.Exec(cfg.Git, append([]string{cfg.Git}, argv...), os.Environ()); err != nil {
+		return 79
+	}
+	return 0
+}
+
+func nativeClosurePeerRun(cfg nativeClosurePeerConfig, config string, argv []string) int {
+	log := func(event string, fields map[string]any) { nativeClosurePeerLog(cfg, event, fields) }
+	if len(argv) >= 4 && reflect.DeepEqual(argv[len(argv)-4:], []string{"rev-list", "--objects", "--no-object-names", "--stdin"}) {
+		data, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return 80
+		}
+		state := nativeClosurePeerLoad(cfg)
+		state.Invocation++
+		state.Role = "contribution"
+		// Match bytes.splitlines(): CRLF/CR/LF separate lines and a final
+		// line ending does not create an additional line.
+		lines := bytes.ReplaceAll(data, []byte("\r\n"), []byte{'\n'})
+		lines = bytes.ReplaceAll(lines, []byte{'\r'}, []byte{'\n'})
+		if len(bytes.Split(bytes.TrimSuffix(lines, []byte{'\n'}), []byte{'\n'})) > 1 {
+			state.Role = "retained"
+		}
+		nativeClosurePeerSave(cfg, state)
+		cmd := exec.Command(cfg.Git, argv...)
+		cmd.Stdin = bytes.NewReader(data)
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout, cmd.Stderr = &stdout, &stderr
+		err = cmd.Run()
+		code := 0
+		if err != nil {
+			var exit *exec.ExitError
+			if !errors.As(err, &exit) {
+				return 81
+			}
+			code = exit.ExitCode()
+			if status, ok := exit.Sys().(syscall.WaitStatus); ok && status.Signaled() {
+				code = -int(status.Signal())
+			}
+		}
+		log("enumeration", map[string]any{"argv": argv, "input_raw": string(data), "exit_code": code, "stdout_raw": stdout.String(), "invocation": state.Invocation, "role": state.Role})
+		nativeClosurePeerWrite(os.Stdout, stdout.Bytes())
+		nativeClosurePeerWrite(os.Stderr, stderr.Bytes())
+		return code
+	}
+	phase := ""
+	if len(argv) > 0 {
+		switch argv[len(argv)-1] {
+		case "--batch-check":
+			phase = "metadata"
+		case "--batch":
+			phase = "body"
+		}
+	}
+	if phase == "" {
+		log("git-pass-through", map[string]any{"argv": argv})
+		return nativeClosurePeerExec(cfg, argv)
+	}
+	state := nativeClosurePeerLoad(cfg)
+	previous, previousLive := state.MetadataPID, false
+	if phase == "body" && previous != nil && *previous != 0 {
+		err := syscall.Kill(*previous, 0)
+		if err == nil {
+			previousLive = true
+		} else if !errors.Is(err, syscall.ESRCH) {
+			return 82
+		}
+	}
+	if phase == "metadata" {
+		pid := os.Getpid()
+		state.MetadataPID = &pid
+	}
+	state.Session++
+	nativeClosurePeerSave(cfg, state)
+	session := state.Session
+	log("start", map[string]any{"phase": phase, "argv": argv, "role": state.Role, "invocation": state.Invocation, "session": session, "previous_metadata_pid": previous, "previous_metadata_live": previousLive})
+	if cfg.Mode == "real-git" || state.Role != cfg.TargetRole {
+		return nativeClosurePeerExec(cfg, argv)
+	}
+	stall := func(stage string) {
+		log("stall-entry", map[string]any{"phase": phase, "stage": stage, "session": session, "role": state.Role, "invocation": state.Invocation})
+		time.Sleep(60 * time.Second)
+	}
+	if cfg.Mode == phase+"-stderr9000" {
+		nativeClosurePeerWrite(os.Stderr, bytes.Repeat([]byte{'e'}, 9000))
+	}
+	ids := make([]string, 0, len(cfg.Objects))
+	for oid := range cfg.Objects {
+		ids = append(ids, oid)
+	}
+	sort.Strings(ids)
+	input := bufio.NewReader(os.Stdin)
+	for {
+		line, err := input.ReadString('\n')
+		if err != nil && !errors.Is(err, io.EOF) {
+			return 83
+		}
+		if len(line) == 0 && errors.Is(err, io.EOF) {
+			break
+		}
+		oid := strings.TrimRight(line, "\n")
+		obj, found := cfg.Objects[oid]
+		log("request", map[string]any{"phase": phase, "role": state.Role, "invocation": state.Invocation, "oid": oid, "session": session})
+		if cfg.Mode == phase+"-stall-header" {
+			stall("header")
+		}
+		if !found {
+			nativeClosurePeerWrite(os.Stdout, []byte(oid+" missing\n"))
+			continue
+		}
+		kind, size, answer := obj.Kind, strconv.Itoa(obj.Size), oid
+		switch cfg.Mode {
+		case "metadata-negative":
+			size = "-1"
+		case "metadata-huge":
+			size = "99999999999999999999999999"
+		case "metadata-object-over", "metadata-object-over-exit":
+			size = "33554433"
+		case "metadata-late-object-over":
+			if oid == ids[len(ids)-1] {
+				size = "33554433"
+			}
+		case "metadata-aggregate-over":
+			if oid == ids[0] {
+				size = "33554432"
+			}
+		case "metadata-noncanonical":
+			size = "0" + size
+		case "metadata-wrong-oid":
+			answer = strings.Repeat("0", len(oid))
+		case "metadata-wrong-kind":
+			kind = "nonsense"
+		case "metadata-header-over":
+			answer = strings.Repeat("0", 300)
+		}
+		if phase == "body" {
+			switch cfg.Mode {
+			case "body-size-change":
+				size = strconv.Itoa(obj.Size + 1)
+			case "body-type-change":
+				kind = "tag"
+			case "body-oid-change":
+				answer = strings.Repeat("0", len(oid))
+			}
+		}
+		header := answer + " " + kind + " " + size + "\n"
+		if cfg.Mode == phase+"-missing" {
+			header = oid + " missing\n"
+		}
+		nativeClosurePeerWrite(os.Stdout, []byte(header))
+		log("header", map[string]any{"phase": phase, "header_raw": header, "oid": oid, "session": session})
+		if cfg.Mode == phase+"-missing" {
+			continue
+		}
+		if phase == "body" {
+			if cfg.Mode == "body-stall-content" {
+				stall("content")
+			}
+			body := obj.Body
+			if cfg.Mode == "body-short-exit0" || cfg.Mode == "body-short-exit23" {
+				if len(body) > 0 {
+					nativeClosurePeerWrite(os.Stdout, body[:len(body)-1])
+				}
+				log("short-exit", map[string]any{"phase": phase})
+				if strings.HasSuffix(cfg.Mode, "0") {
+					return 0
+				}
+				return 23
+			}
+			if (cfg.Mode == "body-hash" || cfg.Mode == "body-hash-exit") && len(body) > 0 {
+				body = bytes.Clone(body)
+				body[0] ^= 1
+			}
+			framed := append(bytes.Clone(body), '\n')
+			if cfg.Mode == "body-lf" {
+				framed[len(framed)-1] = 'x'
+			}
+			nativeClosurePeerWrite(os.Stdout, framed)
+		}
+		log("response", map[string]any{"phase": phase, "role": state.Role, "invocation": state.Invocation, "oid": oid, "kind": obj.Kind, "size": obj.Size, "session": session})
+		if phase == "metadata" && cfg.Mode == "metadata-object-over-exit" || phase == "body" && cfg.Mode == "body-hash-exit" {
+			return 23
+		}
+	}
+	log("input-eof", map[string]any{"phase": phase, "role": state.Role, "invocation": state.Invocation, "session": session})
+	if cfg.Mode == phase+"-stderr-holder" {
+		self, err := filepath.Abs(os.Args[0])
+		if err != nil {
+			return 84
+		}
+		child := exec.Command(self, "-test.run=^TestNativeContributionClosurePeer$", "--", config, "--stderr-holder", phase)
+		child.Stderr = os.Stderr // stdin/stdout use /dev/null; only stderr stays inherited.
+		if err = child.Start(); err != nil {
+			return 85
+		}
+		log("stderr-holder", map[string]any{"phase": phase, "holder_pid": child.Process.Pid, "release": filepath.Join(filepath.Dir(config), "release-holder"), "session": session})
+		// The worker exits immediately. The fixture releases this descendant;
+		// OS init owns its reap, independently of the native worker's Wait.
+		_ = child.Process.Release()
+	}
+	if cfg.Mode == phase+"-stall-eof" {
+		stall("eof")
+	}
+	if cfg.Mode == phase+"-trailing" {
+		nativeClosurePeerWrite(os.Stdout, []byte{'x'})
+	}
+	if cfg.Mode == phase+"-exit" {
+		return 23
+	}
+	log("normal-exit", map[string]any{"phase": phase, "role": state.Role, "invocation": state.Invocation, "session": session})
+	return 0
+}
+
+func nativeClosurePeerStderrHolder(cfg nativeClosurePeerConfig, config, phase string) int {
+	release := filepath.Join(filepath.Dir(config), "release-holder")
+	deadline := time.Now().Add(60 * time.Second)
+	for time.Now().Before(deadline) {
+		if _, err := os.Stat(release); err == nil {
+			break
+		} else if !os.IsNotExist(err) {
+			return 86
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	// Preserve the holder receipt's distinct schema: it is an explicit exit
+	// receipt, not a native worker completion or an OS orphan-reap claim.
+	raw, err := json.Marshal(map[string]any{"event": "stderr-holder-exit", "pid": os.Getpid(), "ppid": os.Getppid(), "phase": phase, "at_ns": time.Now().UnixNano()})
+	if err != nil {
+		return 87
+	}
+	file, err := os.OpenFile(cfg.Ledger, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return 88
+	}
+	_, err = file.Write(append(raw, '\n'))
+	closeErr := file.Close()
+	if err != nil || closeErr != nil {
+		return 89
+	}
+	return 0
+}
+
+func nativeClosureReadCall(t *testing.T, f *wp25PublicCountFixture, project, id, head, mode string, success bool) {
+	t.Helper()
+	ids := strings.Fields(f.git(nil, "rev-list", "--objects", "--no-object-names", head))
+	sort.Strings(ids)
+	if len(ids) == 0 {
+		t.Fatal("independent native closure empty")
+	}
+	first := ids[0]
+	before := f.snapshot()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	args := []string{"contribution", "inspect", "--raw", "--project", project, id}
+	cmd := exec.CommandContext(ctx, f.binary, args...)
+	cmd.Dir, cmd.Env = f.repo, f.env
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	start := time.Now()
+	err := cmd.Run()
+	commandElapsed := time.Since(start)
+	after := f.snapshot()
+	wp25Record(t, map[string]any{"control": "native-closure-public-read", "mode": mode, "candidate_observation": true, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "argv": args, "cwd": f.repo, "stdout_raw": stdout.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "command_elapsed_nanoseconds": int64(commandElapsed), "protected_before": before, "protected_after": after})
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("native raw read changed protected state")
+	}
+	if success {
+		var response struct {
+			Raw       bool           `json:"raw"`
+			ID        string         `json:"id"`
+			Payload   map[string]any `json:"payload"`
+			Signature []byte         `json:"signature"`
+		}
+		if err != nil || json.Unmarshal(stdout.Bytes(), &response) != nil || !response.Raw || response.ID != id || response.Payload["project"] != project || len(response.Signature) != 64 {
+			t.Fatalf("native public positive: %v stdout=%s stderr=%s", err, &stdout, &stderr)
+		}
+	} else {
+		phase := strings.Split(mode, "-")[0]
+		want := "contribution raw " + phase + " finalization failed: "
+		if strings.HasSuffix(mode, "-exit") {
+			want += "exit status 23"
+		} else {
+			want += "trailing stdout"
+		}
+		switch mode {
+		case "metadata-missing", "metadata-negative", "metadata-huge", "metadata-object-over", "metadata-late-object-over", "metadata-object-over-exit", "metadata-aggregate-over":
+			want = "Git byte budget exceeded"
+		case "metadata-header-over":
+			want = "contribution raw metadata protocol failed for " + first + ": bufio: buffer full"
+		case "metadata-noncanonical":
+			want = "contribution raw metadata protocol failed for " + first + ": noncanonical object size"
+		case "metadata-wrong-oid":
+			want = "contribution raw metadata protocol failed for " + first + ": invalid object header"
+		case "metadata-wrong-kind":
+			want = "contribution raw metadata protocol failed for " + first + ": invalid object type"
+		case "body-size-change", "body-type-change", "body-oid-change":
+			want = "contribution raw body protocol failed for " + first + ": object header changed"
+		case "body-lf":
+			want = "contribution raw body protocol failed for " + first + ": object body separator"
+		case "body-short-exit0":
+			want = "contribution raw body protocol failed for " + first + ": unexpected EOF"
+		case "body-hash", "body-hash-exit":
+			want = "contribution raw object hash mismatch: " + first
+		case "body-missing":
+			want = "bounded Git " + first + " failed: missing contribution object"
+		case "body-short-exit23":
+			want = "bounded Git " + first + " failed: exit status 23"
+		}
+		if err == nil || stdout.Len() != 0 || stderr.String() != "hn: "+want+"\n" {
+			t.Fatalf("native public expected %q: %v stdout=%s stderr=%s", want, err, &stdout, &stderr)
+		}
+	}
+}
+
+func TestNativeContributionClosureProtocolCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			for _, mode := range []string{"real-git", "pass", "metadata-exit", "metadata-trailing", "body-exit", "body-trailing", "body-short-exit0", "metadata-stderr9000", "body-stderr9000", "metadata-missing", "metadata-negative", "metadata-huge", "metadata-object-over", "metadata-aggregate-over", "metadata-noncanonical", "metadata-wrong-oid", "metadata-wrong-kind", "body-missing", "body-size-change", "body-type-change", "body-oid-change", "body-hash", "body-lf", "body-short-exit23", "metadata-header-over", "metadata-late-object-over", "metadata-object-over-exit", "body-hash-exit"} {
+				t.Run(mode, func(t *testing.T) {
+					f, project, id, head := nativeClosureRawFixture(t, binary, format)
+					ledger, _ := nativeClosurePeerInstall(t, f, head, mode)
+					nativeClosureReadCall(t, f, project, id, head, mode, mode == "real-git" || mode == "pass" || strings.Contains(mode, "stderr9000"))
+					raw, err := os.ReadFile(ledger)
+					if err != nil {
+						t.Fatal(err)
+					}
+					wp25Record(t, map[string]any{"control": "native-closure-peer-ledger", "source_assisted": mode != "real-git", "mode": mode, "raw": string(raw)})
+					starts := []map[string]any{}
+					for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+						var row map[string]any
+						if json.Unmarshal(line, &row) != nil {
+							t.Fatal("peer ledger invalid")
+						}
+						if row["event"] == "start" {
+							starts = append(starts, row)
+						}
+					}
+					want := 2
+					if strings.HasPrefix(mode, "metadata-") && !strings.Contains(mode, "stderr9000") {
+						want = 1
+					}
+					if len(starts) != want || starts[0]["phase"] != "metadata" {
+						t.Fatal("native worker count/order", string(raw))
+					}
+					if want == 2 && (starts[1]["phase"] != "body" || starts[1]["previous_metadata_live"] != false || starts[1]["previous_metadata_pid"] != starts[0]["pid"]) {
+						t.Fatal("metadata worker not reaped before body", string(raw))
+					}
+					nativeClosureAssertLedger(t, f, head, mode, raw)
+
+				})
+			}
+		})
+	}
+}
+
+type nativeClosurePhaseEvent struct {
+	Event, Phase, Stage, Mode, Role string
+	PID, PPID, Session, Invocation  int
+	AtNS                            int64 `json:"at_ns"`
+}
+
+func nativeClosureObservedRead(t *testing.T, f *wp25PublicCountFixture, project, id, head, mode, ledger string) {
+	t.Helper()
+	parts := strings.Split(mode, "-")
+	phase, stage := parts[0], parts[2]
+	session := 1
+	if phase == "body" {
+		session = 2
+	}
+	before := f.snapshot()
+	watchdog, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	args := []string{"contribution", "inspect", "--raw", "--project", project, id}
+	cmd := exec.CommandContext(watchdog, f.binary, args...)
+	cmd.Dir, cmd.Env = f.repo, f.env
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	start := time.Now()
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	candidatePID := cmd.Process.Pid
+	processDone, observerDone := make(chan struct{}), make(chan struct{})
+	observed := make(chan map[string]any, 1)
+	go func() {
+		defer close(observerDone)
+		limit, tick := time.NewTimer(5*time.Second), time.NewTicker(5*time.Millisecond)
+		defer limit.Stop()
+		defer tick.Stop()
+		finish := func(marker nativeClosurePhaseEvent, raw, failure string) {
+			alive := cmd.Process.Signal(syscall.Signal(0)) == nil
+			select {
+			case <-processDone:
+				alive = false
+			default:
+			}
+			observed <- map[string]any{"expected_phase": phase, "expected_stage": stage, "expected_session": session, "expected_mode": mode, "candidate_pid": candidatePID, "candidate_alive": alive, "marker": marker, "marker_raw": raw, "observed_at": time.Now().UTC().Format(time.RFC3339Nano), "observed_elapsed_nanoseconds": int64(time.Since(start)), "error": failure}
+		}
+		for {
+			select {
+			case <-processDone:
+				finish(nativeClosurePhaseEvent{}, "", "candidate exited before early phase")
+				return
+			case <-limit.C:
+				finish(nativeClosurePhaseEvent{}, "", "required native phase missing within5s")
+				return
+			case <-tick.C:
+				raw, err := os.ReadFile(ledger)
+				if os.IsNotExist(err) {
+					continue
+				}
+				if err != nil {
+					finish(nativeClosurePhaseEvent{}, "", err.Error())
+					return
+				}
+				for _, line := range bytes.Split(raw, []byte{'\n'}) {
+					var marker nativeClosurePhaseEvent
+					if json.Unmarshal(line, &marker) != nil || marker.Event != "stall-entry" {
+						continue
+					}
+					failure, matched := "", false
+					for _, entry := range bytes.Split(raw, []byte{'\n'}) {
+						var actual nativeClosurePhaseEvent
+						if json.Unmarshal(entry, &actual) == nil && actual.Event == "start" && actual.PID == marker.PID && actual.PPID == marker.PPID && actual.Session == marker.Session && actual.Phase == marker.Phase && actual.Role == marker.Role {
+							matched = true
+						}
+					}
+					if !matched || marker.PID <= 0 || marker.PPID != candidatePID || marker.Phase != phase || marker.Stage != stage || marker.Session != session || marker.Mode != mode || marker.Role != "contribution" || marker.AtNS <= 0 || marker.AtNS > time.Now().UnixNano() || time.Since(start) >= 5*time.Second {
+						failure = "wrong native phase/mode/PID/PPID/session witness"
+					}
+					finish(marker, string(line), failure)
+					return
+				}
+			}
+		}
+	}()
+	err := cmd.Wait()
+	commandElapsed := time.Since(start)
+	close(processDone)
+	witness := <-observed
+	<-observerDone
+	after := f.snapshot()
+	wp25Record(t, map[string]any{"control": "native-closure-pre-deadline-phase", "mode": mode, "candidate": f.binary, "candidate_sha256": wp25Digest(t, f.binary), "candidate_pid": candidatePID, "argv": args, "cwd": f.repo, "stdout_raw": stdout.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(watchdog.Err()), "command_elapsed_nanoseconds": int64(commandElapsed), "phase_observation": witness, "observer_joined": true, "protected_before": before, "protected_after": after, "product_milliseconds": 30000})
+	if witness["error"] != "" || witness["candidate_alive"] != true {
+		t.Fatal("native early phase witness failed", witness)
+	}
+	if watchdog.Err() != nil || err == nil || stdout.Len() != 0 || commandElapsed < 29*time.Second || commandElapsed > 45*time.Second || !reflect.DeepEqual(before, after) {
+		t.Fatal("native cancellation/outcome/effects", err, watchdog.Err(), commandElapsed, &stdout, &stderr)
+	}
+	ids := strings.Fields(f.git(nil, "rev-list", "--objects", "--no-object-names", head))
+	sort.Strings(ids)
+	want := "bounded Git --batch-check=%(objectsize) failed: signal: killed"
+	if phase == "body" {
+		want = "bounded Git " + ids[0] + " failed: signal: killed"
+	}
+	if stage == "eof" {
+		want = "contribution raw " + phase + " finalization failed: signal: killed"
+	}
+	if stderr.String() != "hn: "+want+"\n" {
+		t.Fatal("native parent cancellation diagnostic", want, stderr.String())
+	}
+	raw, readErr := os.ReadFile(ledger)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	counts := map[string]int{}
+	for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		var row map[string]any
+		if json.Unmarshal(line, &row) != nil {
+			t.Fatal("native cancellation ledger invalid")
+		}
+		worker, _ := row["phase"].(string)
+		event, _ := row["event"].(string)
+		counts[worker+":"+event]++
+		if event == "start" {
+			pid, _ := row["pid"].(float64)
+			process, _ := os.FindProcess(int(pid))
+			if process == nil || process.Signal(syscall.Signal(0)) == nil {
+				t.Fatal("native worker not reaped", row)
+			}
+		}
+	}
+	wantMeta := len(ids)
+	if phase == "metadata" && stage == "header" {
+		wantMeta = 1
+	}
+	if counts["metadata:request"] != wantMeta {
+		t.Fatal("metadata stage request count", counts)
+	}
+	if phase == "metadata" {
+		if counts["body:start"] != 0 || counts["metadata:start"] != 1 {
+			t.Fatal("body started before metadata admission/finish", counts)
+		}
+		if stage == "header" && (counts["metadata:header"] != 0 || counts["metadata:response"] != 0 || counts["metadata:input-eof"] != 0) {
+			t.Fatal("metadata header stall stage", counts)
+		}
+		if stage == "eof" && (counts["metadata:response"] != len(ids) || counts["metadata:input-eof"] != 1) {
+			t.Fatal("metadata finalization stage", counts)
+		}
+	} else {
+		if counts["metadata:response"] != len(ids) || counts["metadata:input-eof"] != 1 || counts["metadata:normal-exit"] != 1 || counts["body:start"] != 1 {
+			t.Fatal("metadata not completed before body", counts)
+		}
+		if stage == "header" && (counts["body:request"] != 1 || counts["body:header"] != 0) {
+			t.Fatal("body header stage", counts)
+		}
+		if stage == "content" && (counts["body:request"] != 1 || counts["body:header"] != 1 || counts["body:response"] != 0) {
+			t.Fatal("body content stage", counts)
+		}
+		if stage == "eof" && (counts["body:request"] != len(ids) || counts["body:response"] != len(ids) || counts["body:input-eof"] != 1) {
+			t.Fatal("body finalization stage", counts)
+		}
+	}
+	wp25Record(t, map[string]any{"control": "native-closure-cancellation-stage-counts", "mode": mode, "counts": counts, "all_workers_reaped": true, "observer_joined": true})
+}
+
+func TestNativeContributionClosureCancellationCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, mode := range []string{"metadata-stall-header", "metadata-stall-eof", "body-stall-header", "body-stall-content", "body-stall-eof"} {
+		t.Run(mode, func(t *testing.T) {
+			f, project, id, head := nativeClosureRawFixture(t, binary, "sha1")
+			ledger, _ := nativeClosurePeerInstall(t, f, head, mode)
+			nativeClosureObservedRead(t, f, project, id, head, mode, ledger)
+		})
+	}
+}
+
+// Direct tool progress is separate from the supplied candidate's public reads:
+// both requests receive exact real Git replies while stdin remains open.
+func TestNativeContributionClassicGitProgress(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f, _, id, head := nativeClosureRawFixture(t, binary, format)
+			oid := f.git(nil, "rev-parse", head+":"+id[7:]+".payload")
+			actualGit, err := exec.LookPath("git")
+			if err != nil {
+				t.Fatal(err)
+			}
+			read := exec.Command(actualGit, "--git-dir="+filepath.Join(f.repo, ".git"), "cat-file", "blob", oid)
+			read.Env = f.env
+			body, err := read.Output()
+			if err != nil {
+				t.Fatal(err)
+			}
+			version := f.git(nil, "--version")
+			for _, mode := range []string{"--batch-check", "--batch"} {
+				t.Run(mode, func(t *testing.T) {
+					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+					cmd := exec.CommandContext(ctx, actualGit, "--git-dir="+filepath.Join(f.repo, ".git"), "cat-file", mode)
+					cmd.Env = f.env
+					input, err := cmd.StdinPipe()
+					if err != nil {
+						t.Fatal(err)
+					}
+					output, err := cmd.StdoutPipe()
+					if err != nil {
+						input.Close()
+						t.Fatal(err)
+					}
+					cmd.Stderr = io.Discard
+					if err = cmd.Start(); err != nil {
+						input.Close()
+						output.Close()
+						t.Fatal(err)
+					}
+					waited := false
+					defer func() {
+						cancel()
+						input.Close()
+						output.Close()
+						if !waited {
+							_ = cmd.Process.Kill()
+							_ = cmd.Wait()
+						}
+					}()
+					header := []byte(fmt.Sprintf("%s blob %d\n", oid, len(body)))
+					want := bytes.Clone(header)
+					if mode == "--batch" {
+						want = append(want, body...)
+						want = append(want, '\n')
+					}
+					replies := []string{}
+					for request := 0; request < 2; request++ {
+						if _, err = io.WriteString(input, oid+"\n"); err != nil {
+							t.Fatal(err)
+						}
+						actual := make([]byte, len(want))
+						if _, err = io.ReadFull(output, actual); err != nil || !bytes.Equal(actual, want) {
+							t.Fatal("real Git did not reply with open stdin", err, string(actual))
+						}
+						replies = append(replies, base64.StdEncoding.EncodeToString(actual))
+					}
+					if err = input.Close(); err != nil {
+						t.Fatal(err)
+					}
+					extra, readErr := io.ReadAll(output)
+					err = cmd.Wait()
+					waited = true
+					wp25Record(t, map[string]any{"control": "native-classic-real-git-incremental-progress", "tool_control_only": true, "candidate_observation": false, "git": actualGit, "git_sha256": wp25Digest(t, actualGit), "git_version": version, "object_format": format, "argv": cmd.Args, "pid": cmd.Process.Pid, "ppid": os.Getpid(), "exact_oid_requests_before_stdin_close": []string{oid, oid}, "raw_replies_base64_before_stdin_close": replies, "body_sha256": wp25NativeDigest(body), "extra_stdout_base64": base64.StdEncoding.EncodeToString(extra), "read_error": fmt.Sprint(readErr), "wait_error": fmt.Sprint(err), "process_success": cmd.ProcessState.Success(), "scope": "two real classic tool replies before closing stdin; supplied candidate behavior has its separate public controls"})
+					if err != nil || readErr != nil || len(extra) != 0 || ctx.Err() != nil {
+						t.Fatal("real Git finalization", err, readErr, len(extra), ctx.Err())
+					}
+				})
+			}
+		})
+	}
+}
+
+func nativeClosureRegisterFixture(t *testing.T, binary string) (*wp25PublicCountFixture, string, string, string, []byte) {
+	t.Helper()
+	f := wp25PublicCountNew(t, binary, "native-closure-register")
+	wp25PublicCountCall(t, f, "native-register-setup-init", false, true, time.Minute, "init", "--name", "Native closure maintainer")
+	identity := wp25PublicCountCall(t, f, "native-register-setup-identity", true, true, time.Minute, "identity", "show", "--json")
+	var who struct {
+		OK   bool `json:"ok"`
+		Data struct {
+			Actor string `json:"actor"`
+		} `json:"data"`
+	}
+	if json.Unmarshal(identity, &who) != nil || !who.OK || len(who.Data.Actor) != 64 {
+		t.Fatal("real registration maintainer", string(identity))
+	}
+	seed := sha256.Sum256([]byte("WP25 native retained independent moderator"))
+	key := ed25519.NewKeyFromSeed(seed[:])
+	public := key.Public().(ed25519.PublicKey)
+	sum := sha256.Sum256(public)
+	signer := wp25PublicGraphSigner{hex.EncodeToString(sum[:]), public, key}
+	project := wp25NativeDigest([]byte("WP25 native retained closure scope"))
+	limits := map[string]any{"wireBytes": 16777216, "decodedBytes": 33554432, "objects": 4096, "events": 2048, "depth": 256, "milliseconds": 30000, "window": map[string]any{"bytes": 268435456, "objects": 32768, "events": 16384, "requests": 256}, "retained": map[string]any{"bytes": 1073741824, "objects": 131072, "events": 65536, "requests": 1024}}
+	policy := map[string]any{"version": "hn.policy/0", "maintainers": []string{who.Data.Actor}, "proposals": map[string]any{"requiredAccepts": 1, "trustedReviewers": []string{}}, "pipelines": map[string]any{}, "contributions": map[string]any{"project": project, "moderators": []string{signer.actor}, "rules": []any{}, "baseline": []string{}, "limits": limits}}
+	raw, err := json.Marshal(policy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.MkdirAll(filepath.Join(f.repo, ".hn"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(filepath.Join(f.repo, ".hn", "policy.json"), raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	f.git(nil, "add", ".hn/policy.json")
+	f.git(nil, "-c", "user.name=Native retained fixture", "-c", "user.email=fixture@hn.invalid", "commit", "-qm", "explicit retained policy")
+	authority := wp25PublicGraphAuthority{f.git(nil, "rev-parse", "HEAD"), wp25NativeDigest(raw)}
+	wp25PublicCountCall(t, f, "native-register-setup-authority", false, true, time.Minute, "contribution", "authority", "set", "--ref", "refs/heads/main", "--expect", "absent")
+	head := wp25PublicGraphManifestBuild(t, f, project, authority, signer, 0, 1, "native-retained-one-record")
+	roots := []string{authority.Commit, head.tip}
+	sort.Strings(roots)
+	plan := struct {
+		Version   string                   `json:"version"`
+		Project   string                   `json:"project"`
+		Authority wp25PublicGraphAuthority `json:"authority"`
+		Native    []string                 `json:"native"`
+		Heads     []string                 `json:"heads"`
+		Roots     []string                 `json:"roots"`
+	}{"hn.contribution-retained-plan/1", project, authority, nil, []string{head.tip}, roots}
+	planRaw, err := json.Marshal(plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wp25Record(t, map[string]any{"control": "native-retained-independent-setup", "source_assisted": true, "candidate_observation": false, "policy_raw": string(raw), "plan_raw": string(planRaw), "plan_digest": wp25NativeDigest(planRaw), "roots": roots, "signed_head": head.tip, "all_limits_literal_defaults": true})
+	return f, project, head.tip, strings.Join(roots, " "), planRaw
+}
+
+func nativeClosureRegisterCall(t *testing.T, f *wp25PublicCountFixture, expected, mode string, success bool, expectedOID, ledger string) []byte {
+	t.Helper()
+	ledgerBefore, readErr := os.ReadFile(ledger)
+	if readErr != nil && !os.IsNotExist(readErr) {
+		t.Fatal(readErr)
+	}
+	before := f.snapshot()
+	refs := f.git(nil, "show-ref")
+	args := []string{"contribution", "retained", "register", "--expect", expected}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, f.binary, args...)
+	cmd.Dir, cmd.Env = f.repo, f.env
+	var out, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &out, &stderr
+	start := time.Now()
+	err := cmd.Run()
+	elapsed := time.Since(start)
+	after := f.snapshot()
+	wp25Record(t, map[string]any{"control": "native-retained-public-call", "mode": mode, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "argv": args, "cwd": f.repo, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "command_elapsed_nanoseconds": int64(elapsed), "protected_before": before, "protected_after": after, "public_refs_before_raw": refs, "public_refs_after_raw": f.git(nil, "show-ref"), "allowed_failure_effects": "only existing reservation/journal/descriptor/lock; no coverage or public/ODB/signer/authority change"})
+	if ctx.Err() != nil || (err == nil) != success || refs != f.git(nil, "show-ref") {
+		t.Fatal("retained caller outcome/ref effects", err, ctx.Err(), &out, &stderr)
+	}
+	if !success {
+		want := "retained raw metadata finalization failed: exit status 23"
+		if mode == "body-exit" {
+			want = "retained raw body finalization failed: exit status 23"
+		}
+		if mode == "body-missing" {
+			want = "bounded Git " + expectedOID + " failed: retained object unavailable"
+		}
+		if out.Len() != 0 || stderr.String() != "hn: "+want+"\n" {
+			t.Fatal("retained exact native failure", want, &out, &stderr)
+		}
+	}
+	ledgerAfter := wp25Read(t, ledger)
+	if len(ledgerAfter) < len(ledgerBefore) || !bytes.Equal(ledgerAfter[:len(ledgerBefore)], ledgerBefore) {
+		t.Fatal("registration ledger lost prefix")
+	}
+	nativeClosureRegistrationStages(t, mode, ledgerAfter[len(ledgerBefore):])
+	return bytes.Clone(out.Bytes())
+}
+
+func nativeClosureRetainedJournal(t *testing.T, f *wp25PublicCountFixture, project, expected string, failed bool) map[string]any {
+	t.Helper()
+	root := filepath.Join(f.repo, ".git", "hn", "contribution", "inbox-"+project[7:])
+	raw, err := os.ReadFile(filepath.Join(root, "journal.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var journal contributionJournal
+	if json.Unmarshal(raw, &journal) != nil || len(journal.Attempts) != 1 || len(journal.Ledger.Reservations) != 1 {
+		t.Fatal("retained exact one durable charge", string(raw))
+	}
+	a := journal.Attempts[0]
+	r := journal.Ledger.Reservations[0]
+	if a.Intent != "retained-"+expected[7:] || a.Artifact != expected || r.Intent != a.Intent || r.Artifact != expected || r.Window != "initial" || a.Reserved != r.Cost || a.Reserved.WireBytes != 16777216 || a.Reserved.DecodedBytes != 33554432 || a.Reserved.Objects != 4096 || a.Reserved.Events != 2048 || a.Reserved.Depth != 256 || a.Reserved.Milliseconds != 30000 {
+		t.Fatal("retained reservation identity/cost", string(raw))
+	}
+	for _, usage := range []struct{ Bytes, Objects, Events, Requests int64 }{{journal.Ledger.WindowUsed.Bytes, journal.Ledger.WindowUsed.Objects, journal.Ledger.WindowUsed.Events, journal.Ledger.WindowUsed.Requests}, {journal.Ledger.RetainedUsed.Bytes, journal.Ledger.RetainedUsed.Objects, journal.Ledger.RetainedUsed.Events, journal.Ledger.RetainedUsed.Requests}} {
+		if usage.Bytes != 50335744 || usage.Objects != 4096 || usage.Events != 2048 || usage.Requests != 1 {
+			t.Fatal("retained failure refunded/duplicated charge", usage)
+		}
+	}
+	descriptor, err := os.ReadFile(filepath.Join(root, "retained-"+expected[7:]+".json"))
+	if err != nil || wp25NativeDigest(descriptor) != expected {
+		t.Fatal("immutable retained descriptor", err)
+	}
+	_, coverageErr := os.Stat(filepath.Join(root, "coverage-"+expected[7:]+".json"))
+	if failed {
+		if a.Status != "reserved" || a.DecodedBytes != 0 || a.Objects != 0 || len(a.ManifestWrites) != 0 || !os.IsNotExist(coverageErr) {
+			t.Fatal("failed raw read escaped coverage/measured success", string(raw), coverageErr)
+		}
+	} else if a.Status != "failed" || a.DecodedBytes <= 0 || a.Objects <= 0 || coverageErr != nil {
+		t.Fatal("successful explicit retained registration state", string(raw), coverageErr)
+	}
+	wp25Record(t, map[string]any{"control": "native-retained-private-accounting", "failed_raw_stage": failed, "journal_raw": string(raw), "descriptor_raw": string(descriptor), "coverage_error": fmt.Sprint(coverageErr), "one_exact_charge": true, "expected_plan": expected})
+	return map[string]any{"ledger": journal.Ledger, "descriptor": string(descriptor)}
+}
+
+func TestNativeRetainedClosurePublicCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, mode := range []string{"pass", "metadata-exit", "body-exit", "body-missing", "metadata-stderr9000", "body-stderr9000"} {
+		t.Run(mode, func(t *testing.T) {
+			f, project, head, roots, plan := nativeClosureRegisterFixture(t, binary)
+			ids := strings.Fields(f.git(nil, append([]string{"rev-list", "--objects", "--no-object-names"}, strings.Fields(roots)...)...))
+			sort.Strings(ids)
+			first := ids[0]
+			ledger, state := nativeClosurePeerInstall(t, f, roots, mode)
+			expected := wp25NativeDigest(plan)
+			success := mode == "pass" || strings.Contains(mode, "stderr9000")
+			before := f.snapshot()
+			receipt := nativeClosureRegisterCall(t, f, expected, mode, success, first, ledger)
+			after := f.snapshot()
+			privatePrefix := "/repo/.git/hn/contribution/inbox-" + project[7:] + "/"
+			for path, value := range before {
+				if !strings.HasPrefix(path, privatePrefix) && after[path] != value {
+					t.Fatal("retained call changed forbidden source/key/ODB/ref state", path)
+				}
+			}
+			allowed := map[string]bool{"journal.json": true, "lock": true, "retained-" + expected[7:] + ".json": true}
+			if success {
+				allowed["coverage-"+expected[7:]+".json"] = true
+			}
+			for path := range after {
+				if _, ok := before[path]; !ok {
+					if !strings.HasPrefix(path, privatePrefix) || !allowed[strings.TrimPrefix(path, privatePrefix)] {
+						t.Fatal("retained call created forbidden state", path)
+					}
+				}
+			}
+			account := nativeClosureRetainedJournal(t, f, project, expected, !success)
+			if !success {
+				raw, err := os.ReadFile(ledger)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var cfg map[string]any
+				cfgPath := filepath.Join(filepath.Dir(ledger), "config.json")
+				if json.Unmarshal(wp25Read(t, cfgPath), &cfg) != nil {
+					t.Fatal("peer config")
+				}
+				if mode == "body-missing" {
+					requests := []string{}
+					for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+						var event map[string]any
+						if json.Unmarshal(line, &event) == nil && event["role"] == "retained" && event["phase"] == "body" && event["event"] == "request" {
+							requests = append(requests, event["oid"].(string))
+						}
+					}
+					ids := strings.Fields(f.git(nil, append([]string{"rev-list", "--objects", "--no-object-names"}, strings.Fields(roots)...)...))
+					sort.Strings(ids)
+					if len(requests) != 1 || requests[0] != ids[0] {
+						t.Fatal("missing retained body must bind first admitted exact OID", requests, ids)
+					}
+				}
+				cfg["mode"] = "pass"
+				encoded, _ := json.Marshal(cfg)
+				if os.WriteFile(cfgPath, encoded, 0600) != nil {
+					t.Fatal("recovery config")
+				}
+				if os.Remove(state) != nil {
+					t.Fatal("reset test-only per-command peer state")
+				}
+				receipt = nativeClosureRegisterCall(t, f, expected, "recovery", true, first, ledger)
+				recovered := nativeClosureRetainedJournal(t, f, project, expected, false)
+				if !reflect.DeepEqual(account, recovered) {
+					t.Fatal("identical recovery changed reservation/descriptor", account, recovered)
+				}
+			}
+			var got struct {
+				Registered string   `json:"registered"`
+				Native     int      `json:"native"`
+				Heads      []string `json:"heads"`
+			}
+			if json.Unmarshal(receipt, &got) != nil || got.Registered != expected || got.Native != 0 || !reflect.DeepEqual(got.Heads, []string{head}) {
+				t.Fatal("independent public retained receipt", string(receipt))
+			}
+			beforeReplay := f.snapshot()
+			nativeClosureRegisterCall(t, f, expected, "duplicate", true, first, ledger)
+			if !reflect.DeepEqual(beforeReplay, f.snapshot()) {
+				t.Fatal("retained replay duplicated state/charge")
+			}
+		})
+	}
+}
+
+func nativeClosureGitData(t *testing.T, f *wp25PublicCountFixture, input []byte, args ...string) []byte {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir, cmd.Env, cmd.Stdin = f.repo, f.env, bytes.NewReader(input)
+	raw, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("source-assisted Git %q: %v %s", args, err, raw)
+	}
+	return raw
+}
+
+func TestNativeContributionLegacyFaultsCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			for _, mode := range []string{"truncated-blob", "missing-blob", "payload-tree", "signature-tree", "payload-commit", "wrong-mode", "signature65", "signature-invalid", "payload65537"} {
+				t.Run(mode, func(t *testing.T) {
+					f, project, id, head := nativeClosureRawFixture(t, binary, format)
+					payloadName, signatureName := id[7:]+".payload", id[7:]+".signature"
+					payloadOID := f.git(nil, "rev-parse", head+":"+payloadName)
+					want := ""
+					if mode == "truncated-blob" || mode == "missing-blob" {
+						path := filepath.Join(f.repo, ".git", "objects", payloadOID[:2], payloadOID[2:])
+						body := nativeClosureGitData(t, f, nil, "cat-file", "blob", payloadOID)
+						var compressed bytes.Buffer
+						w := zlib.NewWriter(&compressed)
+						fmt.Fprintf(w, "blob %d\x00", len(body))
+						w.Write(body)
+						w.Close()
+						if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+							t.Fatal(err)
+						}
+						_ = os.Remove(path)
+						if mode == "truncated-blob" {
+							if err := os.WriteFile(path, compressed.Bytes()[:compressed.Len()-2], 0444); err != nil {
+								t.Fatal(err)
+							}
+							want = "bounded Git " + payloadOID + " failed: exit status 128"
+						} else {
+							want = "bounded Git --stdin failed: exit status 128"
+						}
+					} else {
+						type entry struct{ mode, oid string }
+						entries := map[string]entry{}
+						for _, row := range strings.Split(f.git(nil, "ls-tree", "-z", head), "\x00") {
+							if row == "" {
+								continue
+							}
+							metadata, name, _ := strings.Cut(row, "\t")
+							parts := strings.Fields(metadata)
+							entries[name] = entry{parts[0], parts[2]}
+						}
+						writeBlob := func(raw []byte) string {
+							return strings.TrimSpace(string(nativeClosureGitData(t, f, raw, "hash-object", "-w", "--stdin")))
+						}
+						switch mode {
+						case "payload-tree":
+							entries[payloadName] = entry{"100644", f.git(nil, "rev-parse", "HEAD^{tree}")}
+						case "signature-tree":
+							entries[signatureName] = entry{"100644", f.git(nil, "rev-parse", "HEAD^{tree}")}
+						case "payload-commit":
+							entries[payloadName] = entry{"100644", f.git(nil, "rev-parse", "HEAD")}
+							want = "missing native dependency"
+						case "wrong-mode":
+							v := entries[payloadName]
+							v.mode = "100755"
+							entries[payloadName] = v
+							want = "unsupported contribution manifest tree"
+						case "signature65":
+							raw := nativeClosureGitData(t, f, nil, "cat-file", "blob", entries[signatureName].oid)
+							entries[signatureName] = entry{"100644", writeBlob(append(raw, 'x'))}
+						case "signature-invalid":
+							raw := nativeClosureGitData(t, f, nil, "cat-file", "blob", entries[signatureName].oid)
+							raw[0] ^= 1
+							entries[signatureName] = entry{"100644", writeBlob(raw)}
+							want = "invalid contribution signature"
+						case "payload65537":
+							raw := nativeClosureGitData(t, f, nil, "cat-file", "blob", payloadOID)
+							raw = append(raw, bytes.Repeat([]byte{' '}, 65537-len(raw))...)
+							entries[payloadName] = entry{"100644", writeBlob(raw)}
+						}
+						names := []string{}
+						for name := range entries {
+							names = append(names, name)
+						}
+						sort.Strings(names)
+						var tree bytes.Buffer
+						for _, name := range names {
+							v := entries[name]
+							rawOID, err := hex.DecodeString(v.oid)
+							if err != nil {
+								t.Fatal(err)
+							}
+							fmt.Fprintf(&tree, "%s %s\x00", v.mode, name)
+							tree.Write(rawOID)
+						}
+						treeOID := strings.TrimSpace(string(nativeClosureGitData(t, f, tree.Bytes(), "hash-object", "--literally", "-t", "tree", "-w", "--stdin")))
+						head = f.git(nil, "-c", "user.name=Native fault fixture", "-c", "user.email=fixture@hn.invalid", "commit-tree", treeOID, "-m", "explicit single fault")
+						refs := strings.Fields(f.git(nil, "for-each-ref", "--format=%(refname)", "refs/hn/contributions"))
+						if len(refs) != 1 {
+							t.Fatal(refs)
+						}
+						f.git(nil, "update-ref", refs[0], head)
+						if mode == "signature65" {
+							want = "bounded Git " + head + ":" + signatureName + " failed: Git output budget exceeded"
+						}
+						if mode == "payload65537" {
+							want = "bounded Git " + head + ":" + payloadName + " failed: Git output budget exceeded"
+						}
+						if mode == "payload-tree" {
+							want = "invalid envelope JSON: invalid character 'e' in literal true (expecting 'u')"
+						}
+						if mode == "signature-tree" {
+							formatted := nativeClosureGitData(t, f, nil, "show", head+":"+signatureName)
+							want = "invalid contribution signature"
+							if len(formatted) > 64 {
+								want = "bounded Git " + head + ":" + signatureName + " failed: Git output budget exceeded"
+							}
+						}
+					}
+					ledger, _ := nativeClosurePeerInstall(t, f, "", "real-git")
+					before := f.snapshot()
+					args := []string{"contribution", "inspect", "--raw", "--project", project, id}
+					cmd := exec.Command(binary, args...)
+					cmd.Dir, cmd.Env = f.repo, f.env
+					var out, stderr bytes.Buffer
+					cmd.Stdout, cmd.Stderr = &out, &stderr
+					err := cmd.Run()
+					after := f.snapshot()
+					wp25Record(t, map[string]any{"control": "native-legacy-public-single-fault", "mode": mode, "object_format": format, "binary": binary, "binary_sha256": wp25Digest(t, binary), "argv": args, "cwd": f.repo, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "expected_complete_stderr": "hn: " + want + "\n", "protected_before": before, "protected_after": after})
+					if err == nil || out.Len() != 0 || stderr.String() != "hn: "+want+"\n" || !reflect.DeepEqual(before, after) {
+						t.Fatal("native sole-fault boundary differs", want, err, &out, &stderr)
+					}
+					if mode == "truncated-blob" || mode == "missing-blob" {
+						log := string(wp25Read(t, ledger))
+						if strings.Contains(log, "\"show\"") {
+							t.Fatal("raw failure reached semantic show", log)
+						}
+						return
+					}
+					log := string(wp25Read(t, ledger))
+					roleShow := strings.Contains(log, head+":"+payloadName) || strings.Contains(log, head+":"+signatureName)
+					if (mode == "payload-tree" || mode == "signature-tree") && !roleShow {
+						t.Fatal("non-blob original semantic role show not observed", log)
+					}
+					if mode != "payload-tree" && mode != "signature-tree" && roleShow {
+						t.Fatal("ordinary blob/error unexpectedly reread role", log)
+					}
+				})
+			}
+		})
+	}
+}
+
+// This ledger assertion binds actual request identities and completion, rather
+// than inferring a full reader from a worker's ordinal position.
+func nativeClosureAssertLedger(t *testing.T, f *wp25PublicCountFixture, head, mode string, raw []byte) {
+	t.Helper()
+	if mode == "real-git" { // exec replaces the logging peer; real responses are checked by public output.
+		return
+	}
+	ids := strings.Fields(f.git(nil, "rev-list", "--objects", "--no-object-names", head))
+	sort.Strings(ids)
+	requests := map[string][]string{}
+	counts := map[string]int{}
+	for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		var row map[string]any
+		if json.Unmarshal(line, &row) != nil {
+			t.Fatal("native request ledger invalid")
+		}
+		phase, _ := row["phase"].(string)
+		event, _ := row["event"].(string)
+		counts[phase+":"+event]++
+		if event == "request" {
+			requests[phase] = append(requests[phase], row["oid"].(string))
+		}
+		if event == "start" {
+			race, raceSet := os.LookupEnv("GORACE")
+			if row["gorace_set"] != raceSet || row["gorace_value"] != race {
+				t.Fatal("test peer dropped configured race harness option", row, race, raceSet)
+			}
+			pid := int(row["pid"].(float64))
+			process, _ := os.FindProcess(pid)
+			if process == nil || process.Signal(syscall.Signal(0)) == nil {
+				t.Fatal("native worker not reaped", row)
+			}
+		}
+	}
+	metadataN, bodyN := len(ids), len(ids)
+	if strings.HasPrefix(mode, "metadata-") && !strings.Contains(mode, "stderr9000") {
+		bodyN = 0
+		metadataN = 1
+		if mode == "metadata-exit" || mode == "metadata-trailing" || mode == "metadata-late-object-over" {
+			metadataN = len(ids)
+		}
+		if mode == "metadata-aggregate-over" {
+			metadataN = 2
+		}
+	}
+	if strings.HasPrefix(mode, "body-") && mode != "body-exit" && mode != "body-trailing" && mode != "body-stderr9000" {
+		bodyN = 1
+	}
+	if !reflect.DeepEqual(requests["metadata"], ids[:metadataN]) || (bodyN == 0 && len(requests["body"]) != 0) || (bodyN > 0 && !reflect.DeepEqual(requests["body"], ids[:bodyN])) {
+		t.Fatal("native exact sorted requests or first-fault stopping", mode, requests, ids, metadataN, bodyN)
+	}
+	if bodyN > 0 && (counts["metadata:response"] != len(ids) || counts["metadata:input-eof"] != 1 || counts["metadata:normal-exit"] != 1) {
+		t.Fatal("body began without complete metadata EOF/normal-exit", counts)
+	}
+	if mode == "pass" || strings.Contains(mode, "stderr9000") {
+		for _, phase := range []string{"metadata", "body"} {
+			if counts[phase+":header"] != len(ids) || counts[phase+":response"] != len(ids) || counts[phase+":input-eof"] != 1 || counts[phase+":normal-exit"] != 1 {
+				t.Fatal("native successful full phase omitted a request/header/body/finish", phase, counts)
+			}
+		}
+	}
+	wp25Record(t, map[string]any{"control": "native-closure-exact-request-and-first-error-ledger", "mode": mode, "expected_sorted_oids": ids, "metadata_requests": metadataN, "body_requests": bodyN, "counts": counts, "all_workers_reaped": true})
+}
+
+// A controlled descendant retains stderr after the actual worker exits. The
+// native caller must join its discard drainer without waiting for that unrelated
+// descriptor owner. The fixture releases and observes the holder on all paths.
+func TestNativeContributionStderrHolderCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, phase := range []string{"metadata", "body"} {
+		t.Run(phase, func(t *testing.T) {
+			f, project, id, head := nativeClosureRawFixture(t, binary, "sha1")
+			ledger, _ := nativeClosurePeerInstall(t, f, head, phase+"-stderr-holder")
+			release := filepath.Join(filepath.Dir(ledger), "release-holder")
+			released := false
+			releaseHolder := func() {
+				if !released {
+					_ = os.WriteFile(release, []byte("release\n"), 0600)
+					released = true
+				}
+			}
+			t.Cleanup(releaseHolder)
+			nativeClosureReadCall(t, f, project, id, head, phase+"-stderr-holder", true)
+			raw := wp25Read(t, ledger)
+			holder := 0
+			for _, line := range bytes.Split(raw, []byte{'\n'}) {
+				var event map[string]any
+				if json.Unmarshal(line, &event) == nil && event["event"] == "stderr-holder" {
+					holder = int(event["holder_pid"].(float64))
+				}
+			}
+			process, _ := os.FindProcess(holder)
+			if holder <= 0 || process == nil || process.Signal(syscall.Signal(0)) != nil {
+				t.Fatal("candidate did not return while the controlled stderr holder was alive", string(raw))
+			}
+			wp25Record(t, map[string]any{"control": "native-stderr-holder-public-return", "phase": phase, "holder_pid": holder, "holder_still_alive_on_success": true, "raw": string(raw)})
+			releaseHolder()
+			limit := time.Now().Add(5 * time.Second)
+			for {
+				raw = wp25Read(t, ledger)
+				found := false
+				for _, line := range bytes.Split(raw, []byte{'\n'}) {
+					var event map[string]any
+					if json.Unmarshal(line, &event) == nil && event["event"] == "stderr-holder-exit" && int(event["pid"].(float64)) == holder {
+						found = true
+					}
+				}
+				if found {
+					break
+				}
+				if time.Now().After(limit) {
+					t.Fatal("controlled holder did not observe fixture release", string(raw))
+				}
+				time.Sleep(5 * time.Millisecond)
+			}
+			wp25Record(t, map[string]any{"control": "native-stderr-holder-fixture-release", "phase": phase, "holder_pid": holder, "raw": string(raw), "os_orphan_reaping": "OS init owns holder reap; explicit exit receipt retained; native worker reaped by caller"})
+		})
+	}
+}
+
+// These are private supplied-limit and descriptor-ownership tests of the linked
+// helper, not claims of successful public admission at a new numeric limit.
+func TestNativeContributionPrivateHelperBounds(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, mode := range []string{"empty-roots", "count-first-over", "object-equality", "object-first-over", "aggregate-equality", "aggregate-first-over", "framed-equality", "framed-first-over", "canceled-role"} {
+		t.Run(mode, func(t *testing.T) {
+			f, _, _, head := nativeClosureRawFixture(t, binary, "sha1")
+			ids := strings.Fields(f.git(nil, "rev-list", "--objects", "--no-object-names", head))
+			sort.Strings(ids)
+			var total, largest int64
+			last := int64(0)
+			prefix := int64(len(projectGitSchema))
+			for i, oid := range ids {
+				kind := f.git(nil, "cat-file", "-t", oid)
+				size, err := strconv.ParseInt(f.git(nil, "cat-file", "-s", oid), 10, 64)
+				if err != nil {
+					t.Fatal(err)
+				}
+				total += size
+				largest = max(largest, size)
+				if i == len(ids)-1 {
+					last = size
+					break
+				}
+				prefix += int64(len(fmt.Sprintf("%s %s %d\n", oid, kind, size))) + size + 1
+			}
+			limits := migration.Limits{GitObjects: len(ids), GitObjectBytes: largest, GitTotalBytes: total}
+			framed := prefix + last + 256
+			roots := []string{head}
+			want := ""
+			switch mode {
+			case "empty-roots":
+				roots = nil
+			case "count-first-over":
+				limits.GitObjects--
+				want = "Git traversal budget exceeded"
+			case "object-first-over":
+				limits.GitObjectBytes--
+				want = "Git byte budget exceeded"
+			case "aggregate-first-over":
+				limits.GitTotalBytes--
+				want = "Git byte budget exceeded"
+			case "framed-first-over":
+				framed--
+				want = "contribution ref byte limit"
+			}
+			ledger, _ := nativeClosurePeerInstall(t, f, head, "pass")
+			for _, value := range f.env {
+				if strings.HasPrefix(value, "PATH=") {
+					t.Setenv("PATH", strings.TrimPrefix(value, "PATH="))
+				}
+			}
+			before := f.snapshot()
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			material, err := contributionRawClosure(ctx, filepath.Join(f.repo, ".git"), roots, limits, framed, "contribution")
+			if want == "" && err != nil || want != "" && (err == nil || err.Error() != want) {
+				t.Fatal("private supplied boundary", mode, err, want)
+			}
+			if !reflect.DeepEqual(before, f.snapshot()) {
+				t.Fatal("private helper changed source state")
+			}
+			raw, readErr := os.ReadFile(ledger)
+			if mode == "empty-roots" {
+				if !os.IsNotExist(readErr) || material == nil || string(material.Bytes()) != projectGitSchema || len(material.objects) != 0 {
+					t.Fatal("empty selection executed Git or returned nonempty material", readErr, material)
+				}
+			} else if readErr != nil {
+				t.Fatal(readErr)
+			}
+			counts := map[string]int{}
+			for _, line := range bytes.Split(raw, []byte{'\n'}) {
+				var event map[string]any
+				if json.Unmarshal(line, &event) == nil {
+					counts[fmt.Sprint(event["phase"])+":"+fmt.Sprint(event["event"])]++
+				}
+			}
+			if want == "Git byte budget exceeded" && counts["body:start"] != 0 {
+				t.Fatal("metadata bound started body", counts)
+			}
+			if mode == "count-first-over" && counts["metadata:start"] != 0 {
+				t.Fatal("count bound started metadata", counts)
+			}
+			if mode == "framed-first-over" && counts["body:request"] != len(ids)-1 {
+				t.Fatal("framed refusal did not precede exact last request", counts, ids)
+			}
+			if mode == "canceled-role" {
+				roleCtx, roleCancel := context.WithCancel(context.Background())
+				roleCancel()
+				_, roleErr := material.selected(roleCtx, filepath.Join(f.repo, ".git"), ids[0], "preserved-role", largest)
+				if roleErr == nil || roleErr.Error() != "bounded Git preserved-role failed: context canceled" {
+					t.Fatal("indexed role lost caller cancellation admission", roleErr)
+				}
+			}
+			wp25Record(t, map[string]any{"control": "native-private-helper-boundary", "source_assisted_linked_helper": true, "mode": mode, "limits": limits, "framed_limit": framed, "expected_error": want, "actual_error": fmt.Sprint(err), "counts": counts, "peer_raw": string(raw), "public_limit_claim": false})
+		})
+	}
+}
+
+// Descriptor exhaustion is isolated to a compiled-self subprocess. It cannot
+// change the runner's own descriptor limits or leave a reduced limit behind.
+func TestNativeContributionWorkerSetupOwnership(t *testing.T) {
+	if os.Getenv("HN_WP25_NATIVE_SETUP_CHILD") == "1" {
+		var original syscall.Rlimit
+		if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &original); err != nil {
+			t.Fatal(err)
+		}
+		missing := t.TempDir()
+		t.Setenv("PATH", missing)
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		if _, err := contributionClosureStart(ctx, missing, "--batch-check"); !errors.Is(err, context.Canceled) {
+			t.Fatal("canceled setup", err)
+		}
+		warmR, warmW, warmErr := os.Pipe()
+		if warmErr != nil {
+			t.Fatal(warmErr)
+		}
+		warmR.Close()
+		warmW.Close()
+		fdNames := func() []string {
+			entries, err := os.ReadDir("/dev/fd")
+			if err != nil {
+				t.Fatal(err)
+			}
+			names := []string{}
+			for _, entry := range entries {
+				names = append(names, entry.Name())
+			}
+			sort.Strings(names)
+			return names
+		}
+		for _, free := range []int{0, 2, 4, 6} {
+			before := fdNames()
+			limit := original
+			limit.Cur = min(limit.Cur, 64)
+			if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &limit); err != nil {
+				t.Fatal(err)
+			}
+			opened := []*os.File{}
+			for {
+				f, err := os.Open(os.DevNull)
+				if err != nil {
+					if !errors.Is(err, syscall.EMFILE) {
+						t.Fatal(err)
+					}
+					break
+				}
+				opened = append(opened, f)
+			}
+			if len(opened) < free {
+				t.Fatal("insufficient isolated descriptors for setup control")
+			}
+			for i := 0; i < free; i++ {
+				opened[len(opened)-1].Close()
+				opened = opened[:len(opened)-1]
+			}
+			process, err := contributionClosureStart(context.Background(), missing, "--batch-check")
+			for _, f := range opened {
+				f.Close()
+			}
+			restore := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &original)
+			if restore != nil {
+				t.Fatal(restore)
+			}
+			if process != nil {
+				process.abort()
+				t.Fatal("unexpected child in partial-pipe/Start failure", free)
+			}
+			if err == nil {
+				t.Fatal("setup fault not reached", free)
+			}
+			after := fdNames()
+			if !reflect.DeepEqual(before, after) {
+				t.Fatal("partially acquired descriptors leaked", free, before, after)
+			}
+			t.Logf("setup free=%d expected-error=%v descriptor-before=%v descriptor-after=%v", free, err, before, after)
+		}
+		return
+	}
+	harness, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, harness, "-test.run=^TestNativeContributionWorkerSetupOwnership$", "-test.v", "-test.count=1", "-test.timeout=20s")
+	cmd.Env = append(os.Environ(), "HN_WP25_NATIVE_SETUP_CHILD=1")
+	raw, err := cmd.CombinedOutput()
+	wp25Record(t, map[string]any{"control": "native-worker-isolated-descriptor-setup", "source_assisted_linked_helper": true, "harness": harness, "harness_sha256": wp25Digest(t, harness), "argv": cmd.Args, "stdout_stderr_raw": string(raw), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "rlimit_scope": "compiled-self subprocess only; caller unchanged"})
+	if err != nil || ctx.Err() != nil || strings.Count(string(raw), "--- PASS: TestNativeContributionWorkerSetupOwnership") != 1 || strings.Contains(string(raw), "--- SKIP:") || strings.Contains(string(raw), "--- FAIL:") {
+		t.Fatal("isolated worker setup child did not execute and pass", err, string(raw))
+	}
+}
+
+func nativeClosureRegistrationStages(t *testing.T, mode string, raw []byte) {
+	t.Helper()
+	reads := []map[string]any{}
+	counts := map[string]int{}
+	for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		var event map[string]any
+		if json.Unmarshal(line, &event) != nil {
+			t.Fatal("registration stage ledger invalid", string(raw))
+		}
+		role, _ := event["role"].(string)
+		phase, _ := event["phase"].(string)
+		name, _ := event["event"].(string)
+		counts[role+":"+phase+":"+name]++
+		if name == "enumeration" && role == "contribution" {
+			reads = append(reads, event)
+		}
+		if name == "start" {
+			process, _ := os.FindProcess(int(event["pid"].(float64)))
+			if process == nil || process.Signal(syscall.Signal(0)) == nil {
+				t.Fatal("registration worker still live after call", event)
+			}
+			if phase == "body" && event["previous_metadata_live"] != false {
+				t.Fatal("registration overlapping metadata/body", event)
+			}
+		}
+	}
+	if len(reads) != 2 || reads[0]["input_raw"] != reads[1]["input_raw"] || reads[0]["stdout_raw"] != reads[1]["stdout_raw"] || reads[0]["exit_code"] != float64(0) || reads[1]["exit_code"] != float64(0) {
+		t.Fatal("both independent equal current-plan reads missing", reads)
+	}
+	for _, phase := range []string{"metadata", "body"} {
+		if counts["contribution:"+phase+":start"] != 2 {
+			t.Fatal("plan read skipped raw worker", counts)
+		}
+	}
+	retained := 1
+	if mode == "duplicate" {
+		retained = 0
+	}
+	if counts["retained::enumeration"] != retained || counts["retained:metadata:start"] != retained {
+		t.Fatal("post-reservation raw stage count", mode, counts)
+	}
+	body := retained
+	if mode == "metadata-exit" {
+		body = 0
+	}
+	if counts["retained:body:start"] != body {
+		t.Fatal("retained body started before metadata finish or omitted", counts)
+	}
+	wp25Record(t, map[string]any{"control": "native-retained-two-plan-recaptures-and-raw-stage", "mode": mode, "plan_reads": reads, "counts": counts, "raw": string(raw), "all_native_workers_reaped": true})
+}
+
+// Native contribution raw closure keeps its own32MiB supplied bound. A real
+// historical9MiB blob exercises acceptance above artifact metadata's8MiB guard;
+// this is neither public32MiB equality nor an exchange-wire size claim.
+func TestNativeContributionLargeBlobPublicCLI(t *testing.T) {
+	binary := extensionTestBinary(t)
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f, project, id, head := nativeClosureRawFixture(t, binary, format)
+			raw := bytes.Repeat([]byte{'n'}, 9<<20)
+			blob := strings.TrimSpace(string(nativeClosureGitData(t, f, raw, "hash-object", "-w", "--stdin")))
+			tree := f.git(strings.NewReader("100644 blob "+blob+"\tlarge-history.blob\n"), "mktree")
+			parent := f.git(nil, "-c", "user.name=Native large fixture", "-c", "user.email=fixture@hn.invalid", "commit-tree", tree, "-m", "historical nine MiB")
+			currentTree := f.git(nil, "rev-parse", head+"^{tree}")
+			tip := f.git(nil, "-c", "user.name=Native large fixture", "-c", "user.email=fixture@hn.invalid", "commit-tree", currentTree, "-p", parent, "-m", "signed current manifest and bounded history")
+			refs := strings.Fields(f.git(nil, "for-each-ref", "--format=%(refname)", "refs/hn/contributions"))
+			if len(refs) != 1 {
+				t.Fatal(refs)
+			}
+			f.git(nil, "update-ref", refs[0], tip)
+			if got := f.git(nil, "cat-file", "-s", blob); got != "9437184" {
+				t.Fatal("independent large native blob size", got)
+			}
+			wp25Record(t, map[string]any{"control": "native-large-real-blob-construction", "source_assisted_construction": true, "object_format": format, "blob_oid": blob, "blob_bytes": len(raw), "blob_sha256": wp25NativeDigest(raw), "historical_parent": parent, "selected_head": tip, "selected_record_id": id, "native_decoded_limit": 33554432, "artifact_metadata_limit_is_not_native_policy": 8388608, "exchange_wire_equality_claim": false})
+			ledger, _ := nativeClosurePeerInstall(t, f, "", "real-git")
+			nativeClosureReadCall(t, f, project, id, tip, "real-git", true)
+			entries := wp25Read(t, ledger)
+			counts := map[string]int{}
+			for _, line := range bytes.Split(entries, []byte{'\n'}) {
+				var event map[string]any
+				if json.Unmarshal(line, &event) == nil && event["event"] == "start" {
+					counts[event["phase"].(string)]++
+					if event["phase"] == "body" && event["previous_metadata_live"] != false {
+						t.Fatal("large native body began before metadata reap", event)
+					}
+				}
+			}
+			if counts["metadata"] != 1 || counts["body"] != 1 {
+				t.Fatal("large native closure did not use exactly two classic workers", counts)
+			}
+			wp25Record(t, map[string]any{"control": "native-large-real-blob-public-positive", "object_format": format, "actual_worker_counts": counts, "peer_raw": string(entries), "selected_id": id, "selected_head": tip, "actual_raw_blob_bytes": 9437184, "scope": "actual native raw inspect succeeds over an independently constructed historical real Git blob; no artifact8MiB policy reuse"})
 		})
 	}
 }

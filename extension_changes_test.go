@@ -114,30 +114,90 @@ func TestExtensionChangesPrivateProofAccountingAndEviction(t *testing.T) {
 	}
 	descriptor.Facts.Refs = nil
 	descriptor.Selection.Types = []string{}
-	directory := t.TempDir()
-	state, err := extensionChangesOpenState(directory, true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer state.close()
-	first := ""
-	for i := 0; i < 65; i++ {
-		id := fmt.Sprintf("%064x", i)
-		if i == 0 {
-			first = state.token(id, descriptor)
-		}
-		if err = state.write(id, descriptor); err != nil {
-			t.Fatal(err)
-		}
-	}
-	_, err = state.read(first)
-	changesUnitError(t, err, "checkpoint_invalidated")
-	if _, err = state.read(state.token(fmt.Sprintf("%064x", 64), descriptor)); err != nil {
-		t.Fatal("new descriptor lost", err)
-	}
-	entries, err := os.ReadDir(filepath.Join(directory, "hn", "extensions", "changes"))
-	if err != nil || len(entries) != 66 {
-		t.Fatal("descriptor count unbounded", len(entries), err)
+	for _, fixture := range []struct {
+		name   string
+		offset int
+		oldest int
+	}{
+		{name: "creation_order_mtimes", offset: 0, oldest: 0},
+		// Creation-first descriptor 0 must survive: descriptor 32 is oldest.
+		{name: "permuted_mtimes", offset: 32, oldest: 32},
+	} {
+		t.Run(fixture.name, func(t *testing.T) {
+			directory := t.TempDir()
+			state, err := extensionChangesOpenState(directory, true)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer state.close()
+			checkpointDir := filepath.Join(directory, "hn", "extensions", "changes")
+			tokens := make([]string, 65)
+			// Whole-day separation avoids filesystem timestamp-resolution ties.
+			base := time.Unix(946684800, 0)
+			for i := 0; i < 64; i++ {
+				id := fmt.Sprintf("%064x", i)
+				tokens[i] = state.token(id, descriptor)
+				if err = state.write(id, descriptor); err != nil {
+					t.Fatal(err)
+				}
+				mtime := base.Add(time.Duration((i+fixture.offset)%64) * 24 * time.Hour)
+				path := filepath.Join(checkpointDir, id+".json")
+				if err = os.Chtimes(path, mtime, mtime); err != nil {
+					t.Fatal("set descriptor mtime", id, err)
+				}
+				info, err := os.Stat(path)
+				if err != nil {
+					t.Fatal("read descriptor mtime", id, err)
+				}
+				if !info.ModTime().Equal(mtime) {
+					t.Fatalf("descriptor %s mtime: want %s, got %s", id, mtime, info.ModTime())
+				}
+				t.Logf("descriptor %s desired_mtime=%s readback_mtime=%s", id, mtime.UTC().Format(time.RFC3339), info.ModTime().UTC().Format(time.RFC3339))
+			}
+			// All first 64 mtimes have been set and read back before pruning.
+			current := fmt.Sprintf("%064x", 64)
+			tokens[64] = state.token(current, descriptor)
+			if err = state.write(current, descriptor); err != nil {
+				t.Fatal(err)
+			}
+			_, err = state.read(tokens[fixture.oldest])
+			changesUnitError(t, err, "checkpoint_invalidated")
+			t.Logf("minimum-mtime token invalidated: %s", tokens[fixture.oldest])
+			wantNames := map[string]bool{"key": true, "lock": true}
+			for i, token := range tokens {
+				if i == fixture.oldest {
+					continue
+				}
+				if _, err = state.read(token); err != nil {
+					t.Fatal("intended descriptor lost", i, token, err)
+				}
+				wantNames[fmt.Sprintf("%064x.json", i)] = true
+				t.Logf("valid retained token: %s", token)
+			}
+			entries, err := os.ReadDir(checkpointDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(entries) != 66 {
+				t.Fatal("want exactly 64 descriptors plus key and lock", len(entries))
+			}
+			names := make([]string, 0, len(entries))
+			descriptors := 0
+			for _, entry := range entries {
+				if !wantNames[entry.Name()] || !entry.Type().IsRegular() {
+					t.Fatal("unexpected checkpoint entry", entry.Name(), entry.Type())
+				}
+				delete(wantNames, entry.Name())
+				names = append(names, entry.Name())
+				if strings.HasSuffix(entry.Name(), ".json") {
+					descriptors++
+				}
+			}
+			if descriptors != 64 || len(wantNames) != 0 {
+				t.Fatal("checkpoint filename inventory mismatch", descriptors, wantNames)
+			}
+			t.Logf("exact checkpoint entries: %v", names)
+		})
 	}
 	extensionChanges.Lock()
 	prior := extensionChanges.captures
