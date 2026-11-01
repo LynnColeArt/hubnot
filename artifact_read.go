@@ -823,12 +823,8 @@ func artifactCheckSourceWitnesses(ctx context.Context, dir string, sources []art
 			if job == nil {
 				break
 			}
-			if ctx.Err() != nil {
-				return artifactFailure("cancelled", "artifact read cancelled")
-			}
-			<-job.done
-			if ctx.Err() != nil {
-				return artifactFailure("cancelled", "artifact read cancelled")
+			if err := job.admit(ctx); err != nil {
+				return err
 			}
 			start, end := job.start, job.end
 			args := job.args
@@ -889,6 +885,19 @@ type artifactWitnessJob struct {
 	err        error
 	cancel     context.CancelFunc
 	done       chan struct{}
+}
+
+// Admission uses the original parent at both scheduling boundaries. Job errors
+// remain coordinator-owned so only its original fallback/parser selects them.
+func (job *artifactWitnessJob) admit(ctx context.Context) error {
+	if ctx.Err() != nil {
+		return artifactFailure("cancelled", "artifact read cancelled")
+	}
+	<-job.done
+	if ctx.Err() != nil {
+		return artifactFailure("cancelled", "artifact read cancelled")
+	}
+	return nil
 }
 
 func (h *artifactHistory) validate(ctx context.Context) error {

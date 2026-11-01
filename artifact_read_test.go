@@ -4453,7 +4453,7 @@ func intelWitnessPeer() {
 					raw = []byte("malformed\n")
 					exit = 1
 				}
-				if c.Mode == "fallback-held" || c.Mode == "fallback-cancel" || c.Mode == "fallback-fail" || c.Mode == "fallback-overflow" || c.Mode == "fallback-at-bound" {
+				if c.Mode == "fallback-held" || c.Mode == "fallback-cancel" || c.Mode == "fallback-fail" || c.Mode == "fallback-overflow" || c.Mode == "fallback-at-bound" || c.Mode == "fallback-sentinel-malformed" || c.Mode == "fallback-below-sentinel-malformed" {
 					raw = nil
 					exit = 1
 				}
@@ -4480,6 +4480,14 @@ func intelWitnessPeer() {
 				}
 			}
 			if fallback && block == 0 {
+				if c.Mode == "fallback-sentinel-malformed" || c.Mode == "fallback-below-sentinel-malformed" {
+					rows := 65
+					if c.Mode == "fallback-below-sentinel-malformed" {
+						rows = 64
+					}
+					raw = []byte("malformed\n" + strings.Repeat("anything refs/unselected\n", rows-1))
+					exit = 0
+				}
 				if c.Mode == "fallback-held" || c.Mode == "fallback-cancel" {
 					time.Sleep(150 * time.Millisecond)
 				}
@@ -4628,8 +4636,9 @@ func artifactWitnessPairWaveContract(t *testing.T) {
 					}
 				})
 			}
+			t.Run("completed-success-admission", func(t *testing.T) { intelWitnessCompletedAdmission(t, f, actualGit, sources[:64]) })
 			for _, tc := range []struct{ mode, code string }{
-				{"reverse", ""}, {"semantic-cleanup", "verification_failure"}, {"earlier-malformed", "verification_failure"}, {"global-changed", "concurrent_update"}, {"later-failure", "verification_failure"}, {"extra-duplicate", ""}, {"primary-partial", ""}, {"fallback-held", ""}, {"fallback-fail", "verification_failure"}, {"primary-at-bound", ""}, {"primary-overflow", ""}, {"fallback-at-bound", ""}, {"fallback-overflow", "verification_failure"}, {"expiry-prefetch", "cancelled"}, {"fallback-cancel", "cancelled"},
+				{"reverse", ""}, {"fallback-sentinel-malformed", "resource_limit"}, {"fallback-below-sentinel-malformed", "verification_failure"}, {"semantic-cleanup", "verification_failure"}, {"earlier-malformed", "verification_failure"}, {"global-changed", "concurrent_update"}, {"later-failure", "verification_failure"}, {"extra-duplicate", ""}, {"primary-partial", ""}, {"fallback-held", ""}, {"fallback-fail", "verification_failure"}, {"primary-at-bound", ""}, {"primary-overflow", ""}, {"fallback-at-bound", ""}, {"fallback-overflow", "verification_failure"}, {"expiry-prefetch", "cancelled"}, {"fallback-cancel", "cancelled"},
 			} {
 				t.Run(tc.mode, func(t *testing.T) {
 					peer := t.TempDir()
@@ -4655,6 +4664,27 @@ func artifactWitnessPairWaveContract(t *testing.T) {
 						t.Fatal("witness FD leak", base, got)
 					}
 					rows := intelWitnessLedger(t, peer)
+					if tc.mode == "fallback-sentinel-malformed" || tc.mode == "fallback-below-sentinel-malformed" {
+						want := 65
+						if tc.mode == "fallback-below-sentinel-malformed" {
+							want = 64
+							if err.Error() != "verification_failure: invalid selected artifact source witness" {
+								t.Fatal("competing parser refusal not live", err)
+							}
+						}
+						matched := 0
+						for _, r := range rows {
+							if r.Event == "end" && r.Block == 0 && len(r.Args) > 1 && r.Args[1] == "for-each-ref" {
+								matched++
+								if r.Exit != 0 || strings.Count(r.Raw, "\n") != want || !strings.HasPrefix(r.Raw, "malformed\n") {
+									t.Fatal("successful competing fallback stream", r)
+								}
+							}
+						}
+						if matched != 1 {
+							t.Fatal("missing successful competing fallback", matched)
+						}
+					}
 					starts, ends := map[int]bool{}, map[int]bool{}
 					active, maxActive := 0, 0
 					firstEnd := -1
@@ -4703,7 +4733,7 @@ func artifactWitnessPairWaveContract(t *testing.T) {
 							t.Fatal("unreaped owned witness child", pid)
 						}
 					}
-					if os.Getenv("HN_INTEL_TEST_STAGE") == "candidate" {
+					if os.Getenv("HN_INTEL_TEST_STAGE") != "old" {
 						if maxActive > 2 {
 							t.Fatal("more than two producers", maxActive)
 						}
@@ -5121,7 +5151,7 @@ func nativeExactCurrentAuthorityGuards(t *testing.T) {
 							t.Fatal("per-record repository/policy observations", counts)
 						}
 						want := 3
-						if os.Getenv("HN_INTEL_TEST_STAGE") == "candidate" {
+						if os.Getenv("HN_INTEL_TEST_STAGE") != "old" {
 							want = 0
 						}
 						if counts["merge-base"] != want {
@@ -5177,9 +5207,64 @@ func intelAuthorityPublicPlans(t *testing.T, binary string) {
 			}
 		}
 	}
-	if os.Getenv("HN_INTEL_TEST_STAGE") == "candidate" && typed != 2 {
+	if os.Getenv("HN_INTEL_TEST_STAGE") != "old" && typed != 2 {
 		t.Fatal("both retained plans need independent typed record observations", typed, rows)
 	}
 	nativeClosureRetainedJournal(t, f, project, wp25NativeDigest(plan), false)
 	wp25Record(t, map[string]any{"control": "intel-authority-public-two-plans", "source_assisted_fixture": true, "actual_supplied_candidate": binary, "candidate_sha256": wp25Digest(t, binary), "receipt_raw": string(receipt), "expected_plan_raw": string(plan), "typed_record_reads": typed, "legacy_policy_reads": legacy, "ledger": rows, "stage": os.Getenv("HN_INTEL_TEST_STAGE")})
+}
+
+// This SOURCE_ASSISTED seam isolates entry admission of the SAME successful,
+// completed result. The live post-done check is source-traced separately; this
+// cancel-before-call case does not claim to isolate its dynamic transition.
+func intelWitnessCompletedAdmission(t *testing.T, f *artifactCLIFixture, actualGit string, sources []artifactSource) {
+	t.Helper()
+	peer := t.TempDir()
+	path := intelWitnessInstall(t, intelWitnessPeerConfig{actualGit, peer, "completed-success-admission", sources})
+	t.Setenv("PATH", path)
+	_, err := projectGit(context.Background(), f.repo, nil, 256, "rev-parse", "--git-dir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseline := intelWitnessFDs(t)
+	parent, cancelParent := context.WithCancel(context.Background())
+	defer cancelParent()
+	child, cancelJob := context.WithCancel(parent)
+	args := []string{"show-ref", "--verify", "--"}
+	var expected strings.Builder
+	for _, source := range sources {
+		args = append(args, source.Ref)
+		fmt.Fprintf(&expected, "%s %s\n", source.OID, source.Ref)
+	}
+	job := &artifactWitnessJob{start: 0, end: len(sources), args: args, cancel: cancelJob, done: make(chan struct{})}
+	defer func() { job.cancel(); <-job.done }()
+	go func() { job.raw, job.err = projectGit(child, f.repo, nil, 64*512, job.args...); close(job.done) }()
+	<-job.done
+	completedAt := time.Now().UnixNano()
+	if parent.Err() != nil || job.err != nil || len(job.raw) == 0 || string(job.raw) != expected.String() {
+		t.Fatal("real primary must complete successfully BEFORE parent cancellation", parent.Err(), job.err, string(job.raw))
+	}
+	original := bytes.Clone(job.raw)
+	rows := intelWitnessLedger(t, peer)
+	for _, r := range rows {
+		if r.Event == "start" && syscall.Kill(r.PID, 0) == nil {
+			t.Fatal("completed real Git job not Wait-reaped", r)
+		}
+	}
+	admitted := job.admit(parent)
+	intelWitnessResult(t, admitted, "")
+	cancelParent()
+	cancelledAt := time.Now().UnixNano()
+	refused := job.admit(parent)
+	intelWitnessResult(t, refused, "cancelled")
+	if job.err != nil || !bytes.Equal(job.raw, original) {
+		t.Fatal("failed command cannot explain completed-result refusal", job.err)
+	}
+	job.cancel()
+	<-job.done
+	after := intelWitnessFDs(t)
+	if !reflect.DeepEqual(baseline, after) {
+		t.Fatal("admission seam descriptor leak", baseline, after)
+	}
+	wp25Record(t, map[string]any{"control": "intel-completed-success-admission", "source_assisted": true, "proof_scope": "entry admission of the same successfully completed primary; not a dynamic post-done transition or supplied-package claim", "original_parent_live_at_completion": true, "job_error_before_and_after_cancel": fmt.Sprint(job.err), "raw_stdout": string(original), "expected_stdout": expected.String(), "argv": args, "completed_at_ns": completedAt, "parent_cancelled_at_ns": cancelledAt, "uncancelled_admission_error": fmt.Sprint(admitted), "cancelled_admission_error": fmt.Sprint(refused), "real_command_succeeded_before_parent_cancel": true, "all_direct_PIDs_absent_before_parent_cancel": true, "ledger": rows, "FD_before": baseline, "FD_after": after})
 }
