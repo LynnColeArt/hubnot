@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-31",
+  "supersedes_only": [
+    "earlier no-persistent-preflight-process/no-batch restriction inside private count helper",
+    "earlier rev-list traversal and explicit shallow/graft bypass mechanism; raw parent semantics remain exact"
+  ],
+  "historical_records_immutable": true,
+  "rejected_intermediate": "79c3cf1e793136a57329450a323a084c40bbeae2",
+  "review_sha256": "152bc75db392e4ca51ceb506ba3d7001c4f90fe70bd8d04b8cd70e1945e5e185",
+  "refined_existing_region": {
+    "path": "artifact_read.go",
+    "original_owner": "WP05",
+    "owner_state": "approved/inactive",
+    "allowed": "artifactPreflightRecordCount and adjacent private count-only session type/methods/helpers and directly necessary imports; existing count call at loadArtifactHistoryFromSources remains scoped",
+    "traversal": "unique captured immutable tips and raw sole-parent bytes, not rev-list/shallow/graft graph interpretation",
+    "process": "one nonempty-selection scoped real Git cat-file --batch-command session WITHOUT --buffer; info precedes separately authorized contents",
+    "metadata_first": "exact OID, commit type, nonnegative declared size,8MiB each and256MiB unique-commit-subset aggregate BEFORE contents request/body allocation",
+    "contents": "repeat exact OID/type/size header, bounded exact body plus LF, raw object hash before parent interpretation",
+    "cleanup": "one lifecycle owner closes/cancels all pipes and kills/Wait-reaps exact child on every return; no detached work",
+    "preserve": [
+      "artifactObjectReader and projectGit bodies and other callers",
+      "existing full tree/object/hash/size/signature/schema/continuity verification",
+      "existing old count defense and source witness checks",
+      "100000/100001 unique raw-commit ancestry ceiling",
+      "30-second stage and cancellation/refusal semantics",
+      "no-fetch/no-replace/scrubbed explicit repository environment",
+      "all public/private/authority/data/wire semantics"
+    ],
+    "stop_if": "further source paths/counts, fallback/error policy or compatibility semantics are required"
+  },
+  "already_owned_test_paths": [
+    "artifact_read_test.go",
+    "extension_package_acceptance_test.go"
+  ],
+  "unchanged_existing_TEST_ONLY_guard_exception": {
+    "path": "extension_default_performance_test.go",
+    "original_owner": "WP24",
+    "closed_total": 317,
+    "inherited_count": 311,
+    "WP24_source_paths": 5,
+    "WP25_source_paths": 1,
+    "per_input_hash_equality": "EVERY original311 path at NEW root-attested reviewed bytes",
+    "no_further_edit_or_capture_change_authorized": true
+  },
+  "new_Go_files": [],
+  "WP25_owned_paths_unchanged": 14,
+  "all_original_ownership_create_intent_authoritative_surfaces_unchanged": true,
+  "no_new_dependency_global_init_or_default_probe": true,
+  "compatibility": {
+    "qualified_version_recording_required": true,
+    "root_observation": "local Git2.43 advertises --batch-command",
+    "default_Git2x_dependency_wording_unchanged": true,
+    "not_a_claim_for_every_Git2x_release": true,
+    "unsupported_capability_extra_fallback_or_error_policy": "report to root before implementing"
+  }
+}
