@@ -6,6 +6,7 @@ import (
 	"compress/zlib"
 	"context"
 	"crypto/ed25519"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
@@ -2444,6 +2445,66 @@ func nativeClosurePeerInstall(t *testing.T, f *wp25PublicCountFixture, head, mod
 		targetRole = "retained"
 	}
 	configuration := map[string]any{"git": actualGit, "mode": mode, "ledger": ledger, "state": state, "objects": objects, "target_role": targetRole}
+	if mode == "body-real-truncated" {
+		if targetRole != "retained" || len(ids) == 0 {
+			t.Fatal("real truncation must target retained BODY only")
+		}
+		oid := ids[0]
+		objectDir := filepath.Join(f.repo, ".git", "objects", oid[:2])
+		_, dirErr := os.Stat(objectDir)
+		if dirErr != nil && !os.IsNotExist(dirErr) {
+			t.Fatal(dirErr)
+		}
+		if err := os.MkdirAll(objectDir, 0700); err != nil {
+			t.Fatal(err)
+		}
+		path, backup := filepath.Join(objectDir, oid[2:]), filepath.Join(root, "original-native-object")
+		originalInfo, statErr := os.Lstat(path)
+		if statErr != nil && !os.IsNotExist(statErr) {
+			t.Fatal(statErr)
+		}
+		configuration["fault_path"], configuration["fault_backup"] = path, backup
+		configuration["fault_original_present"] = statErr == nil
+		if statErr == nil {
+			if !originalInfo.Mode().IsRegular() {
+				t.Fatal("unexpected fixture object shape", originalInfo.Mode())
+			}
+			configuration["fault_original_mode"] = uint32(originalInfo.Mode().Perm())
+			configuration["fault_original_digest"] = wp25Digest(t, path)
+			if err := os.Link(path, backup); err != nil {
+				t.Fatal("fixture hardlink preserving original inode", err)
+			}
+		}
+		encoded, _ := json.Marshal(configuration)
+		var fault nativeClosurePeerConfig
+		if json.Unmarshal(encoded, &fault) != nil {
+			t.Fatal("fixture restoration configuration")
+		}
+		t.Cleanup(func() {
+			err := nativeClosurePeerRestoreFault(fault)
+			var same bool
+			if statErr == nil {
+				restored, readErr := os.Stat(path)
+				same = readErr == nil && os.SameFile(originalInfo, restored)
+				if !same {
+					t.Errorf("fixture original inode not restored: %v", readErr)
+				}
+			} else {
+				_, readErr := os.Lstat(path)
+				same = os.IsNotExist(readErr)
+				if !same {
+					t.Errorf("fixture override remains: %v", readErr)
+				}
+			}
+			if os.IsNotExist(dirErr) {
+				_ = os.Remove(objectDir)
+			}
+			wp25Record(t, map[string]any{"control": "native-real-git-truncation-fixture-cleanup", "original_present": statErr == nil, "original_inode_or_absence_restored": same, "restore_error": fmt.Sprint(err), "source_assisted": true})
+			if err != nil {
+				t.Errorf("fixture restoration: %v", err)
+			}
+		})
+	}
 	raw, err := json.Marshal(configuration)
 	if err != nil {
 		t.Fatal(err)
@@ -2477,6 +2538,7 @@ func nativeClosurePeerInstall(t *testing.T, f *wp25PublicCountFixture, head, mod
 		raw, readErr := os.ReadFile(ledger)
 		wp25Record(t, map[string]any{"control": "native-closure-peer-ledger-final", "mode": mode, "raw": string(raw), "read_error": fmt.Sprint(readErr), "source_assisted": mode != "real-git"})
 	})
+	t.Cleanup(func() { nativeClosureReleaseDescriptorHolders(t, ledger) })
 	return ledger, state
 }
 
@@ -2494,19 +2556,25 @@ func TestNativeContributionClosurePeer(t *testing.T) {
 	if json.Unmarshal(raw, &cfg) != nil || cfg.Git == "" || cfg.Ledger == "" || cfg.State == "" {
 		os.Exit(73)
 	}
-	if len(os.Args) == 6 && os.Args[4] == "--stderr-holder" {
-		os.Exit(nativeClosurePeerStderrHolder(cfg, os.Args[3], os.Args[5]))
+	if len(os.Args) == 6 && (os.Args[4] == "--stderr-holder" || os.Args[4] == "--stdout-holder") {
+		descriptor := strings.TrimSuffix(strings.TrimPrefix(os.Args[4], "--"), "-holder")
+		os.Exit(nativeClosurePeerDescriptorHolder(cfg, os.Args[3], os.Args[5], descriptor))
 	}
 	os.Exit(nativeClosurePeerRun(cfg, os.Args[3], os.Args[4:]))
 }
 
 type nativeClosurePeerConfig struct {
-	Git        string `json:"git"`
-	Mode       string `json:"mode"`
-	Ledger     string `json:"ledger"`
-	State      string `json:"state"`
-	TargetRole string `json:"target_role"`
-	Objects    map[string]struct {
+	Git                  string `json:"git"`
+	Mode                 string `json:"mode"`
+	Ledger               string `json:"ledger"`
+	State                string `json:"state"`
+	TargetRole           string `json:"target_role"`
+	FaultPath            string `json:"fault_path"`
+	FaultBackup          string `json:"fault_backup"`
+	FaultOriginalDigest  string `json:"fault_original_digest"`
+	FaultOriginalPresent bool   `json:"fault_original_present"`
+	FaultOriginalMode    uint32 `json:"fault_original_mode"`
+	Objects              map[string]struct {
 		Kind string `json:"kind"`
 		Size int    `json:"size"`
 		Body []byte `json:"body"`
@@ -2648,9 +2716,34 @@ func nativeClosurePeerRun(cfg nativeClosurePeerConfig, config string, argv []str
 	if cfg.Mode == "real-git" || state.Role != cfg.TargetRole {
 		return nativeClosurePeerExec(cfg, argv)
 	}
+	if cfg.Mode == "body-real-truncated" {
+		if state.Role != "retained" {
+			return 90
+		}
+		if phase == "metadata" {
+			return nativeClosurePeerExec(cfg, argv)
+		}
+		return nativeClosurePeerRealTruncatedBody(cfg, argv)
+	}
 	stall := func(stage string) {
-		log("stall-entry", map[string]any{"phase": phase, "stage": stage, "session": session, "role": state.Role, "invocation": state.Invocation})
-		time.Sleep(60 * time.Second)
+		challenge, ack := nativeClosureChallengePaths(cfg.Ledger, os.Getpid(), session)
+		log("stall-entry", map[string]any{"phase": phase, "stage": stage, "session": session, "role": state.Role, "invocation": state.Invocation, "challenge_path": challenge, "ack_path": ack})
+		deadline, lastNonce := time.Now().Add(60*time.Second), ""
+		for time.Now().Before(deadline) {
+			if raw, err := os.ReadFile(challenge); err == nil {
+				var request nativeClosurePhaseEvent
+				if json.Unmarshal(raw, &request) == nil && request.Event == "live-challenge" && len(request.Nonce) == 64 && request.Nonce != lastNonce && request.PID == os.Getpid() && request.PPID == os.Getppid() && request.Session == session && request.Mode == cfg.Mode && request.Role == state.Role && request.Phase == phase && request.Stage == stage {
+					response := nativeClosurePhaseEvent{Event: "live-ack", PID: os.Getpid(), PPID: os.Getppid(), Session: session, Invocation: state.Invocation, Mode: cfg.Mode, Role: state.Role, Phase: phase, Stage: stage, Nonce: request.Nonce, AtNS: time.Now().UnixNano()}
+					encoded, err := json.Marshal(response)
+					if err != nil || os.WriteFile(ack, encoded, 0600) != nil {
+						os.Exit(97)
+					}
+					lastNonce = request.Nonce
+					log("live-challenge-acknowledged", map[string]any{"phase": phase, "stage": stage, "session": session, "role": state.Role, "invocation": state.Invocation, "nonce": request.Nonce, "ack_raw": string(encoded)})
+				}
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
 	}
 	if cfg.Mode == phase+"-stderr9000" {
 		nativeClosurePeerWrite(os.Stderr, bytes.Repeat([]byte{'e'}, 9000))
@@ -2782,7 +2875,7 @@ func nativeClosurePeerRun(cfg nativeClosurePeerConfig, config string, argv []str
 	return 0
 }
 
-func nativeClosurePeerStderrHolder(cfg nativeClosurePeerConfig, config, phase string) int {
+func nativeClosurePeerDescriptorHolder(cfg nativeClosurePeerConfig, config, phase, descriptor string) int {
 	release := filepath.Join(filepath.Dir(config), "release-holder")
 	deadline := time.Now().Add(60 * time.Second)
 	for time.Now().Before(deadline) {
@@ -2795,7 +2888,7 @@ func nativeClosurePeerStderrHolder(cfg nativeClosurePeerConfig, config, phase st
 	}
 	// Preserve the holder receipt's distinct schema: it is an explicit exit
 	// receipt, not a native worker completion or an OS orphan-reap claim.
-	raw, err := json.Marshal(map[string]any{"event": "stderr-holder-exit", "pid": os.Getpid(), "ppid": os.Getppid(), "phase": phase, "at_ns": time.Now().UnixNano()})
+	raw, err := json.Marshal(map[string]any{"event": descriptor + "-holder-exit", "pid": os.Getpid(), "ppid": os.Getppid(), "phase": phase, "at_ns": time.Now().UnixNano()})
 	if err != nil {
 		return 87
 	}
@@ -2928,7 +3021,10 @@ func TestNativeContributionClosureProtocolCLI(t *testing.T) {
 type nativeClosurePhaseEvent struct {
 	Event, Phase, Stage, Mode, Role string
 	PID, PPID, Session, Invocation  int
-	AtNS                            int64 `json:"at_ns"`
+	AtNS                            int64  `json:"at_ns"`
+	Nonce                           string `json:"nonce,omitempty"`
+	ChallengePath                   string `json:"challenge_path,omitempty"`
+	AckPath                         string `json:"ack_path,omitempty"`
 }
 
 func nativeClosureObservedRead(t *testing.T, f *wp25PublicCountFixture, project, id, head, mode, ledger string) {
@@ -2959,6 +3055,7 @@ func nativeClosureObservedRead(t *testing.T, f *wp25PublicCountFixture, project,
 		limit, tick := time.NewTimer(5*time.Second), time.NewTicker(5*time.Millisecond)
 		defer limit.Stop()
 		defer tick.Stop()
+		liveProof := map[string]any{"peer_live_acknowledged": false}
 		finish := func(marker nativeClosurePhaseEvent, raw, failure string) {
 			alive := cmd.Process.Signal(syscall.Signal(0)) == nil
 			select {
@@ -2966,7 +3063,7 @@ func nativeClosureObservedRead(t *testing.T, f *wp25PublicCountFixture, project,
 				alive = false
 			default:
 			}
-			observed <- map[string]any{"expected_phase": phase, "expected_stage": stage, "expected_session": session, "expected_mode": mode, "candidate_pid": candidatePID, "candidate_alive": alive, "marker": marker, "marker_raw": raw, "observed_at": time.Now().UTC().Format(time.RFC3339Nano), "observed_elapsed_nanoseconds": int64(time.Since(start)), "error": failure}
+			observed <- map[string]any{"expected_phase": phase, "expected_stage": stage, "expected_session": session, "expected_mode": mode, "candidate_pid": candidatePID, "candidate_alive": alive, "peer_liveness": liveProof, "marker": marker, "marker_raw": raw, "observed_at": time.Now().UTC().Format(time.RFC3339Nano), "observed_elapsed_nanoseconds": int64(time.Since(start)), "error": failure}
 		}
 		for {
 			select {
@@ -3000,8 +3097,66 @@ func nativeClosureObservedRead(t *testing.T, f *wp25PublicCountFixture, project,
 					if !matched || marker.PID <= 0 || marker.PPID != candidatePID || marker.Phase != phase || marker.Stage != stage || marker.Session != session || marker.Mode != mode || marker.Role != "contribution" || marker.AtNS <= 0 || marker.AtNS > time.Now().UnixNano() || time.Since(start) >= 5*time.Second {
 						failure = "wrong native phase/mode/PID/PPID/session witness"
 					}
-					finish(marker, string(line), failure)
-					return
+					if failure != "" {
+						finish(marker, string(line), failure)
+						return
+					}
+					challenge, ack := nativeClosureChallengePaths(ledger, marker.PID, marker.Session)
+					if marker.ChallengePath != challenge || marker.AckPath != ack {
+						finish(marker, string(line), "wrong native challenge scope")
+						return
+					}
+					nonce := make([]byte, 32)
+					if _, err := rand.Read(nonce); err != nil {
+						finish(marker, string(line), err.Error())
+						return
+					}
+					request := marker
+					request.Event = "live-challenge"
+					request.Nonce = hex.EncodeToString(nonce)
+					request.AtNS = time.Now().UnixNano()
+					encoded, err := json.Marshal(request)
+					if err != nil {
+						finish(marker, string(line), err.Error())
+						return
+					}
+					if err = os.WriteFile(challenge, encoded, 0600); err != nil {
+						finish(marker, string(line), err.Error())
+						return
+					}
+					liveProof = map[string]any{"peer_live_acknowledged": false, "challenge_raw": string(encoded), "challenge_path": challenge, "ack_path": ack, "challenge_written_at_ns": request.AtNS}
+					for {
+						select {
+						case <-processDone:
+							finish(marker, string(line), "candidate exited before live peer ACK")
+							return
+						case <-limit.C:
+							finish(marker, string(line), "native peer liveness challenge unacknowledged within5s")
+							return
+						case <-tick.C:
+							rawAck, readErr := os.ReadFile(ack)
+							if os.IsNotExist(readErr) {
+								continue
+							}
+							if readErr != nil {
+								finish(marker, string(line), readErr.Error())
+								return
+							}
+							var response nativeClosurePhaseEvent
+							if json.Unmarshal(rawAck, &response) != nil {
+								continue
+							}
+							if response.Event != "live-ack" || response.Nonce != request.Nonce || response.PID != marker.PID || response.PPID != candidatePID || response.Session != marker.Session || response.Invocation != marker.Invocation || response.Mode != mode || response.Role != marker.Role || response.Phase != phase || response.Stage != stage || response.AtNS < request.AtNS || response.AtNS > time.Now().UnixNano() || time.Since(start) >= 5*time.Second {
+								finish(marker, string(line), "wrong live peer nonce/PID/PPID/session/phase ACK")
+								return
+							}
+							liveProof["peer_live_acknowledged"] = true
+							liveProof["ack_raw"] = string(rawAck)
+							liveProof["ack_observed_at_ns"] = time.Now().UnixNano()
+							finish(marker, string(line), "")
+							return
+						}
+					}
 				}
 			}
 		}
@@ -3013,7 +3168,8 @@ func nativeClosureObservedRead(t *testing.T, f *wp25PublicCountFixture, project,
 	<-observerDone
 	after := f.snapshot()
 	wp25Record(t, map[string]any{"control": "native-closure-pre-deadline-phase", "mode": mode, "candidate": f.binary, "candidate_sha256": wp25Digest(t, f.binary), "candidate_pid": candidatePID, "argv": args, "cwd": f.repo, "stdout_raw": stdout.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(watchdog.Err()), "command_elapsed_nanoseconds": int64(commandElapsed), "phase_observation": witness, "observer_joined": true, "protected_before": before, "protected_after": after, "product_milliseconds": 30000})
-	if witness["error"] != "" || witness["candidate_alive"] != true {
+	proof, proofOK := witness["peer_liveness"].(map[string]any)
+	if witness["error"] != "" || witness["candidate_alive"] != true || !proofOK || proof["peer_live_acknowledged"] != true {
 		t.Fatal("native early phase witness failed", witness)
 	}
 	if watchdog.Err() != nil || err == nil || stdout.Len() != 0 || commandElapsed < 29*time.Second || commandElapsed > 45*time.Second || !reflect.DeepEqual(before, after) {
@@ -3266,6 +3422,9 @@ func nativeClosureRegisterCall(t *testing.T, f *wp25PublicCountFixture, expected
 		if mode == "body-missing" {
 			want = "bounded Git " + expectedOID + " failed: retained object unavailable"
 		}
+		if mode == "body-real-truncated" {
+			want = "bounded Git " + expectedOID + " failed: exit status 128"
+		}
 		if out.Len() != 0 || stderr.String() != "hn: "+want+"\n" {
 			t.Fatal("retained exact native failure", want, &out, &stderr)
 		}
@@ -3317,7 +3476,7 @@ func nativeClosureRetainedJournal(t *testing.T, f *wp25PublicCountFixture, proje
 
 func TestNativeRetainedClosurePublicCLI(t *testing.T) {
 	binary := extensionTestBinary(t)
-	for _, mode := range []string{"pass", "metadata-exit", "body-exit", "body-missing", "metadata-stderr9000", "body-stderr9000"} {
+	for _, mode := range []string{"pass", "metadata-exit", "body-exit", "body-missing", "body-real-truncated", "metadata-stderr9000", "body-stderr9000"} {
 		t.Run(mode, func(t *testing.T) {
 			f, project, head, roots, plan := nativeClosureRegisterFixture(t, binary)
 			ids := strings.Fields(f.git(nil, append([]string{"rev-list", "--objects", "--no-object-names"}, strings.Fields(roots)...)...))
@@ -3347,6 +3506,22 @@ func TestNativeRetainedClosurePublicCLI(t *testing.T) {
 				}
 			}
 			account := nativeClosureRetainedJournal(t, f, project, expected, !success)
+			if mode == "body-real-truncated" {
+				raw := wp25Read(t, ledger)
+				found := 0
+				for _, line := range bytes.Split(raw, []byte{'\n'}) {
+					var event map[string]any
+					if json.Unmarshal(line, &event) == nil && event["event"] == "real-git-body-fault" {
+						found++
+						if event["actual_exit_code"] != float64(128) || event["fault_oid"] != first || event["restored"] != true || event["real_git_wait_reaped"] != true || !strings.HasPrefix(event["actual_stdout_raw"].(string), first+" ") {
+							t.Fatal("actual truncated producer/status/identity/restoration missing", event)
+						}
+					}
+				}
+				if found != 1 {
+					t.Fatal("real truncated retained BODY control did not execute", string(raw))
+				}
+			}
 			if !success {
 				raw, err := os.ReadFile(ledger)
 				if err != nil {
@@ -3964,4 +4139,162 @@ func TestNativeContributionLargeBlobPublicCLI(t *testing.T) {
 			wp25Record(t, map[string]any{"control": "native-large-real-blob-public-positive", "object_format": format, "actual_worker_counts": counts, "peer_raw": string(entries), "selected_id": id, "selected_head": tip, "actual_raw_blob_bytes": 9437184, "scope": "actual native raw inspect succeeds over an independently constructed historical real Git blob; no artifact8MiB policy reuse"})
 		})
 	}
+}
+
+// This test-only fault is strictly after retained metadata admission. Backup
+// hardlinks preserve an existing original inode; parent cleanup also restores it
+// if the peer is killed. No production diagnostic probe or retry is introduced.
+func nativeClosurePeerRestoreFault(cfg nativeClosurePeerConfig) error {
+	if cfg.FaultPath == "" {
+		return nil
+	}
+	if cfg.FaultOriginalPresent {
+		if _, err := os.Stat(cfg.FaultBackup); err == nil {
+			if err = os.Rename(cfg.FaultBackup, cfg.FaultPath); err != nil {
+				return err
+			}
+		} else if !os.IsNotExist(err) {
+			return err
+		}
+		info, err := os.Lstat(cfg.FaultPath)
+		if err != nil {
+			return err
+		}
+		raw, err := os.ReadFile(cfg.FaultPath)
+		if err != nil {
+			return err
+		}
+		digest := sha256.Sum256(raw)
+		if !info.Mode().IsRegular() || uint32(info.Mode().Perm()) != cfg.FaultOriginalMode || hex.EncodeToString(digest[:]) != cfg.FaultOriginalDigest {
+			return errors.New("fixture original bytes/mode not restored")
+		}
+		return nil
+	}
+	if err := os.Remove(cfg.FaultPath); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
+func nativeClosurePeerRealTruncatedBody(cfg nativeClosurePeerConfig, argv []string) int {
+	if cfg.TargetRole != "retained" || cfg.FaultPath == "" || len(argv) < 1 || argv[len(argv)-1] != "--batch" {
+		return 91
+	}
+	ids := make([]string, 0, len(cfg.Objects))
+	for oid := range cfg.Objects {
+		ids = append(ids, oid)
+	}
+	sort.Strings(ids)
+	if len(ids) == 0 {
+		return 91
+	}
+	oid := ids[0]
+	object := cfg.Objects[oid]
+	if !strings.HasSuffix(cfg.FaultPath, filepath.Join(oid[:2], oid[2:])) {
+		return 91
+	}
+	defer func() { _ = nativeClosurePeerRestoreFault(cfg) }()
+	var encoded bytes.Buffer
+	writer := zlib.NewWriter(&encoded)
+	if _, err := fmt.Fprintf(writer, "%s %d\x00", object.Kind, object.Size); err != nil {
+		return 92
+	}
+	if _, err := writer.Write(object.Body); err != nil {
+		return 92
+	}
+	if writer.Close() != nil || encoded.Len() < 3 {
+		return 92
+	}
+	// Unlink only the disposable fixture pathname; the original inode is held by
+	// the parent's hardlink until normal or parent-cleanup restoration.
+	if err := os.Remove(cfg.FaultPath); err != nil && !os.IsNotExist(err) {
+		return 93
+	}
+	if os.WriteFile(cfg.FaultPath, encoded.Bytes()[:encoded.Len()-2], 0444) != nil {
+		return 93
+	}
+	cmd := exec.Command(cfg.Git, argv...)
+	cmd.Stdin = os.Stdin
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = io.MultiWriter(os.Stdout, &stdout), io.MultiWriter(os.Stderr, &stderr)
+	if cmd.Start() != nil {
+		return 94
+	}
+	pid := cmd.Process.Pid
+	err := cmd.Wait()
+	code := 0
+	if err != nil {
+		var exit *exec.ExitError
+		if !errors.As(err, &exit) {
+			return 95
+		}
+		code = exit.ExitCode()
+	}
+	restoreErr := nativeClosurePeerRestoreFault(cfg)
+	nativeClosurePeerLog(cfg, "real-git-body-fault", map[string]any{"fault_oid": oid, "phase": "body", "role": "retained", "actual_git": cfg.Git, "argv": argv, "real_git_pid": pid, "real_git_ppid": os.Getpid(), "real_git_wait_reaped": true, "actual_exit_code": code, "actual_wait_error": fmt.Sprint(err), "actual_stdout_raw": stdout.String(), "actual_stderr_raw": stderr.String(), "restored": restoreErr == nil, "restore_error": fmt.Sprint(restoreErr), "fault": "source-assisted truncated loose-object zlib checksum after real metadata; stdin/stdout/stderr and actual exit forwarded"})
+	if restoreErr != nil {
+		return 96
+	}
+	return code
+}
+
+func nativeClosureChallengePaths(ledger string, pid, session int) (string, string) {
+	prefix := filepath.Join(filepath.Dir(ledger), fmt.Sprintf("live-peer-%d-%d", pid, session))
+	return prefix + ".challenge", prefix + ".ack"
+}
+
+// This also joins controlled stdout holders used by the marker-then-exit
+// negative. Exit receipts are fixture evidence; OS init owns orphan reaping.
+func nativeClosureReleaseDescriptorHolders(t *testing.T, ledger string) {
+	t.Helper()
+	raw, err := os.ReadFile(ledger)
+	if os.IsNotExist(err) {
+		return
+	}
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	holders := map[int]string{}
+	for _, line := range bytes.Split(raw, []byte{'\n'}) {
+		var event map[string]any
+		if json.Unmarshal(line, &event) == nil && (event["event"] == "stdout-holder" || event["event"] == "stderr-holder") {
+			holders[int(event["holder_pid"].(float64))] = event["event"].(string) + "-exit"
+		}
+	}
+	if len(holders) == 0 {
+		return
+	}
+	if err = os.WriteFile(filepath.Join(filepath.Dir(ledger), "release-holder"), []byte("release\n"), 0600); err != nil {
+		t.Error(err)
+		return
+	}
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		raw, err = os.ReadFile(ledger)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		remaining := map[int]string{}
+		for pid, event := range holders {
+			remaining[pid] = event
+		}
+		for _, line := range bytes.Split(raw, []byte{'\n'}) {
+			var event map[string]any
+			if json.Unmarshal(line, &event) == nil {
+				if pid, ok := event["pid"].(float64); ok && event["event"] == remaining[int(pid)] {
+					delete(remaining, int(pid))
+				}
+			}
+		}
+		if len(remaining) == 0 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Errorf("controlled descriptor holder did not acknowledge cleanup release: %v", remaining)
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	wp25Record(t, map[string]any{"control": "native-descriptor-holder-parent-cleanup-release", "holders": holders, "all_explicit_exit_receipts_observed": true, "raw": string(raw), "os_orphan_reaping": "OS init; not claimed as native Wait ownership"})
 }

@@ -63,3 +63,62 @@ explicit blocker. A strace skip or a cross-compiled package is no native proof.
 
 Source and package evidence, final row results and unresolved blockers will be
 synchronized here before T100–T103 completion and normal independent review.
+
+The native retained-contribution correction uses its own sequential classic
+`cat-file --batch-check` and `--batch` workers. All supplied metadata/count/byte
+admission and metadata EOF/Wait/reaping precede any body request. Exact repeated
+headers, Git hashes, framing and final body EOF/Wait precede the unchanged native
+preflight and authority/accounting steps. Native stderr is discarded through an
+owned, joined drainer; it has no artifact8192-byte cap. The real9MiB historical
+blob controls distinguish native policy from artifact8MiB metadata policy; they
+claim neither public32MiB equality nor exchange-wire equality.
+
+Two narrow diagnostic compatibility decisions are explicit. An admitted exact
+body-phase `<OID> missing` marker retains the old logical body wrapper with
+`missing contribution object` or `retained object unavailable`; its underlying
+suffix/type necessarily differs from the old Git128 cause. Metadata missing still
+uses its existing byte refusal, and real truncated producer failures retain the
+actual ExitError. Indexed non-blob payload/signature roles alone retain the
+original bounded semantic `show`, after raw finalization and all prior gates;
+normal blobs use same-call offsets. Raw failure never invokes that role fallback.
+No claim that every old diagnostic suffix is unchanged follows.
+
+Protocol fault peers reexec the existing compiled Go harness. They require no
+Python, runtime compiler, source build or additional installed tool. A five-second
+phase witness requires a fresh nonce ACK from the same blocked peer, bound to its
+actual PID/PPID/session/phase/stage, alongside the live candidate and joined
+observer. A marker or PID presence alone is insufficient. Controlled descriptor
+holders have explicit fixture release/exit receipts; OS init owns orphan reaping,
+which is separate from the native worker's mandatory Wait. Synthetic faults and
+source-assisted object mutation remain distinct from real Git/public outcomes.
+
+The checkpoint fixture sets and reads back distinct mtimes before pruning. Its
+second fresh case makes descriptor32 oldest while creation-first0 survives; the
+original accounting and memory-eviction blocks remain unchanged. The historical
+failure did not retain its actual old mtime/order sequence, so its cause remains
+a source-supported hypothesis, not a recovered observation.
+
+Qualification race-harness execution uses `GORACE=atexit_sleep_ms=0` to remove the
+race detector's post-exit delay while retaining race detection. Product deadlines,
+KILL/cleanup assertions and performance flags/math stay unchanged. Test-peer
+launchers forward only the already configured outer value; unset remains unset.
+The qualification root records then clears ambient `XDG_CONFIG_HOME` so isolated
+legacy fixture HOME paths remain independent. Same-binary shared-config failure
+and blank-config success establish that mechanism; the original CI ambient path
+was not retained. Explicit OS config pins and causal registry-read controls remain.
+
+The single unchanged tracker default-inert fixture runs at its exact top-level
+name in the same compiled harness because its existing temporary-file pattern
+contains `t.Name()`. Its child retains trace/binary/reference selectors, the
+configured race option and actual named execution/pass/no-skip checks. Ordinary
+standalone reference-consumer journeys are separate requirements.
+
+Literal native100000 event/ref controls retain exact signed IDs, terminal-event
+readback, first-over refusal, protected-state and recovery assertions. The public
+combined graph16384/16385/recovery control is an all-envelope specialization with
+zero native dependency facts, genuine retained registrations and authorized
+rollovers. Its explicit3600000ms native-CLI policy isolates the numeric ceiling;
+it makes no default/host throughput promise. Immediate command-only timings are
+recorded separately from older elapsed observation spans that include subsequent
+state hashing. All new-source full/default/performance/native gates remain
+pending until their actual frozen results replace this pending report.

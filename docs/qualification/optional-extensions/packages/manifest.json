@@ -4817,5 +4817,22 @@
     "hash_before_parent": true,
     "later_full_verifier_preserved": true,
     "status": "PENDING independent corrected-source review and final qualification"
+  },
+  "native_retention_transport": {
+    "status": "PENDING_FINAL_SOURCE_AND_RUNTIME_QUALIFICATION",
+    "production_snapshot": "77156455fe1a7452b09c5ac88101354c63cd78b6",
+    "workers": "sequential classic --batch-check EOF/Wait/reap then --batch EOF/Wait/reap",
+    "policy": "native supplied limits and discard-only stderr; separate from artifact transport",
+    "body_missing_compatibility": "exact admitted body marker uses old logical wrapper with honest native missing cause; metadata and real ExitError cases remain separate",
+    "non_blob_role_compatibility": "original bounded semantic show only for admitted indexed non-blob role at original boundary; never raw-failure fallback",
+    "peer_tooling": "compiled Go harness reexec; fresh nonce/PID/PPID/session/phase/stage live ACK; no Python/compiler/source fallback",
+    "checkpoint_fixture": "distinct verified mtimes; alternate oldest32 versus creation-first0; original accounting and memory blocks exact",
+    "old_results": "all historical failed/development/source/native results retain original identities; no new-source package row inferred",
+    "required_fresh_gates": [
+      "independent complete source review and root311/317 attestation",
+      "unchanged complete default and4320 paired capture",
+      "uncached full-source race/static/build/format",
+      "eight actual native package roots and twelve supplied references"
+    ]
   }
 }
