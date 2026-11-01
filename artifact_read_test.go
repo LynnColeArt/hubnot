@@ -3972,17 +3972,53 @@ func TestNativeContributionWorkerSetupOwnership(t *testing.T) {
 		warmR.Close()
 		warmW.Close()
 		fdNames := func() []string {
-			entries, err := os.ReadDir("/dev/fd")
+			observer, err := os.Open("/dev/fd")
 			if err != nil {
 				t.Fatal(err)
 			}
-			names := []string{}
-			for _, entry := range entries {
-				names = append(names, entry.Name())
+			names, readErr := observer.Readdirnames(-1)
+			closeErr := observer.Close()
+			if readErr != nil {
+				t.Fatal(readErr)
+			}
+			if closeErr != nil {
+				t.Fatal(closeErr)
 			}
 			sort.Strings(names)
 			return names
 		}
+		baseline := fdNames()
+		stable := fdNames()
+		if !reflect.DeepEqual(baseline, stable) {
+			t.Fatal("descriptor observer baseline unstable", baseline, stable)
+		}
+		t.Logf("descriptor detector stable baseline=%v repeated=%v", baseline, stable)
+		held, err := os.Open(os.DevNull)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			if held != nil {
+				if err := held.Close(); err != nil {
+					t.Error("close held descriptor after failed detector", err)
+				}
+			}
+		}()
+		withHeld := fdNames()
+		if reflect.DeepEqual(baseline, withHeld) {
+			t.Fatal("descriptor detector missed held descriptor", baseline, withHeld)
+		}
+		t.Logf("descriptor detector held baseline=%v held=%v", baseline, withHeld)
+		closeErr := held.Close()
+		held = nil
+		if closeErr != nil {
+			t.Fatal(closeErr)
+		}
+		recovered := fdNames()
+		if !reflect.DeepEqual(baseline, recovered) {
+			t.Fatal("descriptor detector did not recover", baseline, recovered)
+		}
+		t.Logf("descriptor detector recovered baseline=%v recovered=%v", baseline, recovered)
 		for _, free := range []int{0, 2, 4, 6} {
 			before := fdNames()
 			limit := original

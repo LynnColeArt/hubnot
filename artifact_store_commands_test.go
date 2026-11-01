@@ -37,6 +37,8 @@ func artifactCLIFormat(t *testing.T, format string) *artifactCLIFixture {
 	root := t.TempDir()
 	f := &artifactCLIFixture{t: t, binary: artifactStoreBinary(t), repo: filepath.Join(root, "repo"), home: filepath.Join(root, "home")}
 	f.git("init", "--quiet", "--object-format="+format)
+	f.git("config", "--local", "maintenance.auto", "false")
+	f.git("config", "--local", "gc.auto", "0")
 	f.call("", "", "init", "--name", "Artifact author")
 	cmd := exec.Command(f.binary, "identity", "show", "--json")
 	cmd.Dir = f.repo
@@ -103,6 +105,7 @@ func (f *artifactCLIFixture) publish(input, key, code string) map[string]any {
 const artifactStoreType = `{"parents":[],"payload":{"type_id":"example.test/note","schema_version":1,"shape":"document","schema":{"language":"hn.schema/1","root":{"type":"object","properties":{},"required":[],"additionalProperties":false}}}}`
 
 func TestArtifactStorePublishCLI(t *testing.T) {
+	t.Run("snapshot-detectors", artifactCLISnapshotDetectors)
 	f := artifactCLI(t)
 	native := f.git("for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/memory")
 	got := f.publish(artifactStoreType, "publish-1", "")["data"].(map[string]any)
@@ -382,4 +385,92 @@ func TestArtifactStoreSHA256GitCLI(t *testing.T) {
 	}
 	f.git("update-ref", ref, frozen)
 	f.call("", "", "artifact", "type", "show", artifactVectorID, "--json")
+}
+
+func artifactCLISnapshotDetectors(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f := artifactCLIFormat(t, format)
+			maintenance := f.git("config", "--local", "--get", "maintenance.auto")
+			gc := f.git("config", "--local", "--get", "gc.auto")
+			if maintenance != "false" || gc != "0" {
+				t.Fatal("fixture automatic maintenance config", maintenance, gc)
+			}
+			t.Logf("snapshot detector local config format=%s maintenance.auto=%s gc.auto=%s", format, maintenance, gc)
+			baseline := f.snapshot()
+			stable := f.snapshot()
+			if !reflect.DeepEqual(baseline, stable) {
+				t.Fatal("full snapshot baseline unstable", baseline, stable)
+			}
+			t.Logf("snapshot detector stable format=%s baseline=%v repeated=%v", format, baseline, stable)
+			path := filepath.Join(f.repo, ".git", "objects", "wp25-snapshot-detector.lock")
+			first := []byte("detector-content-one")
+			second := []byte("detector-content-two")
+			if err := os.WriteFile(path, first, 0600); err != nil {
+				t.Fatal(err)
+			}
+			addedInfo, err := os.Stat(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			addedBytes, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(addedBytes, first) || addedInfo.Mode().Perm() != 0600 {
+				t.Fatal("controlled lock addition readback", addedBytes, addedInfo.Mode())
+			}
+			added := f.snapshot()
+			if reflect.DeepEqual(baseline, added) || added[path] == "" {
+				t.Fatal("full snapshot missed lock-named addition", baseline, added)
+			}
+			t.Logf("snapshot detector lock addition path=%s full=%v", path, added)
+			if err := os.WriteFile(path, second, 0600); err != nil {
+				t.Fatal(err)
+			}
+			contentInfo, err := os.Stat(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			contentBytes, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(contentBytes, second) || bytes.Equal(addedBytes, contentBytes) || contentInfo.Mode() != addedInfo.Mode() {
+				t.Fatal("content-only mutation readback", contentBytes, contentInfo.Mode(), addedInfo.Mode())
+			}
+			content := f.snapshot()
+			if reflect.DeepEqual(added, content) || content[path] == added[path] {
+				t.Fatal("full snapshot missed content-only mutation", added, content)
+			}
+			t.Logf("snapshot detector content-only path=%s mode=%s full=%v", path, contentInfo.Mode(), content)
+			if err := os.Chmod(path, 0640); err != nil {
+				t.Fatal(err)
+			}
+			modeInfo, err := os.Stat(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			modeBytes, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(modeBytes, contentBytes) || modeInfo.Mode() == contentInfo.Mode() || modeInfo.Mode().Perm() != 0640 {
+				t.Fatal("mode-only mutation readback", modeBytes, modeInfo.Mode(), contentInfo.Mode())
+			}
+			mode := f.snapshot()
+			if reflect.DeepEqual(content, mode) || mode[path] == content[path] {
+				t.Fatal("full snapshot missed mode-only mutation", content, mode)
+			}
+			t.Logf("snapshot detector mode-only path=%s bytes=%q full=%v", path, modeBytes, mode)
+			if err := os.Remove(path); err != nil {
+				t.Fatal(err)
+			}
+			recovered := f.snapshot()
+			if !reflect.DeepEqual(baseline, recovered) {
+				t.Fatal("full snapshot did not recover after lock removal", baseline, recovered)
+			}
+			t.Logf("snapshot detector recovered format=%s baseline=%v recovered=%v", format, baseline, recovered)
+		})
+	}
 }
