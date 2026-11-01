@@ -1,0 +1,243 @@
+{
+  "schema": "hn.wp25-native-retention-io-verification/1",
+  "status": "EXTERNAL PROSPECTIVE REQUIREMENTS ONLY; no result/authorization",
+  "source": "9fc8728896236c9cd341e22edb35ae995143e19d",
+  "existing_tasks_only": [
+    "T100",
+    "T101",
+    "T102",
+    "T103"
+  ],
+  "new_tests_only_in_existing_owned_paths": [
+    "artifact_read_test.go",
+    "artifact_replication_test.go",
+    "extension_package_acceptance_test.go"
+  ],
+  "extra_test_exception": "extension_changes_test.go exact filesystem subsection/helper only per regions record",
+  "rows": [
+    {
+      "id": "N01",
+      "title": "Exact scope and live caller equivalence",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "independent source review",
+      "required_positive": "Both reader and retained registration use native-local closure helper; both plan observations and every protected algorithm/caller remain.",
+      "required_negative_or_control": "Reject outside-region changes, shared helper edits, artifact policy reuse, missing production caller, cache across calls or skipped recapture.",
+      "required_retained_evidence": "All317 input hashes, before/after narrow diffs/region hashes, original ownership and all26 lanes/107 tasks/14 owned/13 create_intent unchanged.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N02",
+      "title": "Complete metadata before any body",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "ALL sorted unique metadata sizes admitted; metadata EOF/Wait/reap before body Start; empty enumeration starts neither.",
+      "required_negative_or_control": "First/late count, object/aggregate-size refusal, malformed/wrong/missing OID/type/size/header, noncanonical/negative/huge sizes; zero body starts or requests.",
+      "required_retained_evidence": "Per-invocation exact argv/PID/PPID/session/role ledger, ALL metadata, close/EOF/Wait/reap before body Start, max one live worker; no production markers.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N03",
+      "title": "Inter-worker identity and body framing",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "Actual supported SHA1/SHA256 raw blob/tree/commit identities pass; exact admitted OID/kind/size, n bytes+LF, one outstanding request and bounded offsets/material.",
+      "required_negative_or_control": "Between phases missing/type/size changes or same-size bad hash; repeated-header mismatch/short body/wrong LF/trailing output; no resize/requery/retry/fetch/cache or escaped index/preflight.",
+      "required_retained_evidence": "Raw object hashes, exact selected IDs/sizes/body ledger and source ODB/ref/config/worktree before/after; label fault peers source-assisted.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N04",
+      "title": "Original supplied limits and framing precedence",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "Enumeration/count/dedup/sort/raw aggregate and caller framed headroom use original supplied values, not artifact constants.",
+      "required_negative_or_control": "Late metadata oversize stops all bodies; framed headroom first-over before corresponding request/allocation; keep old depth/cycle/missing/unsupported nested audit negatives.",
+      "required_retained_evidence": "Actual numeric equality/+1 where published, exact original diagnostic and stage, original supplied policy/deadline versus fixture specialization label.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N05",
+      "title": "Same-invocation payload/signature reuse",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "Existing preflight\u2192manifest show/strict\u2192ls-tree\u2192sorted names\u219264KiB payload/64-byte signature\u2192Verify/namespace stays exact; offsets into same bounded material.",
+      "required_negative_or_control": "Wrong mode/cardinality/duplicate/missing names/invalid sorted IDs/canonical JSON/signature/actor/project/id and role-cap refusals retain original boundaries.",
+      "required_retained_evidence": "Before/after protected source hashes, actual signed bytes/OIDs, valid and invalid public raw/export/expected-old paths and wrapper assertions.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N06",
+      "title": "Metadata finalization ownership",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "Correct final metadata + clean EOF/successful Wait/cleanup join before body constructor.",
+      "required_negative_or_control": "Correct metadata then trailing stdout/nonzero Wait/stall/cancel; partial pipe/Start failure; no body Start, no material success, every acquired end and PID reaped.",
+      "required_retained_evidence": "Exact predeadline PID/PPID/session/stage marker observed while CLI/peer live, joined observer and callbacks, Wait ownership/outcome; missing/wrong-stage/omitted-finish mutants fail.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N07",
+      "title": "Body finalization ownership",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "Correct final body + clean EOF/successful Wait/cleanup join before preflight/material/coverage/success.",
+      "required_negative_or_control": "Correct final body then trailing bytes/nonzero Wait/stall/cancel and early semantic errors; setup/inter-phase/cancel paths fully joined, no escaped success.",
+      "required_retained_evidence": "Same predeadline actual stage witnesses and all-return lifecycle evidence as metadata; stop/join callbacks, preserve primary versus cleanup error.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N08",
+      "title": "Native diagnostic fidelity and discard-only stderr",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "All old sole-fault wrappers/logical args/errors preserved; separately adopted new native protocol/hash/finalization templates. Valid protocol with >8192 stderr succeeds in BOTH workers.",
+      "required_negative_or_control": "Semantic/byte/ref/record error followed by cleanup keeps first; parent cancel not cleanup cancel; no artifactFailure/cap, fake ExitError or generic replacement.",
+      "required_retained_evidence": "Pre-edit diagnostic inventory, actual public old/new sole-fault controls, adopted literal table, honest OS causes, mixed-fault no-promotion/reap without invented universal priority.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N09",
+      "title": "Actual supported Git progress",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "Each actual qualified Git incrementally responds before stdin close; both workers finalize; SHA1 and supported SHA256 repositories work.",
+      "required_negative_or_control": "No --batch-command requirement/probe, --buffer/transforms/path/revision input or fallback source-build claim; unsupported Git evidence remains truthful.",
+      "required_retained_evidence": "Actual Git executable/version/platform and exact argv/request/response/close/Wait, distinct real Git versus synthetic peer labels; historical Git2.0.5 docs not runtime proof.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N10",
+      "title": "Retained public graph equality and recovery",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "actual supplied candidate public commands",
+      "required_positive": "Actual supplied candidate retained register with independent expected plan/receipt, pending16384, rollback/recovery16384, raw inspect/export/expected-old append, duplicate/replay.",
+      "required_negative_or_control": "First-over16385 exact refusal, stale expected plan, signature/namespace/dependency/source safety/no-fetch refusals; no skipped setup or incomplete-root pass.",
+      "required_retained_evidence": "Command-only timings separate fixture generation, exact candidate/source/tree/Git/fixture hashes, actual final outputs/refs, standard/native on each actual target.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N11",
+      "title": "Registration reservation and authority",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "source-assisted protocol plus actual public caller",
+      "required_positive": "Both independent plan reads and original Reserve/save/descriptor/read/preflight/charge/coverage order remain; valid trusted register succeeds.",
+      "required_negative_or_control": "Post-Reserve failure may keep original charged reservation/descriptor, but no unauthorized coverage/ref/admitted visibility or extra signer/policy effects.",
+      "required_retained_evidence": "Exact pre/post private journal/ledger/descriptor and public/source snapshots; original allowed-state model, not blanket all-private-state unchanged.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N12",
+      "title": "Filesystem fixture mtime causality",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "test-only deterministic private-state fixture",
+      "required_positive": "Explicit distinct mtimes set/read back before pruning; oldest-by-mtime evicted, newest valid,64 descriptors plus exact key/lock; all intended other descriptors valid.",
+      "required_negative_or_control": "Fresh alternate creation-vs-mtime-order case detects oldest-by-creation/FIFO assumption; no same-time policy, sleep/retry, production clock or production eviction change.",
+      "required_retained_evidence": "Original failure retained as hypothesis with missing old mtimes/order; controlled desired/readback mtimes, expected/actual filename/token inventory and meaningful negative control.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N13",
+      "title": "Private accounting and memory eviction untouched",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "test-only source/protected-region and execution",
+      "required_positive": "Original200000-ref/128MiB-proof/256MiB accounting block and17\u00d716MiB memory eviction block remain byte-identical and execute.",
+      "required_negative_or_control": "No removed bound/iteration or private-production behavior change; fixture helper limited to checkpoint subsection.",
+      "required_retained_evidence": "Before/after protected-region hashes and actual named test result; constructed accounting is not claim of200000 verified public refs.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N14",
+      "title": "Default and performance first/final gate",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "fresh full default/performance qualification",
+      "required_positive": "Fresh native/history/failure-config/no-registry/effect controls and complete4320 observations/2160 pairs/72 groups/144 elapsed+RSS criteria pass unchanged.",
+      "required_negative_or_control": "Real detector/budget/collector negative controls remain; no runtime tuning/reduced samples/threshold relaxation/retry-to-green or prior-source reuse.",
+      "required_retained_evidence": "New independently root-attested311 VALUES/all317 freeze, original closed membership, exact flags/order/math/binaries/corpora/RSS capture; retain failed observations.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N15",
+      "title": "Full frozen source and eight exact packages",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "full frozen source plus actual native package execution",
+      "required_positive": "Fresh uncached race/vet/build/std+native/format/diff plus Linux/macOS AMD64/ARM64\u00d7standard/native actual packages and12 references; all complete root journeys pass.",
+      "required_negative_or_control": "Missing/unavailable/incomplete row pending; no cross-compile or helper/source-rebuild substitute; retain separate45s migration watchdog failure and test exact new path.",
+      "required_retained_evidence": "Source/tree/compiler/workflow/caller/archive/executable/reference/harness/fixture hashes, full run outcomes, sole local heavy slot and full reap, all failures preserved.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "N16",
+      "title": "Independent final acceptance workflow",
+      "existing_tasks": [
+        "T101",
+        "T102",
+        "T103"
+      ],
+      "evidence_class": "canonical independent review and mission gates",
+      "required_positive": "Fresh independent source review then formal WP25 review; WP26 cold native-user/extension-author/boundary/all52 trace before normal accept/feature merge/post-review/retro.",
+      "required_negative_or_control": "No inferred formal verdict, beta/main/release change, coached/invented cold trial or hand lifecycle edit.",
+      "required_retained_evidence": "Canonical prompt/claim/review/verdict/event references and actual participant/source/package identities.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    }
+  ]
+}
