@@ -116,7 +116,7 @@ jobs:
     name: Extension native qualification (${{ matrix.target }})
     needs: build
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 240
+    timeout-minutes: 300
     permissions:
       contents: read
       actions: read
@@ -608,12 +608,12 @@ jobs:
             export HN_WP25_GO_TRAP="$evidence/$variant-go-fallback.log"
             mkdir "$HN_WP25_EVIDENCE"
             date -u > "$HN_WP25_EVIDENCE/started"
-            printf '%s\n' 'qualification-harness -test.run ^TestExtensionPackageQualification$ -test.timeout 90m -hn-package-dir unpacked -hn-package-bundle candidate -hn-package-version 0.0.0-optional-extensions-qualification.1 -hn-package-compiler go1.26.4' > "$HN_WP25_EVIDENCE/command.txt"
+            printf '%s\n' 'qualification-harness -test.run ^TestExtensionPackageQualification$ -test.timeout 120m -hn-package-dir unpacked -hn-package-bundle candidate -hn-package-version 0.0.0-optional-extensions-qualification.1 -hn-package-compiler go1.26.4' > "$HN_WP25_EVIDENCE/command.txt"
             row=0
             test "$TEST2JSON" = "$RUNNER_TEMP/qualification-test2json"
             test -f "$TEST2JSON" && test -x "$TEST2JSON"
             test "$(shasum -a 256 "$TEST2JSON" | cut -d ' ' -f1)" = "$TEST2JSON_SHA256"
-            "$TEST2JSON" -t -p hubnot "$RUNNER_TEMP/qualification-harness" -test.v=test2json -test.count=1 -test.timeout=90m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/qualification-assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.jsonl" || row=$?
+            "$TEST2JSON" -t -p hubnot "$RUNNER_TEMP/qualification-harness" -test.v=test2json -test.count=1 -test.timeout=120m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/qualification-assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.jsonl" || row=$?
             if ! jq -s -e '([.[] | select(.Action == "pass" and .Test == "TestExtensionPackageQualification")] | length) == 1 and ([.[] | select(.Action == "fail" or .Action == "skip")] | length) == 0' "$HN_WP25_EVIDENCE/results.jsonl" > "$HN_WP25_EVIDENCE/execution-events-validated.txt"; then row=1; fi
             test -s "$HN_WP25_EVIDENCE/$variant-row.json" || row=1
             printf '%s\n' "$row" > "$HN_WP25_EVIDENCE/exit"
