@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/hex"
@@ -15,6 +16,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 // The same detector consumes public files and command diagnostics. Its poisoned
@@ -157,6 +159,7 @@ func TestArtifactExchangeIndependentCLI(t *testing.T) {
 	}
 }
 func TestArtifactExchangeRefusalsCLI(t *testing.T) {
+	t.Run("import-union", exchangeImportUnionCLI)
 	src := artifactCLI(t)
 	typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
 	opening := revisionEvent(revisionCall(src, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "accepted")), "open", ""))
@@ -1144,4 +1147,336 @@ func TestArtifactExchangeNamedAcceptedRefIsolationCLI(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Individually valid signed views can disagree about an optional target's kind.
+// Import must admit the projected accepted view before changing the receiver.
+func exchangeImportUnionCLI(t *testing.T) {
+	t.Run("staging-paths", exchangeImportStagingCLI)
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+			if receiver.actor == sender.actor {
+				t.Fatal("fixture actors are not independent")
+			}
+			x := revisionEvent(receiver.publish(artifactStoreType, "receiver-X", ""))
+			y := revisionEvent(sender.publish(artifactStoreType, "sender-Y", ""))
+			payload := revisionPayload(y, "optional wrong-kind target when combined")
+			payload["relationships"] = []any{map[string]any{"relation": "example.test/optional", "target": x, "target_mode": "revision", "required": false}}
+			r := revisionEvent(revisionCall(sender, "open", revisionInput(t, nil, []string{}, payload), "sender-R", ""))
+			path, exported := exchangeExport(sender, r)
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var wire map[string]any
+			if err = json.Unmarshal(raw, &wire); err != nil {
+				t.Fatal(err)
+			}
+			refs := wire["refs"].([]any)
+			if exported["records"] != float64(2) || len(refs) != 1 || refs[0].(map[string]any)["ref"] != artifactRef(sender.actor) || refs[0].(map[string]any)["oid"] != sender.git("rev-parse", artifactRef(sender.actor)) {
+				t.Fatal("export is not the complete disjoint sender prefix", exported, refs)
+			}
+			sender.call("", "not_found", "artifact", "type", "show", x, "--json")
+			t.Logf("signed fixture receiver_actor=%s sender_actor=%s X=%s Y=%s R=%s wire_digest=%s", receiver.actor, sender.actor, x, y, r, eventID(raw))
+			t.Run("missing-optional-same-wire", func(t *testing.T) {
+				missing := exchangeDestination(t, sender, format)
+				result := missing.call("", "", "artifact", "import", "--input", path, "--json")["data"].(map[string]any)
+				if !reflect.DeepEqual(revisionReadView(sender, r), revisionReadView(missing, r)) {
+					t.Fatal("import changed signed optional target or reconstructed view")
+				}
+				encoded, err := json.Marshal(result["diagnostics"])
+				if err != nil || !bytes.Contains(encoded, []byte(`"missing_optional"`)) {
+					t.Fatal("missing optional target was not reported", result, err)
+				}
+				shown := revisionReadView(missing, r)
+				relations := shown["state"].(map[string]any)["relationships"].([]any)
+				if len(relations) != 1 || relations[0].(map[string]any)["target"] != x || relations[0].(map[string]any)["required"] != false {
+					t.Fatal("signed optional target changed", shown)
+				}
+				t.Logf("same-wire accepted diagnostics=%s", encoded)
+			})
+			t.Run("present-wrong-kind-no-effects", func(t *testing.T) {
+				receiver := *receiver
+				receiver.t = t
+				var objectQueries strings.Builder
+				for _, object := range wire["objects"].([]any) {
+					fmt.Fprintln(&objectQueries, object.(map[string]any)["oid"])
+				}
+				inventory := receiver.gitInput(objectQueries.String(), "cat-file", "--batch-check=%(objectname) %(objecttype)")
+				for _, line := range strings.Split(inventory, "\n") {
+					if !strings.HasSuffix(line, " missing") {
+						t.Fatal("incoming object was preseeded in receiver", line)
+					}
+				}
+				t.Logf("receiver lacks all%d incoming table objects before import", len(wire["objects"].([]any)))
+				ordinary := receiver.call("", "", "artifact", "type", "show", x, "--json")
+				before := receiver.snapshot()
+				cmd := exec.Command(receiver.binary, "artifact", "import", "--input", path, "--json")
+				cmd.Dir, cmd.Env = receiver.repo, operationalTestEnvironment(receiver.home)
+				output, callErr := cmd.Output()
+				t.Logf("public import exit=%v output=%s protected_equal=%t", callErr, output, reflect.DeepEqual(before, receiver.snapshot()))
+				var result map[string]any
+				if err := json.Unmarshal(output, &result); err != nil {
+					t.Fatal(err)
+				}
+				failure, ok := result["error"].(map[string]any)
+				if callErr == nil || result["ok"] != false || result["data"] != nil || !ok || failure["code"] != "invalid_history" || len(failure) != 5 || failure["origin"] != "artifact" || failure["recovery"] != "do_not_retry" || failure["operation"] != nil || len(result) != 3 {
+					t.Errorf("want closed invalid_history before effects: %s", output)
+				}
+				read := exec.Command(receiver.binary, "artifact", "type", "show", x, "--json")
+				read.Dir, read.Env = receiver.repo, operationalTestEnvironment(receiver.home)
+				readOutput, readErr := read.Output()
+				var after map[string]any
+				if err := json.Unmarshal(readOutput, &after); err != nil {
+					t.Fatal(err)
+				}
+				t.Logf("ordinary receiver read exit=%v unchanged=%t output=%s", readErr, reflect.DeepEqual(ordinary, after), readOutput)
+				if readErr != nil || !reflect.DeepEqual(ordinary, after) {
+					t.Errorf("ordinary receiver read changed")
+				}
+				receiver.unchanged(before)
+			})
+			if after, err := os.ReadFile(path); err != nil || !bytes.Equal(raw, after) {
+				t.Fatal("input bundle changed", err)
+			}
+		})
+	}
+}
+
+// This peer observes real quarantine transactions; it never modifies Git output
+// or impersonates the destination. Error/stall cases stop only the projected
+// transaction, after the independent incoming verification has completed.
+func exchangeImportStagePeer(t *testing.T, f *artifactCLIFixture, mode, currentOID string) string {
+	t.Helper()
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	control, wrap := t.TempDir(), t.TempDir()
+	ledger := filepath.Join(control, "projection")
+	script := `#!/bin/sh
+where=; update=0
+for arg do
+ case "$arg" in --git-dir=*) where=${arg#--git-dir=} ;; update-ref) update=1 ;; esac
+done
+case "$where" in *hn-artifact-quarantine-*)
+ if [ "$update" = 1 ]; then
+  input=$(cat) || exit 91
+  case "$input" in *refs/hn/remotes/imported/artifacts/*)
+   [ "$GIT_NO_LAZY_FETCH" = 1 ] || exit 92
+   printf '%s\n' "$where" > "$HN_IU_LEDGER.stage" || exit 97
+   if [ -e "$where/objects/info/alternates" ]; then
+    cat "$where/objects/info/alternates" > "$HN_IU_LEDGER" || exit 93
+   else
+    printf 'inventory\n' > "$HN_IU_LEDGER" || exit 94
+   fi
+   "$HN_IU_GIT" --git-dir="$where" cat-file -e "$HN_IU_CURRENT" || exit 95
+   case "$HN_IU_MODE" in error) exit 96 ;; cancel) exec sleep 35 ;; esac
+  esac
+  printf '%s\n' "$input" | "$HN_IU_GIT" "$@"
+  exit $?
+ fi ;;
+esac
+exec "$HN_IU_GIT" "$@"
+`
+	if err = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	f.overrides = map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_IU_GIT": git, "HN_IU_LEDGER": ledger, "HN_IU_MODE": mode, "HN_IU_CURRENT": currentOID}
+	return ledger
+}
+
+func exchangeImportStagingCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		for _, mode := range []string{"healthy", "retained-promisor", "linked-worktree", "self-import", "error", "cancel"} {
+			// One real30s cancellation is enough to exercise the same stage; both
+			// object formats retain all signed admission/borrowing controls.
+			if mode == "cancel" && format == "sha256" {
+				continue
+			}
+			t.Run(format+"/"+mode, func(t *testing.T) {
+				receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+				x := revisionEvent(receiver.publish(artifactStoreType, "current", ""))
+				y := revisionEvent(sender.publish(artifactStoreType, "incoming", ""))
+				path, _ := exchangeExport(sender, y)
+				common := filepath.Join(receiver.repo, ".git")
+				currentOID := receiver.git("rev-parse", artifactRef(receiver.actor))
+				original := receiver
+				if mode == "retained-promisor" {
+					receiver.git("repack", "-ad")
+					packs, err := filepath.Glob(filepath.Join(common, "objects", "pack", "*.pack"))
+					if err != nil || len(packs) != 1 {
+						t.Fatal("real fully materialized pack required", packs, err)
+					}
+					if err = os.WriteFile(strings.TrimSuffix(packs[0], ".pack")+".promisor", nil, 0600); err != nil {
+						t.Fatal(err)
+					}
+					// This layout is admitted before the import-local borrow check.
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				}
+				if mode == "linked-worktree" {
+					worktree := filepath.Join(t.TempDir(), "linked")
+					receiver.git("worktree", "add", "--quiet", "--detach", worktree, currentOID)
+					linked := *receiver
+					linked.repo = worktree
+					receiver = &linked
+				}
+				if mode == "self-import" {
+					path, _ = exchangeExport(receiver, x)
+					y = x
+				}
+				ledger := exchangeImportStagePeer(t, receiver, mode, currentOID)
+				before, commonBefore := receiver.snapshot(), original.snapshot()
+				code := ""
+				if mode == "error" {
+					code = "verification_failure"
+				}
+				if mode == "cancel" {
+					code = "cancelled"
+				}
+				start := time.Now()
+				result := receiver.call("", code, "artifact", "import", "--input", path, "--json")
+				elapsed := time.Since(start)
+				observed, err := os.ReadFile(ledger)
+				if err != nil {
+					t.Fatal("actual projected transaction was not reached", err)
+				}
+				stage, err := os.ReadFile(ledger + ".stage")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = os.Stat(strings.TrimSpace(string(stage))); !os.IsNotExist(err) {
+					t.Fatal("quarantine owner did not remove stage", err)
+				}
+				want := filepath.Join(common, "objects") + "\n"
+				if mode == "retained-promisor" {
+					want = "inventory\n"
+				}
+				if string(observed) != want {
+					t.Fatal("wrong projection availability path", string(observed), want)
+				}
+				t.Logf("real projection mode=%s format=%s availability=%q elapsed=%s result=%v", mode, format, observed, elapsed, result)
+				if code != "" {
+					artifactErrorShape(t, result, "artifact", code, "do_not_retry", nil)
+					receiver.unchanged(before)
+					original.unchanged(commonBefore)
+				} else {
+					receiver.overrides = nil
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+					receiver.call("", "", "artifact", "type", "show", y, "--json")
+					// Repeated import uses non-absent destination and stage witnesses.
+					receiver.call("", "", "artifact", "import", "--input", path, "--json")
+				}
+				if mode == "cancel" && (elapsed < 29*time.Second || elapsed > 35*time.Second) {
+					t.Fatal("original30s validation stage was not retained", elapsed)
+				}
+			})
+		}
+	}
+	t.Run("unsafe-layouts", exchangeImportUnsafeCLI)
+}
+
+func exchangeImportUnsafeCLI(t *testing.T) {
+	sender := artifactCLI(t)
+	y := revisionEvent(sender.publish(artifactStoreType, "incoming", ""))
+	path, _ := exchangeExport(sender, y)
+	for _, mode := range []string{"shallow", "grafts", "alternates", "promisor-config", "objects-symlink", "pack-symlink"} {
+		t.Run(mode, func(t *testing.T) {
+			receiver := artifactCLI(t)
+			x := revisionEvent(receiver.publish(artifactStoreType, "current", ""))
+			receiver.call("", "", "artifact", "type", "show", x, "--json")
+			common := filepath.Join(receiver.repo, ".git")
+			physical := ""
+			write := func(path, body string) {
+				if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(path, []byte(body), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			switch mode {
+			case "shallow":
+				write(filepath.Join(common, "shallow"), receiver.git("rev-parse", artifactRef(receiver.actor))+"\n")
+			case "grafts":
+				write(filepath.Join(common, "info", "grafts"), "")
+			case "alternates":
+				write(filepath.Join(common, "objects", "info", "alternates"), filepath.Join(sender.repo, ".git", "objects")+"\n")
+			case "promisor-config":
+				receiver.git("config", "remote.retained.promisor", "true")
+			case "objects-symlink", "pack-symlink":
+				leaf := filepath.Join(common, "objects")
+				if mode == "pack-symlink" {
+					leaf = filepath.Join(leaf, "pack")
+				}
+				target := filepath.Join(t.TempDir(), "physical")
+				physical = target
+				if err := os.Rename(leaf, target); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(target, leaf); err != nil {
+					t.Fatal(err)
+				}
+			}
+			before := exchangeImportLayoutSnapshot(t, receiver, physical)
+			receiver.call("", "repository_error", "artifact", "import", "--input", path, "--json")
+			if !reflect.DeepEqual(before, exchangeImportLayoutSnapshot(t, receiver, physical)) {
+				t.Fatal("unsafe layout refusal changed receiver or physical object store")
+			}
+		})
+	}
+	// Context is not public CLI data. This source-assisted control proves the
+	// local metadata path honors an already cancelled caller before any I/O.
+	t.Run("caller-cancelled", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		borrowed, err := artifactImportBorrowObjects(ctx, filepath.Join(t.TempDir(), "absent"), t.TempDir())
+		if borrowed || err == nil || !strings.Contains(err.Error(), "cancelled") {
+			t.Fatal("cancelled caller became fallback or success", borrowed, err)
+		}
+	})
+}
+
+// Keep unsafe-layout symlinks observable without following them. Include the
+// controlled physical target separately so refusal cannot mutate it unseen.
+func exchangeImportLayoutSnapshot(t *testing.T, f *artifactCLIFixture, physical string) map[string]string {
+	t.Helper()
+	out := map[string]string{}
+	for _, root := range []string{f.repo, f.home, physical} {
+		if root == "" {
+			continue
+		}
+		if _, err := os.Lstat(root); os.IsNotExist(err) {
+			out[root] = "absent"
+			continue
+		} else if err != nil {
+			t.Fatal(err)
+		}
+		err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			value := info.Mode().String()
+			if info.Mode()&os.ModeSymlink != 0 {
+				target, err := os.Readlink(path)
+				if err != nil {
+					return err
+				}
+				value += ":" + target
+			} else if !info.IsDir() {
+				raw, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+				value += ":" + eventID(raw)
+			}
+			out[path] = value
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	return out
 }

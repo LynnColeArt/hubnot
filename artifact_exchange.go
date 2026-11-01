@@ -798,6 +798,9 @@ func importArtifactExchange(ctx context.Context, b *artifactExchange) (map[strin
 		promoted = append(promoted, artifactSource{ref, tip})
 	}
 	sort.Slice(promoted, func(i, j int) bool { return promoted[i].Ref < promoted[j].Ref })
+	if e = stageArtifactImportProjection(validation, dir, current, incoming, promoted); e != nil {
+		return nil, e
+	}
 	// A new copy stage gets its own30s ceiling, while retaining caller cancellation.
 	copyCtx, copyCancel := context.WithTimeout(ctx, artifactExchangeStage)
 	defer copyCancel()
@@ -999,4 +1002,125 @@ func exportArtifactOpaque(ctx context.Context, ids []string) (*artifactExchange,
 	}
 	sort.Slice(b.Objects, func(i, j int) bool { return b.Objects[i].OID < b.Objects[j].OID })
 	return b, nil
+}
+
+// Borrow only the already admitted physical common ODB. A retained promisor
+// marker can coexist with a fully materialized verified view; that layout uses
+// the exact public inventory fallback instead. Inspection errors never do.
+func artifactImportBorrowObjects(ctx context.Context, common, stage string) (bool, error) {
+	failure := func() error {
+		return artifactTransportError(ctx, "repository_error", "cannot inspect import projection object store")
+	}
+	if ctx.Err() != nil {
+		return false, failure()
+	}
+	if e := contributionSafeGitDir(common); e != nil {
+		return false, failure()
+	}
+	objects, e := safepath.Canonical(filepath.Join(common, "objects"))
+	if e != nil || !filepath.IsAbs(objects) || strings.ContainsAny(objects, "\n\r") {
+		return false, failure()
+	}
+	if e = safepath.CheckDir(objects, false); e != nil {
+		return false, failure()
+	}
+	pack := filepath.Join(objects, "pack")
+	if _, e = os.Lstat(pack); !os.IsNotExist(e) {
+		if e != nil || safepath.CheckDir(pack, false) != nil {
+			return false, failure()
+		}
+		f, err := os.Open(pack)
+		if err != nil {
+			return false, failure()
+		}
+		// Fixed-size metadata batches, checked against the original validation
+		// context; never read pack bodies or request objects/lazy fetch here.
+		promisor := false
+		for {
+			if ctx.Err() != nil {
+				_ = f.Close()
+				return false, failure()
+			}
+			names, err := f.Readdirnames(64)
+			for _, name := range names {
+				if strings.HasSuffix(name, ".promisor") {
+					promisor = true
+				}
+			}
+			if err != nil {
+				closeErr := f.Close()
+				if err != io.EOF || closeErr != nil || ctx.Err() != nil {
+					return false, failure()
+				}
+				break
+			}
+		}
+		if promisor {
+			return false, nil
+		}
+	}
+	if ctx.Err() != nil {
+		return false, failure()
+	}
+	// Only this disposable private stage gains an alternate. The receiver is
+	// untouched, and borrowed availability never adds accepted source refs.
+	path := filepath.Join(stage, "objects", "info", "alternates")
+	f, e := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if e != nil {
+		return false, failure()
+	}
+	_, writeErr := io.WriteString(f, objects+"\n")
+	closeErr := f.Close()
+	if writeErr != nil || closeErr != nil || ctx.Err() != nil {
+		return false, failure()
+	}
+	return true, nil
+}
+
+// The accepted projection is current exact ref keys overlaid only by promoted
+// destination refs. Original incoming refs remain distinct quarantine witnesses.
+func stageArtifactImportProjection(ctx context.Context, common string, current, incoming *artifactHistory, promoted []artifactSource) error {
+	borrowed, e := artifactImportBorrowObjects(ctx, common, incoming.gitDir)
+	if e != nil {
+		return e
+	}
+	if !borrowed {
+		objects := make([]string, 0, len(current.readObjects))
+		for oid := range current.readObjects {
+			if ctx.Err() != nil {
+				return artifactTransportError(ctx, "cancelled", "import projection cancelled")
+			}
+			objects = append(objects, oid)
+		}
+		sort.Strings(objects)
+		if e = copyArtifactInventory(ctx, current.gitDir, incoming.gitDir, &artifactClosure{Objects: objects}); e != nil {
+			return e
+		}
+	}
+	projected := map[string]string{}
+	for _, source := range current.Sources {
+		projected[source.Ref] = source.OID
+	}
+	for _, source := range promoted {
+		projected[source.Ref] = source.OID
+	}
+	refs := make([]artifactSource, 0, len(projected))
+	for ref, oid := range projected {
+		refs = append(refs, artifactSource{ref, oid})
+	}
+	sort.Slice(refs, func(i, j int) bool { return refs[i].Ref < refs[j].Ref })
+	witnesses, e := artifactSources(ctx, incoming.gitDir)
+	if e != nil {
+		return e
+	}
+	old := map[string]string{}
+	for _, source := range witnesses {
+		old[source.Ref] = source.OID
+	}
+	if e = artifactExchangeSetRefs(ctx, incoming.gitDir, refs, old); e != nil {
+		// Stage witnesses cannot publish receiver state, even on lost ACK.
+		return artifactTransportError(ctx, "verification_failure", "cannot stage import projection witnesses")
+	}
+	_, e = loadArtifactHistoryFromSources(ctx, incoming.gitDir, refs)
+	return e
 }
