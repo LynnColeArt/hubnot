@@ -1,0 +1,169 @@
+{
+  "schema": "wp25.darwin-fixture-portability.verification.v1",
+  "status": "PROSPECTIVE; no execution performed or authorized",
+  "source_baseline": "2c372ccd3f570da43ab68856518f88cfddbb7b7c",
+  "source_tree": "8eda4f807f170c2b8f27ed639c13ff6deaf97bf3",
+  "evidence_inputs": {
+    "root_decision": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/darwin-test-triage/root-correction-planning-decision.json",
+      "sha256": "f67eedbbcd53d7e19ad0d8923793491aa9b5610f2e3d7376137d9c67843310fa",
+      "bytes": 3686
+    },
+    "advisory": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/darwin-test-triage/advisory.md",
+      "sha256": "77b81d18535ec563a64707d5c5752213c2277db86aaf831069b0ece70786e3c9",
+      "bytes": 9775
+    },
+    "historical_root_readback": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/hosted-541772cf/root-darwin-arm64-failure-readback.json",
+      "sha256": "2e0b4608727a829172d9271464ea7a448e635700d042c01c3c1751de241a636d",
+      "bytes": 3682
+    },
+    "held_default_driver": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/metadata-batch/run-default-2c372ccd.py",
+      "sha256": "c2c339ffe25ff950d89f9aa393cec8ae719f915242aa424530a757fe857367e3",
+      "bytes": 6551
+    },
+    "root_live_caller_decision": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/darwin-test-triage/root-positive-control-live-caller-decision.json",
+      "sha256": "f25479e951e35ace46e11f94e7b9be4410694f7688e84bfeb3ca6aa035346f73",
+      "bytes": 1473
+    }
+  },
+  "retained_history": {
+    "darwin_source": "541772cf075334cf01056de3dd7a9962128dbd00",
+    "darwin_tree": "e80786f110b518bb832baaca307221bd1347f416",
+    "run": 41303228685,
+    "arm_job": 124838806072,
+    "variants": {
+      "standard": {
+        "status": "FAIL",
+        "root_elapsed_seconds": 5573.26
+      },
+      "native-only": {
+        "status": "FAIL",
+        "root_elapsed_seconds": 5791.84
+      }
+    },
+    "leaf_assertions": [
+      "TestNativeContributionWorkerSetupOwnership: artifact_read_test.go:3977 fstatat /dev/fd: bad file descriptor before the exhaustion assertions",
+      "TestArtifactSearchConflictAndUnselectedCLI: artifact_search_acceptance_test.go:279 .git/objects/maintenance.lock ENOENT before original conflict/search assertions"
+    ],
+    "skips": 0,
+    "outer_timeouts": 0,
+    "interpretation": "Historical completed failures, never corrected-source evidence. No underlying production worker/search defect established. The exact transient FD kernel cause and actual lock remover remain unproven.",
+    "RSS": "Retain old H541 actual RSS FAIL. Allocation/storage changes grant no RSS credit or threshold waiver.",
+    "old_Intel_job": 124838806032,
+    "old_Intel_disposition": "Separate monitoring; do not cancel/retry or assume a45-second watchdog fix."
+  },
+  "ordered_handoffs": [
+    "Root reviews this external proposal and independent scope advice, verifies original WP05 owner inactive/no concurrent writer, and preserves original78 dirty primary files byte/mode/status exact.",
+    "Only root performs normal targeted metadata adoption of the three exact addenda and exact plan/tasks/WP25 append snippets; normal finalizer planning-commit refresh, fresh independent analysis and canonical record-analysis follow. No forced/skip/manual lifecycle event.",
+    "Normal WP25 implementation reentry and separate explicit bounded implementation authorization precede every Go edit. Actor-chain2c approval remains source-only history; source2c default driver never started and remains held.",
+    "Authorized implementer establishes meaningful focused controls before applying the two fixture corrections. Retain actual old failures and any new execution raw results without overwrite, retries or synthetic RED.",
+    "Independent reviewer reviews the clean final exact diff against2c and immutable region protections, then root freshly attests final source/tree/root311/all317 and before/after equality before fresh qualification.",
+    "Execute unchanged six default roots, complete paired capture, frozen-source full race/static/build and all8 actual native package rows on that exact final source. Formal WP25 review remains separate."
+  ],
+  "rows": [
+    {
+      "id": "DFV01",
+      "case": "Closed source and exact region review",
+      "expected": "Exactly the same317 Go/module paths; only DF01–DF05 in two existing test files differ; other315 including store.go/event_test.go byte-exact2c. No production/dependency/import edit. Compare protected spans and all source hashes; retain actual clean final commit/tree, git modes and independent source-only verdict."
+    },
+    {
+      "id": "DFV02",
+      "case": "Observer ownership and semantic inspection",
+      "expected": "os.Open /dev/fd; Readdirnames(-1); observer closed on every owned path before fatal read/close handling; all errors fatal, no partial/name/count filtering; sorted full names. Darwin FD duplication is accommodated by observing both names while owned and closing both before return, without asserting which individual number denotes the held descriptor."
+    },
+    {
+      "id": "DFV03",
+      "case": "Test-first descriptor detector controls",
+      "expected": "In isolated child after unchanged cancellation/warmup and before any exhaustion: stable exact repeated baseline; intentionally held real FD produces different exact set; explicitly checked close then exact baseline recovery. Raw logs prove each stage. Controls are meaningful sensitivity/recovery tests; historical Mac failure is retained. Linux alone cannot establish Mac RED/GREEN."
+    },
+    {
+      "id": "DFV04",
+      "case": "Original worker setup fault coverage on actual Mac ARM",
+      "expected": "Exact amended compiled harness reaches free0,2,4,6; every original nilprocess/nonnilerror/limit restoration/exact cleanup assertion passes. Actual child emits exactly one PASS, no FAIL/SKIP, exits successfully within unchanged child/parent deadlines; parent raw child output/watchdog evidence retained. No EBADF ignore/skip/deadline change."
+    },
+    {
+      "id": "DFV05",
+      "case": "Actual modified shared fixture and real local config",
+      "expected": "For sha1 and sha256 supported format subtests using artifactCLIFormat, real --local config readbacks are maintenance.auto=false and gc.auto=0; real Git initialization precedes writes and public hn init follows them. No environment/global/production maintenance modification. Existing historical clone settings remain untouched."
+    },
+    {
+      "id": "DFV06",
+      "case": "Full snapshot positive/recovery controls through registered live caller",
+      "expected": "One appended private helper with its own fixture is called by the single named snapshot-detectors t.Run inside already registered TestArtifactStorePublishCLI. Original Publish body and explicit registry remain byte-exact outside this insertion. The helper observes full stable baseline. Lock-named add changes full map; content-only change differs from preceding map with readback proving changed bytes/same mode; mode-only change differs from preceding map with readback proving same bytes/changed mode. Explicit removal and exact baseline equality prove recovery. Preserve and exercise all repo/home files, directories, bytes, modes, lock names and original error handling; no ignored ENOENT/exclusion/retry. Actual nested snapshot-detectors/subformat PASS evidence must be retained for each exact native package row; source-only helper coverage is insufficient."
+    },
+    {
+      "id": "DFV07",
+      "case": "Original actual Mac search journey",
+      "expected": "TestArtifactSearchConflictAndUnselectedCLI performs unchanged real fetch/refspecs. Both left/right matches produce same resource, exact two heads, conflict=true/state=nil; superseded-only content excluded; signed artifacts physically fetched to unrelated namespace excluded; complete snapshots unchanged after each read. Reach these assertions on actual amended-source Mac, without retry. A snapshot-only pass is insufficient."
+    },
+    {
+      "id": "DFV08",
+      "case": "Affected shared-fixture and per-file checks",
+      "expected": "Authorized focused standard/combined source tests and race coverage exercise modified shared fixtures and supported SHA1/SHA256 paths, including search/refusal contracts. Formatting, appropriate vet/static checks for both existing test files and broader required checks must pass. These source tests supplement actual Mac/package execution; no mocked fixture substitutes."
+    },
+    {
+      "id": "DFV09",
+      "case": "Fresh default controls",
+      "expected": "Run the unchanged existing six roots with existing semantics/selection/flags/env and root-bound exact final binaries; no skip/fail. Bind raw test2json, command/exit/deadline and final source/tree/all317. The held2c driver is a reviewed selection reference, never a run or future-source pass."
+    },
+    {
+      "id": "DFV10",
+      "case": "Fresh COMPLETE paired performance",
+      "expected": "Existing TestExtensionDefaultPerformanceCapture on exact final source: COMPLETE4320 observations/2160 pairs/72 groups/144 criteria, raw paired timings and actual RSS, untouched budgets/math/order/samples/collectors/controls/env. Retain all failures. No source-only approval or allocation arithmetic substitutes for RSS; source2c driver never started."
+    },
+    {
+      "id": "DFV11",
+      "case": "Fresh full frozen source qualification",
+      "expected": "Run mandatory full-source/race/static/build checks on frozen final source with retained command/exit/raw evidence and clean before/after317 input equality. No reuse of source2c or H541 outcomes as final-source execution."
+    },
+    {
+      "id": "DFV12",
+      "case": "All8 actual native package rows",
+      "expected": "Execute actual Linux/macOS AMD64/ARM64 standard/native-only candidate packages on their real target platforms, retaining exact source/tree, harness/archive/executable identities and supplied native journeys. Darwin ARM standard/native roots both must complete/pass with required controls and original assertions; Intel requires its own actual evidence. No build-only/source-selection/Linux alias pass, retry or inferred45-second repair. Each row must actually execute the registered Publish root and its snapshot-detectors helper/subformats; do not infer a helper ran merely because it compiled."
+    }
+  ],
+  "default_contract": {
+    "roots": [
+      "TestExtensionDefaultNativeMatrix",
+      "TestExtensionDefaultHistoricalMatrix",
+      "TestExtensionDefaultFailureConfigurations",
+      "TestExtensionDefaultDetectors",
+      "TestExtensionDefaultControl",
+      "TestExtensionDefaultPerformanceBudgets"
+    ],
+    "collector": "TestExtensionDefaultPerformanceCapture",
+    "complete_observations": 4320,
+    "pairs": 2160,
+    "groups": 72,
+    "criteria": 144,
+    "unchanged_source_sha256": {
+      "extension_default_acceptance_test.go": "f49579362a84d7c9532a0b3432c33bda3ef52d4715ab4ca2b338f18f6c6cc1a9",
+      "extension_default_performance_test.go": "e7804b23bf3cb78e1834ebb9c8d78ee2d796d2ecfe43f0c33042e20a4094fcc8",
+      "extension_package_acceptance_test.go": "d1112a8d34d89f5de6aa6cc6afff7b18393f3be2eb2426556a6f98da3f4ca91d"
+    },
+    "held_external_driver": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/metadata-batch/run-default-2c372ccd.py",
+      "sha256": "c2c339ffe25ff950d89f9aa393cec8ae719f915242aa424530a757fe857367e3",
+      "bytes": 6551
+    },
+    "held_driver_executed": false,
+    "future_driver": "Root must bind final source/approval identities and new output under normal authorization, preserving the verified existing selection/math/flags/env/collection contract; this proposal does not edit or execute any driver."
+  },
+  "gate_or_threshold_changes": false,
+  "Linux_alone_proves_Mac_fix": false,
+  "production_worker_or_search_defect_claim": false,
+  "formal_WP25_approval_claim": false,
+  "authorization": "Root normal adoption/finalizer/fresh independent analysis/record/reentry AND separate bounded implementation authorization required. Both root decisions are binding; no standalone-test or registry scope may replace the precise live caller. This sidecar is a prospective checklist, not execution, qualification, review or lifecycle evidence.",
+  "live_caller_proof": {
+    "path": "extension_package_acceptance_test.go",
+    "whole_file_sha256": "d1112a8d34d89f5de6aa6cc6afff7b18393f3be2eb2426556a6f98da3f4ca91d",
+    "line_1based": 480,
+    "registration_line_utf8": "\t{\"TestArtifactStorePublishCLI\", TestArtifactStorePublishCLI},\n",
+    "registration_line_sha256": "a1215101db6afdff127531120e6b37ac96d81d6d8faca76d0a32cc3fa7a2938c",
+    "contract": "Existing explicit native registry invokes TestArtifactStorePublishCLI; DF04 named subtest invokes appended private helper with its own fixture. Registry entire source file remains byte-exact2c, one of315 protected inputs. The new detector must emit actual nested subtest PASS evidence in all8 exact native package rows."
+  }
+}
