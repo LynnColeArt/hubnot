@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -1518,32 +1517,9 @@ func contributionRegisterRetained(a *contributionAuthority, expected string, ext
 	if e != nil {
 		return e
 	}
-	objects, e := projectObjectIDs(ctx, gitdir, plan.Roots, limits)
+	material, e := contributionRawClosure(ctx, gitdir, plan.Roots, limits, cost.DecodedBytes, "retained")
 	if e != nil {
 		return e
-	}
-	var material bytes.Buffer
-	material.WriteString(projectGitSchema)
-	for _, oid := range objects {
-		meta, e := projectGit(ctx, gitdir, []byte(oid+"\n"), 256, "cat-file", "--batch-check=%(objecttype) %(objectsize)")
-		if e != nil {
-			return e
-		}
-		fields := strings.Fields(string(meta))
-		if len(fields) != 2 {
-			return fmt.Errorf("retained object unavailable")
-		}
-		size, e := strconv.ParseInt(fields[1], 10, 64)
-		if e != nil || size < 0 || size > cost.DecodedBytes-int64(material.Len())-256 {
-			return fmt.Errorf("retained snapshot byte bound")
-		}
-		raw, e := projectGit(ctx, gitdir, nil, size, "cat-file", fields[0], oid)
-		if e != nil {
-			return e
-		}
-		fmt.Fprintf(&material, "%s %s %d\n", oid, fields[0], len(raw))
-		material.Write(raw)
-		material.WriteByte('\n')
 	}
 	count, depth, e := contributionObjectPreflight(ctx, material.Bytes(), a.Policy.Contributions.Limits)
 	if e != nil {
