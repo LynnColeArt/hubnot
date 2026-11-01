@@ -431,6 +431,7 @@ func TestArtifactStoreOpeningReplayObservesImportedHeadsCLI(t *testing.T) {
 // The explicit public reader must neither discover the caller's repository nor
 // borrow its Cut. These fixtures contain public Git data only, with no identity.
 func TestArtifactStoreExplicitPublicSources(t *testing.T) {
+	t.Run("witness-pair-wave", artifactWitnessPairWaveContract)
 	for _, format := range []string{"sha1", "sha256"} {
 		t.Run(format, func(t *testing.T) {
 			root := t.TempDir()
@@ -3475,6 +3476,7 @@ func nativeClosureRetainedJournal(t *testing.T, f *wp25PublicCountFixture, proje
 }
 
 func TestNativeRetainedClosurePublicCLI(t *testing.T) {
+	t.Run("exact-current-authority-guards", nativeExactCurrentAuthorityGuards)
 	binary := extensionTestBinary(t)
 	for _, mode := range []string{"pass", "metadata-exit", "body-exit", "body-missing", "body-real-truncated", "metadata-stderr9000", "body-stderr9000"} {
 		t.Run(mode, func(t *testing.T) {
@@ -4333,4 +4335,851 @@ func nativeClosureReleaseDescriptorHolders(t *testing.T, ledger string) {
 		time.Sleep(5 * time.Millisecond)
 	}
 	wp25Record(t, map[string]any{"control": "native-descriptor-holder-parent-cleanup-release", "holders": holders, "all_explicit_exit_receipts_observed": true, "raw": string(raw), "os_orphan_reaping": "OS init; not claimed as native Wait ownership"})
+}
+
+// These bounded source-assisted controls use real Git data and owned direct
+// children. They establish this correction's contracts, not platform qualification.
+type intelWitnessPeerConfig struct {
+	Git, Root, Mode string
+	Sources         []artifactSource
+}
+
+type intelWitnessPeerEvent struct {
+	Race              string   `json:"peer_gorace"`
+	ConfiguredRace    string   `json:"configured_gorace"`
+	ConfiguredRaceSet bool     `json:"configured_gorace_set"`
+	Event             string   `json:"event"`
+	PID               int      `json:"pid"`
+	Args              []string `json:"args"`
+	Block             int      `json:"block"`
+	At                int64    `json:"at"`
+	Exit              int      `json:"exit"`
+	Raw               string   `json:"raw"`
+}
+
+func intelWitnessWriteEvent(c intelWitnessPeerConfig, event intelWitnessPeerEvent) {
+	event.Race = os.Getenv("GORACE")
+	event.PID = os.Getpid()
+	event.At = time.Now().UnixNano()
+	f, err := os.OpenFile(filepath.Join(c.Root, "ledger.jsonl"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	if err != nil {
+		panic(err)
+	}
+	err = json.NewEncoder(f).Encode(event)
+	ce := f.Close()
+	if err != nil || ce != nil {
+		panic(fmt.Sprint(err, ce))
+	}
+}
+
+func intelWitnessPeer() {
+	for i, arg := range os.Args {
+		if arg != "--intel-witness-peer" {
+			continue
+		}
+		var c intelWitnessPeerConfig
+		raw, err := os.ReadFile(os.Args[i+1])
+		if err != nil || json.Unmarshal(raw, &c) != nil {
+			os.Exit(96)
+		}
+		configuredSet, configuredRace := os.Args[i+2] != "", os.Args[i+3]
+		delegateEnv := []string{}
+		for _, v := range os.Environ() {
+			if !strings.HasPrefix(v, "GORACE=") {
+				delegateEnv = append(delegateEnv, v)
+			}
+		}
+		if configuredSet {
+			delegateEnv = append(delegateEnv, "GORACE="+configuredRace)
+		}
+		args := os.Args[i+4:]
+		block := -1
+		primary, fallback := false, false
+		for _, a := range args {
+			primary = primary || a == "show-ref"
+			fallback = fallback || a == "for-each-ref"
+		}
+		if primary || fallback {
+			for n, s := range c.Sources {
+				if len(args) > 0 && s.Ref == args[len(args)-1] {
+					block = n / 64
+					break
+				}
+			}
+		}
+		intelWitnessWriteEvent(c, intelWitnessPeerEvent{Event: "start", Args: args, Block: block, ConfiguredRace: configuredRace, ConfiguredRaceSet: configuredSet})
+		for _, a := range args {
+			if strings.HasPrefix(a, "--batch") {
+				if err := syscall.Exec(c.Git, append([]string{c.Git}, args...), delegateEnv); err != nil {
+					os.Exit(95)
+				}
+			}
+		}
+		cmd := exec.Command(c.Git, args...)
+		cmd.Stdin = os.Stdin
+		cmd.Env = delegateEnv
+		raw, err = cmd.Output()
+		exit := 0
+		if err != nil {
+			exit = 1
+			if v, ok := err.(*exec.ExitError); ok {
+				exit = v.ExitCode()
+			}
+		}
+		intelWitnessWriteEvent(c, intelWitnessPeerEvent{Event: "git-wait", Args: args, Block: block, Exit: exit, Raw: string(raw)})
+		for _, a := range args {
+			if c.Mode == "authority-slow-repository" && a == "--absolute-git-dir" || c.Mode == "authority-slow-policy" && a == "show" {
+				time.Sleep(250 * time.Millisecond)
+			}
+		}
+		if block >= 0 {
+			if primary && block == 0 {
+				switch c.Mode {
+				case "reverse", "earlier-malformed", "global-changed", "later-failure", "expiry-prefetch", "semantic-cleanup":
+					time.Sleep(150 * time.Millisecond)
+				}
+				if c.Mode == "earlier-malformed" || c.Mode == "semantic-cleanup" {
+					raw = []byte("malformed\n")
+					exit = 0
+				}
+				if c.Mode == "global-changed" {
+					raw = []byte(strings.Repeat("f", len(c.Sources[0].OID)) + " " + c.Sources[64].Ref + "\nmalformed\n")
+					exit = 0
+				}
+				if c.Mode == "extra-duplicate" {
+					raw = append([]byte("\nanything refs/unselected\n"+c.Sources[64].OID+" "+c.Sources[64].Ref+"\n"), raw...)
+				}
+				if c.Mode == "primary-partial" {
+					raw = []byte("malformed\n")
+					exit = 1
+				}
+				if c.Mode == "fallback-held" || c.Mode == "fallback-cancel" || c.Mode == "fallback-fail" || c.Mode == "fallback-overflow" || c.Mode == "fallback-at-bound" {
+					raw = nil
+					exit = 1
+				}
+				if c.Mode == "primary-overflow" {
+					raw = bytes.Repeat([]byte("x"), 64*512+1)
+					exit = 0
+				}
+				if c.Mode == "primary-at-bound" {
+					raw = append(raw, bytes.Repeat([]byte(" "), 64*512-len(raw))...)
+					exit = 0
+				}
+			}
+			if primary && block == 1 {
+				if c.Mode == "earlier-malformed" {
+					raw = []byte("later failure ignored\n")
+					exit = 1
+				}
+				if c.Mode == "fallback-held" || c.Mode == "fallback-cancel" || c.Mode == "semantic-cleanup" {
+					time.Sleep(400 * time.Millisecond)
+				}
+				if c.Mode == "later-failure" {
+					raw = []byte("later-malformed\n")
+					exit = 0
+				}
+			}
+			if fallback && block == 0 {
+				if c.Mode == "fallback-held" || c.Mode == "fallback-cancel" {
+					time.Sleep(150 * time.Millisecond)
+				}
+				if c.Mode == "fallback-fail" {
+					exit = 1
+				}
+				if c.Mode == "fallback-overflow" {
+					raw = bytes.Repeat([]byte("x"), 65*512+1)
+					exit = 0
+				}
+				if c.Mode == "fallback-at-bound" {
+					raw = append(raw, bytes.Repeat([]byte(" "), 65*512-len(raw))...)
+					exit = 0
+				}
+			}
+		}
+		intelWitnessWriteEvent(c, intelWitnessPeerEvent{Event: "end", Args: args, Block: block, Exit: exit, Raw: string(raw)})
+		_, _ = os.Stdout.Write(raw)
+		os.Exit(exit)
+	}
+}
+
+func intelWitnessInstall(t *testing.T, c intelWitnessPeerConfig) string {
+	t.Helper()
+	self, err := filepath.Abs(os.Args[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := json.Marshal(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(c.Root, "config.json")
+	if err = os.WriteFile(cfg, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	quote := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'" }
+	// Only this new race-instrumented peer omits the synthetic runtime exit
+	// sleep. Its actual Git delegates receive the original GORACE spelling/set.
+	script := "#!/bin/sh\nintel_peer_gorace_set=${GORACE+x}\nintel_peer_gorace=${GORACE-}\nGORACE=\"${intel_peer_gorace} atexit_sleep_ms=0\" exec " + quote(self) + " '-test.run=^TestArtifactStoreExplicitPublicSources$/^witness-pair-wave$' -- --intel-witness-peer " + quote(cfg) + " \"$intel_peer_gorace_set\" \"$intel_peer_gorace\" \"$@\"\n"
+	if err = os.WriteFile(filepath.Join(c.Root, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	wp25Record(t, map[string]any{"control": "intel-witness-peer-configuration", "source_assisted": true, "config_raw": string(raw), "script_raw": script, "harness": self, "harness_sha256": wp25Digest(t, self), "git_sha256": wp25Digest(t, c.Git)})
+	return c.Root + string(os.PathListSeparator) + os.Getenv("PATH")
+}
+
+func intelWitnessLedger(t *testing.T, root string) []intelWitnessPeerEvent {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join(root, "ledger.jsonl"))
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := []intelWitnessPeerEvent{}
+	for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		var r intelWitnessPeerEvent
+		if json.Unmarshal(line, &r) != nil {
+			t.Fatal(string(line))
+		}
+		rows = append(rows, r)
+	}
+	return rows
+}
+
+func intelWitnessFDs(t *testing.T) []string {
+	t.Helper()
+	f, err := os.Open("/dev/fd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	names, err := f.Readdirnames(-1)
+	ce := f.Close()
+	if err != nil || ce != nil {
+		t.Fatal(err, ce)
+	}
+	sort.Strings(names)
+	return names
+}
+
+func intelWitnessResult(t *testing.T, err error, code string) {
+	t.Helper()
+	if code == "" {
+		if err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+	var failure *artifact.Error
+	if !errors.As(err, &failure) || failure.Code != code {
+		t.Fatalf("want %s, got %v", code, err)
+	}
+}
+
+func artifactWitnessPairWaveContract(t *testing.T) {
+	intelWitnessPeer()
+	if os.Getenv("HN_INTEL_RESOURCE_CHILD") != "" {
+		intelWitnessLowFD(t)
+		return
+	}
+	actualGit, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			root := t.TempDir()
+			f := &artifactCLIFixture{t: t, repo: filepath.Join(root, "public.git"), home: filepath.Join(root, "home")}
+			f.git("init", "--bare", "--quiet", "--object-format="+format)
+			commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			sources := []artifactSource{}
+			for i := 0; i < 257; i++ {
+				ref := fmt.Sprintf("refs/hn/remotes/p%03d/artifacts/", i) + strings.TrimPrefix(artifactFrozenRef(t, f), "refs/hn/artifacts/")
+				f.git("update-ref", ref, commit)
+				sources = append(sources, artifactSource{ref, commit})
+			}
+			for _, n := range []int{0, 1, 63, 64, 65, 127, 128, 129, 191, 192, 193, 257} {
+				t.Run(fmt.Sprintf("selected-%d", n), func(t *testing.T) {
+					before := f.snapshot()
+					intelWitnessResult(t, artifactCheckSourceWitnesses(context.Background(), f.repo, sources[:n]), "")
+					f.unchanged(before)
+				})
+			}
+			// A full public read proves both witness phases and authentic object checks.
+			before := f.snapshot()
+			h, err := loadArtifactHistoryFromSources(context.Background(), f.repo, sources[:129])
+			if err != nil || len(h.ByID) != 1 {
+				t.Fatal(err, h)
+			}
+			f.unchanged(before)
+			for _, mode := range []string{"lowFD", "E2BIG", "missing-exec", "bad-interpreter"} {
+				t.Run(mode, func(t *testing.T) {
+					c := intelWitnessPeerConfig{actualGit, f.repo, mode, sources[:129]}
+					raw, e := json.Marshal(c)
+					if e != nil {
+						t.Fatal(e)
+					}
+					cmd := exec.Command(os.Args[0], "-test.v", "-test.run=^TestArtifactStoreExplicitPublicSources$/^witness-pair-wave$")
+					cmd.Env = append(os.Environ(), "HN_INTEL_RESOURCE_CHILD="+string(raw))
+					out, e := cmd.CombinedOutput()
+					wp25Record(t, map[string]any{"control": "intel-witness-resource-child", "source_assisted": true, "mode": mode, "argv": cmd.Args, "stdout_stderr_raw": string(out), "exit_error": fmt.Sprint(e), "fully_wait_reaped": cmd.ProcessState != nil})
+					if e != nil || !bytes.Contains(out, []byte("PASS")) || bytes.Contains(out, []byte("FAIL")) || bytes.Contains(out, []byte("SKIP")) {
+						t.Fatal("resource child", e, string(out))
+					}
+				})
+			}
+			for _, tc := range []struct{ mode, code string }{
+				{"reverse", ""}, {"semantic-cleanup", "verification_failure"}, {"earlier-malformed", "verification_failure"}, {"global-changed", "concurrent_update"}, {"later-failure", "verification_failure"}, {"extra-duplicate", ""}, {"primary-partial", ""}, {"fallback-held", ""}, {"fallback-fail", "verification_failure"}, {"primary-at-bound", ""}, {"primary-overflow", ""}, {"fallback-at-bound", ""}, {"fallback-overflow", "verification_failure"}, {"expiry-prefetch", "cancelled"}, {"fallback-cancel", "cancelled"},
+			} {
+				t.Run(tc.mode, func(t *testing.T) {
+					peer := t.TempDir()
+					path := intelWitnessInstall(t, intelWitnessPeerConfig{actualGit, peer, tc.mode, sources})
+					t.Setenv("PATH", path)
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					if tc.mode == "expiry-prefetch" || tc.mode == "fallback-cancel" {
+						ctx, cancel = context.WithTimeout(context.Background(), 100*time.Millisecond)
+						defer cancel()
+					}
+					// Warm runtime descriptor initialization before the complete-set baseline.
+					_, _ = projectGit(context.Background(), f.repo, nil, 256, "rev-parse", "--git-dir")
+					base := intelWitnessFDs(t)
+					started := time.Now()
+					err := artifactCheckSourceWitnesses(ctx, f.repo, sources)
+					elapsed := time.Since(started)
+					intelWitnessResult(t, err, tc.code)
+					if (tc.mode == "earlier-malformed" || tc.mode == "semantic-cleanup") && err.Error() != "verification_failure: invalid selected artifact source witness" {
+						t.Fatal("later failure replaced earlier parser diagnostic", err)
+					}
+					if got := intelWitnessFDs(t); !reflect.DeepEqual(base, got) {
+						t.Fatal("witness FD leak", base, got)
+					}
+					rows := intelWitnessLedger(t, peer)
+					starts, ends := map[int]bool{}, map[int]bool{}
+					active, maxActive := 0, 0
+					firstEnd := -1
+					primaryStarts := 0
+					for _, r := range rows {
+						if r.Event == "start" {
+							starts[r.PID] = true
+							active++
+							if active > maxActive {
+								maxActive = active
+							}
+							if r.Block >= 0 && len(r.Args) > 1 && r.Args[1] == "show-ref" {
+								primaryStarts++
+								want := []string{"--git-dir=" + f.repo, "show-ref", "--verify", "--"}
+								lo := r.Block * 64
+								hi := min(lo+64, len(sources))
+								for _, s := range sources[lo:hi] {
+									want = append(want, s.Ref)
+								}
+								if !reflect.DeepEqual(want, r.Args) {
+									t.Fatal("changed primary argv", r.Args, want)
+								}
+							}
+						}
+						if r.Event == "start" && r.Block >= 0 && len(r.Args) > 1 && r.Args[1] == "for-each-ref" {
+							want := []string{"--git-dir=" + f.repo, "for-each-ref", "--count=65", "--format=%(objectname) %(refname)", "--"}
+							lo := r.Block * 64
+							hi := min(lo+64, len(sources))
+							for _, v := range sources[lo:hi] {
+								want = append(want, v.Ref)
+							}
+							if !reflect.DeepEqual(want, r.Args) {
+								t.Fatal("changed fallback argv", r.Args, want)
+							}
+						}
+						if r.Event == "end" {
+							ends[r.PID] = true
+							active--
+							if r.Block >= 0 && firstEnd < 0 {
+								firstEnd = r.Block
+							}
+						}
+					}
+					for pid := range starts {
+						if syscall.Kill(pid, 0) == nil {
+							t.Fatal("unreaped owned witness child", pid)
+						}
+					}
+					if os.Getenv("HN_INTEL_TEST_STAGE") == "candidate" {
+						if maxActive > 2 {
+							t.Fatal("more than two producers", maxActive)
+						}
+						if tc.mode == "reverse" && (maxActive != 2 || firstEnd != 1 || primaryStarts != 5) {
+							t.Fatal("pair-wave overlap/reversed completion", maxActive, firstEnd, primaryStarts)
+						}
+						if tc.code != "" && tc.mode != "later-failure" && primaryStarts > 2 {
+							t.Fatal("next pair after refusal", primaryStarts)
+						}
+						if tc.mode == "reverse" {
+							for b := 2; b < 5; b++ {
+								var startAt int64
+								priorEnds := map[int]int64{}
+								for _, r := range rows {
+									if r.Event == "end" && r.Block >= 0 {
+										priorEnds[r.Block] = r.At
+									}
+									if r.Event == "start" && r.Block == b {
+										startAt = r.At
+									}
+								}
+								for p := (b/2 - 1) * 2; p < b/2*2; p++ {
+									if priorEnds[p] == 0 || priorEnds[p] > startAt {
+										t.Fatal("pair replenished before prior release", b, p, rows)
+									}
+								}
+							}
+						}
+					}
+					wp25Record(t, map[string]any{"control": "intel-witness", "source_assisted": true, "mode": tc.mode, "format": format, "error": fmt.Sprint(err), "elapsed_ns": elapsed.Nanoseconds(), "ledger": rows, "max_live_direct_producers": maxActive, "first_finished_block": firstEnd, "FD_before": base, "FD_after": intelWitnessFDs(t), "all_direct_children_absent": true, "stage": os.Getenv("HN_INTEL_TEST_STAGE")})
+				})
+			}
+			// Prefix descendants exercise the real fallback count65 sentinel, even for
+			// a final partial group. Failed primary output never reaches the parser.
+			t.Run("real-prefix-sentinel", func(t *testing.T) {
+				missing := sources[0]
+				f.git("update-ref", "-d", missing.Ref)
+				for i := 0; i < 65; i++ {
+					f.git("update-ref", fmt.Sprintf("%s/child%02d", missing.Ref, i), commit)
+				}
+				before := f.snapshot()
+				intelWitnessResult(t, artifactCheckSourceWitnesses(context.Background(), f.repo, []artifactSource{missing}), "resource_limit")
+				f.unchanged(before)
+				for i := 0; i < 65; i++ {
+					f.git("update-ref", "-d", fmt.Sprintf("%s/child%02d", missing.Ref, i))
+				}
+				intelWitnessResult(t, artifactCheckSourceWitnesses(context.Background(), f.repo, []artifactSource{missing}), "concurrent_update")
+				f.git("update-ref", missing.Ref, commit)
+			})
+			t.Run("cancelled-entry-no-child", func(t *testing.T) {
+				peer := t.TempDir()
+				path := intelWitnessInstall(t, intelWitnessPeerConfig{actualGit, peer, "entry", sources})
+				t.Setenv("PATH", path)
+				ctx, cancel := context.WithCancel(context.Background())
+				cancel()
+				intelWitnessResult(t, artifactCheckSourceWitnesses(ctx, f.repo, nil), "cancelled")
+				intelWitnessResult(t, artifactCheckSourceWitnesses(ctx, f.repo, sources), "cancelled")
+				if len(intelWitnessLedger(t, peer)) != 0 {
+					t.Fatal("cancelled entry launched child")
+				}
+			})
+			t.Run("exact-no-DWIM", func(t *testing.T) {
+				wanted := sources[0]
+				f.git("update-ref", "-d", wanted.Ref)
+				alias := "refs/heads/" + wanted.Ref
+				f.git("update-ref", alias, wanted.OID)
+				defer f.git("update-ref", wanted.Ref, wanted.OID)
+				before := f.snapshot()
+				intelWitnessResult(t, artifactCheckSourceWitnesses(context.Background(), f.repo, []artifactSource{wanted}), "concurrent_update")
+				f.unchanged(before)
+			})
+		})
+	}
+}
+
+func intelWitnessLowFD(t *testing.T) {
+	// Only invoked by the separately owned compiled-self child, never in parent.
+	var c intelWitnessPeerConfig
+	if err := json.Unmarshal([]byte(os.Getenv("HN_INTEL_RESOURCE_CHILD")), &c); err != nil {
+		t.Fatal(err)
+	}
+	_, _ = projectGit(context.Background(), c.Root, nil, 256, "rev-parse", "--git-dir")
+	base := intelWitnessFDs(t)
+	if c.Mode != "lowFD" {
+		switch c.Mode {
+		case "E2BIG":
+			t.Setenv("HN_INTEL_HUGE_CHILD_ONLY", strings.Repeat("x", 256*1024))
+		case "missing-exec":
+			t.Setenv("PATH", t.TempDir())
+		case "bad-interpreter":
+			root := t.TempDir()
+			if e := os.WriteFile(filepath.Join(root, "git"), []byte("#!/nonexistent/intel-interpreter\n"), 0700); e != nil {
+				t.Fatal(e)
+			}
+			t.Setenv("PATH", root)
+		default:
+			t.Fatal("unknown child resource mode")
+		}
+		err := artifactCheckSourceWitnesses(context.Background(), c.Root, c.Sources)
+		intelWitnessResult(t, err, "verification_failure")
+		args := []string{"show-ref", "--verify", "--"}
+		for _, v := range c.Sources[:64] {
+			args = append(args, v.Ref)
+		}
+		raw, rawErr := projectGit(context.Background(), c.Root, nil, 64*512, args...)
+		want := error(exec.ErrNotFound)
+		if c.Mode == "E2BIG" {
+			want = syscall.E2BIG
+		}
+		if c.Mode == "bad-interpreter" {
+			want = syscall.ENOENT
+		}
+		if raw != nil || !errors.Is(rawErr, want) {
+			t.Fatal("real exec fault provenance", c.Mode, rawErr, want)
+		}
+		wp25Record(t, map[string]any{"control": "intel-witness-exec-errno", "mode": c.Mode, "actual_error": fmt.Sprint(rawErr), "expected_errno": fmt.Sprint(want), "stdout_nil": raw == nil, "argv": args})
+		if got := intelWitnessFDs(t); !reflect.DeepEqual(base, got) {
+			t.Fatal("resource setup leaked", base, got)
+		}
+		wp25Record(t, map[string]any{"control": "intel-witness-child-only-exec-fault", "mode": c.Mode, "error": fmt.Sprint(err), "complete_FD_recovery": true})
+		return
+	}
+	var old syscall.Rlimit
+	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &old); err != nil {
+		t.Fatal(err)
+	}
+	reduced := old
+	reduced.Cur = 64
+	if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &reduced); err != nil {
+		t.Fatal(err)
+	}
+	held := []*os.File{}
+	for {
+		f, err := os.Open(os.DevNull)
+		if err != nil {
+			break
+		}
+		held = append(held, f)
+	}
+	err := artifactCheckSourceWitnesses(context.Background(), c.Root, c.Sources)
+	args := []string{"show-ref", "--verify", "--"}
+	for _, v := range c.Sources[:64] {
+		args = append(args, v.Ref)
+	}
+	raw, rawErr := projectGit(context.Background(), c.Root, nil, 64*512, args...)
+	errnoOK := raw == nil && errors.Is(rawErr, syscall.EMFILE)
+	restoreErr := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &old)
+	for _, f := range held {
+		if e := f.Close(); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if restoreErr != nil {
+		t.Fatal(restoreErr)
+	}
+	intelWitnessResult(t, err, "verification_failure")
+	if !errnoOK {
+		t.Fatal("real lowFD fault provenance", rawErr)
+	}
+	wp25Record(t, map[string]any{"control": "intel-witness-exec-errno", "mode": "lowFD", "actual_error": fmt.Sprint(rawErr), "expected_errno": syscall.EMFILE.Error(), "stdout_nil": raw == nil, "argv": args})
+	if got := intelWitnessFDs(t); !reflect.DeepEqual(base, got) {
+		t.Fatal("lowFD leaked", base, got)
+	}
+	wp25Record(t, map[string]any{"control": "intel-witness-child-only-lowFD", "error": fmt.Sprint(err), "held": len(held), "complete_FD_recovery": true})
+}
+
+func nativeExactCurrentAuthorityGuards(t *testing.T) {
+	binary := extensionTestBinary(t)
+	t.Run("public-two-plans", func(t *testing.T) { intelAuthorityPublicPlans(t, binary) })
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f := artifactCLIFormat(t, format)
+			policyRaw := fmt.Sprintf(`{"version":"hn.policy/0","maintainers":[%q],"proposals":{"requiredAccepts":1,"trustedReviewers":[]},"pipelines":{},"contributions":{"project":%q,"moderators":[%q],"rules":[],"baseline":[],"limits":{"wireBytes":16777216,"decodedBytes":33554432,"objects":4096,"events":2048,"depth":256,"milliseconds":30000,"window":{"bytes":268435456,"objects":32768,"events":16384,"requests":256},"retained":{"bytes":1073741824,"objects":131072,"events":65536,"requests":1024}}}}`, f.actor, wp25NativeDigest([]byte("intel authority guards")), f.actor)
+			if err := os.MkdirAll(filepath.Join(f.repo, ".hn"), 0700); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(f.repo, ".hn/policy.json"), []byte(policyRaw), 0600); err != nil {
+				t.Fatal(err)
+			}
+			f.git("add", ".hn/policy.json")
+			f.git("-c", "user.name=Fixture", "-c", "user.email=fixture@hn.invalid", "commit", "-qm", "policy")
+			f.git("branch", "-M", "main")
+			contributionCLI(t, binary, f.repo, true, "contribution", "authority", "set", "--ref", "refs/heads/main", "--expect", "absent")
+			t.Chdir(f.repo)
+			a, err := loadContributionAuthority()
+			if err != nil || a == nil {
+				t.Fatal(err)
+			}
+			ref := a.current().Ref
+			source := contributionAuthoritySource{a}
+			p1, err := source.Historical(ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			p2, err := source.Historical(ref)
+			if err != nil || !reflect.DeepEqual(p1, p2) || p1.Policy == p2.Policy || p1.Policy == a.Policy.Contributions {
+				t.Fatal("authority must freshly parse each record", err)
+			}
+			cached := *a
+			cached.Policy = a.Policy
+			cached.Policy.Maintainers = []string{strings.Repeat("f", 64)}
+			fresh, e := (contributionAuthoritySource{&cached}).Historical(ref)
+			if e != nil || !reflect.DeepEqual(fresh.Maintainers, p1.Maintainers) {
+				t.Fatal("returned cached maintainers", e, fresh)
+			}
+			legacy := f.git("show", ref.Commit+":.hn/policy.json")
+			typed := f.git("show", ref.Commit+"^{commit}:.hn/policy.json")
+			if legacy != typed || typed != policyRaw {
+				t.Fatal("typed policy expression differs")
+			}
+			check := func(name string, authority *contributionAuthority, rerr string) {
+				t.Helper()
+				r := authority.current().Ref
+				got, e := (contributionAuthoritySource{authority}).Historical(r)
+				if rerr == "" {
+					if e != nil {
+						t.Fatal(name, e)
+					}
+				} else if e == nil || e.Error() != rerr {
+					t.Fatal(name, "expected", rerr, "got", e, got)
+				}
+				wp25Record(t, map[string]any{"control": "intel-authority-guard", "source_assisted": true, "case": name, "format": format, "ref": r, "error": fmt.Sprint(e)})
+			}
+			authorityError := "historical authority unavailable"
+			// Obtain the public error spelling from an invalid real object rather than
+			// importing another package or weakening the exact error comparisons.
+			bad := ref
+			bad.Commit = strings.Repeat("1", len(ref.Commit))
+			_, badErr := source.Historical(bad)
+			if badErr == nil {
+				t.Fatal("missing authority accepted")
+			}
+			authorityError = badErr.Error()
+			for _, kind := range []string{"tree", "blob", "tag", "malformed-commit"} {
+				t.Run(kind, func(t *testing.T) {
+					copy := *a
+					switch kind {
+					case "tree":
+						copy.Commit = f.git("rev-parse", ref.Commit+"^{tree}")
+					case "blob":
+						copy.Commit = f.git("rev-parse", ref.Commit+":.hn/policy.json")
+					case "tag":
+						copy.Commit = f.gitInput("object "+ref.Commit+"\ntype commit\ntag authority\ntagger Fixture <fixture@hn.invalid> 0 +0000\n\nfixture\n", "hash-object", "-w", "-t", "tag", "--stdin")
+					case "malformed-commit":
+						copy.Commit = f.gitInput("tree missing\n\nmalformed\n", "hash-object", "--literally", "-w", "-t", "commit", "--stdin")
+					}
+					want := authorityError
+					if kind == "tag" {
+						want = ""
+					}
+					check(kind, &copy, want)
+				})
+			}
+			for _, which := range []string{"commit", "policy"} {
+				for _, fault := range []string{"missing", "corrupt"} {
+					t.Run(which+"-"+fault, func(t *testing.T) {
+						oid := ref.Commit
+						if which == "policy" {
+							oid = f.git("rev-parse", ref.Commit+":.hn/policy.json")
+						}
+						path := filepath.Join(f.repo, ".git/objects", oid[:2], oid[2:])
+						saved, err := os.ReadFile(path)
+						if err != nil {
+							t.Fatal(err)
+						}
+						err = os.Remove(path)
+						if err == nil && fault == "corrupt" {
+							err = os.WriteFile(path, []byte("corrupt zlib"), 0444)
+						}
+						if err != nil {
+							t.Fatal(err)
+						}
+						defer func() {
+							if fault == "corrupt" {
+								if e := os.Remove(path); e != nil {
+									t.Fatal(e)
+								}
+							}
+							if e := os.WriteFile(path, saved, 0444); e != nil {
+								t.Fatal(e)
+							}
+						}()
+						check(which+"-"+fault, a, authorityError)
+					})
+				}
+			}
+			for _, tc := range []struct{ name, raw string }{
+				{"trailing", policyRaw + " {}"}, {"shape", `{"version":"wrong"}`}, {"disabled", strings.Replace(policyRaw, `"contributions":`, `"unexpected":`, 1)},
+				{"digest", strings.Replace(policyRaw, "intel-no-such-text", "changed", 1) + " "},
+			} {
+				t.Run(tc.name, func(t *testing.T) {
+					blob := f.gitInput(tc.raw, "hash-object", "-w", "--stdin")
+					sub := f.gitInput("100644 blob "+blob+"\tpolicy.json\n", "mktree")
+					tree := f.gitInput("040000 tree "+sub+"\t.hn\n", "mktree")
+					copy := *a
+					copy.Commit = f.git("-c", "user.name=Fixture", "-c", "user.email=fixture@hn.invalid", "commit-tree", tree, "-m", tc.name)
+					check(tc.name, &copy, authorityError)
+				})
+			}
+			for _, kind := range []string{"enabled-project", "disabled-policy", "sorted-maintainers", "absent-policy"} {
+				t.Run(kind, func(t *testing.T) {
+					var document map[string]any
+					if e := json.Unmarshal([]byte(policyRaw), &document); e != nil {
+						t.Fatal(e)
+					}
+					switch kind {
+					case "enabled-project":
+						document["contributions"].(map[string]any)["project"] = wp25NativeDigest([]byte("foreign scope"))
+					case "disabled-policy":
+						delete(document, "contributions")
+					case "sorted-maintainers":
+						document["maintainers"] = []string{strings.Repeat("f", 64), f.actor}
+					}
+					raw, e := json.Marshal(document)
+					if e != nil {
+						t.Fatal(e)
+					}
+					var tree string
+					if kind == "absent-policy" {
+						tree = f.gitInput("", "mktree")
+					} else {
+						blob := f.gitInput(string(raw), "hash-object", "-w", "--stdin")
+						sub := f.gitInput("100644 blob "+blob+"\tpolicy.json\n", "mktree")
+						tree = f.gitInput("040000 tree "+sub+"\t.hn\n", "mktree")
+					}
+					copy := *a
+					copy.Commit = f.git("-c", "user.name=Fixture", "-c", "user.email=fixture@hn.invalid", "commit-tree", tree, "-m", kind)
+					copy.PolicyDigest = wp25NativeDigest(raw)
+					if kind == "sorted-maintainers" {
+						got, e := (contributionAuthoritySource{&copy}).Historical(copy.current().Ref)
+						want := []string{f.actor, strings.Repeat("f", 64)}
+						sort.Strings(want)
+						if e != nil || !reflect.DeepEqual(got.Maintainers, want) {
+							t.Fatal("fresh sorted maintainers", e, got)
+						}
+					} else {
+						check(kind, &copy, authorityError)
+					}
+				})
+			}
+			wrong := ref
+			wrong.Digest = wp25NativeDigest([]byte("wrong"))
+			if _, e := source.Historical(wrong); e == nil || e.Error() != authorityError {
+				t.Fatal("wrong digest accepted", e)
+			}
+			copy := *a
+			copy.Policy = a.Policy
+			copy.Policy.Contributions = nil
+			check("current-disabled", &copy, authorityError)
+			p := *a.Policy.Contributions
+			copy = *a
+			copy.Policy = a.Policy
+			copy.Policy.Contributions = &p
+			p.Project = wp25NativeDigest([]byte("different project"))
+			check("current-project", &copy, authorityError)
+			// A real durable pending transaction is installed only after constructor.
+			dir := filepath.Join(f.repo, ".git")
+			txn := replicationTransactionResult{ID: "txn-intel", Remote: "origin", pendingObjects: []string{ref.Commit}, acceptedObjects: []string{}}
+			if err := createReplicationPendingAnchor(dir, txn); err != nil {
+				t.Fatal(err)
+			}
+			if err := recordReplicationTransaction(dir, txn, "validated"); err != nil {
+				t.Fatal(err)
+			}
+			check("fresh-pending", a, authorityError)
+			if err := recordReplicationTransaction(dir, txn, "complete"); err != nil {
+				t.Fatal(err)
+			}
+			if err := removeReplicationPendingAnchor(dir, txn.ID); err != nil {
+				t.Fatal(err)
+			}
+			check("pending-recovery", a, "")
+			t.Run("fresh-repository", func(t *testing.T) {
+				t.Chdir(t.TempDir())
+				_, e := source.Historical(ref)
+				if e == nil || e.Error() != "not inside a Git repository" {
+					t.Fatal("fresh repository prefix", e)
+				}
+			})
+			for _, mode := range []string{"authority-slow-repository", "authority-slow-policy", "authority-work-ledger"} {
+				t.Run(mode, func(t *testing.T) {
+					actual, e := exec.LookPath("git")
+					if e != nil {
+						t.Fatal(e)
+					}
+					peer := t.TempDir()
+					path := intelWitnessInstall(t, intelWitnessPeerConfig{actual, peer, mode, nil})
+					t.Setenv("PATH", path)
+					copy := *a
+					p := *a.Policy.Contributions
+					copy.Policy = a.Policy
+					copy.Policy.Contributions = &p
+					if mode != "authority-work-ledger" {
+						p.Limits.Milliseconds = 50
+						check(mode, &copy, authorityError)
+					} else {
+						for i := 0; i < 3; i++ {
+							check("fresh-record", &copy, "")
+						}
+						rows := intelWitnessLedger(t, peer)
+						counts := map[string]int{}
+						for _, r := range rows {
+							if r.Event == "start" {
+								for _, v := range r.Args {
+									if v == "rev-parse" || v == "merge-base" || v == "show" {
+										counts[v]++
+									}
+								}
+							}
+							if r.Event == "start" && syscall.Kill(r.PID, 0) == nil {
+								t.Fatal("authority child unreaped", r)
+							}
+						}
+						if counts["rev-parse"] != 3 || counts["show"] != 3 {
+							t.Fatal("per-record repository/policy observations", counts)
+						}
+						want := 3
+						if os.Getenv("HN_INTEL_TEST_STAGE") == "candidate" {
+							want = 0
+						}
+						if counts["merge-base"] != want {
+							t.Fatal("per-record work accounting", counts, want)
+						}
+						oldRef := ref
+						copy.Commit = f.git("-c", "user.name=Fixture", "-c", "user.email=fixture@hn.invalid", "commit-tree", f.git("rev-parse", ref.Commit+"^{tree}"), "-p", ref.Commit, "-m", "descendant")
+						if _, e := (contributionAuthoritySource{&copy}).Historical(oldRef); e != nil {
+							t.Fatal("legacy noncurrent", e)
+						}
+						wp25Record(t, map[string]any{"control": "intel-authority-work-ledger", "source_assisted": true, "format": format, "counts": counts, "records": 3, "ledger": intelWitnessLedger(t, peer), "noncurrent_legacy_success": true, "stage": os.Getenv("HN_INTEL_TEST_STAGE")})
+					}
+				})
+			}
+			wp25Record(t, map[string]any{"control": "intel-authority-typed-compatibility", "source_assisted": true, "format": format, "policy_raw": policyRaw, "legacy_raw": legacy, "typed_raw": typed, "fresh_distinct_policy_values": true})
+		})
+	}
+}
+
+func intelAuthorityPublicPlans(t *testing.T, binary string) {
+	f, project, _, _, plan := nativeClosureRegisterFixture(t, binary)
+	actual, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	peer := t.TempDir()
+	path := intelWitnessInstall(t, intelWitnessPeerConfig{actual, peer, "public-plans", nil})
+	for i, v := range f.env {
+		if strings.HasPrefix(v, "PATH=") {
+			f.env[i] = "PATH=" + path
+		}
+	}
+	before := f.git(nil, "show-ref")
+	receipt := wp25PublicCountCall(t, f, "intel-authority-two-plans", false, true, time.Minute, "contribution", "retained", "register", "--expect", wp25NativeDigest(plan))
+	if before != f.git(nil, "show-ref") {
+		t.Fatal("retained registration changed public identities")
+	}
+	rows := intelWitnessLedger(t, peer)
+	typed := 0
+	legacy := 0
+	for _, r := range rows {
+		if r.Event == "start" {
+			for _, a := range r.Args {
+				if strings.HasSuffix(a, "^{commit}:.hn/policy.json") {
+					typed++
+				}
+				if strings.HasSuffix(a, ":.hn/policy.json") && !strings.Contains(a, "^{commit}") {
+					legacy++
+				}
+			}
+			if syscall.Kill(r.PID, 0) == nil {
+				t.Fatal("public plan Git not reaped", r)
+			}
+		}
+	}
+	if os.Getenv("HN_INTEL_TEST_STAGE") == "candidate" && typed != 2 {
+		t.Fatal("both retained plans need independent typed record observations", typed, rows)
+	}
+	nativeClosureRetainedJournal(t, f, project, wp25NativeDigest(plan), false)
+	wp25Record(t, map[string]any{"control": "intel-authority-public-two-plans", "source_assisted_fixture": true, "actual_supplied_candidate": binary, "candidate_sha256": wp25Digest(t, binary), "receipt_raw": string(receipt), "expected_plan_raw": string(plan), "typed_record_reads": typed, "legacy_policy_reads": legacy, "ledger": rows, "stage": os.Getenv("HN_INTEL_TEST_STAGE")})
 }

@@ -777,53 +777,101 @@ func artifactCheckSourceWitnesses(ctx context.Context, dir string, sources []art
 	// show-ref --verify performs exact ref lookups. A single for-each-ref query
 	// with100000 patterns scans the pattern set per ref and can exhaust the read
 	// deadline. Bound argv/output per batch instead; no unselected history loads.
-	for start := 0; start < len(sources); start += 64 {
-		end := start + 64
-		if end > len(sources) {
-			end = len(sources)
+	var pair [2]*artifactWitnessJob
+	// The deferred owner joins every launched job, including completed results
+	// not consumed after an earlier refusal. Cleanup cannot change that refusal.
+	release := func() {
+		for _, job := range pair {
+			if job != nil {
+				job.cancel()
+			}
 		}
-		args := []string{"show-ref", "--verify", "--"}
-		for _, source := range sources[start:end] {
-			args = append(args, source.Ref)
+		for i, job := range pair {
+			if job != nil {
+				<-job.done
+				pair[i] = nil
+			}
 		}
-		raw, e := projectGit(ctx, dir, nil, 64*512, args...)
-		if e != nil {
+	}
+	defer release()
+	for base := 0; base < len(sources); base += 2 * 64 {
+		for slot := range pair {
+			start := base + slot*64
+			if start >= len(sources) {
+				break
+			}
 			if ctx.Err() != nil {
 				return artifactFailure("cancelled", "artifact read cancelled")
 			}
-			// show-ref fails as a group for a missing witness. The bounded fallback
-			// distinguishes verified disappearance from an unreadable ref database;
-			// neither error is treated as an empty source set.
-			args = []string{"for-each-ref", "--count=65", "--format=%(objectname) %(refname)", "--"}
+			end := start + 64
+			if end > len(sources) {
+				end = len(sources)
+			}
+			args := []string{"show-ref", "--verify", "--"}
 			for _, source := range sources[start:end] {
 				args = append(args, source.Ref)
 			}
-			raw, e = projectGit(ctx, dir, nil, 65*512, args...)
+			child, cancel := context.WithCancel(ctx)
+			job := &artifactWitnessJob{start: start, end: end, args: args, cancel: cancel, done: make(chan struct{})}
+			pair[slot] = job
+			go func() {
+				job.raw, job.err = projectGit(child, dir, nil, 64*512, job.args...)
+				close(job.done)
+			}()
+		}
+		for _, job := range pair {
+			if job == nil {
+				break
+			}
+			if ctx.Err() != nil {
+				return artifactFailure("cancelled", "artifact read cancelled")
+			}
+			<-job.done
+			if ctx.Err() != nil {
+				return artifactFailure("cancelled", "artifact read cancelled")
+			}
+			start, end := job.start, job.end
+			args := job.args
+			raw, e := job.raw, job.err
 			if e != nil {
 				if ctx.Err() != nil {
 					return artifactFailure("cancelled", "artifact read cancelled")
 				}
-				return artifactFailure("verification_failure", "cannot verify selected artifact source witnesses")
-			}
-			if bytes.Count(raw, []byte("\n")) >= 65 {
-				return artifactFailure("resource_limit", "selected source witness enumeration exceeds read limit")
-			}
-		}
-		for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
-			if line == "" {
-				continue
-			}
-			p := strings.Fields(line)
-			if len(p) != 2 {
-				return artifactFailure("verification_failure", "invalid selected artifact source witness")
-			}
-			if oid, selected := wanted[p[1]]; selected {
-				if p[0] != oid {
-					return artifactFailure("concurrent_update", "artifact source witness changed while reading")
+				// show-ref fails as a group for a missing witness. The bounded fallback
+				// distinguishes verified disappearance from an unreadable ref database;
+				// neither error is treated as an empty source set.
+				args = []string{"for-each-ref", "--count=65", "--format=%(objectname) %(refname)", "--"}
+				for _, source := range sources[start:end] {
+					args = append(args, source.Ref)
 				}
-				delete(wanted, p[1])
+				raw, e = projectGit(ctx, dir, nil, 65*512, args...)
+				if e != nil {
+					if ctx.Err() != nil {
+						return artifactFailure("cancelled", "artifact read cancelled")
+					}
+					return artifactFailure("verification_failure", "cannot verify selected artifact source witnesses")
+				}
+				if bytes.Count(raw, []byte("\n")) >= 65 {
+					return artifactFailure("resource_limit", "selected source witness enumeration exceeds read limit")
+				}
+			}
+			for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+				if line == "" {
+					continue
+				}
+				p := strings.Fields(line)
+				if len(p) != 2 {
+					return artifactFailure("verification_failure", "invalid selected artifact source witness")
+				}
+				if oid, selected := wanted[p[1]]; selected {
+					if p[0] != oid {
+						return artifactFailure("concurrent_update", "artifact source witness changed while reading")
+					}
+					delete(wanted, p[1])
+				}
 			}
 		}
+		release()
 	}
 
 	if len(wanted) != 0 {
@@ -831,6 +879,18 @@ func artifactCheckSourceWitnesses(ctx context.Context, dir string, sources []art
 	}
 	return nil
 }
+
+// One original GLOBAL64 primary owns its result until the coordinator releases
+// the whole pair. Closing done publishes only after projectGit has Run/Waited.
+type artifactWitnessJob struct {
+	start, end int
+	args       []string
+	raw        []byte
+	err        error
+	cancel     context.CancelFunc
+	done       chan struct{}
+}
+
 func (h *artifactHistory) validate(ctx context.Context) error {
 	ops := map[string]bool{}
 	for _, s := range h.ByID {
