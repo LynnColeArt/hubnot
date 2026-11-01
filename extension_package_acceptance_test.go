@@ -68,6 +68,9 @@ func TestExtensionPackageQualification(t *testing.T) {
 			t.Setenv(key, path)
 		}
 	}
+	incomingXDG, incomingXDGPresent := os.LookupEnv("XDG_CONFIG_HOME")
+	wp25Record(t, map[string]any{"control": "qualification-fixture-config-isolation", "incoming_xdg_present": incomingXDGPresent, "incoming_xdg_value": incomingXDG, "selected_xdg_value": "", "candidate_sha256": wp25Digest(t, binary), "harness_sha256": wp25Digest(t, wp25Self(t)), "reason": "legacy fixtures isolate HOME; an empty XDG preserves each Linux fixture HOME fallback; deeper explicit OS configuration pins remain intact", "causal_evidence": "same frozen harness/candidate shared-XDG registration failure versus blank-XDG complete pass; original failed CI ambient path was not retained"})
+	t.Setenv("XDG_CONFIG_HOME", "")
 	if os.Getenv("HN_WP25_MISSING_REFERENCE_CONTROL") == "1" {
 		t.Fatal("missing-reference control unexpectedly reached execution")
 	}
@@ -102,6 +105,7 @@ func TestExtensionPackageQualification(t *testing.T) {
 	t.Run("standalone-local-input-limits", func(t *testing.T) { wp25ConsumerInputLimits(t, references) })
 	t.Run("selected-ref-live-bound", wp25SelectedRefLimit)
 	t.Run("native-limits", wp25NativeLimits)
+	t.Run("inherited-public-count-limits", func(t *testing.T) { wp25InheritedPublicCountLimits(t, binary) })
 	t.Run("lifecycle-limits", func(t *testing.T) { wp25LifecycleLimits(t, binary) })
 	t.Run("artifact-limits", wp25ArtifactLimits)
 	t.Run("read-object-and-aggregate-limits", wp25ReadBudgets)
@@ -112,7 +116,11 @@ func TestExtensionPackageQualification(t *testing.T) {
 	// hostile peers in this test executable and source-assisted context checks
 	// retain those narrower labels; none is a standalone reference substitute.
 	for _, journey := range wp25PublicJourneys {
-		t.Run(journey.name, journey.run)
+		if journey.name == "TestExtensionFakeTrackerNativeDefaultInert" {
+			t.Run(journey.name, func(t *testing.T) { wp25TopLevelFixtureJourney(t, journey.name) })
+		} else {
+			t.Run(journey.name, journey.run)
+		}
 	}
 	if raw, err := os.ReadFile(marker); !os.IsNotExist(err) {
 		t.Fatalf("forbidden source fallback: %v %s", err, raw)
@@ -1662,9 +1670,7 @@ func wp25Unchanged(f *artifactCLIFixture, before map[string]string) {
 	}
 }
 
-// Integration imports: bytes, crypto/ed25519, crypto/sha256, encoding/base64,
-// encoding/hex, encoding/json, fmt, os, os/exec, path/filepath, reflect, sort,
-// strings, testing. Public-fixture construction below is SOURCE-ASSISTED;
+// Public-fixture construction below is SOURCE-ASSISTED;
 // admission, mutation, reads and refusals always execute HN_WP17_BINARY.
 func wp25NativeLimits(t *testing.T) {
 	if os.Getenv("HN_WP17_BINARY") == "" {
@@ -3389,8 +3395,6 @@ func TestExtensionPackageLifecycleLimits(t *testing.T) {
 	wp25LifecycleLimits(t, binary)
 }
 
-// Integration imports: bytes, crypto/sha256, encoding/json, fmt, io, net/http,
-// os, os/exec, path/filepath, reflect, strings, testing, time.
 // All observations below are against the independently supplied standalone
 // fake-tracker process. No sample package is imported into this harness.
 func wp25TrackerServiceLimits(t *testing.T, consumer string) {
@@ -3667,9 +3671,6 @@ func (p *wp25TrackerServiceProcess) http(t *testing.T, method, path string, body
 	return response.StatusCode, raw
 }
 
-// Integration imports: bufio, bytes, context, crypto/ed25519, crypto/sha256,
-// encoding/base64, encoding/hex, encoding/json, fmt, io, os, os/exec,
-// path/filepath, sort, strconv, strings, testing, time.
 // SOURCE-ASSISTED public fixture construction only. The signed literal artifact
 // chain is independently encoded, signed and imported; production record helpers
 // do not construct or validate it. The supplied executable performs each read.
@@ -3995,9 +3996,8 @@ func wp25SavePublicFixture(t *testing.T, name string, raw []byte) {
 	}
 }
 
-// Imports needed: bytes, context, encoding/json, fmt, os, os/exec,
-// path/filepath, reflect, strings, testing, time. This fragment tests the
-// supplied public validators/consumer. Typed utility success is explicitly not
+// These tests exercise supplied public validators and consumers.
+// Typed utility success is explicitly not
 // authenticated publication, emitted head cardinality, authority or history.
 func wp25RemainingTypedLimits(t *testing.T, binary string, references map[string]string) {
 	t.Run("A14-signed-year-and-safe-integer-domain", func(t *testing.T) {
@@ -4225,9 +4225,7 @@ func TestExtensionPackageRemainingTypedLimits(t *testing.T) {
 	wp25RemainingTypedLimits(t, binary, map[string]string{"charter": charterConsumer(t)})
 }
 
-// Imports: bytes, context, crypto/sha256, encoding/base64, encoding/binary,
-// encoding/hex, encoding/json, fmt, io, net/http, net/http/httptest, os, os/exec,
-// path/filepath, reflect, strings, testing, time. No sample/host package imports.
+// No sample or host package is imported by these controls.
 // These are independently supplied consumer controls with literal scripted host
 // frames. Normal actual host/standalone/clone journeys remain separate evidence.
 func wp25TrackerClientLimits(t *testing.T, consumer string) {
@@ -4567,5 +4565,785 @@ func wp25TrackerClientPagePlans(t *testing.T, consumer string) {
 			t.Fatal("refused/denied consumer plan advanced private checkpoint")
 		}
 		wp25Record(t, map[string]any{"control": "tracker-client-observe-plan", "plan_limit": limit, "expected_cause": want, "actual_frames": wire, "journal_unchanged": true, "scope": "0 selects default20;1/200 reach actual changes.capture request then independent known host refusal;201 refuses before changes request. No claim host returned200 entries in this control."})
+	}
+}
+
+// All construction below is SOURCE-ASSISTED standard Ed25519 + Git fast-import.
+// Only wp25PublicCountCall executes the independently supplied candidate.
+type wp25PublicCountFixture struct {
+	t                            *testing.T
+	binary, repo, root, evidence string
+	env                          []string
+}
+
+func wp25PublicCountNew(t *testing.T, binary, scope string) *wp25PublicCountFixture {
+	t.Helper()
+	if binary == "" {
+		t.Fatal("public count control requires supplied candidate binary")
+	}
+	root := t.TempDir()
+	repo := filepath.Join(root, "repo")
+	home := filepath.Join(root, "home")
+	for _, p := range []string{repo, home} {
+		if e := os.MkdirAll(p, 0700); e != nil {
+			t.Fatal(e)
+		}
+	}
+	config := wp25FixtureConfig(t, home)
+	git, e := exec.LookPath("git")
+	if e != nil {
+		t.Fatal(e)
+	}
+	path := filepath.Join(root, "path")
+	if e = os.Mkdir(path, 0700); e != nil {
+		t.Fatal(e)
+	}
+	if e = os.Symlink(git, filepath.Join(path, "git")); e != nil {
+		t.Fatal(e)
+	}
+	// No executable source/build fallback: a Go attempt emits a recognizable failure.
+	if e = os.WriteFile(filepath.Join(path, "go"), []byte("#!/bin/sh\necho WP25_SOURCE_FALLBACK_FORBIDDEN >&2\nexit 97\n"), 0700); e != nil {
+		t.Fatal(e)
+	}
+	env := []string{"PATH=" + path, "HOME=" + home, "XDG_CONFIG_HOME=" + config, "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL=" + os.DevNull, "GIT_TERMINAL_PROMPT=0", "GIT_ASKPASS=", "LC_ALL=C"}
+	evidence := os.Getenv("HN_WP25_EVIDENCE")
+	if evidence == "" {
+		evidence = t.TempDir()
+	}
+	evidence = filepath.Join(evidence, "source-assistance", scope)
+	if e = os.MkdirAll(evidence, 0700); e != nil {
+		t.Fatal(e)
+	}
+	f := &wp25PublicCountFixture{t, binary, repo, root, evidence, env}
+	f.git(nil, "init", "-q", "--initial-branch=main")
+	f.git(nil, "-c", "user.name=WP25 public fixture", "-c", "user.email=fixture@hn.invalid", "-c", "commit.gpgsign=false", "commit", "-qm", "fixture", "--allow-empty")
+	return f
+}
+func (f *wp25PublicCountFixture) git(input io.Reader, args ...string) string {
+	f.t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir, cmd.Env, cmd.Stdin = f.repo, f.env, input
+	out, e := cmd.CombinedOutput()
+	if e != nil {
+		f.t.Fatalf("SOURCE-ASSISTED git %q: %v %s", args, e, out)
+	}
+	return strings.TrimSpace(string(out))
+}
+func (f *wp25PublicCountFixture) snapshot() map[string]string {
+	f.t.Helper()
+	out := map[string]string{}
+	e := filepath.Walk(f.root, func(p string, i os.FileInfo, e error) error {
+		if e != nil {
+			return e
+		}
+		if i.IsDir() {
+			return nil
+		}
+		b, e := os.ReadFile(p)
+		if e != nil {
+			return e
+		}
+		out[strings.TrimPrefix(p, f.root)] = wp25NativeDigest(b)
+		return nil
+	})
+	if e != nil {
+		f.t.Fatal(e)
+	}
+	return out
+}
+func wp25PublicCountCall(t *testing.T, f *wp25PublicCountFixture, scope string, readOnly, ok bool, budget time.Duration, args ...string) []byte {
+	t.Helper()
+	before := f.snapshot()
+	ctx, cancel := context.WithTimeout(context.Background(), budget)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, f.binary, args...)
+	cmd.Dir, cmd.Env = f.repo, f.env
+	var out, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &out, &stderr
+	start := time.Now()
+	err := cmd.Run()
+	after := f.snapshot()
+	wp25Record(t, map[string]any{"control": scope, "candidate_observation": true, "source_assisted": false, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "cwd": f.repo, "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "watchdog_nanoseconds": int64(budget), "elapsed_nanoseconds": int64(time.Since(start)), "protected_before_sha256": wp25NativeSnapshotDigest(before), "protected_after_sha256": wp25NativeSnapshotDigest(after), "protected_before": before, "protected_after": after, "configured_budget_isolation": strings.HasPrefix(scope, "contribution-graph-")})
+	if ctx.Err() != nil || (err == nil) != ok {
+		t.Fatalf("%s candidate %q: %v watchdog=%v\n%s\n%s", scope, args, err, ctx.Err(), &out, &stderr)
+	}
+	if readOnly && !reflect.DeepEqual(before, after) {
+		t.Fatalf("%s changed protected repository/config/key bytes", scope)
+	}
+	return bytes.Clone(out.Bytes())
+}
+
+// The canonical native event reader accepts legacy hn/0 issue.open records. This
+// independent wire mirror includes only their documented fields, not Event or
+// production signer/ID helpers. Every record has an independently checked ID,
+// public signature, sequence and exact previous-ID link in an archived ledger.
+type wp25PublicCountEvent struct {
+	Protocol  string `json:"protocol"`
+	Kind      string `json:"kind"`
+	Actor     string `json:"actor"`
+	ActorName string `json:"actorName"`
+	PublicKey string `json:"publicKey"`
+	Sequence  uint64 `json:"sequence"`
+	Timestamp string `json:"timestamp"`
+	Previous  string `json:"previous,omitempty"`
+	Title     string `json:"title"`
+}
+
+func wp25PublicNativeCorpus(t *testing.T, f *wp25PublicCountFixture, n int) (actor, first, at, over, terminal string) {
+	t.Helper()
+	seed := sha256.Sum256([]byte("WP25 public native 100000 event corpus"))
+	key := ed25519.NewKeyFromSeed(seed[:])
+	public := key.Public().(ed25519.PublicKey)
+	a := sha256.Sum256(public)
+	actor = hex.EncodeToString(a[:])
+	ref := "refs/hn/actors/" + actor
+	wirePath := filepath.Join(f.evidence, "public-events.fast-import")
+	wire, e := os.Create(wirePath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	ledgerPath := filepath.Join(f.evidence, "public-events.jsonl")
+	ledger, e := os.Create(ledgerPath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	w := bufio.NewWriterSize(wire, 1<<20)
+	l := bufio.NewWriterSize(ledger, 1<<20)
+	previous := ""
+	seen := map[string]bool{}
+	aggregate := int64(0)
+	for i := 1; i <= n; i++ {
+		raw, e := json.Marshal(wp25PublicCountEvent{"hn/0", "issue.open", actor, "WP25 public count", base64.RawStdEncoding.EncodeToString(public), uint64(i), "2026-10-31T08:00:00Z", previous, fmt.Sprintf("Public count %06d", i)})
+		if e != nil {
+			t.Fatal(e)
+		}
+		digest := sha256.Sum256(raw)
+		id := fmt.Sprintf("sha256:%x", digest)
+		signature := ed25519.Sign(key, raw)
+		encoded := base64.RawStdEncoding.EncodeToString(signature)
+		if seen[id] || !ed25519.Verify(public, raw, signature) || len(raw) > 8<<20 {
+			t.Fatal("independent native corpus invariant")
+		}
+		seen[id] = true
+		aggregate += int64(len(raw) + len(encoded))
+		if i == 1 {
+			first = id
+		}
+		if i == min(n, 100000) {
+			terminal = id
+		}
+		row, _ := json.Marshal(map[string]any{"mark": i, "event_id": id, "payload_raw": string(raw), "signature_base64": encoded, "payload_bytes": len(raw), "selected_sequence": i})
+		if _, e = l.Write(append(row, '\n')); e != nil {
+			t.Fatal(e)
+		}
+		msg := "hn event " + id
+		fmt.Fprintf(w, "commit %s\nmark :%d\ncommitter WP25 public fixture <fixture@hn.invalid> 1793433600 +0000\ndata %d\n%s\n", ref, i, len(msg), msg)
+		if i > 1 {
+			fmt.Fprintf(w, "from :%d\n", i-1)
+		}
+		fmt.Fprintf(w, "deleteall\nM 100644 inline event.json\ndata %d\n", len(raw))
+		w.Write(raw)
+		fmt.Fprintf(w, "\nM 100644 inline signature\ndata %d\n%s\n\n", len(encoded), encoded)
+		previous = id
+	}
+	if aggregate >= 256<<20 {
+		t.Fatalf("native count isolated aggregate=%d", aggregate)
+	}
+	if e = w.Flush(); e != nil {
+		t.Fatal(e)
+	}
+	if e = l.Flush(); e != nil {
+		t.Fatal(e)
+	}
+	if e = wire.Close(); e != nil {
+		t.Fatal(e)
+	}
+	if e = ledger.Close(); e != nil {
+		t.Fatal(e)
+	}
+	input, e := os.Open(wirePath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	marksPath := filepath.Join(f.evidence, "git-marks.txt")
+	f.git(input, "fast-import", "--quiet", "--export-marks="+marksPath)
+	input.Close()
+	raw, e := os.ReadFile(marksPath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	marks := map[int]string{}
+	for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+		parts := strings.Fields(line)
+		if len(parts) != 2 {
+			t.Fatal("invalid native fixture mark", line)
+		}
+		i, e := strconv.Atoi(strings.TrimPrefix(parts[0], ":"))
+		if e != nil || marks[i] != "" {
+			t.Fatal("duplicate/invalid native mark", line)
+		}
+		marks[i] = parts[1]
+	}
+	if len(marks) != n || len(seen) != n {
+		t.Fatal("incomplete independent native fixture map")
+	}
+	at = marks[min(n, 100000)]
+	over = marks[n]
+	wp25Record(t, map[string]any{"control": "source-assisted-native-count-corpus", "source_assisted": true, "candidate_observation": false, "records": n, "unique_ids": len(seen), "aggregate_payload_signature_bytes": aggregate, "actor": actor, "first_event_id": first, "terminal_at_event_id": terminal, "at_tip": at, "over_tip": over, "wire_path": wirePath, "wire_sha256": wp25Digest(t, wirePath), "ledger_path": ledgerPath, "ledger_sha256": wp25Digest(t, ledgerPath), "marks_path": marksPath, "marks_sha256": wp25Digest(t, marksPath)})
+	return
+}
+func wp25PublicNativeResult(t *testing.T, raw []byte, id, title, code, message string) {
+	t.Helper()
+	var v struct {
+		Schema string `json:"schema"`
+		OK     bool   `json:"ok"`
+		Data   struct {
+			ID        string   `json:"id"`
+			HeadCount int      `json:"head_count"`
+			HeadIDs   []string `json:"head_ids"`
+			State     *struct {
+				Title string `json:"title"`
+			} `json:"state"`
+		} `json:"data"`
+		Error *struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(raw, &v) != nil || v.Schema != "hn.issue/1" {
+		t.Fatalf("native issue envelope %s", raw)
+	}
+	if code != "" {
+		var shape map[string]json.RawMessage
+		if json.Unmarshal(raw, &shape) != nil {
+			t.Fatal("native refusal envelope is not an object")
+		}
+		if data, exists := shape["data"]; exists && string(data) != "null" {
+			t.Fatal("native refusal returned success data", string(data))
+		}
+		if v.OK || v.Error == nil || v.Error.Code != code || v.Error.Message != message {
+			t.Fatalf("native exact refusal %s", raw)
+		}
+		return
+	}
+	if !v.OK || v.Error != nil || v.Data.ID != id || v.Data.HeadCount != 1 || !reflect.DeepEqual(v.Data.HeadIDs, []string{id}) || v.Data.State == nil || v.Data.State.Title != title {
+		t.Fatalf("native independently expected signed issue %s", raw)
+	}
+}
+func wp25PublicNativeRefLimit(t *testing.T, binary string) {
+	f := wp25PublicCountNew(t, binary, "native-public-refs")
+	actor, first, tip, _, _ := wp25PublicNativeCorpus(t, f, 1)
+	selectRefs := func(n int) {
+		rows := []string{tip + " refs/hn/actors/" + actor}
+		for i := 1; i < n; i++ {
+			rows = append(rows, fmt.Sprintf("%s refs/hn/remotes/r%06d/actors/%s", tip, i, actor))
+		}
+		sort.Strings(rows)
+		raw := []byte("# pack-refs with: peeled fully-peeled sorted\n" + strings.Join(rows, "\n") + "\n")
+		if e := os.WriteFile(filepath.Join(f.repo, ".git", "packed-refs"), raw, 0600); e != nil {
+			t.Fatal(e)
+		}
+		actual := f.git(nil, "for-each-ref", "--format=%(refname) %(objectname)", "refs/hn/actors", "refs/hn/remotes")
+		if len(strings.Split(actual, "\n")) != n {
+			t.Fatal("actual public ref selection count")
+		}
+		wp25Record(t, map[string]any{"control": "source-assisted-native-ref-selection", "source_assisted": true, "candidate_observation": false, "refs": n, "complete_refs_raw": actual, "complete_refs_sha256": wp25NativeDigest([]byte(actual)), "packed_refs_sha256": wp25NativeDigest(raw), "single_authenticated_tip": tip})
+	}
+	for _, n := range []int{100000, 100001, 100000} {
+		selectRefs(n)
+		raw := wp25PublicCountCall(t, f, fmt.Sprintf("native-public-refs-%d", n), true, n == 100000, 15*time.Minute, "issue", "show", first, "--json")
+		if n == 100000 {
+			wp25PublicNativeResult(t, raw, first, "Public count 000001", "", "")
+		} else {
+			wp25PublicNativeResult(t, raw, first, "Public count 000001", "resource_limit", "resource_limit: issue ref enumeration exceeds 100000 entries")
+		}
+	}
+}
+func wp25PublicNativeEventLimit(t *testing.T, binary string) {
+	f := wp25PublicCountNew(t, binary, "native-public-events")
+	actor, first, at, over, terminal := wp25PublicNativeCorpus(t, f, 100001)
+	ref := "refs/hn/actors/" + actor
+	for index, step := range []struct {
+		n   int
+		tip string
+	}{{100000, at}, {100001, over}, {100000, at}} {
+		f.git(nil, "update-ref", ref, step.tip)
+		actual := f.git(nil, "rev-list", "--count", step.tip)
+		if actual != strconv.Itoa(step.n) {
+			t.Fatal("actual selected native event closure", actual, step.n)
+		}
+		wp25Record(t, map[string]any{"control": "source-assisted-native-event-selection", "source_assisted": true, "candidate_observation": false, "records": step.n, "tip": step.tip, "actual_git_selected_commit_count": actual, "terminal_at_event_id": terminal, "first_event_id": first})
+		query, title := first, "Public count 000001"
+		if index == 2 {
+			query, title = terminal, "Public count 100000"
+		}
+		raw := wp25PublicCountCall(t, f, fmt.Sprintf("native-public-events-%d-step-%d", step.n, index), true, step.n == 100000, 45*time.Minute, "issue", "show", query, "--json")
+		if step.n == 100001 {
+			wp25PublicNativeResult(t, raw, query, title, "resource_limit", "resource_limit: issue history exceeds 100000 events")
+			continue
+		}
+		wp25PublicNativeResult(t, raw, query, title, "", "")
+		if index == 0 {
+			// Query the independent signed terminal ID as well as the opening ID.
+			// Its sequence100000 and exact previous-ID chain prevent an early prefix
+			// truncation from masquerading as a successful at-cap public read.
+			last := wp25PublicCountCall(t, f, "native-public-events-100000-terminal", true, true, 45*time.Minute, "issue", "show", terminal, "--json")
+			wp25PublicNativeResult(t, last, terminal, "Public count 100000", "", "")
+		}
+	}
+}
+
+func wp25InheritedPublicCountLimits(t *testing.T, binary string) {
+	t.Run("native-refs100000", func(t *testing.T) { wp25PublicNativeRefLimit(t, binary) })
+	t.Run("native-events100000", func(t *testing.T) { wp25PublicNativeEventLimit(t, binary) })
+	t.Run("contribution-graph16384", func(t *testing.T) { wp25PublicContributionGraphLimit(t, binary) })
+}
+
+func TestExtensionPackageInheritedPublicCountLimits(t *testing.T) {
+	wp25InheritedPublicCountLimits(t, extensionTestBinary(t))
+}
+
+// SOURCE-ASSISTED construction uses literal independent contribution wire
+// mirrors and standard Ed25519; no c.Sign/c.Verify/c.Reduce or host helper can
+// supply the actual public caller's graph result. Independent moderator keys
+// remain in fixture memory; the legitimate maintainer keyring is created by the
+// supplied public init command and is protected throughout threshold reads.
+// Native-CLI configured-budget isolation, not a default-
+// budget/extension-host throughput observation: only milliseconds=3600000 is
+// changed in this test's explicit committed policy. All other limits are literal
+// defaults and remain unchanged in both the product and this policy.
+type wp25PublicGraphAuthority struct {
+	Commit string `json:"commit"`
+	Digest string `json:"digest"`
+}
+type wp25PublicGraphTarget struct {
+	Kind string `json:"kind"`
+	ID   string `json:"id"`
+}
+type wp25PublicGraphDecision struct {
+	Action    string                   `json:"action"`
+	Target    wp25PublicGraphTarget    `json:"target"`
+	Authority wp25PublicGraphAuthority `json:"authority"`
+	Parents   []string                 `json:"parents"`
+}
+
+// Field order is the hn.contribution/1 canonical wire order, independently
+// mirrored here; omitted submission/receipt members are absent in decisions.
+type wp25PublicGraphRecord struct {
+	Version   string                   `json:"version"`
+	Kind      string                   `json:"kind"`
+	Project   string                   `json:"project"`
+	Actor     string                   `json:"actor"`
+	PublicKey string                   `json:"publicKey"`
+	Intent    string                   `json:"intent"`
+	Decision  *wp25PublicGraphDecision `json:"decision,omitempty"`
+}
+type wp25PublicGraphManifest struct {
+	Schema  string   `json:"schema"`
+	Project string   `json:"project"`
+	Actor   string   `json:"actor"`
+	Records []string `json:"records"`
+}
+type wp25PublicGraphSigner struct {
+	actor  string
+	public ed25519.PublicKey
+	key    ed25519.PrivateKey
+}
+type wp25PublicGraphHead struct {
+	ref, tip string
+	expected map[string]string
+}
+
+func wp25PublicGraphManifestBuild(t *testing.T, f *wp25PublicCountFixture, project string, authority wp25PublicGraphAuthority, signer wp25PublicGraphSigner, start, n int, label string) wp25PublicGraphHead {
+	t.Helper()
+	ref := "refs/hn/contributions/" + project[7:] + "/" + signer.actor
+	type material struct {
+		id       string
+		raw, sig []byte
+	}
+	records := []material{}
+	expected := map[string]string{}
+	ids := []string{}
+	ledgerPath := filepath.Join(f.evidence, label+".jsonl")
+	ledger, e := os.Create(ledgerPath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	l := bufio.NewWriter(ledger)
+	for i := start; i < start+n; i++ {
+		targetSum := sha256.Sum256([]byte(fmt.Sprintf("WP25 graph independent target %06d", i)))
+		target := hex.EncodeToString(targetSum[:])
+		if target == signer.actor {
+			t.Fatal("target equals signing moderator")
+		}
+		record := wp25PublicGraphRecord{"hn.contribution/1", "decision", project, signer.actor, base64.RawStdEncoding.EncodeToString(signer.public), fmt.Sprintf("wp25-graph-block-%06d", i), &wp25PublicGraphDecision{"block", wp25PublicGraphTarget{"actor", target}, authority, []string{}}}
+		raw, e := json.Marshal(record)
+		if e != nil {
+			t.Fatal(e)
+		}
+		sum := sha256.Sum256(raw)
+		id := fmt.Sprintf("sha256:%x", sum)
+		sig := ed25519.Sign(signer.key, raw)
+		// Independent closed-data and cryptographic construction controls; the real
+		// candidate must repeat its own strict canonical/semantic/authentication work.
+		var decoded wp25PublicGraphRecord
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		decoder.DisallowUnknownFields()
+		if e = decoder.Decode(&decoded); e != nil {
+			t.Fatal(e)
+		}
+		canonical, e := json.Marshal(decoded)
+		if e != nil || !bytes.Equal(canonical, raw) || !ed25519.Verify(signer.public, raw, sig) || len(raw) > 65536 || len(sig) != 64 || decoded.Decision.Authority != authority || decoded.Decision.Target.Kind != "actor" || decoded.Decision.Action != "block" || decoded.Decision.Parents == nil || len(decoded.Decision.Parents) != 0 || expected[target] != "" {
+			t.Fatal("independent graph payload/signature/semantic invariant")
+		}
+		expected[target] = id
+		ids = append(ids, id)
+		records = append(records, material{id, raw, sig})
+		row, _ := json.Marshal(map[string]any{"record_id": id, "payload_raw": string(raw), "signature_base64": base64.RawStdEncoding.EncodeToString(sig), "target": target, "actor": signer.actor, "authority": authority})
+		if _, e = l.Write(append(row, '\n')); e != nil {
+			t.Fatal(e)
+		}
+	}
+	sort.Strings(ids)
+	sort.Slice(records, func(i, j int) bool { return records[i].id < records[j].id })
+	manifest := wp25PublicGraphManifest{"hn.contribution-manifest/1", project, signer.actor, ids}
+	manifestRaw, e := json.Marshal(manifest)
+	if e != nil {
+		t.Fatal(e)
+	}
+	wirePath := filepath.Join(f.evidence, label+".fast-import")
+	wire, e := os.Create(wirePath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	w := bufio.NewWriterSize(wire, 1<<20)
+	zeros := strings.Repeat("0", 40)
+	if f.git(nil, "rev-parse", "--show-object-format") == "sha256" {
+		zeros = strings.Repeat("0", 64)
+	}
+	fmt.Fprintf(w, "reset %s\nfrom %s\n\ncommit %s\ncommitter WP25 public graph <fixture@hn.invalid> 1793433600 +0000\ndata 23\nWP25 public graph block\ndeleteall\n", ref, zeros, ref)
+	file := func(name string, raw []byte) {
+		fmt.Fprintf(w, "M 100644 inline %s\ndata %d\n", name, len(raw))
+		w.Write(raw)
+		w.WriteByte('\n')
+	}
+	file("manifest.json", manifestRaw)
+	for _, r := range records {
+		file(r.id[7:]+".payload", r.raw)
+		file(r.id[7:]+".signature", r.sig)
+	}
+	w.WriteByte('\n')
+	if e = w.Flush(); e != nil {
+		t.Fatal(e)
+	}
+	if e = wire.Close(); e != nil {
+		t.Fatal(e)
+	}
+	if e = l.Flush(); e != nil {
+		t.Fatal(e)
+	}
+	if e = ledger.Close(); e != nil {
+		t.Fatal(e)
+	}
+	input, e := os.Open(wirePath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	f.git(input, "fast-import", "--quiet")
+	input.Close()
+	tip := f.git(nil, "rev-parse", ref)
+	// Full actual Git closure map and exact raw manifest are retained; expected
+	// record selection does not come from the candidate's graph or limits.
+	closure := f.git(nil, "rev-list", "--objects", "--no-object-names", tip)
+	objects := strings.Split(closure, "\n")
+	if len(objects) != 2*n+3 || len(objects) > 4096 {
+		t.Fatalf("independently expected manifest objects got%d want%d", len(objects), 2*n+3)
+	}
+	actualManifest := f.git(nil, "show", tip+":manifest.json")
+	if actualManifest != string(manifestRaw) {
+		t.Fatal("actual raw Git manifest differs")
+	}
+	wp25Record(t, map[string]any{"control": "source-assisted-contribution-manifest", "source_assisted": true, "candidate_observation": false, "ref": ref, "tip": tip, "records": n, "record_ids": ids, "manifest_raw": string(manifestRaw), "manifest_sha256": wp25NativeDigest(manifestRaw), "complete_object_ids_raw": closure, "complete_object_ids_sha256": wp25NativeDigest([]byte(closure)), "objects": len(objects), "wire_path": wirePath, "wire_sha256": wp25Digest(t, wirePath), "ledger_path": ledgerPath, "ledger_sha256": wp25Digest(t, ledgerPath)})
+	return wp25PublicGraphHead{ref, tip, expected}
+}
+
+// Retention is real public setup, with an independently encoded exact plan
+// and receipt. Empty native roots and two Git roots are deliberate: actor-block
+// decisions have no native dependencies and every manifest has no commit parent.
+func wp25PublicGraphRetain(t *testing.T, f *wp25PublicCountFixture, authority wp25PublicGraphAuthority, project string, head wp25PublicGraphHead, label string) {
+	t.Helper()
+	roots := []string{authority.Commit, head.tip}
+	sort.Strings(roots)
+	plan := struct {
+		Version   string                   `json:"version"`
+		Project   string                   `json:"project"`
+		Authority wp25PublicGraphAuthority `json:"authority"`
+		Native    []string                 `json:"native"`
+		Heads     []string                 `json:"heads"`
+		Roots     []string                 `json:"roots"`
+	}{"hn.contribution-retained-plan/1", project, authority, nil, []string{head.tip}, roots}
+	raw, err := json.Marshal(plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := wp25NativeDigest(raw)
+	receipt := wp25PublicCountCall(t, f, "contribution-graph-setup-retain-"+label, false, true, 62*time.Minute, "contribution", "retained", "register", "--expect", expected)
+	var got struct {
+		Registered string   `json:"registered"`
+		Native     int      `json:"native"`
+		Heads      []string `json:"heads"`
+	}
+	decoder := json.NewDecoder(bytes.NewReader(receipt))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&got); err != nil || got.Registered != expected || got.Native != 0 || !reflect.DeepEqual(got.Heads, []string{head.tip}) {
+		t.Fatalf("actual retained receipt differs from independent exact plan: %v %s", err, receipt)
+	}
+	var trailing any
+	if decoder.Decode(&trailing) != io.EOF {
+		t.Fatal("retained receipt has trailing output")
+	}
+	wp25Record(t, map[string]any{"control": "contribution-graph-genuine-retention-receipt", "setup_only": true, "label": label, "independent_plan_raw": string(raw), "independent_plan_digest": expected, "actual_receipt_raw": string(receipt), "registered_head": head.tip, "registered_record_count": len(head.expected), "native_fact_count": 0})
+}
+
+func wp25PublicGraphPending(t *testing.T, f *wp25PublicCountFixture, authority wp25PublicGraphAuthority, project string, expected map[string]string, over bool) {
+	t.Helper()
+	before := f.snapshot()
+	ctx, cancel := context.WithTimeout(context.Background(), 62*time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, f.binary, "contribution", "pending")
+	cmd.Dir, cmd.Env = f.repo, f.env
+	var out, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &out, &stderr
+	start := time.Now()
+	err := cmd.Run()
+	after := f.snapshot()
+	stage := "actual Reduce complete view"
+	if over {
+		stage = "contributionRecords aggregate loader before Reduce"
+	}
+	wp25Record(t, map[string]any{"control": fmt.Sprintf("contribution-graph-%d", len(expected)), "candidate_observation": true, "source_assisted": false, "binary": f.binary, "binary_sha256": wp25Digest(t, f.binary), "cwd": f.repo, "argv": []string{"contribution", "pending"}, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_nanoseconds": int64(time.Since(start)), "protected_before_sha256": wp25NativeSnapshotDigest(before), "protected_after_sha256": wp25NativeSnapshotDigest(after), "protected_before": before, "protected_after": after, "expected_target_record_map": expected, "graph_family": "all-envelope specialization of published combined cap", "envelope_records": len(expected), "native_dependency_facts": 0, "observation_stage": stage, "configured_policy_milliseconds": 3600000, "configured_budget_isolation": true, "default_or_host_throughput_claim": false})
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("actual graph threshold caller changed accepted/private/config/key bytes")
+	}
+	if ctx.Err() != nil {
+		t.Fatal("graph watchdog expired", ctx.Err())
+	}
+	if over {
+		exit, ok := err.(*exec.ExitError)
+		if !ok || exit.ExitCode() != 1 || out.Len() != 0 || stderr.String() != "hn: contribution graph bound\n" {
+			t.Fatalf("actual graph16385 exact refusal: %v stdout=%s stderr=%s", err, &out, &stderr)
+		}
+		return
+	}
+	if err != nil || stderr.Len() != 0 {
+		t.Fatalf("actual graph16384 failed: %v stdout=%s stderr=%s", err, &out, &stderr)
+	}
+	var view struct {
+		Project   string                   `json:"project"`
+		Authority wp25PublicGraphAuthority `json:"authority"`
+		Blocked   map[string]bool          `json:"blockedActors"`
+		Invalid   []json.RawMessage        `json:"invalid"`
+		Conflicts []json.RawMessage        `json:"conflicts"`
+		Pending   []string                 `json:"pending"`
+		Revoked   []string                 `json:"revoked"`
+		Roots     map[string]string        `json:"roots"`
+		Admitted  map[string]bool          `json:"admitted"`
+		Visible   map[string]bool          `json:"visible"`
+		Heads     map[string][]string      `json:"heads"`
+		Decisions []struct {
+			Target wp25PublicGraphTarget `json:"target"`
+			Heads  []string              `json:"heads"`
+		} `json:"decisionHeads"`
+	}
+	decoder := json.NewDecoder(bytes.NewReader(out.Bytes()))
+	decoder.DisallowUnknownFields()
+	if e := decoder.Decode(&view); e != nil {
+		t.Fatal("strict actual graph view", e)
+	}
+	var trailing any
+	if decoder.Decode(&trailing) != io.EOF {
+		t.Fatal("trailing actual graph output")
+	}
+	if view.Project != project || view.Authority != authority || len(view.Blocked) != len(expected) || len(view.Decisions) != len(expected) || len(view.Invalid) != 0 || len(view.Conflicts) != 0 || len(view.Pending) != 0 || len(view.Revoked) != 0 || len(view.Roots) != 0 || len(view.Admitted) != 0 || len(view.Visible) != 0 || len(view.Heads) != 0 {
+		t.Fatal("actual complete graph expected sets differ")
+	}
+	actual := map[string]string{}
+	for _, d := range view.Decisions {
+		if d.Target.Kind != "actor" || len(d.Heads) != 1 || actual[d.Target.ID] != "" {
+			t.Fatal("actual graph duplicate/malformed decision head")
+		}
+		actual[d.Target.ID] = d.Heads[0]
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatal("actual reducer decision identities differ from independent signed corpus")
+	}
+	for target := range expected {
+		if !view.Blocked[target] {
+			t.Fatal("actual reducer failed effective current moderator block", target)
+		}
+	}
+}
+func wp25PublicContributionGraphLimit(t *testing.T, binary string) {
+	f := wp25PublicCountNew(t, binary, "contribution-public-graph")
+	wp25PublicCountCall(t, f, "contribution-graph-setup-native-identity", false, true, time.Minute, "init", "--name", "WP25 graph maintainer")
+	identity := wp25PublicCountCall(t, f, "contribution-graph-setup-public-identity", true, true, time.Minute, "identity", "show", "--json")
+	var actor struct {
+		OK   bool `json:"ok"`
+		Data struct {
+			Actor string `json:"actor"`
+		} `json:"data"`
+	}
+	if json.Unmarshal(identity, &actor) != nil || !actor.OK || len(actor.Data.Actor) != 64 {
+		t.Fatalf("real public maintainer identity %s", identity)
+	}
+	signers := []wp25PublicGraphSigner{}
+	moderators := []string{}
+	for i := 0; i < 9; i++ {
+		seed := sha256.Sum256([]byte(fmt.Sprintf("WP25 graph actual moderator %d", i)))
+		key := ed25519.NewKeyFromSeed(seed[:])
+		public := key.Public().(ed25519.PublicKey)
+		sum := sha256.Sum256(public)
+		a := hex.EncodeToString(sum[:])
+		signers = append(signers, wp25PublicGraphSigner{a, public, key})
+		moderators = append(moderators, a)
+	}
+	sort.Strings(moderators)
+	sort.Slice(signers, func(i, j int) bool { return signers[i].actor < signers[j].actor })
+	project := wp25NativeDigest([]byte("WP25 literal public contribution graph16384"))
+	limits := map[string]any{"wireBytes": 16777216, "decodedBytes": 33554432, "objects": 4096, "events": 2048, "depth": 256, "milliseconds": 3600000, "window": map[string]any{"bytes": 268435456, "objects": 32768, "events": 16384, "requests": 256}, "retained": map[string]any{"bytes": 1073741824, "objects": 131072, "events": 65536, "requests": 1024}}
+	policy := map[string]any{"version": "hn.policy/0", "maintainers": []string{actor.Data.Actor}, "proposals": map[string]any{"requiredAccepts": 1, "trustedReviewers": []string{}}, "pipelines": map[string]any{}, "contributions": map[string]any{"project": project, "moderators": moderators, "rules": []any{}, "baseline": []string{}, "limits": limits}}
+	raw, e := json.Marshal(policy)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = os.MkdirAll(filepath.Join(f.repo, ".hn"), 0700); e != nil {
+		t.Fatal(e)
+	}
+	if e = os.WriteFile(filepath.Join(f.repo, ".hn", "policy.json"), raw, 0600); e != nil {
+		t.Fatal(e)
+	}
+	f.git(nil, "add", ".hn/policy.json")
+	f.git(nil, "-c", "user.name=WP25 public fixture", "-c", "user.email=fixture@hn.invalid", "-c", "commit.gpgsign=false", "commit", "-qm", "explicit capacity-isolation policy")
+	authority := wp25PublicGraphAuthority{f.git(nil, "rev-parse", "refs/heads/main"), wp25NativeDigest(raw)}
+	wp25Record(t, map[string]any{"control": "source-assisted-explicit-contribution-policy", "source_assisted": true, "candidate_observation": false, "policy_raw": string(raw), "policy_digest": authority.Digest, "authority_commit": authority.Commit, "configured_policy_milliseconds": 3600000, "all_other_limits_literal_defaults": true, "configured_budget_isolation": true})
+	wp25PublicCountCall(t, f, "contribution-graph-setup-authority", false, true, 62*time.Minute, "contribution", "authority", "set", "--ref", "refs/heads/main", "--expect", "absent")
+	heads := []wp25PublicGraphHead{}
+	expected := map[string]string{}
+	offset := 0
+	for i, signer := range signers {
+		n := 2040
+		if i == 8 {
+			n = 64
+		}
+		h := wp25PublicGraphManifestBuild(t, f, project, authority, signer, offset, n, fmt.Sprintf("manifest-%d-at", i))
+		offset += n
+		heads = append(heads, h)
+		// Only this head is selected while it is genuinely charged/registered by
+		// the supplied public caller. Default4096 object cap applies independently.
+		closure := f.git(nil, "rev-list", "--objects", "--no-object-names", authority.Commit, h.tip)
+		if len(strings.Split(closure, "\n")) > 4096 {
+			t.Fatal("staged genuine retention exceeds default4096 objects")
+		}
+		wp25PublicGraphRetain(t, f, authority, project, h, fmt.Sprintf("at-%d", i))
+		f.git(nil, "update-ref", "-d", h.ref)
+		for target, id := range h.expected {
+			if expected[target] != "" {
+				t.Fatal("duplicate graph target")
+			}
+			expected[target] = id
+		}
+		if i == 3 || i == 7 {
+			old, next := "initial", "wp25-graph-2"
+			if i == 7 {
+				old, next = "wp25-graph-2", "wp25-graph-3"
+			}
+			wp25PublicCountCall(t, f, "contribution-graph-setup-authorized-rollover", false, true, time.Minute, "contribution", "rollover", "--expect", old, "--window", next)
+		}
+	}
+	if offset != 16384 || len(expected) != 16384 {
+		t.Fatal("independent whole graph is incomplete")
+	}
+	for _, h := range heads {
+		f.git(nil, "update-ref", h.ref, h.tip)
+	}
+	wp25PublicGraphPending(t, f, authority, project, expected, false)
+	// The replacement has the same64 original valid ninth-moderator records and
+	// exactly one additional valid signed decision. Its parentless manifest avoids
+	// changing per-manifest history/depth/object selection or authority semantics.
+	for _, h := range heads {
+		f.git(nil, "update-ref", "-d", h.ref)
+	}
+	over := wp25PublicGraphManifestBuild(t, f, project, authority, signers[8], 16320, 65, "manifest-8-over")
+	// Authenticate and genuinely retain this replacement alone as well: a
+	// missing retention guard must not be a latent alternative refusal.
+	wp25PublicGraphRetain(t, f, authority, project, over, "over-8")
+	for i, h := range heads {
+		tip := h.tip
+		if i == 8 {
+			tip = over.tip
+		}
+		f.git(nil, "update-ref", h.ref, tip)
+	}
+	overExpected := map[string]string{}
+	for target, id := range expected {
+		overExpected[target] = id
+	}
+	for target, id := range over.expected {
+		overExpected[target] = id
+	}
+	if len(overExpected) != 16385 {
+		t.Fatal("independent first-over graph differs by more than one record")
+	}
+	wp25PublicGraphPending(t, f, authority, project, overExpected, true)
+	// Recovery changes only the ninth accepted ref back to the exact already
+	// registered64-record head; no budget/accounting/authority metadata is edited.
+	f.git(nil, "update-ref", heads[8].ref, heads[8].tip)
+	wp25PublicGraphPending(t, f, authority, project, expected, false)
+}
+
+// One inherited trace-evidence helper uses its top-level test name directly as
+// an os.CreateTemp pattern. Run that exact unchanged test as a compiled-self
+// child so its name has no subtest slash. This is a harness naming workaround;
+// the candidate and standalone consumer retain their independently pinned paths.
+func wp25TopLevelFixtureJourney(t *testing.T, name string) {
+	t.Helper()
+	if name != "TestExtensionFakeTrackerNativeDefaultInert" {
+		t.Fatal("unapproved standalone test-name workaround", name)
+	}
+	if os.Getenv("GORACE") != "atexit_sleep_ms=0" {
+		t.Fatal("qualification race harness requires its recorded exit-delay-only option")
+	}
+	args := []string{"-test.run=^" + name + "$", "-test.v", "-test.count=1", "-test.timeout=15m"}
+	self := wp25Self(t)
+	expectedHarness := wp25Digest(t, self)
+	ctx, cancel := context.WithTimeout(context.Background(), 16*time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, self, args...)
+	cmd.Env = os.Environ()
+	var out, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &out, &stderr
+	started := time.Now()
+	err := cmd.Run()
+	runs, passes, failures, skips := 0, 0, 0, 0
+	for _, line := range strings.Split(out.String(), "\n") {
+		if line == "=== RUN   "+name {
+			runs++
+		}
+		if strings.HasPrefix(line, "--- PASS: "+name+" (") {
+			passes++
+		}
+		if strings.HasPrefix(strings.TrimSpace(line), "--- FAIL:") {
+			failures++
+		}
+		if strings.HasPrefix(strings.TrimSpace(line), "--- SKIP:") {
+			skips++
+		}
+	}
+	wp25Record(t, map[string]any{"control": "unchanged-top-level-fixture-journey", "test_name": name, "harness_executable": self, "harness_sha256": wp25Digest(t, self), "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_ns": time.Since(started).Nanoseconds(), "GORACE": os.Getenv("GORACE"), "candidate": os.Getenv("HN_WP17_BINARY"), "candidate_sha256": wp25Digest(t, os.Getenv("HN_WP17_BINARY")), "consumer": os.Getenv("HN_WP20_CONSUMER"), "consumer_sha256": wp25Digest(t, os.Getenv("HN_WP20_CONSUMER")), "named_runs": runs, "named_passes": passes, "fail_events": failures, "skip_events": skips, "classification": "actual supplied candidate/reference native-default assertions; compiled-self source test peer; independent standalone consumer journeys remain separate"})
+	if wp25Digest(t, self) != expectedHarness {
+		t.Fatal("compiled-self fixture harness changed during execution")
+	}
+	if err != nil || ctx.Err() != nil || runs != 1 || passes != 1 || failures != 0 || skips != 0 || strings.TrimSpace(stderr.String()) != "" || !strings.HasSuffix(strings.TrimSpace(out.String()), "PASS") {
+		t.Fatalf("unchanged top-level fixture did not execute exactly once and pass: %v watchdog=%v\n%s\n%s", err, ctx.Err(), &out, &stderr)
 	}
 }

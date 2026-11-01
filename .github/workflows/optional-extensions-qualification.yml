@@ -592,6 +592,11 @@ jobs:
           set -euo pipefail
           evidence="$RUNNER_TEMP/native-evidence"
           export PATH="$RUNNER_TEMP/no-source-fallback:$PATH"
+          # Disable only the race runtime's post-exit sleep in this test
+          # harness so cleanup timestamps measure the child process itself.
+          export GORACE=atexit_sleep_ms=0
+          printf 'GORACE=%s\n' "$GORACE" | tee "$evidence/gorace-environment.txt"
+          grep -E '^[[:space:]]*build[[:space:]]+-race=true$' "$evidence/harness.buildinfo" > "$evidence/harness-race-setting.txt"
           # Prove that the installed first Go selector is an active refusal.
           export HN_WP25_GO_TRAP="$evidence/go-trap-positive.log"
           if go version; then exit 1; fi
