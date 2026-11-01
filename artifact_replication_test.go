@@ -1058,6 +1058,7 @@ func TestArtifactBlobWriterPeer(t *testing.T) {
 		}
 		log := func(path string, event map[string]any) {
 			event["session"], event["pid"], event["ppid"] = index, os.Getpid(), os.Getppid()
+			event["mode"] = cfg.Mode
 			b, _ := json.Marshal(event)
 			file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 			if err != nil {
@@ -1093,13 +1094,30 @@ func TestArtifactBlobWriterPeer(t *testing.T) {
 			_, _ = os.Stderr.Write(bytes.Repeat([]byte{'S'}, 8193))
 			os.Exit(78)
 		}
+		if cfg.Mode == "stderr-at" || cfg.Mode == "stderr-overflow" {
+			n := 8192
+			if cfg.Mode == "stderr-overflow" {
+				n++
+			}
+			log(cfg.Ledger, map[string]any{"event": "stderr-then-real-git", "bytes": n, "real_git": cfg.ActualGit})
+			if _, err := os.Stderr.Write(bytes.Repeat([]byte{'S'}, n)); err != nil {
+				os.Exit(78)
+			}
+			// Same PID, argv and environment now execute the genuine interactive
+			// worker. No unrelated peer exit can make the overflow test pass.
+			if syscall.Exec(cfg.ActualGit, append([]string{cfg.ActualGit}, argv...), os.Environ()) != nil {
+				os.Exit(76)
+			}
+		}
 		reader := bufio.NewReader(os.Stdin)
+		faultSent := false
+		afterFault := 0
 		for {
 			line, err := reader.ReadString('\n')
 			if err == io.EOF && line == "" {
 				log(cfg.Ledger, map[string]any{"event": "stdin-eof"})
 				if cfg.Mode == "stall-eof" {
-					time.Sleep(time.Minute)
+					artifactIOStall(func(event map[string]any) { log(cfg.Ledger, event) }, "eof")
 				}
 				if cfg.Mode == "trailing" {
 					fmt.Fprint(os.Stdout, "unexpected final output\n")
@@ -1115,6 +1133,17 @@ func TestArtifactBlobWriterPeer(t *testing.T) {
 			path, err := strconv.Unquote(strings.TrimSuffix(line, "\n"))
 			if err != nil || !filepath.IsAbs(path) {
 				os.Exit(81)
+			}
+			if faultSent {
+				// Do not spawn a real storage child after an intentionally broken
+				// response. Record further feeding; the test must reject it except
+				// the one request made before detecting a queued extra ACK line.
+				log(cfg.Ledger, map[string]any{"event": "filename-after-fault-response", "raw": line, "path": path})
+				afterFault++
+				if afterFault > 8 {
+					os.Exit(87)
+				}
+				continue
 			}
 			info, err := os.Lstat(path)
 			if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || info.Size() > 33554432 {
@@ -1143,16 +1172,19 @@ func TestArtifactBlobWriterPeer(t *testing.T) {
 			}
 			log(cfg.Ledger, map[string]any{"event": "filename", "raw": line, "path": path, "mode": info.Mode().String(), "bytes": len(body), "body_sha256": wp25RecordCountHash(body), "independent_oid": independent, "real_git_ack": string(ack), "real_git_child_pid": cmd.Process.Pid, "real_git_wait_joined": true})
 			if cfg.Mode == "stall-ack" {
-				time.Sleep(time.Minute)
+				artifactIOStall(func(event map[string]any) { log(cfg.Ledger, event) }, "ack")
 			}
 			switch cfg.Mode {
 			case "wrong-ack":
 				ack = []byte(strings.Repeat("0", len(oid)) + "\n")
+				faultSent = true
 			case "short-ack":
-				_, _ = os.Stdout.Write([]byte(oid))
+				written, err := os.Stdout.Write([]byte(oid))
+				log(cfg.Ledger, map[string]any{"event": "partial-ack", "raw": oid, "written_bytes": written, "write_error": fmt.Sprint(err)})
 				os.Exit(0)
 			case "extra-ack":
 				ack = append(ack, []byte("unexpected acknowledgement\n")...)
+				faultSent = true
 			}
 			log(cfg.Ledger, map[string]any{"event": "ack", "raw": string(ack), "expected_oid": oid})
 			if _, err := os.Stdout.Write(ack); err != nil {
@@ -1200,6 +1232,76 @@ func artifactBlobPeerInstall(t *testing.T, f *artifactCLIFixture, mode string, t
 	return cfg.Ledger, cfg.Sessions, overrides
 }
 
+func artifactBlobRequestCounts(t *testing.T, mode string, raw []byte) {
+	t.Helper()
+	counts := map[string]int{}
+	for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		if len(line) == 0 {
+			continue
+		}
+		var event map[string]any
+		if json.Unmarshal(line, &event) != nil {
+			t.Fatal("invalid blob request-count ledger")
+		}
+		kind := event["event"].(string)
+		counts[kind]++
+		if kind == "partial-ack" && (event["written_bytes"] != float64(len(event["raw"].(string))) || event["write_error"] != "<nil>") {
+			t.Fatal("short-ACK control did not actually write its partial frame", event)
+		}
+		if kind == "stall-entry" && (event["mode"] != mode || event["phase"] != strings.TrimPrefix(mode, "stall-")) {
+			t.Fatal("wrong blob stall phase", event)
+		}
+		if kind == "stderr-then-real-git" {
+			expected := float64(8192)
+			if mode == "stderr-overflow" {
+				expected++
+			}
+			if event["bytes"] != expected {
+				t.Fatal("stderr cap control used wrong literal bytes", event)
+			}
+		}
+	}
+	if mode == "stderr-at" || mode == "stderr-overflow" {
+		if counts["stderr-then-real-git"] != 1 || counts["filename"] != 0 || counts["ack"] != 0 || counts["stall-entry"] != 0 {
+			t.Fatal("stderr-only control did not exec the actual Git worker", mode, counts)
+		}
+		wp25Record(t, map[string]any{"control": "private-stderr-bound-real-git-worker", "mode": mode, "counts": counts, "raw": string(raw), "scope": "private8192 safety ceiling; valid real Git continues at samePID, no unrelated exit fault"})
+		return
+	}
+	wantFiles, wantACK, wantPartial, wantEOF, wantStalls := 2, 2, 0, -1, 0
+	switch mode {
+	case "pass", "trailing", "exit-error":
+		wantEOF = 1
+	case "wrong-ack":
+		wantFiles, wantACK = 1, 1
+	case "short-ack":
+		wantFiles, wantACK, wantPartial = 1, 0, 1
+	case "extra-ack":
+		// The queued extra line is detected by the next ACK read. At most one
+		// intervening filename can be sent before that first detected fault.
+		wantFiles, wantACK = 1, 1
+	case "stderr":
+		wantFiles, wantACK = 0, 0
+	case "stall-ack":
+		wantFiles, wantACK, wantEOF, wantStalls = 1, 0, 0, 1
+	case "stall-eof":
+		wantEOF, wantStalls = 1, 1
+	default:
+		t.Fatal("unknown blob fault mode", mode)
+	}
+	if counts["filename"] != wantFiles || counts["ack"] != wantACK || counts["partial-ack"] != wantPartial || counts["stall-entry"] != wantStalls || wantEOF >= 0 && counts["stdin-eof"] != wantEOF {
+		t.Fatal("blob writer reached a different phase or fed after ACK failure", mode, counts, wantFiles, wantACK, wantPartial, wantEOF, wantStalls)
+	}
+	if mode == "extra-ack" {
+		if counts["filename-after-fault-response"] > 1 {
+			t.Fatal("writer continued after detecting extra ACK", counts)
+		}
+	} else if counts["filename-after-fault-response"] != 0 {
+		t.Fatal("writer sent another filename after its first detected ACK fault", mode, counts)
+	}
+	wp25Record(t, map[string]any{"control": "exact-blob-request-stop-and-stall-counts", "mode": mode, "counts": counts, "expected_filename_requests": wantFiles, "expected_ack_intents": wantACK, "expected_partial_ack_writes": wantPartial, "expected_stall_entries": wantStalls, "extra_ack_intervening_request_ceiling": 1, "raw": string(raw)})
+}
+
 func TestArtifactBlobWriterProtocolCLI(t *testing.T) {
 	for _, format := range []string{"sha1", "sha256"} {
 		t.Run(format, func(t *testing.T) {
@@ -1209,7 +1311,7 @@ func TestArtifactBlobWriterProtocolCLI(t *testing.T) {
 			src.git("update-ref", ref, root)
 			path, _ := exchangeExport(src, artifactVectorID)
 			for _, target := range []int{1, 2} {
-				for _, mode := range []string{"pass", "wrong-ack", "short-ack", "extra-ack", "trailing", "exit-error", "stderr", "stall-ack", "stall-eof"} {
+				for _, mode := range []string{"pass", "stderr-at", "stderr-overflow", "wrong-ack", "short-ack", "extra-ack", "trailing", "exit-error", "stderr", "stall-ack", "stall-eof"} {
 					t.Run(fmt.Sprintf("worker%d-%s", target, mode), func(t *testing.T) {
 						src.t = t
 						dst := exchangeDestination(t, src, format)
@@ -1224,13 +1326,18 @@ func TestArtifactBlobWriterProtocolCLI(t *testing.T) {
 						before := dst.snapshot()
 						code := "verification_failure"
 						message := "cannot copy verified exchange object"
-						if mode == "pass" {
+						if mode == "pass" || mode == "stderr-at" {
 							code = ""
 						} else if strings.HasPrefix(mode, "stall-") {
 							code, message = "cancelled", "artifact exchange cancelled"
 						}
 						started := time.Now()
-						response := wp25ArtifactCall(dst, "", code, "artifact", "import", "--input", path, "--json")
+						var response map[string]any
+						if strings.HasPrefix(mode, "stall-") {
+							response = artifactIOObservedCall(t, dst, "", message, artifactIOPhase{Mode: mode, Phase: strings.TrimPrefix(mode, "stall-"), Ledger: ledger, Sessions: sessions, Session: target}, "artifact", "import", "--input", path, "--json")
+						} else {
+							response = wp25ArtifactCall(dst, "", code, "artifact", "import", "--input", path, "--json")
+						}
 						elapsed := time.Since(started)
 						if strings.HasPrefix(mode, "stall-") && (elapsed < 29*time.Second || elapsed > 45*time.Second) {
 							t.Fatal("writer cancellation changed actual30s stage", elapsed)
@@ -1263,7 +1370,7 @@ func TestArtifactBlobWriterProtocolCLI(t *testing.T) {
 						}
 						raw, err := os.ReadFile(sessions)
 						workers := target
-						if mode == "pass" {
+						if mode == "pass" || mode == "stderr-at" {
 							workers = 2
 						}
 						if err != nil || bytes.Count(raw, []byte{'\n'}) != workers {
@@ -1273,6 +1380,7 @@ func TestArtifactBlobWriterProtocolCLI(t *testing.T) {
 						if err != nil && mode != "stderr" {
 							t.Fatal("blob peer never observed request/finalization", err)
 						}
+						artifactBlobRequestCounts(t, mode, peer)
 						for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
 							var event map[string]any
 							if json.Unmarshal(line, &event) != nil {

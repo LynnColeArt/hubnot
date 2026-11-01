@@ -704,16 +704,17 @@ func artifactCountGraphCLI(t *testing.T, format string) {
 // responses. All ordinary Git calls and all signed/tree verification remain
 // real Git. Real-Git/public byte controls below run separately, without a peer.
 type artifactCountBatchPeerConfig struct {
-	Mode        string            `json:"mode"`
-	Ledger      string            `json:"ledger"`
-	Objects     map[string][]byte `json:"objects"`
-	Sizes       map[string]int    `json:"sizes,omitempty"`
-	ObjectFiles map[string]string `json:"object_files,omitempty"`
-	Types       map[string]string `json:"types,omitempty"`
-	ActualGit   string            `json:"actual_git,omitempty"`
-	SessionRoot string            `json:"session_root,omitempty"`
-	Sessions    string            `json:"sessions,omitempty"`
-	Target      int               `json:"target,omitempty"`
+	Mode            string            `json:"mode"`
+	Ledger          string            `json:"ledger"`
+	Objects         map[string][]byte `json:"objects"`
+	Sizes           map[string]int    `json:"sizes,omitempty"`
+	ObjectFiles     map[string]string `json:"object_files,omitempty"`
+	Types           map[string]string `json:"types,omitempty"`
+	ActualGit       string            `json:"actual_git,omitempty"`
+	SessionRoot     string            `json:"session_root,omitempty"`
+	Sessions        string            `json:"sessions,omitempty"`
+	Target          int               `json:"target,omitempty"`
+	ObservedSession int               `json:"-"`
 }
 
 func TestArtifactStoreCountPreflightBatchPeer(t *testing.T) {
@@ -760,6 +761,7 @@ func TestArtifactStoreCountPreflightBatchPeer(t *testing.T) {
 						os.Exit(89)
 					}
 				}
+				cfg.ObservedSession = index
 			}
 			os.Exit(artifactCountBatchPeer(cfg, os.Args[i+2:]))
 		}
@@ -767,6 +769,8 @@ func TestArtifactStoreCountPreflightBatchPeer(t *testing.T) {
 }
 func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int {
 	log := func(event map[string]any) {
+		event["pid"], event["ppid"] = os.Getpid(), os.Getppid()
+		event["session"], event["mode"] = cfg.ObservedSession, cfg.Mode
 		raw, _ := json.Marshal(event)
 		file, err := os.OpenFile(cfg.Ledger, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 		if err != nil {
@@ -811,6 +815,11 @@ func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int
 	if cfg.Mode == "stderr-at" {
 		_, _ = os.Stderr.Write(bytes.Repeat([]byte("S"), 8192))
 	}
+	if cfg.Mode == "stderr-overflow" {
+		// Continue the valid protocol: removing the cap must turn this case
+		// into a genuine signed success rather than another independent error.
+		_, _ = os.Stderr.Write(bytes.Repeat([]byte("S"), 8193))
+	}
 	reader := bufio.NewReaderSize(os.Stdin, 512)
 	for {
 		line, err := reader.ReadSlice('\n')
@@ -820,7 +829,7 @@ func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int
 				fmt.Fprint(os.Stdout, "unexpected final output\n")
 			}
 			if cfg.Mode == "stall-eof" {
-				time.Sleep(60 * time.Second)
+				artifactIOStall(log, "eof")
 			}
 			if cfg.Mode == "exit-error" {
 				return 71
@@ -863,7 +872,7 @@ func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int
 		if action == "info" {
 			switch cfg.Mode {
 			case "stall-info":
-				time.Sleep(60 * time.Second)
+				artifactIOStall(log, "info")
 			case "info-missing":
 				header = oid + " missing\n"
 			case "info-type":
@@ -920,7 +929,7 @@ func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int
 		log(map[string]any{"event": "header", "action": action, "raw": header})
 		fmt.Fprint(os.Stdout, header)
 		if cfg.Mode == "stall-body" {
-			time.Sleep(60 * time.Second)
+			artifactIOStall(log, "body")
 		}
 		if path := cfg.ObjectFiles[oid]; path != "" {
 			// Fixture bytes are read only after the real host separately authorizes
@@ -1163,7 +1172,7 @@ func TestArtifactStoreFullReaderProtocolCLI(t *testing.T) {
 				}
 			}
 			artifactCountBatchCheck(t, f, "", "")
-			for _, mode := range []string{"pass", "stderr-at", "exit-error", "trailing", "trailing-eof", "info-missing", "info-type", "info-negative", "info-noncanonical", "info-nonnumeric", "info-overflow", "info-oid", "info-extra", "info-short", "info-long", "info-error", "exit-after-info", "contents-oid", "contents-type", "contents-size", "contents-negative", "contents-extra", "contents-long", "contents-short-header", "hash", "short-body", "missing-lf", "wrong-lf", "stderr"} {
+			for _, mode := range []string{"pass", "stderr-at", "stderr-overflow", "exit-error", "trailing", "trailing-eof", "info-missing", "info-type", "info-negative", "info-noncanonical", "info-nonnumeric", "info-overflow", "info-oid", "info-extra", "info-short", "info-long", "info-error", "exit-after-info", "contents-oid", "contents-type", "contents-size", "contents-negative", "contents-extra", "contents-long", "contents-short-header", "hash", "short-body", "missing-lf", "wrong-lf", "stderr"} {
 				t.Run(mode, func(t *testing.T) {
 					f.t = t
 					ledger, noFetch, sessions, overrides := artifactFullBatchPeerInstall(t, f, mode, objects, kinds)
@@ -1351,6 +1360,168 @@ func artifactIOReadEvidence(t *testing.T, ledger, sessions, noFetch string, invo
 	wp25Record(t, map[string]any{"control": "full-reader-owner-ledgers", "source_assisted": true, "sessions_raw": string(raw), "peer_raw": string(peer), "expected_object_types": expected, "complete_frames": complete})
 }
 
+// Only controlled test peers call this. The marker is durably closed before
+// sleeping, and the caller must observe it while the supplied CLI is alive.
+func artifactIOStall(log func(map[string]any), phase string) {
+	log(map[string]any{"event": "stall-entry", "phase": phase, "at": time.Now().UTC().Format(time.RFC3339Nano)})
+	time.Sleep(time.Minute)
+}
+
+type artifactIOPhase struct {
+	Mode, Phase, Ledger, Sessions string
+	Session                       int
+}
+
+func artifactIOObservedCall(t *testing.T, f *artifactCLIFixture, input, diagnostic string, phase artifactIOPhase, args ...string) map[string]any {
+	t.Helper()
+	before := f.snapshot()
+	watchdog, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(watchdog, f.binary, args...)
+	cmd.Dir, cmd.Env, cmd.Stdin = f.repo, operationalTestEnvironmentWith(f.home, f.overrides), strings.NewReader(input)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	started := time.Now()
+	if err := cmd.Start(); err != nil {
+		t.Fatal("phase-witness candidate did not start", err)
+	}
+	candidatePID := cmd.Process.Pid
+	processDone := make(chan struct{})
+	observed := make(chan map[string]any, 1)
+	observerDone := make(chan struct{})
+	go func() {
+		defer close(observerDone)
+		deadline := time.NewTimer(5 * time.Second)
+		tick := time.NewTicker(5 * time.Millisecond)
+		defer deadline.Stop()
+		defer tick.Stop()
+		identityRaw := ""
+		finish := func(event map[string]any, raw, failure string) {
+			alive := cmd.Process.Signal(syscall.Signal(0)) == nil
+			select {
+			case <-processDone:
+				alive = false
+			default:
+			}
+			observed <- map[string]any{"expected_mode": phase.Mode, "expected_phase": phase.Phase, "expected_session": phase.Session, "candidate_pid": candidatePID, "candidate_alive_at_observation": alive, "marker": event, "marker_raw": raw, "session_identity_raw": identityRaw, "observed_at": time.Now().UTC().Format(time.RFC3339Nano), "observed_elapsed_ns": time.Since(started).Nanoseconds(), "error": failure}
+		}
+		for {
+			select {
+			case <-processDone:
+				finish(nil, "", "candidate exited before required pre-deadline phase witness")
+				return
+			case <-deadline.C:
+				finish(nil, "", "required phase was not observed within5s while candidate alive")
+				return
+			case <-tick.C:
+				raw, err := os.ReadFile(phase.Ledger)
+				if os.IsNotExist(err) {
+					continue
+				}
+				if err != nil {
+					finish(nil, "", "cannot read controlled phase ledger: "+err.Error())
+					return
+				}
+				for _, line := range bytes.Split(raw, []byte{'\n'}) {
+					var event map[string]any
+					if json.Unmarshal(line, &event) != nil || event["event"] != "stall-entry" {
+						continue
+					}
+					failure := ""
+					pid, validPID := event["pid"].(float64)
+					if event["phase"] != phase.Phase || event["mode"] != phase.Mode || event["session"] != float64(phase.Session) || event["ppid"] != float64(candidatePID) || !validPID || pid <= 0 || event["at"] == nil {
+						failure = "wrong controlled phase/mode/session/PID witness"
+					}
+					identities, identityErr := os.ReadFile(phase.Sessions)
+					matched := false
+					for _, identity := range bytes.Split(identities, []byte{'\n'}) {
+						var value map[string]any
+						if json.Unmarshal(identity, &value) == nil && value["session"] == float64(phase.Session) && value["pid"] == event["pid"] && value["ppid"] == float64(candidatePID) {
+							identityRaw, matched = string(identity), true
+						}
+					}
+					if identityErr != nil || !matched {
+						failure = "phase marker did not match actual selected child/session identity"
+					}
+					select {
+					case <-processDone:
+						failure = "phase arrived after candidate exit"
+					default:
+					}
+					if err := cmd.Process.Signal(syscall.Signal(0)); err != nil {
+						failure = "candidate was not alive at phase observation: " + err.Error()
+					}
+					if time.Since(started) >= 5*time.Second {
+						failure = "phase observation was not early"
+					}
+					finish(event, string(line), failure)
+					return
+				}
+			}
+		}
+	}()
+	// Wait and observer both join before any assertion can terminate this test.
+	runErr := cmd.Wait()
+	close(processDone)
+	witness := <-observed
+	<-observerDone
+	after := f.snapshot()
+	wp25Record(t, map[string]any{"control": "pre-deadline-owned-phase-public-call", "source_assisted_fault_peer": true, "candidate": f.binary, "candidate_sha256": wp25Digest(t, f.binary), "argv": args, "cwd": f.repo, "candidate_pid": candidatePID, "stdout_raw": stdout.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(runErr), "watchdog_error": fmt.Sprint(watchdog.Err()), "elapsed_nanoseconds": time.Since(started).Nanoseconds(), "phase_observation": witness, "observer_joined": true, "protected_before": before, "protected_after": after, "product_stage_seconds": 30, "early_observer_seconds": 5})
+	if witness["error"] != "" || witness["candidate_alive_at_observation"] != true {
+		t.Fatal("required pre-deadline causal phase witness failed", witness)
+	}
+	if watchdog.Err() != nil {
+		t.Fatal("phase control outer watchdog expired", watchdog.Err())
+	}
+	response := wp25LifecycleEnvelope(t, stdout.Bytes(), runErr, "artifact", "cancelled", "do_not_retry", nil)
+	if response["error"].(map[string]any)["message"] != diagnostic {
+		t.Fatal("phase cancellation changed exact diagnostic", response)
+	}
+	return response
+}
+
+func artifactIOReadStallEvidence(t *testing.T, ledger, mode string, objects int) {
+	t.Helper()
+	raw, err := os.ReadFile(ledger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	counts := map[string]int{}
+	for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		var event map[string]any
+		if json.Unmarshal(line, &event) != nil {
+			t.Fatal("invalid stalled-reader event")
+		}
+		kind := event["event"].(string)
+		if action, ok := event["action"].(string); ok {
+			kind += ":" + action
+		}
+		counts[kind]++
+		if event["event"] == "stall-entry" && (event["phase"] != strings.TrimPrefix(mode, "stall-") || event["mode"] != mode) {
+			t.Fatal("wrong reader stall marker", event)
+		}
+	}
+	if counts["start"] != 1 || counts["stall-entry"] != 1 {
+		t.Fatal("reader did not enter exactly one controlled stall", counts)
+	}
+	want := map[string]int{"request:info": 1}
+	switch mode {
+	case "stall-info":
+	case "stall-body":
+		want["header:info"], want["request:contents"], want["header:contents"] = 1, 1, 1
+	case "stall-eof":
+		want["request:info"], want["header:info"], want["request:contents"], want["header:contents"], want["body"], want["stdin-eof"] = objects, objects, objects, objects, objects, 1
+	default:
+		t.Fatal("unknown expected reader stall", mode)
+	}
+	for _, kind := range []string{"request:info", "header:info", "request:contents", "header:contents", "body", "stdin-eof"} {
+		if counts[kind] != want[kind] {
+			t.Fatal("reader stalled at a different protocol phase", mode, kind, counts, want)
+		}
+	}
+	wp25Record(t, map[string]any{"control": "exact-reader-stall-phase-counts", "mode": mode, "counts": counts, "expected": want, "raw": string(raw)})
+}
+
 func TestArtifactFullReaderOwnerFinalizationCLI(t *testing.T) {
 	for _, format := range []string{"sha1", "sha256"} {
 		for _, owner := range []string{"closure", "export", "inventory", "copy-reader", "candidate"} {
@@ -1496,12 +1667,15 @@ func TestArtifactFullReaderCancellationCLI(t *testing.T) {
 			ledger, noFetch, sessions, overrides := artifactFullBatchPeerInstall(t, f, mode, objects, kinds)
 			f.overrides = overrides
 			started := time.Now()
-			artifactCountBatchCheck(t, f, "cancelled", "artifact read cancelled")
+			before := f.snapshot()
+			artifactIOObservedCall(t, f, "", "artifact read cancelled", artifactIOPhase{Mode: mode, Phase: strings.TrimPrefix(mode, "stall-"), Ledger: ledger, Sessions: sessions, Session: 2}, "artifact", "type", "show", artifactVectorID, "--json")
+			f.unchanged(before)
 			elapsed := time.Since(started)
 			if elapsed < 29*time.Second || elapsed > 45*time.Second {
 				t.Fatal("full-reader cancellation did not retain normal30s stage", elapsed)
 			}
 			artifactIOReadEvidence(t, ledger, sessions, noFetch, 2, kinds, false)
+			artifactIOReadStallEvidence(t, ledger, mode, 4)
 			wp25Record(t, map[string]any{"control": "full-reader-normal-stage-cancellation", "source_assisted_fault_peer": true, "candidate_observation": true, "mode": mode, "elapsed_nanoseconds": elapsed.Nanoseconds(), "product_budget_seconds": 30})
 			f.overrides = base
 			artifactCountBatchCheck(t, f, "", "")
@@ -1923,12 +2097,15 @@ func TestArtifactStoreCountPreflightCancellationCLI(t *testing.T) {
 			f.overrides = overrides
 			defer func() { f.overrides = base }()
 			started := time.Now()
-			artifactCountBatchCheck(t, f, "cancelled", "artifact read cancelled")
+			before := f.snapshot()
+			artifactIOObservedCall(t, f, "", "artifact read cancelled", artifactIOPhase{Mode: mode, Phase: strings.TrimPrefix(mode, "stall-"), Ledger: ledger, Sessions: filepath.Join(filepath.Dir(ledger), "sessions.jsonl"), Session: 1}, "artifact", "type", "show", artifactVectorID, "--json")
+			f.unchanged(before)
 			elapsed := time.Since(started)
 			if elapsed < 29*time.Second || elapsed > 45*time.Second {
 				t.Fatal("batch cancellation did not use actual normal30s stage", elapsed)
 			}
 			events := artifactCountBatchLedger(t, ledger, noFetch)
+			artifactIOReadStallEvidence(t, ledger, mode, 1)
 			wp25Record(t, map[string]any{"control": "count-preflight-batch-cancellation", "mode": mode, "elapsed_ns": elapsed.Nanoseconds(), "events": events})
 			f.overrides = base
 			artifactCountBatchCheck(t, f, "", "")
