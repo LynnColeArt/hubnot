@@ -590,6 +590,7 @@
       ],
       "predicted_surfaces": [
         "api",
+        "app-shell",
         "artifact-rendering",
         "legacy-cleanup",
         "tracker-integration",
@@ -622,10 +623,10 @@
       "parallel_group": 16
     }
   ],
-  "computed_at": "2026-11-01T08:47:28.452722+00:00",
+  "computed_at": "2026-11-01T13:54:38.950250+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [
     "WP02"
   ],
-  "planning_commit_sha": "c5f35ab44530d41015cc505113b1450ad0871a90"
+  "planning_commit_sha": "74d1a2f3274d31fbc21cedd66186218566bddd91"
 }
