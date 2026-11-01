@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"hubnot/internal/artifact"
 	"os"
 	"path/filepath"
@@ -189,8 +190,10 @@ func artifactTransferInventory(ctx context.Context, h *artifactHistory, c *artif
 	// raw objects. Git's network download itself has no pre-download byte quota.
 	refs, _ := json.Marshal(c.Sources)
 	wire = int64(len(`{"mode":"accepted","objects":[],"protocol":"hn-artifact-exchange/1","refs":}`) + len(refs))
+	reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, seen: map[string]bool{}, scoped: true}
+	defer reader.close()
 	for i, oid := range c.Objects {
-		kind, raw, err := artifactTransportObject(ctx, h.gitDir, oid)
+		kind, raw, err := artifactTransportObject(ctx, h.gitDir, oid, &reader)
 		if err != nil {
 			return 0, err
 		}
@@ -206,6 +209,9 @@ func artifactTransferInventory(ctx context.Context, h *artifactHistory, c *artif
 		if e := artifactTransferLimit(len(c.Objects), len(c.Items), 0, total, wire); e != nil {
 			return 0, e
 		}
+	}
+	if err := reader.finish(); err != nil {
+		return 0, artifactTransportError(ctx, "verification_failure", "selected artifact object unavailable")
 	}
 	return wire, nil
 }
@@ -227,35 +233,64 @@ func artifactTransferLimit(objects, records, depth int, decoded, wire int64) err
 	return nil
 }
 
-func artifactTransportObject(ctx context.Context, dir, oid string) (string, []byte, error) {
-	kind, err := projectGit(ctx, dir, nil, 16, "cat-file", "-t", oid)
+func artifactTransportObject(ctx context.Context, dir, oid string, readers ...*artifactObjectReader) (string, []byte, error) {
+	reader := &artifactObjectReader{ctx: ctx, dir: dir, seen: map[string]bool{}, scoped: true}
+	owned := len(readers) == 0
+	if !owned {
+		reader = readers[0]
+	} else {
+		defer reader.close()
+	}
+	typ, n, header, err := reader.inspect(oid)
 	if err != nil {
 		return "", nil, artifactTransportError(ctx, "verification_failure", "selected artifact object unavailable")
 	}
-	typ := strings.TrimSpace(string(kind))
 	if typ != "blob" && typ != "tree" && typ != "commit" {
 		return "", nil, artifactFailure("invalid_history", "unsupported artifact object type")
 	}
-	raw, err := projectGit(ctx, dir, nil, artifactReadObjectBytes, "cat-file", typ, oid)
+	raw, err := reader.objectInfo(oid, typ, n, header, artifactReadObjectBytes)
 	if err != nil {
 		return "", nil, artifactTransportError(ctx, "verification_failure", "selected artifact object unavailable")
+	}
+	if owned {
+		if err := reader.finish(); err != nil {
+			return "", nil, artifactTransportError(ctx, "verification_failure", "selected artifact object unavailable")
+		}
 	}
 	return typ, raw, nil
 }
 
 func copyArtifactInventory(ctx context.Context, src, dst string, c *artifactClosure) error {
+	reader := artifactObjectReader{ctx: ctx, dir: src, seen: map[string]bool{}, scoped: true}
+	defer reader.close()
+	writer := artifactBlobWriter{ctx: ctx, dir: dst}
+	defer writer.close()
 	for _, oid := range c.Objects {
-		kind, raw, err := artifactTransportObject(ctx, src, oid)
+		kind, raw, err := artifactTransportObject(ctx, src, oid, &reader)
 		if err != nil {
 			return err
 		}
 		// The shared reader already verified this bounded public object. Preserve
 		// its raw Git body: hash-object's extra metadata fsck is not artifact
 		// validity, and must not rewrite or reject accepted transport metadata.
-		got, err := projectGit(ctx, dst, raw, 128, "hash-object", "-w", "--literally", "-t", kind, "--stdin")
-		if err != nil || strings.TrimSpace(string(got)) != oid {
+		if kind == "blob" {
+			err = writer.write(oid, raw)
+		} else {
+			var got []byte
+			got, err = projectGit(ctx, dst, raw, 128, "hash-object", "-w", "--literally", "-t", kind, "--stdin")
+			if err == nil && strings.TrimSpace(string(got)) != oid {
+				err = fmt.Errorf("copied artifact object identity mismatch")
+			}
+		}
+		if err != nil {
 			return artifactTransportError(ctx, "verification_failure", "artifact object copy failed verification")
 		}
+	}
+	if err := reader.finish(); err != nil {
+		return artifactTransportError(ctx, "verification_failure", "selected artifact object unavailable")
+	}
+	if err := writer.finish(); err != nil {
+		return artifactTransportError(ctx, "verification_failure", "artifact object copy failed verification")
 	}
 	return nil
 }

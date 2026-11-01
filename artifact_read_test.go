@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -708,6 +709,11 @@ type artifactCountBatchPeerConfig struct {
 	Objects     map[string][]byte `json:"objects"`
 	Sizes       map[string]int    `json:"sizes,omitempty"`
 	ObjectFiles map[string]string `json:"object_files,omitempty"`
+	Types       map[string]string `json:"types,omitempty"`
+	ActualGit   string            `json:"actual_git,omitempty"`
+	SessionRoot string            `json:"session_root,omitempty"`
+	Sessions    string            `json:"sessions,omitempty"`
+	Target      int               `json:"target,omitempty"`
 }
 
 func TestArtifactStoreCountPreflightBatchPeer(t *testing.T) {
@@ -720,6 +726,40 @@ func TestArtifactStoreCountPreflightBatchPeer(t *testing.T) {
 			var cfg artifactCountBatchPeerConfig
 			if json.Unmarshal(raw, &cfg) != nil || cfg.Ledger == "" {
 				os.Exit(73)
+			}
+			if cfg.SessionRoot != "" {
+				index := 1
+				for ; index <= 32; index++ {
+					err = os.Mkdir(filepath.Join(cfg.SessionRoot, strconv.Itoa(index)), 0700)
+					if err == nil {
+						break
+					}
+					if !os.IsExist(err) {
+						os.Exit(85)
+					}
+				}
+				if index > 32 {
+					os.Exit(86)
+				}
+				role := "real-git-forward"
+				if index == cfg.Target {
+					role = "target-peer"
+				}
+				event, _ := json.Marshal(map[string]any{"session": index, "role": role, "pid": os.Getpid(), "ppid": os.Getppid(), "argv": os.Args[i+2:], "actual_git": cfg.ActualGit})
+				file, e := os.OpenFile(cfg.Sessions, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+				if e != nil {
+					os.Exit(87)
+				}
+				_, e = file.Write(append(event, '\n'))
+				closeErr := file.Close()
+				if e != nil || closeErr != nil {
+					os.Exit(88)
+				}
+				if index != cfg.Target {
+					if syscall.Exec(cfg.ActualGit, append([]string{cfg.ActualGit}, os.Args[i+2:]...), os.Environ()) != nil {
+						os.Exit(89)
+					}
+				}
 			}
 			os.Exit(artifactCountBatchPeer(cfg, os.Args[i+2:]))
 		}
@@ -765,14 +805,20 @@ func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int
 		return 0
 	}
 	if cfg.Mode == "stderr" {
-		_, _ = os.Stderr.Write(bytes.Repeat([]byte("S"), 1<<20))
+		_, _ = os.Stderr.Write(bytes.Repeat([]byte("S"), 8193))
 		return 71
+	}
+	if cfg.Mode == "stderr-at" {
+		_, _ = os.Stderr.Write(bytes.Repeat([]byte("S"), 8192))
 	}
 	reader := bufio.NewReaderSize(os.Stdin, 512)
 	for {
 		line, err := reader.ReadSlice('\n')
 		if err == io.EOF && len(line) == 0 {
 			log(map[string]any{"event": "stdin-eof"})
+			if cfg.Mode == "trailing-eof" {
+				fmt.Fprint(os.Stdout, "unexpected final output\n")
+			}
 			if cfg.Mode == "stall-eof" {
 				time.Sleep(60 * time.Second)
 			}
@@ -809,7 +855,11 @@ func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int
 		if size, ok := cfg.Sizes[oid]; ok {
 			n = size
 		}
-		header := fmt.Sprintf("%s commit %d\n", oid, n)
+		kind := cfg.Types[oid]
+		if kind == "" {
+			kind = "commit"
+		}
+		header := fmt.Sprintf("%s %s %d\n", oid, kind, n)
 		if action == "info" {
 			switch cfg.Mode {
 			case "stall-info":
@@ -820,6 +870,8 @@ func artifactCountBatchPeer(cfg artifactCountBatchPeerConfig, argv []string) int
 				header = fmt.Sprintf("%s blob %d\n", oid, n)
 			case "info-negative":
 				header = oid + " commit -1\n"
+			case "info-noncanonical":
+				header = fmt.Sprintf("%s %s 0%d\n", oid, kind, n)
 			case "info-nonnumeric":
 				header = oid + " commit not-a-size\n"
 			case "info-overflow":
@@ -942,7 +994,10 @@ func artifactCountBatchPeerInstall(t *testing.T, f *artifactCLIFixture, mode str
 	dir := t.TempDir()
 	ledger := filepath.Join(dir, "ledger.jsonl")
 	noFetch := filepath.Join(dir, "forbidden-fetch")
-	cfg := artifactCountBatchPeerConfig{Mode: mode, Ledger: ledger, Objects: objects, Sizes: sizes}
+	cfg := artifactCountBatchPeerConfig{Mode: mode, Ledger: ledger, Objects: objects, Sizes: sizes, ActualGit: actual, Target: 1, SessionRoot: filepath.Join(dir, "sessions"), Sessions: filepath.Join(dir, "sessions.jsonl")}
+	if err := os.Mkdir(cfg.SessionRoot, 0700); err != nil {
+		t.Fatal(err)
+	}
 	if len(bodyFiles) > 0 {
 		cfg.ObjectFiles = bodyFiles[0]
 	}
@@ -964,7 +1019,7 @@ func artifactCountBatchPeerInstall(t *testing.T, f *artifactCLIFixture, mode str
 	wp25Record(t, map[string]any{"control": "count-preflight-batch-peer-config", "source_assisted": true, "mode": mode, "objects": sizes, "public_body_count": len(objects), "config_sha256": wp25RecordCountHash(raw), "script_raw": script, "real_git": actual, "compiled_peer": self})
 	return ledger, noFetch, overrides
 }
-func artifactCountBatchLedger(t *testing.T, path, noFetch string) []map[string]any {
+func artifactCountBatchLedger(t *testing.T, path, noFetch string, forwarded ...int) []map[string]any {
 	t.Helper()
 	raw, err := os.ReadFile(path)
 	if err != nil {
@@ -1005,11 +1060,724 @@ func artifactCountBatchLedger(t *testing.T, path, noFetch string) []map[string]a
 	if starts != 1 {
 		t.Fatal("nonempty traversal did not have exactly one scoped batch child", starts)
 	}
+	expectedForwarded := 0
+	if len(forwarded) != 0 {
+		expectedForwarded = forwarded[0]
+	}
+	sessionRaw, err := os.ReadFile(filepath.Join(filepath.Dir(path), "sessions.jsonl"))
+	if err != nil {
+		t.Fatal("missing batch invocation ledger", err)
+	}
+	sessions := bytes.Split(bytes.TrimSpace(sessionRaw), []byte{'\n'})
+	if len(sessions) != 1+expectedForwarded {
+		t.Fatal("omitted/duplicated count or full-reader invocation", len(sessions), string(sessionRaw))
+	}
+	for index, line := range sessions {
+		var event map[string]any
+		if json.Unmarshal(line, &event) != nil || event["session"] != float64(index+1) {
+			t.Fatal("invalid ordered batch invocation", string(line))
+		}
+		expectedRole := "target-peer"
+		if index != 0 {
+			expectedRole = "real-git-forward"
+		}
+		if event["role"] != expectedRole {
+			t.Fatal("count/full-reader routing changed", event)
+		}
+		pid := strconv.Itoa(int(event["pid"].(float64)))
+		out, err := exec.Command("ps", "-p", pid, "-o", "pid=,ppid=,comm=").CombinedOutput()
+		if err == nil || len(bytes.TrimSpace(out)) != 0 {
+			t.Fatal("forwarded or count child survived public return", pid, string(out))
+		}
+	}
+	wp25Record(t, map[string]any{"control": "count-preflight-all-session-ledger", "source_assisted": true, "raw": string(sessionRaw), "expected_count_sessions": 1, "expected_real_git_full_reader_sessions": expectedForwarded, "attribution": "explicit traversal order plus independent full-reader protocol/role controls; additional or omitted traversal fails"})
 	if content, err := os.ReadFile(noFetch); !os.IsNotExist(err) {
 		t.Fatal("batch caller fetched", err, string(content))
 	}
 	wp25Record(t, map[string]any{"control": "count-preflight-batch-peer-ledger", "source_assisted": true, "raw": string(raw), "events": events, "ledger_sha256": wp25RecordCountHash(raw)})
 	return events
+}
+
+// Select a numbered process only in this fixture's Git shim. All other batch
+// children exec the original Git at the same PID; no candidate flag or runtime
+// capability marker is involved. Separate ledgers retain every forwarded child.
+func artifactFullBatchPeerInstall(t *testing.T, f *artifactCLIFixture, mode string, objects map[string][]byte, kinds map[string]string, target ...int) (string, string, string, map[string]string) {
+	t.Helper()
+	ledger, noFetch, overrides := artifactCountBatchPeerInstall(t, f, mode, objects, nil)
+	dir := strings.Split(overrides["PATH"], string(os.PathListSeparator))[0]
+	path := filepath.Join(dir, "peer.json")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cfg artifactCountBatchPeerConfig
+	if json.Unmarshal(raw, &cfg) != nil {
+		t.Fatal("invalid peer config")
+	}
+	cfg.ActualGit, err = exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Types, cfg.Target = kinds, 2
+	if len(target) != 0 {
+		cfg.Target = target[0]
+	}
+	cfg.SessionRoot, cfg.Sessions = filepath.Join(dir, "sessions"), filepath.Join(dir, "sessions.jsonl")
+	raw, err = json.Marshal(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(path, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	wp25Record(t, map[string]any{"control": "full-reader-peer-config", "source_assisted": true, "target_session": cfg.Target, "attribution": "explicit named owner and raw invocation order; public controls identify count separately from full reader; private one-shot has no count traversal", "types": kinds, "config_raw": string(raw), "config_sha256": wp25RecordCountHash(raw)})
+	return ledger, noFetch, cfg.Sessions, overrides
+}
+
+func TestArtifactStoreFullReaderProtocolCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			f := artifactCLIFormat(t, format)
+			f.overrides = map[string]string{"XDG_CONFIG_HOME": wp25FixtureConfig(t, f.home)}
+			base := f.overrides
+			ref := artifactFrozenRef(t, f)
+			root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			f.git("update-ref", ref, root)
+			tree := f.git("rev-parse", root+"^{tree}")
+			kinds := map[string]string{root: "commit", tree: "tree"}
+			for _, line := range strings.Split(f.git("ls-tree", tree), "\n") {
+				fields := strings.Fields(line)
+				if len(fields) != 4 || fields[1] != "blob" {
+					t.Fatal("independent selected tree", line)
+				}
+				kinds[fields[2]] = "blob"
+			}
+			objects := map[string][]byte{}
+			for oid, kind := range kinds {
+				cmd := exec.Command("git", "-C", f.repo, "cat-file", kind, oid)
+				cmd.Env = operationalTestEnvironmentWith(f.home, f.overrides)
+				var err error
+				objects[oid], err = cmd.Output()
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			artifactCountBatchCheck(t, f, "", "")
+			for _, mode := range []string{"pass", "stderr-at", "exit-error", "trailing", "trailing-eof", "info-missing", "info-type", "info-negative", "info-noncanonical", "info-nonnumeric", "info-overflow", "info-oid", "info-extra", "info-short", "info-long", "info-error", "exit-after-info", "contents-oid", "contents-type", "contents-size", "contents-negative", "contents-extra", "contents-long", "contents-short-header", "hash", "short-body", "missing-lf", "wrong-lf", "stderr"} {
+				t.Run(mode, func(t *testing.T) {
+					f.t = t
+					ledger, noFetch, sessions, overrides := artifactFullBatchPeerInstall(t, f, mode, objects, kinds)
+					f.overrides = overrides
+					defer func() { f.overrides = base }()
+					code, message := "verification_failure", "accepted artifact object unavailable; no fetch attempted"
+					if mode == "pass" || mode == "stderr-at" {
+						code, message = "", ""
+					} else if mode == "info-negative" || mode == "info-noncanonical" || mode == "info-nonnumeric" || mode == "info-overflow" {
+						message = "invalid Git object size"
+					} else if mode == "info-missing" || mode == "info-type" {
+						message = "accepted artifact object is missing or has wrong type"
+					} else if mode == "hash" {
+						message = "accepted Git object hash mismatch"
+					}
+					artifactCountBatchCheck(t, f, code, message)
+					raw, err := os.ReadFile(sessions)
+					if err != nil || bytes.Count(raw, []byte{'\n'}) != 2 {
+						t.Fatal("missing/extra count or full-reader session", err, string(raw))
+					}
+					peer, err := os.ReadFile(ledger)
+					if err != nil {
+						t.Fatal("targeted full-reader peer never executed", err)
+					}
+					if mode == "pass" || mode == "stderr-at" {
+						info, contents := map[string]int{}, map[string]int{}
+						pending, eof := "", 0
+						for _, line := range bytes.Split(bytes.TrimSpace(peer), []byte{'\n'}) {
+							var event map[string]any
+							if json.Unmarshal(line, &event) != nil {
+								t.Fatal("invalid full-reader protocol ledger")
+							}
+							if event["event"] == "stdin-eof" {
+								eof++
+							}
+							if event["event"] != "request" {
+								continue
+							}
+							oid := event["oid"].(string)
+							if _, known := kinds[oid]; !known {
+								t.Fatal("full-reader selected an unexpected object", event)
+							}
+							if event["action"] == "info" {
+								if pending != "" {
+									t.Fatal("full-reader pipelined metadata ahead of contents", event)
+								}
+								pending = oid
+								info[oid]++
+							} else {
+								if pending != oid {
+									t.Fatal("full-reader contents preceded exact metadata", event)
+								}
+								pending = ""
+								contents[oid]++
+							}
+						}
+						if pending != "" || eof != 1 || len(kinds) != 4 {
+							t.Fatal("full-reader phase incomplete", pending, eof, kinds)
+						}
+						for oid, kind := range kinds {
+							if info[oid] != 1 || contents[oid] != 1 {
+								t.Fatal("second session was not the exact commit/tree/both-blob full reader", oid, kind, info, contents)
+							}
+						}
+					}
+					for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+						var event map[string]any
+						if json.Unmarshal(line, &event) != nil {
+							t.Fatal("invalid session ledger")
+						}
+						pid := strconv.Itoa(int(event["pid"].(float64)))
+						out, err := exec.Command("ps", "-p", pid, "-o", "pid=,ppid=,comm=").CombinedOutput()
+						if err == nil || len(bytes.TrimSpace(out)) != 0 {
+							t.Fatal("full-reader/count child survived public return", pid, string(out))
+						}
+					}
+					if data, err := os.ReadFile(noFetch); !os.IsNotExist(err) {
+						t.Fatal("full-reader fault fetched", err, string(data))
+					}
+					wp25Record(t, map[string]any{"control": "full-reader-peer-ledgers", "source_assisted": true, "mode": mode, "session_raw": string(raw), "peer_raw": string(peer)})
+				})
+				f.t = t
+			}
+		})
+	}
+}
+
+func artifactIOReadObjects(t *testing.T, f *artifactCLIFixture, commits ...string) (map[string][]byte, map[string]string) {
+	t.Helper()
+	kinds := map[string]string{}
+	for _, commit := range commits {
+		kinds[commit] = "commit"
+		tree := f.git("rev-parse", commit+"^{tree}")
+		kinds[tree] = "tree"
+		for _, line := range strings.Split(f.git("ls-tree", tree), "\n") {
+			fields := strings.Fields(line)
+			if len(fields) != 4 || fields[1] != "blob" {
+				t.Fatal("independent selected tree", line)
+			}
+			kinds[fields[2]] = "blob"
+		}
+	}
+	objects := map[string][]byte{}
+	for oid, kind := range kinds {
+		cmd := exec.Command("git", "-C", f.repo, "cat-file", kind, oid)
+		cmd.Env = operationalTestEnvironmentWith(f.home, f.overrides)
+		var err error
+		objects[oid], err = cmd.Output()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	return objects, kinds
+}
+
+func artifactIOReadEvidence(t *testing.T, ledger, sessions, noFetch string, invocations int, expected map[string]string, complete bool) {
+	t.Helper()
+	raw, err := os.ReadFile(sessions)
+	if err != nil || bytes.Count(raw, []byte{'\n'}) != invocations {
+		t.Fatal("owner omitted/duplicated a raw reader", err, string(raw), invocations)
+	}
+	for index, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		var event map[string]any
+		if json.Unmarshal(line, &event) != nil || event["session"] != float64(index+1) {
+			t.Fatal("invalid reader invocation order", string(line))
+		}
+		pid := strconv.Itoa(int(event["pid"].(float64)))
+		out, err := exec.Command("ps", "-p", pid, "-o", "pid=,ppid=,comm=").CombinedOutput()
+		if err == nil || len(bytes.TrimSpace(out)) != 0 {
+			t.Fatal("reader child survived owner return", pid, string(out))
+		}
+	}
+	peer, err := os.ReadFile(ledger)
+	if err != nil {
+		t.Fatal("selected owner never reached protocol peer", err)
+	}
+	infos, contents := map[string]int{}, map[string]int{}
+	pending, eof, starts := "", 0, 0
+	for _, line := range bytes.Split(bytes.TrimSpace(peer), []byte{'\n'}) {
+		var event map[string]any
+		if json.Unmarshal(line, &event) != nil {
+			t.Fatal("invalid owner protocol ledger")
+		}
+		switch event["event"] {
+		case "start":
+			starts++
+		case "stdin-eof":
+			eof++
+		case "request":
+			oid := event["oid"].(string)
+			if _, ok := expected[oid]; !ok {
+				t.Fatal("owner read outside its expected exact objects", event)
+			}
+			if event["action"] == "info" {
+				if pending != "" {
+					t.Fatal("owner pipelined raw contents", event)
+				}
+				pending = oid
+				infos[oid]++
+			} else {
+				if pending != oid {
+					t.Fatal("owner contents preceded exact metadata", event)
+				}
+				pending = ""
+				contents[oid]++
+			}
+		}
+	}
+	if starts != 1 {
+		t.Fatal("owner did not have one selected peer", starts)
+	}
+	if complete {
+		if pending != "" || eof != 1 {
+			t.Fatal("owner escaped before complete EOF", pending, eof)
+		}
+		for oid, kind := range expected {
+			if infos[oid] != 1 || contents[oid] != 1 {
+				t.Fatal("owner did not consume exact commit/tree/blob role", oid, kind, infos, contents)
+			}
+		}
+	}
+	if body, err := os.ReadFile(noFetch); !os.IsNotExist(err) {
+		t.Fatal("raw owner attempted hidden fetch", err, string(body))
+	}
+	wp25Record(t, map[string]any{"control": "full-reader-owner-ledgers", "source_assisted": true, "sessions_raw": string(raw), "peer_raw": string(peer), "expected_object_types": expected, "complete_frames": complete})
+}
+
+func TestArtifactFullReaderOwnerFinalizationCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		for _, owner := range []string{"closure", "export", "inventory", "copy-reader", "candidate"} {
+			for _, mode := range []string{"pass", "exit-error", "trailing-eof", "info-missing"} {
+				t.Run(format+"/"+owner+"/"+mode, func(t *testing.T) {
+					f := artifactCLIFormat(t, format)
+					f.overrides = map[string]string{"XDG_CONFIG_HOME": wp25FixtureConfig(t, f.home)}
+					base := f.overrides
+					ref := artifactFrozenRef(t, f)
+					root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+					f.git("update-ref", ref, root)
+					objects, kinds := artifactIOReadObjects(t, f, root)
+					expected := kinds
+					target, all := 3, 3
+					args := []string{"artifact", "inspect", "--id", artifactVectorID, "--json"}
+					output, remote, remoteBefore := "", "", ""
+					message := "accepted artifact object unavailable; no fetch attempted"
+					switch owner {
+					case "export":
+						target, all = 4, 4
+						output = filepath.Join(t.TempDir(), "export.json")
+						args = []string{"artifact", "export", "--id", artifactVectorID, "--output", output, "--json"}
+					case "inventory", "copy-reader":
+						target, all = 4, 5
+						if owner == "copy-reader" {
+							target = 5
+						}
+						message = "selected artifact object unavailable"
+						remote = filepath.Join(t.TempDir(), "public.git")
+						f.git("init", "--bare", "--quiet", "--object-format="+format, remote)
+						f.git("remote", "add", "public", remote)
+						remoteBefore = f.git("--git-dir="+remote, "for-each-ref", "--format=%(refname) %(objectname)")
+						args = []string{"artifact", "push", "--remote", "public", "--id", artifactVectorID, "--json"}
+					case "candidate":
+						// The real writer creates a signed candidate and immutable intent,
+						// then a real failed CAS stage leaves it unpublished for inspection.
+						f.git("update-ref", "-d", ref)
+						wp25ArtifactCall(f, artifactStoreType, "", "artifact", "type", "publish", "--input", "-", "--actor", f.actor, "--operation", "io-base", "--json")
+						actual, err := exec.LookPath("git")
+						if err != nil {
+							t.Fatal(err)
+						}
+						wrapper := t.TempDir()
+						marker := filepath.Join(wrapper, "cas-refused")
+						quote := func(value string) string { return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'" }
+						script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = update-ref ]; then printf dispatched > " + quote(marker) + "; exit 86; fi\ndone\nexec " + quote(actual) + " \"$@\"\n"
+						if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
+							t.Fatal(err)
+						}
+						f.overrides = map[string]string{"XDG_CONFIG_HOME": base["XDG_CONFIG_HOME"], "PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH")}
+						refusal := wp25ArtifactCall(f, artifactStoreType, "concurrent_update", "artifact", "type", "publish", "--input", "-", "--actor", f.actor, "--operation", "io-candidate", "--json")
+						artifactErrorShape(t, refusal, "artifact", "concurrent_update", "retry_identical", nil)
+						observed, err := os.ReadFile(marker)
+						if err != nil || string(observed) != "dispatched" {
+							t.Fatal("candidate fixture failed to reach the real CAS refusal", err, string(observed))
+						}
+						f.overrides = base
+						intent := operationIntent(t, f, "io-candidate")
+						candidate := intent["candidate"].(map[string]any)
+						commit := candidate["commit"].(string)
+						objects, kinds = artifactIOReadObjects(t, f, commit)
+						expected = kinds
+						args = []string{"artifact", "operation", "--actor", f.actor, "--operation", "io-candidate", "--type", "example.test/note", "--json"}
+						wp25Record(t, map[string]any{"control": "full-reader-candidate-public-setup", "source_assisted_construction": true, "actor": f.actor, "operation": "io-candidate", "candidate_commit": commit, "candidate_id": candidate["id"], "intent_path": operationIntentPath(f, "io-candidate"), "intent_sha256": wp25Digest(t, operationIntentPath(f, "io-candidate")), "cas_script_raw": script, "cas_marker_raw": string(observed)})
+					}
+					if mode == "info-missing" {
+						switch owner {
+						case "export":
+							message = "unsupported exchange object type"
+						case "closure", "candidate":
+							message = "accepted artifact object is missing or has wrong type"
+						}
+					}
+					ledger, noFetch, sessions, overrides := artifactFullBatchPeerInstall(t, f, mode, objects, kinds, target)
+					f.overrides = overrides
+					before := f.snapshot()
+					code := "verification_failure"
+					if mode == "pass" {
+						code = ""
+					}
+					response := wp25ArtifactCall(f, "", code, args...)
+					f.unchanged(before)
+					if code != "" {
+						artifactErrorShape(t, response, "artifact", code, "do_not_retry", nil)
+						if response["data"] != nil || response["error"].(map[string]any)["message"] != message {
+							t.Fatal("owner changed sole-fault diagnostic or exposed success", response)
+						}
+						all = target
+						if output != "" {
+							if _, err := os.Lstat(output); !os.IsNotExist(err) {
+								t.Fatal("failed export published output", err)
+							}
+						}
+						if remote != "" && remoteBefore != f.git("--git-dir="+remote, "for-each-ref", "--format=%(refname) %(objectname)") {
+							t.Fatal("reader refusal promoted remote refs")
+						}
+					} else {
+						data := response["data"].(map[string]any)
+						switch owner {
+						case "closure":
+							items := data["items"].([]any)
+							if len(items) != 1 || items[0].(map[string]any)["id"] != artifactVectorID {
+								t.Fatal("closure owner lost exact signed ID", data)
+							}
+						case "export":
+							raw, err := os.ReadFile(output)
+							var table map[string]any
+							if err != nil || json.Unmarshal(raw, &table) != nil || len(table["objects"].([]any)) != 4 || data["records"] != float64(1) {
+								t.Fatal("export owner lost exact inventory", err, data)
+							}
+						case "inventory", "copy-reader":
+							if data["records"] != float64(1) || f.git("--git-dir="+remote, "rev-parse", ref) != root {
+								t.Fatal("transport owner lost exact source/record", data)
+							}
+						case "candidate":
+							if data["status"] != "uncertain" || data["reason"] != "private_intent_pending" || data["actor"] != f.actor || data["operation"] != "io-candidate" || data["event_id"] != nil || data["result"] != nil {
+								t.Fatal("candidate owner altered operation identity/status", data)
+							}
+						}
+					}
+					artifactIOReadEvidence(t, ledger, sessions, noFetch, all, expected, mode != "info-missing")
+					if mode == "info-missing" {
+						raw, err := os.ReadFile(ledger)
+						if err != nil || bytes.Contains(raw, []byte(`"action":"contents"`)) {
+							t.Fatal("missing metadata authorized body contents", err, string(raw))
+						}
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestArtifactFullReaderCancellationCLI(t *testing.T) {
+	for _, mode := range []string{"stall-info", "stall-body", "stall-eof"} {
+		t.Run(mode, func(t *testing.T) {
+			f := wp25ArtifactCLI(t)
+			ref := artifactFrozenRef(t, f)
+			root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			f.git("update-ref", ref, root)
+			objects, kinds := artifactIOReadObjects(t, f, root)
+			base := f.overrides
+			ledger, noFetch, sessions, overrides := artifactFullBatchPeerInstall(t, f, mode, objects, kinds)
+			f.overrides = overrides
+			started := time.Now()
+			artifactCountBatchCheck(t, f, "cancelled", "artifact read cancelled")
+			elapsed := time.Since(started)
+			if elapsed < 29*time.Second || elapsed > 45*time.Second {
+				t.Fatal("full-reader cancellation did not retain normal30s stage", elapsed)
+			}
+			artifactIOReadEvidence(t, ledger, sessions, noFetch, 2, kinds, false)
+			wp25Record(t, map[string]any{"control": "full-reader-normal-stage-cancellation", "source_assisted_fault_peer": true, "candidate_observation": true, "mode": mode, "elapsed_nanoseconds": elapsed.Nanoseconds(), "product_budget_seconds": 30})
+			f.overrides = base
+			artifactCountBatchCheck(t, f, "", "")
+		})
+	}
+}
+
+func TestArtifactFullReaderOneShotLifecycle(t *testing.T) {
+	for _, method := range []string{"object", "commit", "managed-repeat"} {
+		for _, mode := range []string{"pass", "exit-error", "trailing-eof"} {
+			t.Run(method+"/"+mode, func(t *testing.T) {
+				f := wp25ArtifactCLI(t)
+				root := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+				objects, kinds := artifactIOReadObjects(t, f, root)
+				oid := root
+				expected := kinds
+				if method != "commit" {
+					for candidate, kind := range kinds {
+						if kind == "blob" {
+							oid = candidate
+							break
+						}
+					}
+					expected = map[string]string{oid: "blob"}
+				}
+				ledger, noFetch, sessions, overrides := artifactFullBatchPeerInstall(t, f, mode, objects, kinds, 1)
+				t.Setenv("PATH", overrides["PATH"])
+				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+				defer cancel()
+				reader := artifactObjectReader{ctx: ctx, dir: f.git("rev-parse", "--absolute-git-dir"), seen: map[string]bool{}}
+				defer reader.close()
+				before := f.snapshot()
+				var err error
+				if method == "commit" {
+					var value *storedArtifact
+					value, _, err = reader.commit(oid)
+					if err == nil && value.ID != artifactVectorID {
+						t.Fatal("one-shot commit changed signed identity", value)
+					}
+				} else {
+					reader.scoped = method == "managed-repeat"
+					var body []byte
+					body, err = reader.object(oid, "blob", artifactReadObjectBytes)
+					if err == nil && !bytes.Equal(body, objects[oid]) {
+						t.Fatal("one-shot object changed raw bytes")
+					}
+					if err == nil && method == "managed-repeat" {
+						body, err = reader.object(oid, "blob", artifactReadObjectBytes)
+						if err == nil && (!bytes.Equal(body, objects[oid]) || reader.total != int64(len(body)) || len(reader.seen) != 1) {
+							t.Fatal("managed raw reread charged a duplicate or retained wrong bytes", reader.total, reader.seen)
+						}
+						if err == nil {
+							err = reader.finish()
+						}
+					}
+				}
+				if mode == "pass" && err != nil || mode != "pass" && err == nil {
+					t.Fatal("one-shot/managed owner lost finalization failure", mode, err)
+				}
+				if err != nil {
+					problem, ok := err.(*artifact.Error)
+					if !ok || problem.Code != "verification_failure" || problem.Message != "accepted artifact object unavailable; no fetch attempted" {
+						t.Fatal("one-shot changed exact sole-fault diagnostic", err)
+					}
+				}
+				reader.close()
+				f.unchanged(before)
+				if method != "managed-repeat" {
+					artifactIOReadEvidence(t, ledger, sessions, noFetch, 1, expected, true)
+				} else {
+					raw, readErr := os.ReadFile(ledger)
+					if readErr != nil {
+						t.Fatal(readErr)
+					}
+					info, contents, eof := 0, 0, 0
+					for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+						var event map[string]any
+						if json.Unmarshal(line, &event) != nil {
+							t.Fatal("invalid repeated-object ledger")
+						}
+						if event["event"] == "request" && event["oid"] == oid {
+							if event["action"] == "info" {
+								info++
+							} else {
+								contents++
+							}
+						}
+						if event["event"] == "stdin-eof" {
+							eof++
+						}
+					}
+					if info != 2 || contents != 2 || eof != 1 {
+						t.Fatal("full reader cached bytes instead of authentic raw reread", info, contents, eof)
+					}
+					artifactIOReadEvidence(t, ledger, sessions, noFetch, 1, expected, false)
+				}
+				wp25Record(t, map[string]any{"control": "full-reader-private-one-shot-and-reread", "source_assisted": true, "supplied_package_claim": false, "method": method, "mode": mode, "error": fmt.Sprint(err), "total_unique_bytes": reader.total})
+			})
+		}
+	}
+}
+
+func TestArtifactIOPipeOwnership(t *testing.T) {
+	if os.Getenv("HN_WP25_PIPE_SETUP_CHILD") == "1" {
+		// Resource exhaustion is confined to this disposable compiled-self
+		// process. The parent/runner limit and every production setting stay put.
+		input, output, err := os.Pipe()
+		if err != nil {
+			t.Fatal(err)
+		}
+		input.Close()
+		output.Close()
+		var original syscall.Rlimit
+		if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &original); err != nil {
+			t.Fatal(err)
+		}
+		limited := original
+		limited.Cur = 64
+		if original.Cur < limited.Cur {
+			limited.Cur = original.Cur
+		}
+		if limited.Cur < 16 {
+			t.Fatal("isolated pipe control has insufficient descriptor allowance", original)
+		}
+		if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &limited); err != nil {
+			t.Fatal(err)
+		}
+		files := []*os.File{}
+		defer func() {
+			for _, file := range files {
+				file.Close()
+			}
+			if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &original); err != nil {
+				t.Error(err)
+			}
+		}()
+		for len(files) <= 64 {
+			file, err := os.Open(os.DevNull)
+			if err != nil {
+				if !errors.Is(err, syscall.EMFILE) {
+					t.Fatal(err)
+				}
+				break
+			}
+			files = append(files, file)
+		}
+		if len(files) < 2 || len(files) > 64 {
+			t.Fatal("bounded descriptor exhaustion was not established", len(files))
+		}
+		for range 2 {
+			files[len(files)-1].Close()
+			files = files[:len(files)-1]
+		}
+		// Exactly two free slots admit stdin's pipe, then fail stdout's pipe.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		session, err := newArtifactPreflightSession(ctx, os.Getenv("HN_WP25_PIPE_SETUP_GIT_DIR"))
+		if session != nil {
+			session.close()
+			t.Fatal("partial pipe setup unexpectedly started a child")
+		}
+		problem, ok := err.(*artifact.Error)
+		if !ok || problem.Code != "verification_failure" || problem.Message != "accepted artifact object unavailable; no fetch attempted" {
+			t.Fatal("partial pipe setup changed refusal", err)
+		}
+		for range 2 {
+			file, err := os.Open(os.DevNull)
+			if err != nil {
+				t.Fatal("partial setup leaked an acquired descriptor", err)
+			}
+			files = append(files, file)
+		}
+		if file, err := os.Open(os.DevNull); !errors.Is(err, syscall.EMFILE) {
+			if file != nil {
+				file.Close()
+			}
+			t.Fatal("partial setup control did not retain its exact exhausted boundary", err)
+		}
+		t.Logf("source-assisted partial stdout-pipe failure: child_pid=%d child_limit=%d original_limit=%d exactly_two_slots_restored=true", os.Getpid(), limited.Cur, original.Cur)
+		return
+	}
+	f := wp25ArtifactCLI(t)
+	dir := f.git("rev-parse", "--absolute-git-dir")
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	reader := artifactObjectReader{ctx: ctx, dir: dir, seen: map[string]bool{}}
+	_, err := reader.object(strings.Repeat("a", 40), "blob", artifactReadObjectBytes)
+	problem, ok := err.(*artifact.Error)
+	if !ok || problem.Code != "cancelled" || reader.session != nil {
+		t.Fatal("already-cancelled reader started work or changed refusal", err)
+	}
+	writer := artifactBlobWriter{ctx: ctx, dir: dir}
+	if err := writer.write(strings.Repeat("a", 40), []byte("not written")); !errors.Is(err, context.Canceled) || writer.session != nil || writer.scratch != nil {
+		t.Fatal("already-cancelled blob writer acquired resources", err)
+	}
+	self, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	marker := filepath.Join(root, "forbidden-git-child")
+	script := "#!/bin/sh\nprintf forbidden > '" + strings.ReplaceAll(marker, "'", "'\"'\"'") + "'\nexit 87\n"
+	if err := os.WriteFile(filepath.Join(root, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	var before, after syscall.Rlimit
+	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &before); err != nil {
+		t.Fatal(err)
+	}
+	child := exec.Command(self, "-test.run=^TestArtifactIOPipeOwnership$", "-test.v", "-test.count=1", "-test.timeout=1m")
+	child.Env = operationalTestEnvironmentWith(f.home, map[string]string{"PATH": root + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP25_PIPE_SETUP_CHILD": "1", "HN_WP25_PIPE_SETUP_GIT_DIR": dir})
+	raw, childErr := child.CombinedOutput()
+	if childErr != nil || bytes.Count(raw, []byte("--- PASS: TestArtifactIOPipeOwnership")) != 1 || bytes.Contains(raw, []byte("FAIL")) || bytes.Contains(raw, []byte("SKIP")) {
+		t.Fatal("isolated partial-pipe control did not execute/pass", childErr, string(raw))
+	}
+	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &after); err != nil || after != before {
+		t.Fatal("child resource fault changed parent allowance", err, before, after)
+	}
+	if body, err := os.ReadFile(marker); !os.IsNotExist(err) {
+		t.Fatal("partial pipe setup dispatched Git", err, string(body))
+	}
+	wp25Record(t, map[string]any{"control": "private-partial-pipe-and-pre-cancel-ownership", "source_assisted": true, "supplied_package_claim": false, "argv": child.Args, "stdout_stderr_raw": string(raw), "process_error": fmt.Sprint(childErr), "parent_rlimit_before": before, "parent_rlimit_after": after, "git_never_started": true})
+}
+
+func TestArtifactFullReaderFirstErrorCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		for _, fault := range []string{"message", "signature", "signature-role-size"} {
+			t.Run(format+"/"+fault, func(t *testing.T) {
+				f := artifactCLIFormat(t, format)
+				f.overrides = map[string]string{"XDG_CONFIG_HOME": wp25FixtureConfig(t, f.home)}
+				ref := artifactFrozenRef(t, f)
+				message, signature := "hn artifact "+artifactVectorID, artifactVectorSignature
+				code, diagnostic := "invalid_history", "artifact commit message mismatch"
+				switch fault {
+				case "message":
+					message = "wrong artifact message"
+				case "signature":
+					signature = "A" + signature[1:]
+					if signature == artifactVectorSignature {
+						signature = "B" + signature[1:]
+					}
+					code, diagnostic = "verification_failure", "invalid artifact signature"
+				case "signature-role-size":
+					signature += "A"
+					code, diagnostic = "resource_limit", "artifact object exceeds read limit"
+				}
+				root := artifactRawCommit(t, f, artifactVector, signature, "", message, false)
+				f.git("update-ref", ref, root)
+				// The mandatory real-Git sole-fault response precedes any peer.
+				artifactCountBatchCheck(t, f, code, diagnostic)
+				objects, kinds := artifactIOReadObjects(t, f, root)
+				base := f.overrides
+				ledger, noFetch, sessions, overrides := artifactFullBatchPeerInstall(t, f, "exit-error", objects, kinds)
+				f.overrides = overrides
+				artifactCountBatchCheck(t, f, code, diagnostic)
+				artifactIOReadEvidence(t, ledger, sessions, noFetch, 2, kinds, false)
+				if fault == "signature-role-size" {
+					raw, err := os.ReadFile(ledger)
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+						var event map[string]any
+						if json.Unmarshal(line, &event) != nil {
+							t.Fatal("invalid role-size ledger")
+						}
+						if event["event"] == "request" && event["action"] == "contents" && len(objects[event["oid"].(string)]) == 87 {
+							t.Fatal("signature role first-over authorized body contents", event)
+						}
+					}
+				}
+				f.overrides = base
+				wp25Record(t, map[string]any{"control": "first-detected-read-error-before-cleanup", "source_assisted_fault_peer": true, "format": format, "fault": fault, "original_code": code, "original_message": diagnostic, "cleanup_parent_cancellation_claim": false, "scope": "ordered semantic/role failure survives mandatory cleanup; no universal independent simultaneous-fault ordering claim"})
+			})
+		}
+	}
 }
 func artifactCountBatchCheck(t *testing.T, f *artifactCLIFixture, code, message string) {
 	t.Helper()
@@ -1018,7 +1786,7 @@ func artifactCountBatchCheck(t *testing.T, f *artifactCLIFixture, code, message 
 	result := wp25ArtifactCall(f, "", code, "artifact", "type", "show", artifactVectorID, "--json")
 	if code != "" {
 		problem := result["error"].(map[string]any)
-		if len(problem) != 5 || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil || problem["message"] != message {
+		if result["data"] != nil || len(problem) != 5 || problem["origin"] != "artifact" || problem["recovery"] != "do_not_retry" || problem["operation"] != nil || problem["message"] != message {
 			t.Fatal("batch refusal identity", result)
 		}
 	} else {
@@ -1059,7 +1827,11 @@ func TestArtifactStoreCountPreflightBatchProtocolCLI(t *testing.T) {
 						message = "accepted Git object hash mismatch"
 					}
 					artifactCountBatchCheck(t, f, code, message)
-					events := artifactCountBatchLedger(t, ledger, noFetch)
+					forwarded := 0
+					if mode == "pass" {
+						forwarded = 1
+					}
+					events := artifactCountBatchLedger(t, ledger, noFetch, forwarded)
 					if strings.HasPrefix(mode, "info-") || mode == "empty" || mode == "failure" || mode == "stderr" {
 						for _, event := range events {
 							if event["event"] == "request" && event["action"] == "contents" {
@@ -1100,7 +1872,7 @@ func TestArtifactStoreCountPreflightBatchProtocolCLI(t *testing.T) {
 			overlapLedger, overlapFetch, overlapEnv := artifactCountBatchPeerInstall(t, f, "pass", overlapObjects, nil)
 			f.overrides = overlapEnv
 			artifactCountBatchCheck(t, f, "", "")
-			events := artifactCountBatchLedger(t, overlapLedger, overlapFetch)
+			events := artifactCountBatchLedger(t, overlapLedger, overlapFetch, 1)
 			counts := map[string]int{}
 			for _, event := range events {
 				if event["event"] == "request" {
@@ -1204,7 +1976,11 @@ func TestArtifactStoreCountPreflightBeforeBodyCLI(t *testing.T) {
 						f.overrides = overrides
 						defer func() { f.overrides = base }()
 						artifactCountBatchCheck(t, f, code, message)
-						events := artifactCountBatchLedger(t, ledger, noFetch)
+						forwarded := 0
+						if n == 8388608 {
+							forwarded = 1
+						}
+						events := artifactCountBatchLedger(t, ledger, noFetch, forwarded)
 						info, contents := 0, 0
 						for _, event := range events {
 							if event["event"] == "request" && event["oid"] == big {
@@ -1359,7 +2135,7 @@ func TestArtifactStoreCountPreflightUniqueCommitBytesCLI(t *testing.T) {
 			f.overrides = overrides
 			defer func() { f.overrides = baseOverrides }()
 			artifactCountBatchCheck(t, f, "actor_stream_conflict", "divergent accepted actor streams")
-			events := artifactCountBatchLedger(t, ledger, noFetch)
+			events := artifactCountBatchLedger(t, ledger, noFetch, 1)
 			info, contents, eof := map[string]int{}, map[string]int{}, 0
 			for _, event := range events {
 				if event["event"] == "request" {

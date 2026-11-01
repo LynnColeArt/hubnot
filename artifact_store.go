@@ -1019,9 +1019,13 @@ func readArtifactOperationEvidence(ctx context.Context, h *artifactHistory, repo
 				for oid, seen := range h.readObjects {
 					objects[oid] = seen
 				}
-				reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, total: h.readBytes, seen: objects}
+				reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, total: h.readBytes, seen: objects, scoped: true}
+				defer reader.close()
 				candidate, _, err := reader.commit(intent.Candidate.Commit)
 				if err != nil {
+					return evidence, err
+				}
+				if err := reader.finish(); err != nil {
 					return evidence, err
 				}
 				if candidate.ID != intent.Candidate.ID || candidate.verified.Actor() != actor || !bytes.Equal(artifactSemanticBytes(candidate.Envelope), intent.SemanticRequest) {

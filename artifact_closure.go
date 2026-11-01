@@ -188,7 +188,8 @@ func selectArtifactClosure(ctx context.Context, h *artifactHistory, roots []stri
 	// Resolve precisely the selected commit/tree/blob inventory through the real
 	// hash/signature reader. Do not enumerate arbitrary ODB objects or copy the
 	// source's unselected tails, working tree or private descriptors.
-	reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, seen: map[string]bool{}}
+	reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, seen: map[string]bool{}, scoped: true}
+	defer reader.close()
 	for _, item := range result.Items {
 		verified, _, e := reader.commit(item.commit)
 		if e != nil {
@@ -197,6 +198,9 @@ func selectArtifactClosure(ctx context.Context, h *artifactHistory, roots []stri
 		if verified.ID != item.ID {
 			return nil, artifactFailure("verification_failure", "selected closure identity changed")
 		}
+	}
+	if err := reader.finish(); err != nil {
+		return nil, err
 	}
 	result.Objects = make([]string, 0, len(reader.seen))
 	for oid := range reader.seen {

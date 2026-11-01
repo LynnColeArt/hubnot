@@ -1,22 +1,28 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	c "hubnot/internal/contribution"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 )
 
 func TestArtifactGitIndependentClonesCLI(t *testing.T) {
@@ -1015,6 +1021,402 @@ exec "$HN_WP09_ACK_GIT" "$@"
 					t.Fatal("control did not deny the actual post-error witness", e)
 				}
 			}
+		})
+	}
+}
+
+type artifactBlobPeerConfig struct {
+	Mode, Ledger, ActualGit, SessionRoot, Sessions string
+	Target                                         int
+}
+
+// This supplemental peer observes the actual supplied candidate's filename
+// protocol. Valid requests are stored by the real Git executable; only the
+// explicitly selected acknowledgement/finalization fault is synthetic.
+func TestArtifactBlobWriterPeer(t *testing.T) {
+	for i, arg := range os.Args {
+		if arg != "--" || i+1 >= len(os.Args) {
+			continue
+		}
+		raw, err := os.ReadFile(os.Args[i+1])
+		var cfg artifactBlobPeerConfig
+		if err != nil || json.Unmarshal(raw, &cfg) != nil {
+			os.Exit(71)
+		}
+		index := 1
+		for ; index <= 8; index++ {
+			err = os.Mkdir(filepath.Join(cfg.SessionRoot, strconv.Itoa(index)), 0700)
+			if err == nil {
+				break
+			}
+			if !os.IsExist(err) {
+				os.Exit(72)
+			}
+		}
+		if index > 8 {
+			os.Exit(73)
+		}
+		log := func(path string, event map[string]any) {
+			event["session"], event["pid"], event["ppid"] = index, os.Getpid(), os.Getppid()
+			b, _ := json.Marshal(event)
+			file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+			if err != nil {
+				os.Exit(74)
+			}
+			_, err = file.Write(append(b, '\n'))
+			closeErr := file.Close()
+			if err != nil || closeErr != nil {
+				os.Exit(75)
+			}
+		}
+		argv := os.Args[i+2:]
+		log(cfg.Sessions, map[string]any{"event": "worker", "argv": argv, "target": index == cfg.Target, "actual_git": cfg.ActualGit})
+		if index != cfg.Target {
+			if syscall.Exec(cfg.ActualGit, append([]string{cfg.ActualGit}, argv...), os.Environ()) != nil {
+				os.Exit(76)
+			}
+		}
+		dir, command, paths, filters, blob := "", false, false, false, false
+		for j, value := range argv {
+			if strings.HasPrefix(value, "--git-dir=") {
+				dir = strings.TrimPrefix(value, "--git-dir=")
+			}
+			command = command || value == "hash-object"
+			paths = paths || value == "--stdin-paths"
+			filters = filters || value == "--no-filters"
+			blob = blob || value == "-t" && j+1 < len(argv) && argv[j+1] == "blob"
+		}
+		if dir == "" || !command || !paths || !filters || !blob || os.Getenv("GIT_NO_LAZY_FETCH") != "1" || os.Getenv("GIT_NO_REPLACE_OBJECTS") != "1" {
+			os.Exit(77)
+		}
+		if cfg.Mode == "stderr" {
+			_, _ = os.Stderr.Write(bytes.Repeat([]byte{'S'}, 8193))
+			os.Exit(78)
+		}
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			line, err := reader.ReadString('\n')
+			if err == io.EOF && line == "" {
+				log(cfg.Ledger, map[string]any{"event": "stdin-eof"})
+				if cfg.Mode == "stall-eof" {
+					time.Sleep(time.Minute)
+				}
+				if cfg.Mode == "trailing" {
+					fmt.Fprint(os.Stdout, "unexpected final output\n")
+				}
+				if cfg.Mode == "exit-error" {
+					os.Exit(79)
+				}
+				os.Exit(0)
+			}
+			if err != nil || len(line) > 16384 {
+				os.Exit(80)
+			}
+			path, err := strconv.Unquote(strings.TrimSuffix(line, "\n"))
+			if err != nil || !filepath.IsAbs(path) {
+				os.Exit(81)
+			}
+			info, err := os.Lstat(path)
+			if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || info.Size() > 33554432 {
+				os.Exit(82)
+			}
+			body, err := os.ReadFile(path)
+			if err != nil {
+				os.Exit(83)
+			}
+			cmd := exec.Command(cfg.ActualGit, "--git-dir="+dir, "hash-object", "-w", "--no-filters", "-t", "blob", "--", path)
+			cmd.Env = os.Environ()
+			ack, err := cmd.Output()
+			if err != nil {
+				os.Exit(84)
+			}
+			oid := strings.TrimSuffix(string(ack), "\n")
+			framed := append([]byte(fmt.Sprintf("blob %d\x00", len(body))), body...)
+			digest := sha1.Sum(framed)
+			independent := hex.EncodeToString(digest[:])
+			if len(oid) == 64 {
+				digest := sha256.Sum256(framed)
+				independent = hex.EncodeToString(digest[:])
+			}
+			if oid != independent {
+				os.Exit(85)
+			}
+			log(cfg.Ledger, map[string]any{"event": "filename", "raw": line, "path": path, "mode": info.Mode().String(), "bytes": len(body), "body_sha256": wp25RecordCountHash(body), "independent_oid": independent, "real_git_ack": string(ack), "real_git_child_pid": cmd.Process.Pid, "real_git_wait_joined": true})
+			if cfg.Mode == "stall-ack" {
+				time.Sleep(time.Minute)
+			}
+			switch cfg.Mode {
+			case "wrong-ack":
+				ack = []byte(strings.Repeat("0", len(oid)) + "\n")
+			case "short-ack":
+				_, _ = os.Stdout.Write([]byte(oid))
+				os.Exit(0)
+			case "extra-ack":
+				ack = append(ack, []byte("unexpected acknowledgement\n")...)
+			}
+			log(cfg.Ledger, map[string]any{"event": "ack", "raw": string(ack), "expected_oid": oid})
+			if _, err := os.Stdout.Write(ack); err != nil {
+				os.Exit(86)
+			}
+		}
+	}
+}
+
+func artifactBlobPeerInstall(t *testing.T, f *artifactCLIFixture, mode string, target int) (string, string, map[string]string) {
+	t.Helper()
+	actual, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	self, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	cfg := artifactBlobPeerConfig{mode, filepath.Join(dir, "peer.jsonl"), actual, filepath.Join(dir, "state"), filepath.Join(dir, "sessions.jsonl"), target}
+	if err := os.Mkdir(cfg.SessionRoot, 0700); err != nil {
+		t.Fatal(err)
+	}
+	config := filepath.Join(dir, "config.json")
+	raw, _ := json.Marshal(cfg)
+	if err := os.WriteFile(config, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	quote := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'" }
+	script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = --stdin-paths ]; then exec " + quote(self) + " '-test.run=^TestArtifactBlobWriterPeer$' -- " + quote(config) + " \"$@\"; fi\ndone\nexec " + quote(actual) + " \"$@\"\n"
+	if err := os.WriteFile(filepath.Join(dir, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	overrides := map[string]string{}
+	for k, v := range f.overrides {
+		overrides[k] = v
+	}
+	overrides["PATH"] = dir + string(os.PathListSeparator) + os.Getenv("PATH")
+	version, err := exec.Command(actual, "--version").CombinedOutput()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wp25Record(t, map[string]any{"control": "blob-writer-peer-config", "source_assisted": true, "mode": mode, "target_worker": target, "config_raw": string(raw), "script_raw": script, "real_git": actual, "real_git_sha256": wp25Digest(t, actual), "real_git_version_raw": string(version), "compiled_peer": self})
+	return cfg.Ledger, cfg.Sessions, overrides
+}
+
+func TestArtifactBlobWriterProtocolCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			src := artifactCLIFormat(t, format)
+			ref := artifactFrozenRef(t, src)
+			root := artifactRawCommit(t, src, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			src.git("update-ref", ref, root)
+			path, _ := exchangeExport(src, artifactVectorID)
+			for _, target := range []int{1, 2} {
+				for _, mode := range []string{"pass", "wrong-ack", "short-ack", "extra-ack", "trailing", "exit-error", "stderr", "stall-ack", "stall-eof"} {
+					t.Run(fmt.Sprintf("worker%d-%s", target, mode), func(t *testing.T) {
+						src.t = t
+						dst := exchangeDestination(t, src, format)
+						// Exercise quoted byte paths without an alias or a shell path.
+						scratchRoot := filepath.Join(t.TempDir(), "space quote\" backslash\\ newline\n雪")
+						if err := os.Mkdir(scratchRoot, 0700); err != nil {
+							t.Fatal(err)
+						}
+						dst.overrides = map[string]string{"TMPDIR": scratchRoot, "XDG_CONFIG_HOME": wp25FixtureConfig(t, dst.home)}
+						ledger, sessions, overrides := artifactBlobPeerInstall(t, dst, mode, target)
+						dst.overrides = overrides
+						before := dst.snapshot()
+						code := "verification_failure"
+						message := "cannot copy verified exchange object"
+						if mode == "pass" {
+							code = ""
+						} else if strings.HasPrefix(mode, "stall-") {
+							code, message = "cancelled", "artifact exchange cancelled"
+						}
+						started := time.Now()
+						response := wp25ArtifactCall(dst, "", code, "artifact", "import", "--input", path, "--json")
+						elapsed := time.Since(started)
+						if strings.HasPrefix(mode, "stall-") && (elapsed < 29*time.Second || elapsed > 45*time.Second) {
+							t.Fatal("writer cancellation changed actual30s stage", elapsed)
+						}
+						if code == "" {
+							if !reflect.DeepEqual(response["data"].(map[string]any)["imported_ids"], []any{artifactVectorID}) {
+								t.Fatal("blob worker lost selected signed ID", response)
+							}
+							if !reflect.DeepEqual(closureItems(src, artifactVectorID), closureItems(dst, artifactVectorID)) {
+								t.Fatal("blob ACK journey changed exact signed closure")
+							}
+						} else {
+							artifactErrorShape(t, response, "artifact", code, "do_not_retry", nil)
+							if response["data"] != nil || response["error"].(map[string]any)["message"] != message {
+								t.Fatal("blob fault acquired success data or changed diagnostic", response)
+							}
+							after := dst.snapshot()
+							objectRoot := filepath.Join(dst.repo, ".git", "objects") + string(os.PathSeparator)
+							for name, value := range before {
+								if after[name] != value {
+									t.Fatal("failed copy changed/deleted a preexisting byte or mode", name)
+								}
+							}
+							for name := range after {
+								if _, exists := before[name]; !exists && !strings.HasPrefix(name, objectRoot) {
+									t.Fatal("failed copy published refs/private/authority state", name)
+								}
+							}
+							wp25Record(t, map[string]any{"control": "blob-writer-refusal-state", "protected_before": before, "protected_after": after, "allowed_residue": "hash-verified unreferenced public ODB objects only; never removed existing/deduplicated objects"})
+						}
+						raw, err := os.ReadFile(sessions)
+						workers := target
+						if mode == "pass" {
+							workers = 2
+						}
+						if err != nil || bytes.Count(raw, []byte{'\n'}) != workers {
+							t.Fatal("missing or extra blob worker phase", err, string(raw))
+						}
+						peer, err := os.ReadFile(ledger)
+						if err != nil && mode != "stderr" {
+							t.Fatal("blob peer never observed request/finalization", err)
+						}
+						for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+							var event map[string]any
+							if json.Unmarshal(line, &event) != nil {
+								t.Fatal("invalid worker ledger")
+							}
+							pid := strconv.Itoa(int(event["pid"].(float64)))
+							out, err := exec.Command("ps", "-p", pid, "-o", "pid=,ppid=,comm=").CombinedOutput()
+							if err == nil || len(bytes.TrimSpace(out)) != 0 {
+								t.Fatal("blob worker survived public return", pid, string(out))
+							}
+						}
+						for _, line := range bytes.Split(bytes.TrimSpace(peer), []byte{'\n'}) {
+							if len(line) == 0 {
+								continue
+							}
+							var event map[string]any
+							if json.Unmarshal(line, &event) != nil {
+								t.Fatal("invalid blob request ledger")
+							}
+							if event["event"] == "filename" {
+								if _, err := os.Lstat(event["path"].(string)); !os.IsNotExist(err) {
+									t.Fatal("owned scratch survived public return", event, err)
+								}
+								pid := strconv.Itoa(int(event["real_git_child_pid"].(float64)))
+								out, err := exec.Command("ps", "-p", pid, "-o", "pid=,ppid=,comm=").CombinedOutput()
+								if err == nil || len(bytes.TrimSpace(out)) != 0 {
+									t.Fatal("peer's real Git storage child survived Wait", pid, string(out))
+								}
+							}
+						}
+						entries, err := os.ReadDir(scratchRoot)
+						if err != nil || len(entries) != 0 {
+							t.Fatal("scratch/quarantine survived copy completion/refusal", err, entries)
+						}
+						wp25Record(t, map[string]any{"control": "blob-writer-peer-ledgers", "source_assisted": true, "format": format, "mode": mode, "target_worker": target, "sessions_raw": string(raw), "peer_raw": string(peer), "elapsed_nanoseconds": elapsed.Nanoseconds(), "unchanged_product_stage_seconds": 30})
+					})
+				}
+			}
+		})
+	}
+}
+
+func TestArtifactBlobWriterUnreachablePublicCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			src := artifactCLIFormat(t, format)
+			ref := artifactFrozenRef(t, src)
+			root := artifactRawCommit(t, src, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			src.git("update-ref", ref, root)
+			path, _ := exchangeExport(src, artifactVectorID)
+			wire, err := os.ReadFile(path)
+			var table map[string]any
+			if err != nil || json.Unmarshal(wire, &table) != nil {
+				t.Fatal(err)
+			}
+			//9MiB is above selected-object8MiB but its base64 still fits the
+			// independent16MiB wire cap.32MiB scratch is an enclosing private
+			// accounting ceiling, never a single public-body equality promise.
+			body := bytes.Repeat([]byte{'U'}, 9<<20)
+			framed := append([]byte(fmt.Sprintf("blob %d\x00", len(body))), body...)
+			hash := sha1.Sum(framed)
+			oid := hex.EncodeToString(hash[:])
+			if format == "sha256" {
+				hash := sha256.Sum256(framed)
+				oid = hex.EncodeToString(hash[:])
+			}
+			table["objects"] = append(table["objects"].([]any), map[string]any{"oid": oid, "type": "blob", "data": base64.RawStdEncoding.EncodeToString(body)})
+			wire, err = json.Marshal(table)
+			if err != nil || len(wire) >= 16777216 {
+				t.Fatal("public unreachable blob must fit unchanged wire", err, len(wire))
+			}
+			input := exchangeWrite(t, table)
+			retained := ""
+			if evidence := os.Getenv("HN_WP25_EVIDENCE"); evidence != "" {
+				retained = filepath.Join(evidence, "source-assistance", "blob-unreachable", format+"-public.json")
+				if err := os.MkdirAll(filepath.Dir(retained), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(retained, wire, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			dst := exchangeDestination(t, src, format)
+			result := wp25ArtifactCall(dst, "", "", "artifact", "import", "--input", input, "--json")
+			data := result["data"].(map[string]any)
+			if !reflect.DeepEqual(data["imported_ids"], []any{artifactVectorID}) || len(data["opaque_ids"].([]any)) != 0 || !reflect.DeepEqual(closureItems(src, artifactVectorID), closureItems(dst, artifactVectorID)) {
+				t.Fatal("unreachable public blob changed selected signed history", result)
+			}
+			cmd := exec.Command("git", "-C", dst.repo, "cat-file", "-e", oid)
+			cmd.Env = operationalTestEnvironmentWith(dst.home, map[string]string{"GIT_NO_LAZY_FETCH": "1"})
+			output, absent := cmd.CombinedOutput()
+			if absent == nil {
+				t.Fatal("unreachable public blob entered accepted destination ODB")
+			}
+			wp25Record(t, map[string]any{"control": "blob-writer-unreachable-public-over-selected-cap", "source_assisted_construction": true, "candidate_observation": true, "format": format, "unreachable_oid": oid, "body_bytes": len(body), "body_sha256": wp25RecordCountHash(body), "wire_bytes": len(wire), "wire_sha256": wp25RecordCountHash(wire), "retained_public_input": retained, "selected_id": artifactVectorID, "destination_absence_command": cmd.Args, "destination_absence_output_raw": string(output), "destination_absence_error": fmt.Sprint(absent), "scope": "actual public9MiB unreachable body fits16MiB wire; not public32MiB single-body admission"})
+			// A malformed LAST table entry must be found before ANY blob/tree/
+			// commit copy. The valid-file detector control below must dispatch.
+			actual, err := exec.LookPath("git")
+			if err != nil {
+				t.Fatal(err)
+			}
+			wrapper := t.TempDir()
+			marker := filepath.Join(wrapper, "copy-dispatched")
+			quote := func(value string) string { return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'" }
+			script := "#!/bin/sh\nfor arg do\n if [ \"$arg\" = hash-object ]; then printf '%s\\n' \"$@\" > " + quote(marker) + "; exit 86; fi\ndone\nexec " + quote(actual) + " \"$@\"\n"
+			if err := os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); err != nil {
+				t.Fatal(err)
+			}
+			bad := bytes.Clone(body)
+			bad[0] ^= 1
+			entries := table["objects"].([]any)
+			entries[len(entries)-1].(map[string]any)["data"] = base64.RawStdEncoding.EncodeToString(bad)
+			broken := exchangeWrite(t, table)
+			if retained != "" {
+				if err := os.WriteFile(strings.TrimSuffix(retained, ".json")+"-invalid-last.json", wp25Read(t, broken), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			negative := exchangeDestination(t, src, format)
+			negative.overrides = map[string]string{"PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH")}
+			before := negative.snapshot()
+			response := wp25ArtifactCall(negative, "", "verification_failure", "artifact", "import", "--input", broken, "--json")
+			artifactErrorShape(t, response, "artifact", "verification_failure", "do_not_retry", nil)
+			if response["data"] != nil || response["error"].(map[string]any)["message"] != "exchange Git object hash mismatch" {
+				t.Fatal("later invalid table entry changed its exact refusal", response)
+			}
+			negative.unchanged(before)
+			if raw, err := os.ReadFile(marker); !os.IsNotExist(err) {
+				t.Fatal("later invalid table entry dispatched copy", err, string(raw))
+			}
+			positive := exchangeDestination(t, src, format)
+			positive.overrides = negative.overrides
+			before = positive.snapshot()
+			response = wp25ArtifactCall(positive, "", "verification_failure", "artifact", "import", "--input", input, "--json")
+			artifactErrorShape(t, response, "artifact", "verification_failure", "do_not_retry", nil)
+			if response["data"] != nil || response["error"].(map[string]any)["message"] != "cannot copy verified exchange object" {
+				t.Fatal("copy-dispatch detector did not refuse at its actual stage", response)
+			}
+			positive.unchanged(before)
+			observed, err := os.ReadFile(marker)
+			if err != nil || !bytes.Contains(observed, []byte("hash-object")) {
+				t.Fatal("copy detector was vacuous", err, string(observed))
+			}
+			wp25Record(t, map[string]any{"control": "whole-public-table-validation-before-any-copy", "source_assisted_detector": true, "format": format, "bad_last_oid": oid, "bad_body_sha256": wp25RecordCountHash(bad), "script_raw": script, "positive_copy_marker_raw": string(observed), "negative_state_unchanged": true, "positive_detector_state_unchanged": true, "all_copy_kinds_observed": "any hash-object argv, not only blob worker"})
 		})
 	}
 }

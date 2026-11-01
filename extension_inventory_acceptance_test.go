@@ -852,9 +852,15 @@ func inventoryHostShapeSearch(t *testing.T, remote string, ids map[string]string
 	}
 	f := extensionArtifactCLI(t, "artifact:example.inventory/*=read")
 	f.git("remote", "add", "public", remote)
-	for _, id := range ids {
-		inventoryRemote(f.artifactCLIFixture, "fetch", id)
+	// Select all three exact final histories together. Separate selections can
+	// advance a shared dependency and then correctly refuse its older prefix.
+	selected := []string{ids["item"], ids["maintenance"], ids["stock"]}
+	sort.Strings(selected)
+	selection := []string{"artifact", "fetch", "--remote", "public"}
+	for _, id := range selected {
+		selection = append(selection, "--id", id)
 	}
+	f.call("", "", append(selection, "--json")...)
 	for model, shape := range map[string]string{"item": "document", "stock": "list", "maintenance": "ticket"} {
 		for _, query := range []map[string]any{extensionArtifactSearchParams("example.inventory/"+model, shape, "Inventory exact", nil), extensionArtifactSearchParams(nil, shape, nil, "Inventory (exact|absent)")} {
 			response := f.request("artifact.search", query, "")

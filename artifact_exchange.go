@@ -384,19 +384,27 @@ func artifactExchangeObjectsFromClosure(ctx context.Context, h *artifactHistory,
 	if e := artifactExchangeCheckRecords(ctx, len(c.Items)); e != nil {
 		return nil, e
 	}
-	reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, seen: map[string]bool{}}
+	reader := artifactObjectReader{ctx: ctx, dir: h.gitDir, seen: map[string]bool{}, scoped: true}
+	defer reader.close()
 	out := []artifactExchangeObject{}
 	budget := artifactExchangeBudget{}
 	for _, oid := range c.Objects {
-		meta, e := projectGit(ctx, h.gitDir, []byte(oid+"\n"), 256, "cat-file", "--batch-check=%(objecttype)")
+		kind, n, header, e := reader.inspect(oid)
+		// The former type-only lookup represented a missing object as a
+		// successful "missing" kind. Preserve that export-specific refusal.
+		if kind != "" && !validArtifactExchangeObjectType(kind) {
+			return nil, artifactFailure("verification_failure", "unsupported exchange object type")
+		}
 		if e != nil {
+			if kind != "" {
+				return nil, e
+			}
 			return nil, artifactExchangeGitError(ctx, "verification_failure", "cannot inspect selected exchange object")
 		}
-		kind := strings.TrimSpace(string(meta))
 		if !validArtifactExchangeObjectType(kind) {
 			return nil, artifactFailure("verification_failure", "unsupported exchange object type")
 		}
-		body, e := reader.object(oid, kind, artifactReadObjectBytes)
+		body, e := reader.objectInfo(oid, kind, n, header, artifactReadObjectBytes)
 		if e != nil {
 			return nil, e
 		}
@@ -404,6 +412,9 @@ func artifactExchangeObjectsFromClosure(ctx context.Context, h *artifactHistory,
 			return nil, e
 		}
 		out = append(out, artifactExchangeObject{oid, kind, base64.RawStdEncoding.EncodeToString(body), body})
+	}
+	if e := reader.finish(); e != nil {
+		return nil, e
 	}
 	return out, nil
 }
@@ -452,6 +463,8 @@ func artifactExchangeAncestry(ctx context.Context, b *artifactExchange) error {
 }
 func artifactExchangeCopy(ctx context.Context, dir string, objects []artifactExchangeObject) error {
 	budget := artifactExchangeBudget{}
+	writer := artifactBlobWriter{ctx: ctx, dir: dir}
+	defer writer.close()
 	for _, o := range objects {
 		if e := budget.charge(ctx, len(o.body)); e != nil {
 			return e
@@ -463,13 +476,129 @@ func artifactExchangeCopy(ctx context.Context, dir string, objects []artifactExc
 		// writer imposes extra email syntax absent from the frozen contract.
 		// Store exact hash-checked bodies; the shared quarantine reader still
 		// validates complete signed/schema/lineage rules before promotion.
-		written, e := projectGit(ctx, dir, o.body, 128, "hash-object", "--literally", "-w", "--stdin", "-t", o.Type)
-		if e != nil || strings.TrimSpace(string(written)) != o.OID {
+		var e error
+		if o.Type == "blob" {
+			e = writer.write(o.OID, o.body)
+		} else {
+			var written []byte
+			written, e = projectGit(ctx, dir, o.body, 128, "hash-object", "--literally", "-w", "--stdin", "-t", o.Type)
+			if e == nil && strings.TrimSpace(string(written)) != o.OID {
+				e = fmt.Errorf("copied exchange object identity mismatch")
+			}
+		}
+		if e != nil {
 			return artifactExchangeGitError(ctx, "verification_failure", "cannot copy verified exchange object")
 		}
 	}
+	if e := writer.finish(); e != nil {
+		return artifactExchangeGitError(ctx, "verification_failure", "cannot copy verified exchange object")
+	}
 	return nil
 }
+
+// One lazy worker stores only blobs. Commit/tree bodies retain the literal
+// writer and their original position in the caller's validated object order.
+type artifactBlobWriter struct {
+	ctx     context.Context
+	dir     string
+	session *artifactPreflightSession
+	scratch *os.File
+	path    string
+}
+
+func (w *artifactBlobWriter) write(oid string, body []byte) error {
+	if w.ctx.Err() != nil {
+		return w.ctx.Err()
+	}
+	// An unreachable exchange-table blob may exceed the selected-reader8MiB
+	// limit. The complete table's existing decoded32MiB ceiling still applies.
+	if len(body) > artifactExchangeDecoded {
+		return fmt.Errorf("artifact blob scratch exceeds decoded bound")
+	}
+	if w.session == nil {
+		var err error
+		w.scratch, err = os.CreateTemp("", "hn-artifact-blob-")
+		if err != nil {
+			return err
+		}
+		w.path = w.scratch.Name()
+		w.session, err = newArtifactPipeSession(w.ctx, w.dir, "hash-object", "-w", "--stdin-paths", "--no-filters", "-t", "blob")
+		if err != nil {
+			return err
+		}
+	}
+	if err := w.scratch.Truncate(0); err != nil {
+		return err
+	}
+	if _, err := w.scratch.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+	n, err := w.scratch.Write(body)
+	if err != nil || n != len(body) {
+		return fmt.Errorf("cannot write artifact blob scratch: %v", err)
+	}
+	if w.ctx.Err() != nil {
+		return w.ctx.Err()
+	}
+	// Git's --stdin-paths accepts C-style quoted byte paths. Octal escaping
+	// handles newlines/non-ASCII bytes without adding another filename request.
+	var quoted strings.Builder
+	quoted.WriteByte('"')
+	for _, b := range []byte(w.path) {
+		if b >= 32 && b <= 126 && b != '\\' && b != '"' {
+			quoted.WriteByte(b)
+		} else {
+			fmt.Fprintf(&quoted, "\\%03o", b)
+		}
+	}
+	quoted.WriteString("\"\n")
+	input := quoted.String()
+	n, err = io.WriteString(w.session.stdin, input)
+	if err != nil || n != len(input) {
+		return fmt.Errorf("cannot send artifact blob filename: %v", err)
+	}
+	ack, err := w.session.header()
+	if err != nil || string(ack) != oid+"\n" {
+		return fmt.Errorf("artifact blob acknowledgement mismatch: %v", err)
+	}
+	return nil
+}
+
+func (w *artifactBlobWriter) finish() error {
+	if w.session == nil {
+		return nil
+	}
+	if err := w.session.finish(); err != nil {
+		return err
+	}
+	if err := w.scratch.Close(); err != nil {
+		return err
+	}
+	w.scratch = nil
+	if err := os.Remove(w.path); err != nil {
+		return err
+	}
+	w.path = ""
+	w.session.close()
+	w.session = nil
+	return nil
+}
+
+func (w *artifactBlobWriter) close() {
+	if w.session != nil {
+		w.session.close()
+		w.session = nil
+	}
+	if w.scratch != nil {
+		_ = w.scratch.Close()
+		w.scratch = nil
+	}
+	if w.path != "" {
+		_ = os.Remove(w.path)
+		w.path = ""
+	}
+}
+
 func artifactExchangeSetRefs(ctx context.Context, dir string, refs []artifactSource, old map[string]string) error {
 	var input strings.Builder
 	input.WriteString("start\n")

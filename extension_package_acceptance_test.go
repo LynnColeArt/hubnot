@@ -50,6 +50,10 @@ func TestExtensionPackageQualification(t *testing.T) {
 	} else if variant != "standard" {
 		t.Fatal("exact-package variant must be standard or native-only")
 	}
+	// Bundle verification itself creates temporary directories, so establish
+	// the physical OS temp root before it or any nested/forked fixture runs.
+	wp25NormalizeQualificationTemp(t)
+	wp25QualificationTempControls(t)
 	// Verify every archive, BUILD, checksum, target, source and executable before
 	// executing either candidate. The extracted selection independently checks
 	// the executable's Go build settings as well as its transported BUILD file.
@@ -136,6 +140,214 @@ func TestExtensionPackageQualification(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+// Only the explicit package harness accepts Darwin's two OS-owned root
+// aliases. Constructed aliases are refused rather than made safe by resolving
+// them. No production safepath rule or inherited negative fixture is changed.
+func wp25NormalizeQualificationTemp(t *testing.T) {
+	t.Helper()
+	incoming, present := os.LookupEnv("TMPDIR")
+	lexical := os.TempDir()
+	physical, observed, err := wp25PhysicalQualificationTemp(lexical)
+	observed["control"] = "qualification-physical-temp-root"
+	observed["before_any_tempdir"] = true
+	observed["incoming_tmpdir_present"] = present
+	observed["incoming_tmpdir_raw"] = incoming
+	observed["goos"] = runtime.GOOS
+	observed["process_id"] = os.Getpid()
+	observed["error"] = fmt.Sprint(err)
+	wp25Record(t, observed)
+	if err != nil {
+		t.Fatal("qualification temporary root is not physical or a verified OS alias", err)
+	}
+	t.Setenv("TMPDIR", physical)
+	if os.TempDir() != physical {
+		t.Fatal("qualification did not select its verified physical temporary root")
+	}
+}
+
+// These controls exercise only qualification-fixture path handling. Actual
+// native Darwin package journeys remain mandatory; this helper cannot replace
+// them or broaden the product's unsafe-alias acceptance policy.
+func wp25QualificationTempControls(t *testing.T) {
+	t.Helper()
+	selected := os.TempDir()
+	physical, rootObservation, err := wp25PhysicalQualificationTemp(selected)
+	if err != nil || physical != selected || rootObservation["same_directory"] != true {
+		t.Fatal("selected qualification temporary root is not physical", selected, physical, err)
+	}
+	root := t.TempDir()
+	resolved, err := filepath.EvalSymlinks(root)
+	if err != nil || root != resolved {
+		t.Fatal("qualification TempDir retained a lexical alias", root, resolved, err)
+	}
+	relative, err := filepath.Rel(selected, root)
+	if err != nil || relative == "." || relative == ".." || strings.HasPrefix(relative, ".."+string(os.PathSeparator)) || filepath.IsAbs(relative) {
+		t.Fatal("qualification TempDir escaped the selected physical root", selected, root, err)
+	}
+	rootInfo, err := os.Stat(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	alias := filepath.Join(root, "constructed-alias")
+	if err := os.Symlink(root, alias); err != nil {
+		t.Fatal(err)
+	}
+	followed, err := os.Stat(alias)
+	if err != nil || !os.SameFile(rootInfo, followed) {
+		t.Fatal("constructed alias control does not select the same directory", err)
+	}
+	got, aliasObservation, aliasErr := wp25PhysicalQualificationTemp(alias)
+	wp25Record(t, map[string]any{"control": "qualification-constructed-temp-alias-refusal", "selected_tmpdir": selected, "created_tempdir": root, "created_tempdir_physical": resolved, "created_directory_mode_raw": uint32(rootInfo.Mode()), "created_directory_sys_raw": fmt.Sprintf("%#v", rootInfo.Sys()), "constructed_alias": alias, "constructed_target_same_directory": os.SameFile(rootInfo, followed), "unexpected_selected_root": got, "helper_observation": aliasObservation, "error": fmt.Sprint(aliasErr), "classification": "source-assisted harness path control; not product alias acceptance or an actual Darwin package substitute"})
+	if aliasErr == nil || got != "" || !strings.HasPrefix(aliasErr.Error(), "unverified temporary root alias:") {
+		t.Fatal("constructed alias was normalized or refused for the wrong cause", got, aliasErr)
+	}
+	after, err := os.Stat(alias)
+	if err != nil || !os.SameFile(rootInfo, after) {
+		t.Fatal("refused alias inspection changed its target identity", err)
+	}
+	link, err := os.Readlink(alias)
+	if err != nil || link != root {
+		t.Fatal("refused alias inspection changed its link", link, err)
+	}
+	got, physicalObservation, err := wp25PhysicalQualificationTemp(root)
+	wp25Record(t, map[string]any{"control": "qualification-physical-temp-positive", "selected_tmpdir": selected, "fixture_root": root, "physical_result": got, "helper_observation": physicalObservation, "error": fmt.Sprint(err), "classification": "source-assisted harness path control; subsequent exact candidate/reference paths remain independently verified"})
+	if err != nil || got != root || physicalObservation["same_directory"] != true {
+		t.Fatal("physical fixture root refused after constructed-alias negative", got, err)
+	}
+	if runtime.GOOS == "darwin" {
+		for _, lexical := range []string{"/var", "/tmp"} {
+			info, err := os.Lstat(lexical)
+			if os.IsNotExist(err) {
+				wp25Record(t, map[string]any{"control": "qualification-darwin-system-temp-alias", "lexical_path": lexical, "present": false, "alias_observed": false, "scope": "actual OS path absent; no alias-positive or product proof inferred"})
+				continue
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			aliasPresent := info.Mode()&os.ModeSymlink != 0
+			got, observed, err := wp25PhysicalQualificationTemp(lexical)
+			wp25Record(t, map[string]any{"control": "qualification-darwin-system-temp-alias", "lexical_path": lexical, "present": true, "alias_observed": aliasPresent, "physical_result": got, "helper_observation": observed, "error": fmt.Sprint(err), "goos": runtime.GOOS, "scope": "actual Darwin OS-root helper check only; actual native package/physical-path marker journeys still required"})
+			if err != nil || observed["same_directory"] != true {
+				t.Fatal("actual Darwin system temporary path failed identity/owner/mode verification", lexical, err)
+			}
+			if aliasPresent && got != map[string]string{"/var": "/private/var", "/tmp": "/private/tmp"}[lexical] {
+				t.Fatal("actual Darwin system temporary alias selected another target", lexical, got)
+			}
+		}
+	} else {
+		wp25Record(t, map[string]any{"control": "qualification-darwin-system-temp-alias-scope", "goos": runtime.GOOS, "actual_darwin_alias_observation": false, "scope": "constructed-alias and physical-root helper controls only; no Darwin package claim"})
+	}
+}
+
+func TestExtensionPackagePhysicalTempFixtureControls(t *testing.T) {
+	wp25NormalizeQualificationTemp(t)
+	wp25QualificationTempControls(t)
+	wp25Record(t, map[string]any{"control": "qualification-temp-fixture-helper-test", "source_assisted": true, "exact_package_or_platform_pass": false, "scope": "same maintained helper; actual native package journeys remain independently required"})
+}
+
+func wp25PhysicalQualificationTemp(lexical string) (string, map[string]any, error) {
+	observed := map[string]any{"lexical_temp_raw": lexical, "inspection_creates_no_tempdir": true}
+	fail := func(err error) (string, map[string]any, error) { return "", observed, err }
+	clean := filepath.Clean(lexical)
+	trimmed := strings.TrimRight(lexical, string(os.PathSeparator))
+	if trimmed == "" {
+		trimmed = string(os.PathSeparator)
+	}
+	if !filepath.IsAbs(lexical) || clean != trimmed {
+		return fail(fmt.Errorf("noncanonical temporary root %q", lexical))
+	}
+	observed["lexical_temp_clean"] = clean
+	stat := func(info os.FileInfo) map[string]any {
+		value := map[string]any{"name": info.Name(), "mode_raw": uint32(info.Mode()), "mode_string": info.Mode().String(), "size": info.Size(), "sys_raw": fmt.Sprintf("%#v", info.Sys())}
+		if native, ok := info.Sys().(*syscall.Stat_t); ok {
+			value["uid"], value["gid"] = native.Uid, native.Gid
+			value["device"], value["inode"] = native.Dev, native.Ino
+		}
+		return value
+	}
+	lexicalInfo, err := os.Stat(clean)
+	if err != nil || !lexicalInfo.IsDir() {
+		return fail(fmt.Errorf("temporary root directory: %v", err))
+	}
+	observed["lexical_directory_stat"] = stat(lexicalInfo)
+	current := string(os.PathSeparator)
+	aliases := []map[string]any{}
+	for _, component := range strings.Split(strings.TrimPrefix(clean, current), string(os.PathSeparator)) {
+		if component == "" {
+			continue
+		}
+		current = filepath.Join(current, component)
+		info, err := os.Lstat(current)
+		if err != nil {
+			return fail(err)
+		}
+		if info.Mode()&os.ModeSymlink == 0 {
+			if !info.IsDir() {
+				return fail(fmt.Errorf("temporary root component is not a directory: %s", current))
+			}
+			continue
+		}
+		link, err := os.Readlink(current)
+		if err != nil {
+			return fail(err)
+		}
+		target := link
+		if !filepath.IsAbs(target) {
+			target = filepath.Join(filepath.Dir(current), target)
+		}
+		target = filepath.Clean(target)
+		alias := map[string]any{"lexical_path": current, "link_target_raw": link, "target_path": target, "link_stat": stat(info)}
+		aliases = append(aliases, alias)
+		observed["aliases"] = aliases
+		expected := map[string]string{"/var": "/private/var", "/tmp": "/private/tmp"}[current]
+		linkStat, ok := info.Sys().(*syscall.Stat_t)
+		if runtime.GOOS != "darwin" || expected == "" || target != expected || !ok || linkStat.Uid != 0 {
+			return fail(fmt.Errorf("unverified temporary root alias: %s", current))
+		}
+		// EvalSymlinks on the expected OS target must not conceal another alias.
+		resolvedTarget, err := filepath.EvalSymlinks(target)
+		targetInfo, targetErr := os.Lstat(target)
+		if err != nil || targetErr != nil {
+			return fail(fmt.Errorf("OS temporary alias target: %v %v", err, targetErr))
+		}
+		alias["target_stat"] = stat(targetInfo)
+		targetStat, ok := targetInfo.Sys().(*syscall.Stat_t)
+		expectedMode := os.FileMode(0755)
+		if current == "/tmp" {
+			// The ordinary Darwin system temp directory is root-owned sticky1777.
+			// Its exact OS alias is allowed; an arbitrary writable alias is not.
+			expectedMode = 0777 | os.ModeSticky
+		}
+		mode := targetInfo.Mode() & (os.ModePerm | os.ModeSticky | os.ModeSetuid | os.ModeSetgid)
+		alias["expected_target_mode_raw"] = uint32(expectedMode)
+		if resolvedTarget != target || !targetInfo.IsDir() || targetInfo.Mode()&os.ModeSymlink != 0 || mode != expectedMode || !ok || targetStat.Uid != 0 {
+			return fail(fmt.Errorf("unsafe OS temporary alias target: %s", target))
+		}
+		followed, err := os.Stat(current)
+		alias["same_target_directory"] = err == nil && os.SameFile(followed, targetInfo)
+		if err != nil || !os.SameFile(followed, targetInfo) {
+			return fail(fmt.Errorf("OS temporary alias target identity changed: %s", current))
+		}
+		current = target
+	}
+	physical, err := filepath.EvalSymlinks(clean)
+	if err != nil || physical != current {
+		return fail(fmt.Errorf("temporary root changed during verification: %v", err))
+	}
+	physicalInfo, err := os.Stat(physical)
+	if err != nil {
+		return fail(err)
+	}
+	observed["physical_temp"] = physical
+	observed["physical_directory_stat"] = stat(physicalInfo)
+	observed["same_directory"] = os.SameFile(lexicalInfo, physicalInfo)
+	observed["aliases"] = aliases
+	if !physicalInfo.IsDir() || !os.SameFile(lexicalInfo, physicalInfo) {
+		return fail(fmt.Errorf("temporary root alias changes directory identity"))
+	}
+	return physical, observed, nil
 }
 
 type wp25ReferenceManifest struct {
@@ -280,6 +492,14 @@ var wp25PublicJourneys = []wp25Journey{
 	{"TestArtifactStoreExplicitPublicSources", TestArtifactStoreExplicitPublicSources},
 	{"TestArtifactStoreSourceChangesDuringRead", TestArtifactStoreSourceChangesDuringRead},
 	{"TestArtifactStoreCountPreflightGraphCLI", TestArtifactStoreCountPreflightGraphCLI},
+	{"TestArtifactStoreFullReaderProtocolCLI", TestArtifactStoreFullReaderProtocolCLI},
+	{"TestArtifactFullReaderOwnerFinalizationCLI", TestArtifactFullReaderOwnerFinalizationCLI},
+	{"TestArtifactFullReaderCancellationCLI", TestArtifactFullReaderCancellationCLI},
+	{"TestArtifactFullReaderOneShotLifecycle", TestArtifactFullReaderOneShotLifecycle},
+	{"TestArtifactIOPipeOwnership", TestArtifactIOPipeOwnership},
+	{"TestArtifactFullReaderFirstErrorCLI", TestArtifactFullReaderFirstErrorCLI},
+	{"TestArtifactBlobWriterProtocolCLI", TestArtifactBlobWriterProtocolCLI},
+	{"TestArtifactBlobWriterUnreachablePublicCLI", TestArtifactBlobWriterUnreachablePublicCLI},
 	{"TestArtifactStoreCountPreflightBatchProtocolCLI", TestArtifactStoreCountPreflightBatchProtocolCLI},
 	{"TestArtifactStoreCountPreflightBeforeBodyCLI", TestArtifactStoreCountPreflightBeforeBodyCLI},
 	{"TestArtifactStoreCountPreflightUniqueCommitBytesCLI", TestArtifactStoreCountPreflightUniqueCommitBytesCLI},
@@ -2587,10 +2807,8 @@ func wp25ArtifactParentLimit(t *testing.T) {
 	wp25Record(t, map[string]any{"control": "artifact-parent-cardinality", "fixture_class": "independent signed public graph via Git fast-import; source-assisted construction only", "opening": opening, "type": typ, "selected_parents": selected, "over_parents": heads, "resolved_event": data["event_id"], "converted_type": evolved, "conversion_sources": selected, "over_conversion_sources": overConversions, "fixture_wire_sha256": eventID(stream.Bytes())})
 }
 
-// Required imports: bytes, context, crypto/sha256, encoding/binary, encoding/json, fmt, io,
-// os, os/exec, os/signal, path/filepath, reflect, strconv, strings, syscall,
-// testing, time. Existing fixture helpers are source-assisted construction only;
-// every assertion below sends frames/commands to the supplied exact executable.
+// Existing fixture helpers construct source-assisted inputs; the lifecycle
+// assertions send frames and commands to the independently supplied executable.
 
 func wp25LifecycleLimits(t *testing.T, binary string) {
 	t.Helper()
@@ -5313,6 +5531,11 @@ func wp25TopLevelFixtureJourney(t *testing.T, name string) {
 	if os.Getenv("GORACE") != "atexit_sleep_ms=0" {
 		t.Fatal("qualification race harness requires its recorded exit-delay-only option")
 	}
+	selectedTemp := os.TempDir()
+	physicalTemp, tempErr := filepath.EvalSymlinks(selectedTemp)
+	if tempErr != nil || selectedTemp != physicalTemp {
+		t.Fatal("compiled-self fixture requires the selected physical temporary root", selectedTemp, physicalTemp, tempErr)
+	}
 	configuredTrace := *extensionBaselineTrace
 	// Preserve the exact explicitly requested instrumentation in the child.
 	// An empty selection remains empty; it is never credited as syscall proof.
@@ -5323,6 +5546,15 @@ func wp25TopLevelFixtureJourney(t *testing.T, name string) {
 	defer cancel()
 	cmd := exec.CommandContext(ctx, self, args...)
 	cmd.Env = os.Environ()
+	forwardedTemp := ""
+	for _, entry := range cmd.Env {
+		if strings.HasPrefix(entry, "TMPDIR=") {
+			forwardedTemp = strings.TrimPrefix(entry, "TMPDIR=")
+		}
+	}
+	if forwardedTemp != os.Getenv("TMPDIR") {
+		t.Fatal("compiled-self fixture lost selected TMPDIR")
+	}
 	var out, stderr bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &stderr
 	started := time.Now()
@@ -5342,7 +5574,7 @@ func wp25TopLevelFixtureJourney(t *testing.T, name string) {
 			skips++
 		}
 	}
-	wp25Record(t, map[string]any{"control": "unchanged-top-level-fixture-journey", "test_name": name, "harness_executable": self, "harness_sha256": wp25Digest(t, self), "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_ns": time.Since(started).Nanoseconds(), "GORACE": os.Getenv("GORACE"), "configured_trace_executable": configuredTrace, "forwarded_trace_executable": args[len(args)-1], "candidate": os.Getenv("HN_WP17_BINARY"), "candidate_sha256": wp25Digest(t, os.Getenv("HN_WP17_BINARY")), "consumer": os.Getenv("HN_WP20_CONSUMER"), "consumer_sha256": wp25Digest(t, os.Getenv("HN_WP20_CONSUMER")), "named_runs": runs, "named_passes": passes, "fail_events": failures, "skip_events": skips, "classification": "actual supplied candidate/reference native-default assertions; compiled-self source test peer; independent standalone consumer journeys remain separate"})
+	wp25Record(t, map[string]any{"control": "unchanged-top-level-fixture-journey", "test_name": name, "harness_executable": self, "harness_sha256": wp25Digest(t, self), "argv": args, "stdout_raw": out.String(), "stderr_raw": stderr.String(), "process_error": fmt.Sprint(err), "watchdog_error": fmt.Sprint(ctx.Err()), "elapsed_ns": time.Since(started).Nanoseconds(), "GORACE": os.Getenv("GORACE"), "configured_trace_executable": configuredTrace, "forwarded_trace_executable": args[len(args)-1], "selected_tempdir": selectedTemp, "physical_tempdir": physicalTemp, "forwarded_tmpdir_raw": forwardedTemp, "candidate": os.Getenv("HN_WP17_BINARY"), "candidate_sha256": wp25Digest(t, os.Getenv("HN_WP17_BINARY")), "consumer": os.Getenv("HN_WP20_CONSUMER"), "consumer_sha256": wp25Digest(t, os.Getenv("HN_WP20_CONSUMER")), "named_runs": runs, "named_passes": passes, "fail_events": failures, "skip_events": skips, "classification": "actual supplied candidate/reference native-default assertions; compiled-self source test peer; independent standalone consumer journeys remain separate"})
 	if wp25Digest(t, self) != expectedHarness {
 		t.Fatal("compiled-self fixture harness changed during execution")
 	}

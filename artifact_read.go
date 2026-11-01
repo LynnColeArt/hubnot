@@ -121,28 +121,55 @@ func artifactSources(ctx context.Context, dir string) ([]artifactSource, error) 
 }
 
 type artifactObjectReader struct {
-	ctx   context.Context
-	dir   string
-	total int64
-	seen  map[string]bool
+	ctx     context.Context
+	dir     string
+	total   int64
+	seen    map[string]bool
+	scoped  bool
+	session *artifactPreflightSession
 }
 
 func (r *artifactObjectReader) object(oid, kind string, limit int64) ([]byte, error) {
-	if !validGitOID(oid) {
-		return nil, artifactFailure("invalid_history", "invalid Git object identity")
+	if !r.scoped {
+		r.scoped = true
+		defer func() { r.close(); r.scoped = false }()
+		body, err := r.object(oid, kind, limit)
+		if err == nil {
+			err = r.finish()
+		}
+		if err != nil {
+			return nil, err
+		}
+		return body, nil
 	}
-	meta, e := projectGit(r.ctx, r.dir, []byte(oid+"\n"), 256, "cat-file", "--batch-check=%(objecttype) %(objectsize)")
+	typ, n, header, e := r.inspect(oid)
 	if e != nil {
-		return nil, r.readError()
+		return nil, e
 	}
-	p := strings.Fields(string(meta))
-	if len(p) != 2 || p[0] != kind {
+	if typ != kind {
 		return nil, artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
 	}
-	n, e := strconv.ParseInt(p[1], 10, 64)
-	if e != nil || n < 0 {
-		return nil, artifactFailure("verification_failure", "invalid Git object size")
+	return r.objectInfo(oid, kind, n, header, limit)
+}
+
+func (r *artifactObjectReader) inspect(oid string) (string, int64, string, error) {
+	if !validGitOID(oid) {
+		return "", 0, "", artifactFailure("invalid_history", "invalid Git object identity")
 	}
+	if r.ctx.Err() != nil {
+		return "", 0, "", r.readError()
+	}
+	if r.session == nil {
+		var err error
+		r.session, err = newArtifactPreflightSession(r.ctx, r.dir)
+		if err != nil {
+			return "", 0, "", err
+		}
+	}
+	return r.session.metadata(oid)
+}
+
+func (r *artifactObjectReader) objectInfo(oid, kind string, n int64, header string, limit int64) ([]byte, error) {
 	if n > artifactReadObjectBytes || n > limit {
 		return nil, artifactFailure("resource_limit", "artifact object exceeds read limit")
 	}
@@ -153,20 +180,23 @@ func (r *artifactObjectReader) object(oid, kind string, limit int64) ([]byte, er
 		r.total += n
 		r.seen[oid] = true
 	}
-	b, e := projectGit(r.ctx, r.dir, nil, n+1, "cat-file", kind, oid)
-	if e != nil || int64(len(b)) != n {
-		return nil, r.readError()
+	return r.session.contentsKind(oid, kind, n, header)
+}
+
+func (r *artifactObjectReader) finish() error {
+	if r.session == nil {
+		return nil
 	}
-	var digest hash.Hash = sha1.New()
-	if len(oid) == 64 {
-		digest = sha256.New()
+	err := r.session.finish()
+	r.close()
+	return err
+}
+
+func (r *artifactObjectReader) close() {
+	if r.session != nil {
+		r.session.close()
+		r.session = nil
 	}
-	fmt.Fprintf(digest, "%s %d\x00", kind, n)
-	_, _ = digest.Write(b)
-	if hex.EncodeToString(digest.Sum(nil)) != oid {
-		return nil, artifactFailure("verification_failure", "accepted Git object hash mismatch")
-	}
-	return b, nil
 }
 func (r *artifactObjectReader) readError() error {
 	if r.ctx.Err() != nil {
@@ -175,6 +205,22 @@ func (r *artifactObjectReader) readError() error {
 	return artifactFailure("verification_failure", "accepted artifact object unavailable; no fetch attempted")
 }
 func (r *artifactObjectReader) commit(oid string) (*storedArtifact, string, error) {
+	if r.scoped {
+		return r.readCommit(oid)
+	}
+	r.scoped = true
+	defer func() { r.close(); r.scoped = false }()
+	value, parent, err := r.readCommit(oid)
+	if err == nil {
+		err = r.finish()
+	}
+	if err != nil {
+		return nil, "", err
+	}
+	return value, parent, nil
+}
+
+func (r *artifactObjectReader) readCommit(oid string) (*storedArtifact, string, error) {
 	b, e := r.object(oid, "commit", artifactReadObjectBytes)
 	if e != nil {
 		return nil, "", e
@@ -320,7 +366,8 @@ func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []a
 		return nil, e
 	}
 	h := &artifactHistory{Sources: sources, ByID: map[string]*storedArtifact{}, Chains: map[string][]*storedArtifact{}}
-	reader := artifactObjectReader{ctx: ctx, dir: dir, seen: map[string]bool{}}
+	reader := artifactObjectReader{ctx: ctx, dir: dir, seen: map[string]bool{}, scoped: true}
+	defer reader.close()
 	cache := map[string]*storedArtifact{}
 	parents := map[string]string{}
 	for _, source := range sources {
@@ -398,6 +445,9 @@ func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []a
 			}
 		}
 		h.Chains[actor] = chain
+	}
+	if e = reader.finish(); e != nil {
+		return nil, e
 	}
 	if e = h.validate(ctx); e != nil {
 		return nil, e
@@ -499,9 +549,18 @@ func (w *artifactPreflightStderr) Write(raw []byte) (int, error) {
 }
 
 func newArtifactPreflightSession(ctx context.Context, dir string) (*artifactPreflightSession, error) {
+	return newArtifactPipeSession(ctx, dir, "cat-file", "--batch-command")
+}
+
+// The raw reader and blob writer share only bounded pipe ownership, never
+// an object cache, a process, a verification decision or a mutation phase.
+func newArtifactPipeSession(ctx context.Context, dir string, args ...string) (*artifactPreflightSession, error) {
+	if ctx.Err() != nil {
+		return nil, artifactFailure("cancelled", "artifact read cancelled")
+	}
 	childCtx, cancel := context.WithCancel(ctx)
 	s := &artifactPreflightSession{ctx: ctx, cancel: cancel}
-	s.cmd = exec.CommandContext(childCtx, "git", "--git-dir="+dir, "cat-file", "--batch-command")
+	s.cmd = exec.CommandContext(childCtx, "git", append([]string{"--git-dir=" + dir}, args...)...)
 	// Match projectGit exactly; no replacement, ambient object-store override,
 	// lazy fetch, global/system config or prompt may alter explicit raw reads.
 	env := []string{}
@@ -568,31 +627,46 @@ func (s *artifactPreflightSession) header() ([]byte, error) {
 }
 
 func (s *artifactPreflightSession) info(oid string) (int64, string, error) {
-	if err := s.request("info", oid); err != nil {
-		return 0, "", err
-	}
-	line, err := s.header()
+	kind, n, header, err := s.metadata(oid, "commit")
 	if err != nil {
 		return 0, "", err
 	}
+	if kind != "commit" {
+		return 0, "", artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
+	}
+	return n, header, nil
+}
+
+func (s *artifactPreflightSession) metadata(oid string, expectedKind ...string) (string, int64, string, error) {
+	if err := s.request("info", oid); err != nil {
+		return "", 0, "", err
+	}
+	line, err := s.header()
+	if err != nil {
+		return "", 0, "", err
+	}
 	parts := strings.Split(strings.TrimSuffix(string(line), "\n"), " ")
 	if len(parts) == 2 && parts[0] == oid && parts[1] == "missing" {
-		return 0, "", artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
+		return "missing", 0, "", artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
 	}
 	if len(parts) != 3 || parts[0] != oid {
-		return 0, "", s.readError()
+		return "", 0, "", s.readError()
 	}
-	if parts[1] != "commit" {
-		return 0, "", artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
+	if len(expectedKind) != 0 && parts[1] != expectedKind[0] {
+		return "", 0, "", artifactFailure("verification_failure", "accepted artifact object is missing or has wrong type")
 	}
 	n, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil || n < 0 || strconv.FormatInt(n, 10) != parts[2] {
-		return 0, "", artifactFailure("verification_failure", "invalid Git object size")
+		return parts[1], 0, "", artifactFailure("verification_failure", "invalid Git object size")
 	}
-	return n, string(line), nil
+	return parts[1], n, string(line), nil
 }
 
 func (s *artifactPreflightSession) contents(oid string, n int64, expected string) ([]byte, error) {
+	return s.contentsKind(oid, "commit", n, expected)
+}
+
+func (s *artifactPreflightSession) contentsKind(oid, kind string, n int64, expected string) ([]byte, error) {
 	if err := s.request("contents", oid); err != nil {
 		return nil, err
 	}
@@ -610,7 +684,7 @@ func (s *artifactPreflightSession) contents(oid string, n int64, expected string
 	if len(oid) == 64 {
 		digest = sha256.New()
 	}
-	fmt.Fprintf(digest, "commit %d\x00", n)
+	fmt.Fprintf(digest, "%s %d\x00", kind, n)
 	_, _ = digest.Write(body)
 	if hex.EncodeToString(digest.Sum(nil)) != oid {
 		return nil, artifactFailure("verification_failure", "accepted Git object hash mismatch")
