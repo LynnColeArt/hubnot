@@ -1,0 +1,224 @@
+{
+  "at": "2026-11-01T04:23:08.024479+00:00",
+  "status": "EXTERNAL DRAFT ONLY; requires root normal prospective amendment after fullrun reap",
+  "source": "12f8dac9291f1c54e676fc9515fe88de45988b15",
+  "baseline_line_numbers_only": true,
+  "supersedes_only": "Earlier prohibition on a generalized full reader and non-preflight object transport/copy inside these five named regions. Existing count-only business wrappers retain exact behavior. No ownership transfer.",
+  "production_exceptions": [
+    {
+      "path": "artifact_read.go",
+      "original_owner": "WP05",
+      "owner_prompt": "tasks/WP05-signed-artifact-storage.md",
+      "regions": [
+        {
+          "lines": [
+            123,
+            175
+          ],
+          "anchor": "type artifactObjectReader / object / readError",
+          "allowed": "Reader transport state and private scoped/one-shot lifecycle; metadata/type/size before contents, repeated header/body framing/raw hash, unchanged per-role/unique-byte charging and existing diagnostic wrappers.",
+          "baseline_region_sha256": "2e06e4978d82da4c3da321e57dae150c900db85469428fee41b84f56d6f84ef3"
+        },
+        {
+          "lines": [
+            323,
+            410
+          ],
+          "anchor": "reader construction in loadArtifactHistoryFromSources through returned history",
+          "allowed": "Construction, deferred error cleanup and explicit normal finish immediately after final object-consuming/continuity loop, before h.validate and final witnesses. All traversal/business/continuity/schema/witness decisions and ordering unchanged.",
+          "baseline_region_sha256": "7025b65b62f5db0c799962b60aa6f7ad6216c1159a852ed1f01766b51122dc10"
+        },
+        {
+          "lines": [
+            475,
+            620
+          ],
+          "anchor": "artifactPreflightSession / stderr / constructor / request / header / info / contents",
+          "allowed": "Narrow generic private raw transport beneath commit-only count wrappers; preserve exact count admission, raw commit hash and messages through wrappers. No preflight/full-reader shared session or body cache.",
+          "baseline_region_sha256": "f445cf2d6cbe939ecf6e092b6701a6503c4385ce4f394b473a707268083c6e03"
+        },
+        {
+          "lines": [
+            651,
+            690
+          ],
+          "anchor": "artifactPreflightSession.finish and close",
+          "allowed": "Shared private owner finalization/cleanup mechanics, keeping count first-error, EOF/Wait and all-return ownership behavior exact.",
+          "baseline_region_sha256": "184d2e39b9d15b2c185ae2c3bb33c7fe9ba871fb5dca5cc62cd2b10081fc2682"
+        }
+      ],
+      "protected_regions": [
+        "artifactObjectReader.commit:177\u2013245 unchanged parsing, ls-tree -z/output1024/exact-two-100644-blob checks and artifact.Verify/message/envelope rules",
+        "artifactPreflightRecordCount:415\u2013470 and artifactPreflightParent:621\u2013649 unchanged count/size/hash/parent/diagnostic semantics",
+        "artifactCheckSourceWitnesses and history.validate and sourceCut unchanged"
+      ],
+      "source_sha256": "55636dddf5263b3d03eb17476fc9e7ba4b983a37d32f7ab3a923539c22e8e466",
+      "original_owner_current_state": "approved/inactive in inspected coordination status",
+      "ownership_transfer": false,
+      "imports": "Only directly necessary standard-library imports in this existing file; no new dependency or Go path."
+    },
+    {
+      "path": "artifact_closure.go",
+      "original_owner": "WP08",
+      "owner_prompt": "tasks/WP08-artifact-dependency-closure.md",
+      "regions": [
+        {
+          "lines": [
+            191,
+            211
+          ],
+          "anchor": "reader := artifactObjectReader through selected object sorting",
+          "allowed": "Reader construction/owner defer and explicit finish after selected read loop before result.Objects inventory escapes. No catalog/dependency expansion, selected items, identity checks, object set or ordering change.",
+          "baseline_region_sha256": "ce0292665944e622516fa8f6b33f0517452400ea0227f5bbeffcfe40307d77dc"
+        }
+      ],
+      "source_sha256": "0abc70562a62d77ba75518c6355f8c16219a4e9d2f5901ddca58e6c13aa88625",
+      "original_owner_current_state": "approved/inactive in inspected coordination status",
+      "ownership_transfer": false,
+      "imports": "Only directly necessary standard-library imports in this existing file; no new dependency or Go path."
+    },
+    {
+      "path": "artifact_exchange.go",
+      "original_owner": "WP10",
+      "owner_prompt": "tasks/WP10-artifact-file-exchange.md",
+      "regions": [
+        {
+          "lines": [
+            383,
+            411
+          ],
+          "anchor": "artifactExchangeObjectsFromClosure",
+          "allowed": "One scoped raw session with info-derived type/size, preserving cannot-inspect/unsupported-type/read mappings, table limits/base64/order, with explicit finish before successful table return.",
+          "baseline_region_sha256": "fb41aa0025deec80d8f8919474324e1213e283cb93355dfcde8de063803fee9b"
+        },
+        {
+          "lines": [
+            453,
+            472
+          ],
+          "anchor": "artifactExchangeCopy",
+          "allowed": "Same ordered budget/raw-hash/type/OID checks; blob-only per-object ACK integration and explicit writer finish before successful return. Existing literal commit/tree calls stay in their original table positions.",
+          "baseline_region_sha256": "7acd759773895a8c79e20e520b97eab035af74b32d4a77a076daa5f59df7e069"
+        },
+        {
+          "insertion_after_line": 472,
+          "anchor": "between artifactExchangeCopy and artifactExchangeSetRefs",
+          "allowed": "Adjacent private one-blob-writer helper, exact scrubbed destination Git pipe process, safe filename quoting, one outstanding ACK, owned bounded scratch and mandatory finish/cleanup. No public API or transaction/ref algorithm changes."
+        }
+      ],
+      "protected_regions": [
+        "decodeArtifactExchange:165\u2013260 whole public table remains fully validated before copy dispatch",
+        "validateArtifactExchange:519\u2013575, importArtifactExchange:609\u2013720 and artifactExchangeSetRefs:473\u2013517 unchanged quarantine/ref/expected-old/uncertainty algorithms",
+        "All opaque/index/read/write path and signed/wire/budget semantics unchanged"
+      ],
+      "source_sha256": "ad4f7f0bbf6b2b33b2fc01dab0d879a26af736d71ab3ed29130bfd2997dc6ecc",
+      "original_owner_current_state": "approved/inactive in inspected coordination status",
+      "ownership_transfer": false,
+      "imports": "Only directly necessary standard-library imports in this existing file; no new dependency or Go path."
+    },
+    {
+      "path": "artifact_replication.go",
+      "original_owner": "WP09",
+      "owner_prompt": "tasks/WP09-artifact-git-replication.md",
+      "regions": [
+        {
+          "lines": [
+            170,
+            211
+          ],
+          "anchor": "artifactTransferInventory",
+          "allowed": "Scoped raw reader construction/use/normal finish around existing selected inventory loop. Preserve preliminary count/depth checks and exact canonical wire/decoded math, order and diagnostics.",
+          "baseline_region_sha256": "e7e352652b56ae9453db96a293d201d9b9107cd426d50f3ce6aae422aa8dc596"
+        },
+        {
+          "lines": [
+            230,
+            244
+          ],
+          "anchor": "artifactTransportObject",
+          "allowed": "Adapt transport to same scoped raw info/body reader with safe one-call fallback, preserving current read/type/cancel mappings and per-object8MiB guard.",
+          "baseline_region_sha256": "3e35fc72f822a42e06f7094eb8a9a84b4a0e23e6cd041ad7465fa98d9433eb40"
+        },
+        {
+          "lines": [
+            246,
+            261
+          ],
+          "anchor": "copyArtifactInventory",
+          "allowed": "Scoped raw reader plus private blob worker; same object order, literal commit/tree writes and exact expected OID; both owners finalized before copy success/refs. Stop feeding on first detected fault.",
+          "baseline_region_sha256": "2b610ebb502f2477df226929776d2576e05b44dae4a184a9d5ddcff11880345a"
+        }
+      ],
+      "protected_regions": [
+        "artifactTransferLimit:214\u2013228 unchanged",
+        "artifactStage and replicateArtifacts push/fetch, advertisements, projected/current verification, source recapture, refs/CAS/lost-ACK/uncertainty unchanged"
+      ],
+      "source_sha256": "945b3b30b7620d663cb44a647b768d73d06dd20a9a663a9eb45c71f8810a5fee",
+      "original_owner_current_state": "approved/inactive in inspected coordination status",
+      "ownership_transfer": false,
+      "imports": "Only directly necessary standard-library imports in this existing file; no new dependency or Go path."
+    },
+    {
+      "path": "artifact_store.go",
+      "original_owner": "WP05",
+      "owner_prompt": "tasks/WP05-signed-artifact-storage.md",
+      "regions": [
+        {
+          "lines": [
+            1022,
+            1032
+          ],
+          "anchor": "candidate reader in readArtifactOperationEvidence",
+          "allowed": "Candidate reader ownership/cleanup/finish only, before candidate binding/escape. Preserve cloned h.readObjects/h.readBytes and existing candidate/actor/request/witness checks; do not alter settlement/classification/lock/publication algorithms.",
+          "baseline_region_sha256": "2578b1121d3a146fe82a0d79ba140773f5e3f9f9f63b2009c8571992478ded1c"
+        }
+      ],
+      "source_sha256": "db43962944ca6272546e005fe6905618b6705d5f35e5edca7ed6e06d02d04d9e",
+      "original_owner_current_state": "approved/inactive in inspected coordination status",
+      "ownership_transfer": false,
+      "imports": "Only directly necessary standard-library imports in this existing file; no new dependency or Go path."
+    }
+  ],
+  "already_owned_tests": [
+    "artifact_read_test.go",
+    "artifact_replication_test.go",
+    "extension_package_acceptance_test.go"
+  ],
+  "qualification_fixture_region": {
+    "path": "extension_package_acceptance_test.go",
+    "original_owner": "WP25",
+    "allowed": "Narrow physical OS-temp-root normalization before ANY t.TempDir in exact-package qualification and its forked fixture journeys, plus protocol/public/physical path evidence controls in this existing harness. Only verified OS-owned alias and same-directory identity; retain arbitrary alias/symlink negative tests. Record paths/modes and ensure inherited fixtures/forked selves use the same physical root. If the platform helper cannot run without creating a temp first, move the call earlier within this owned explicit qualification entry; do not widen unowned tests."
+  },
+  "one_shot_readers": "Existing direct test/helper constructions remain safely owning per call/commit, with explicit successful finish and mandatory cleanup; no unowned-test update implied.",
+  "existing_test_only_performance_exception": {
+    "path": "extension_default_performance_test.go",
+    "original_owner": "WP24",
+    "membership": "317=311 inherited+5 WP24+1 WP25; exact existing union literal remains unchanged",
+    "current_edit_authorized": false,
+    "fresh_311_hash_values": "Root independently attests NEW reviewed production bytes; no historical map rewrite."
+  },
+  "new_go_paths": [],
+  "dependencies_added": [],
+  "wp25_owned_count": 14,
+  "lanes": 26,
+  "subtasks": 107,
+  "stop_if": "An additional path, producer region, semantic/error policy, capability fallback, contract/budget/dependency or unowned test edit is necessary; return to root for a precise normal amendment. Pause the affected production path if its original owner reopens.",
+  "additional_test_only_producer_exception": {
+    "path": "extension_inventory_acceptance_test.go",
+    "original_owner": "WP22",
+    "owner_prompt": "tasks/WP22-inventory-model-proof.md",
+    "ownership_transfer": false,
+    "baseline_source_sha256": "47a8ca246ad8792f73168d159f768b21499216f9f108e0594d7424ea01886bf7",
+    "baseline_lines": [
+      858,
+      860
+    ],
+    "anchor": "inventoryHostShapeSearch separate per-id fetch loop",
+    "allowed": "Replace only unordered per-ID fetch loop with deterministic sorted selection of all three exact final converted IDs in ONE public fetch. Permit directly necessary existing-file standard-library import. Preserve all three explicit model IDs, shared real remote, independent registered host, every shape/search/read/privacy assertion and production anti-rewind refusal. Do not omit an ID, permit concurrent_update as positive success, retry away failure, choose latest heads or alter product code.",
+    "precedent": "same file414\u2013422 batches complete final converted model in main clone journey",
+    "evidence": "full-source-12f8dac9/inventory-selection-readonly-diagnosis.json",
+    "evidence_sha256": "41c3d6cf7654e42ef62f7288bbf1572ada17c0bfc0e3ef86e8f8d9e23c62b695",
+    "causal_limit": "Original map order/intermediate accepted refs unretained; no recovered original sequence claimed. Controlled old-selection RED/new complete-selection GREEN remains required after normal reentry.",
+    "tests": "Exact 3-ID/projection and shape/read/privacy positives, real anti-rewind negative, meaningful controlled old/new selection with signed closure/accepted ref evidence."
+  }
+}
