@@ -480,9 +480,13 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 	if err != nil {
 		return result, replicationPhaseError(selection.Remote, "unaccepted-object inspection")
 	}
+	acceptedObjects, err := replicationObjectsToAccept(mainGitDir, requiredObjects, pendingObjects)
+	if err != nil {
+		return result, replicationPhaseError(selection.Remote, "unaccepted-object inspection")
+	}
 	result.promotions = append([]replicationPromotion(nil), promotions...)
 	result.pendingObjects = append([]string(nil), pendingObjects...)
-	result.acceptedObjects = append([]string(nil), requiredObjects...)
+	result.acceptedObjects = acceptedObjects
 	if err := createReplicationPendingAnchor(mainGitDir, result); err != nil {
 		return result, replicationPhaseError(selection.Remote, "pending acceptance anchoring")
 	}
@@ -1753,6 +1757,29 @@ func promoteReplicationRefs(promotions []replicationPromotion) error {
 		return fmt.Errorf("atomically promote accepted refs: %w", err)
 	}
 	return nil
+}
+
+// replicationObjectsToAccept is the accepted-object set a transaction
+// records: its own pending objects and every other required object that a
+// pending or legacy transaction still denies. A required object the clone
+// already holds with no denial needs no acceptance, so it is left out.
+// Acceptance is the union over completed receipts, so the result is the same
+// as recording the whole required closure, except that an object some earlier
+// receipt accepted is no longer accepted again by every later one. Recording
+// the closure made each receipt as large as the reachable history, and every
+// replication-aware command decodes all receipts.
+func replicationObjectsToAccept(gitDir string, required, pending []string) ([]string, error) {
+	denied, _, err := loadReplicationAcceptanceState(gitDir)
+	if err != nil {
+		return nil, err
+	}
+	accepted := append([]string(nil), pending...)
+	for _, id := range required {
+		if denied[id] {
+			accepted = append(accepted, id)
+		}
+	}
+	return sortedUniqueStrings(accepted...), nil
 }
 
 func recordReplicationTransaction(mainGitDir string, result replicationTransactionResult, state string) error {
