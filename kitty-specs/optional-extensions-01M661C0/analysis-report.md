@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-extensions-01M661C0
 mission_id: 01M661C0T0E4DS0AXBCXG7WCAX
-generated_at: '2026-11-02T08:12:39.075016+00:00'
+generated_at: '2026-11-02T10:09:31.984479+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
@@ -12,226 +12,217 @@ input_artifacts:
     sha256: de1d9ef9995b6a84cabafdfa3c15371badb7ac6721fe389dbc20c1933c7c266f
   plan.md:
     path: kitty-specs/optional-extensions-01M661C0/plan.md
-    sha256: 1f10cf7fe5c8dd5fc0e41fc7f330aa5df2e21ac9b3a186e7d3ca13b617c17331
+    sha256: 63fefe19e90ddd59ea83e16248540219b149f6a89a24683e7b2058f17baf39fc
   tasks.md:
     path: kitty-specs/optional-extensions-01M661C0/tasks.md
-    sha256: 9d23c5a4c9200a87e55cce322a92b3aa5885a3d74496cdc9976296e418966c2e
+    sha256: 7a27c4afc46ac3fd73077a02c316cb9ffbfa193bd7578e1adc18078866680344
   charter:
     path: .kittify/charter/charter.yaml
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
 verdict: ready
 issue_counts:
-  critical: 0
   medium: 1
-  low: 1
   high: 0
+  low: 1
+  critical: 0
   info: 0
 findings:
-- id: A1
+- id: BA1
   severity: medium
   category: acceptance-bookkeeping
-  summary: 'The canonical 24-FR acceptance matrix is still placeholder/pending; T107 must supply actual judgments before acceptance. This is not a missing current execution criterion: detailed tasks/contracts remain executable.'
-- id: A2
+  summary: Actual canonical acceptance-matrix has 24 placeholder FR judgments, null evidence and pending overall verdict. T107 must provide all52 requirement judgments plus24 matrix judgments before accept; detailed current task/contracts remain executable.
+- id: BA2
   severity: low
   category: authority-presentation
-  summary: Exact adopted appendices retain preparation ROOT PENDING and an external group filename; the exact root adoption decision resolves metadata-pending wording and makes adjacent exact_qualification_groups authoritative. Preserve this resolution in reentry handoff.
+  summary: Exact adopted six B payloads retain ROOT PENDING preparation wording and old planning anchor. Exact root adoption supersedes metadata-pending wording for those hashes only; handoff must identify current ac2dee PRIMARY and keep source/runtime authority separate.
 ---
 
-# Fresh actual planning analysis: DD Intel correction
+# Fresh ACTUAL analysis of activated B fixture planning
 
-Audience: the root mission orchestrator and independent analysis reviewer deciding whether the CURRENT amended plan is coherent enough for normal record-analysis/reentry, followed by separately bounded source authority. This is a fresh cross-artifact analysis of actual files, not implementation, a formal WP review, a runtime qualification, or a lifecycle action.
+Audience: root mission maintainer and independent analysis reviewer, deciding whether the actually adopted B design is coherent enough for NORMAL record-analysis and WP25 implementation reentry. This is a fresh requirements/acceptance/traceability analysis, not architecture selection, code implementation, formal WP review, runtime qualification, source authorization or a lifecycle action.
 
-**Conclusion: current planning is READY for A atomic producer publication, C explicitly revised two-group qualification assembly, and B initial bounded diagnostics only.** There is no current-scope high/critical planning defect. This conclusion does not authorize source edits, running qualification, later B fixture activation, WP25 approval, WP26 execution, acceptance, merge, main, or release. Those retain their ordinary gates. Root must independently review and normally record this report before normal reentry. The current repository analysis-report was not updated here, and no persisted-currentness claim is made.
+**Current planning conclusion: READY for normal record-analysis/reentry of the exact activated B design.** There is no current planning high/critical blocker. B is no longer assessed as diagnostics-only future design: its dispatch-reader deadline, staged framed cancellation and parent-owned lost-ack protocol are included in this readiness conclusion. B remains unimplemented and runtime F1 remains OPEN until actual focused evidence. Those are explicitly assigned future work, not a defect in the current executable plan. Separate exact-region source permission is still necessary after normal recording and reentry. No currentness, qualification PASS, WP25 approval, WP26 eligibility, accept, merge or release is conferred here.
 
-**Held finding F1 remains P1/HIGH for LATER B activation.** It has not been fixed, downgraded, waived, or converted into a low-severity current-scope issue. Later B is deliberately excluded from the current authorized scope and remains HELD. The carrier above reports defects in the current bounded planning scope; it is not a verdict that F1 is resolved. Activating the later gate/deadline/stage design without its evidence/owner/independent/root decision would breach this readiness conclusion and requires a fresh analysis of that changed scope.
+## Actual identities and method
 
-## Actual authority and fresh method
+The live PRIMARY is `/home/lynn/projects/nichthub` at `ac2dee774e7660f7418263cc68fe65a413319c44`, clean. Exact six-file B adoption commit is `fb463fdf366621e4c6a29c8b79444455f8d12dbe`. Actual lanes.json records that adopted commit as planning_commit_sha; normal refresh itself made ac2dee. Both are correct distinct identities. SOURCE is clean lane-x at `adc88255dbf0c9c8c43ccaaa9561a82b7f4d57f8`, tree `6f306ac64890bf4cb9d99d73ed72316fd35ef0aa`. COORD is `2a112042f76489ab236d06f3167f5d971ce36fed`, with canonical24 approved/WP25 in_progress/WP26 planned. Its sole preexisting untracked dossier projection is retained. PRIMARY's historical projection is not lifecycle authority.
 
-PRIMARY `/home/lynn/projects/nichthub` is the planning authority at `c1683b9eebe24697411238981b7e85da7333e226`. Exact six-file metadata adoption was committed at `a4d2ef335701ee0205526159b4c0bf1b8bc79841`. Retained NORMAL validate-only and refresh outputs report success, zero modified WPs, no ownership/requirement/post-integration warnings and 26 unchanged lane identities. Refresh records the adopted metadata commit as planning commit. Its stderr discloses locked sync storage, routing failure and an event not durably queued; local successful finalization does not establish remote sync/publication. This analysis did not rerun either command.
+I read root AGENTS and the implement-review skill's isolated-analysis instruction, applied the profile-loading skill, and actually resolved analyst-annie through the installed CLI. Analyst Annie resolves builtin, analysis-mode/precision-pass, traceable functional acceptance focus, no initialization declaration, no architecture/implementation/datamodel authority. Actual analyze/software-dev context, profile inclusion and directives003/047/032 were fetched; EVERY charter context invocation used `--no-mark-loaded`. Raw stdout/stderr, argv/cwd/exit and hashes are retained. No dispatch Op or model identity was invented and no initialization ceremony was fabricated. CLI local resolution succeeded; its storage/session warnings are retained without authentication repair.
 
-SOURCE remains the separate clean lane-x checkout at `dd906146b9055a874a9992c5a488d22fcb490a50`, tree `c34b4d2efaa010df68bbff33738c773f6e9501f3`. Planning currentness is not source integration. COORD at `28b80f49b54a522df262a62c73aa33499b3ffb9b` is lifecycle authority: 24 approved, WP25 in_progress, WP26 planned. PRIMARY's historical projection is not substituted for that state. All 24 complete review fields/notes were captured without truncation in separate external JSON; no review was authored or altered.
+Requester-confirmed meanings are preserved: B now means the exact adopted fixture decomposition, not diagnostics only; dispatched uncertainty is host uncertainty until independent post-settlement lookup, not proof that publication occurred; checked witness means its specific actually observed phase, not arbitrary command/marker existence; native row means both actual current groups under one target/variant identity; source-only approval and planning READY are separate from runtime acceptance. The explicit root assignment and decisions supply these meanings; this analysis makes no new product decision.
 
-I read repository AGENTS and applied the implement-review skill's isolated-analysis guidance and canonical profile-loading skill. Actual `spec-kitty agent profile show analyst-annie` resolved builtin Analyst Annie with analysis-mode/precision-pass, traceability/encodable-acceptance focus, no initialization declaration, and no implementation/architecture/datamodel authority. Actual analyze/software-dev charter context, profile inclusion and directives 003/047/032 were captured with command, cwd, exit, stdout and stderr. Every charter context call used `--no-mark-loaded`. No model override or invented Op was supplied. The resolver's logged-out teamspace warning is retained, with successful local resolution; no login or auth repair was attempted.
+Fresh reads/parsing cover actual spec/plan/tasks; all26 complete detailed WP documents/frontmatters, objectives, guidance, every107 observable acceptance body, evidence controls, verification and definitions of done; coverage/checklists/intake/research/model/quickstart; all four contracts including literal fixture inventory; current bounded addenda and sidecars. `actual-input-full-texts.json`, `wps-full26.json`, `tasks-full107.json`, `requirements52-coverage.json` and `WP26-boundary-readiness.json` preserve complete current bodies without tool-output truncation. `actual-input-hashes.json` and the final merged map bind actual inputs. Original readbacks are preserved, not transformed into new execution evidence.
 
-Terms are used in the exact requester-confirmed meanings: A is atomic raw-URL publication at the live external reference producer, not consumer tolerance; B is bounded observation only, not the later fixture mechanism; C is a deliberate internal assembly-method revision, not product acceleration; a native row is one actual target/variant composite of both current groups, not an individual group or source-suite return. These interpretations follow the explicit root assignment and adopted records, rather than an unconfirmed reinterpretation.
+Root exact adoption decision SHA256 `58c49c5f3e34c3a2a96ce81451844e0fa40e5f07d59412dc9ec010e8ab654ab3`, exact metadata review SHA256 `27dba50dbe11bea5d98087b859e2b9533e06f0955731153e34acc2a236aa4045`, targeted design review `39ae7c6a4ec0c5331a23383bc23139f65bdf15412abdf84bd674421b63a57aaf`, maintainer decision, proposal/addendum, WP18 contract lens and actual normal/delay packets were read and rehashed. Root is maintainer; the integration delegate explicitly is not the original WP18 author. No original-owner endorsement is invented. The six actual adopted hashes exactly match root's file map. Preparation-only metadata ROOT PENDING is superseded ONLY for those payloads. Source permission stays held. The earlier fresh-analysis report was inspected for carrier FORMAT ONLY; its facts, carrier, script and readiness were not reused. The excluded private intel-v2-correction directory was never read or traversed.
 
-Fresh reads cover spec/plan/tasks, all 26 complete detailed WP files/frontmatters, coverage/requirements checklist, support model/research/intake/quickstart, all four contracts and every current bounded WP25 addendum/region/verification record. Static readback retains all 107 guidance and observable-acceptance bodies, objectives, verification and definition-of-done sections, exact owner/create lists, lane dependencies/groups and input hashes. Literal conformance fixtures are hash-bound with their section and block inventory; they are requirements examples, not new runtime observations. Supporting design, independent design and exact metadata reviews, the exact metadata manifest, root exact adoption decision, three triages and source-only deadline-gate report were separately read and hash-bound. The previous native-correction analysis was inspected only for format; no old scripts were executed, no source fact/currentness/verdict was carried forward. The excluded private directory was never read.
+Retained normal finalizer validation and refresh both exit0 with26 unchanged WPs, zero modified WPs and no ownership/requirement/post-integration warnings or lane collapse. Refresh records fb463fdf and creates ac2dee. Their command/output/error records are hashed inputs. Stderr warns about locked sync storage, routing and undurably queued event; local success is not remote sync proof. Neither command was rerun here.
 
-## Findings and disposition
+## Findings and analysis result
 
-| ID | Severity / scope | Actual location | Finding and required disposition |
-|---|---|---|---|
-| A1 | MEDIUM, before acceptance | acceptance-matrix.json; WP26 T107 | All 24 FR criteria still say “Verify FR-…”, evidence null, pass_fail pending, overall pending. This is unfinished canonical acceptance bookkeeping, not proof of pass. Current detailed tasks/contracts supply concrete criteria. T107 must adjudicate all 52 FR/NFR/C/SC items and all 24 canonical FR matrix entries against actual source-bound evidence before accept. It does not prevent bounded WP25 correction work. |
-| A2 | LOW, handoff clarity | plan/tasks/WP25 DD appendix; integration-dd-intel-correction.md:1 and C group reference | Preparation wording persists byte-for-byte. Root's exact adoption decision explicitly supersedes ONLY metadata-pending wording for the six matching payloads; source permission and later B hold remain separate. Adjacent regions JSON `exact_qualification_groups` is adopted authority; external prospective-groups.json is provenance only. Reentry handoff must carry this exact resolution. No seventh payload or broad wording rewrite is needed for current coherence. |
-| F1 (retained independent finding) | P1/HIGH, later B activation BLOCKER; outside current execution scope | dd-intel-design-independent-review/review.md F1; adopted B clauses | Command/argv/repository-only early Git matching cannot distinguish monitor, request recheck and independent Background contexts. Actual phase evidence and a concrete discriminated gate/deadline/settlement design need original-owner and targeted independent assessment plus explicit root decision. This report leaves F1 open and later B HELD. |
+BA1 MEDIUM: actual acceptance-matrix.json still has24 `Verify FR-…` placeholders with null evidence and pending verdicts. T107 explicitly owns final adjudication. Concrete task acceptance and normative contracts already define the behavior, limits and observables, so this does not block bounded correction work. It MUST remain unfinished until actual52 FR/NFR/C/SC judgments PLUS24 canonical FR matrix judgments exist before acceptance. Placeholder rows are not acceptance evidence.
 
-The source-only `dd-artifact-deadline-gate-analysis/report.md` proposes an early dispatched artifact-reader experiment that avoids the monitor's recheck path. It predicts strict `uncertain_operation` and post-settlement `verified_absent`, not the earlier pre-dispatch `cancelled` experiment. It also states that exact host-first-byte timestamp is not directly observable without a new production facility, wrapper/socket signal attribution is limited, arrival before 2s cannot be guaranteed, timing tolerances are unadopted, and no experiment ran. It is useful context for future review, not accepted fixture code, a measurement, a substitute for F1 resolution, or an extension of current B authority. Its different classification must not be silently combined into an allowed-code union.
+BA2 LOW: retained metadata labels still say ROOT PENDING/external draft and refer to PRIMARY215d4311. These are immutable preparation history. Exact adoption and actual ac2dee planning readback resolve this narrowly; future handoff must state that resolution, not quote an old header as fresh authority or silently broaden six-file adoption into source permission. Older DD integration group-status wording is similarly preparation history; adopted adjacent exact_qualification_groups defines C. No seventh-file rewrite is required for current coherence.
 
-## Systematic consistency and coverage
+The previous shared-monitor/pre-dispatch B-F1 ambiguity is **design-addressed by a different gate**, not waived or relabelled as runtime fixed. The adopted first dispatch-only reader matches actual source and strict uncertain_operation outcome. Runtime F1 remains OPEN. Missing actual Linux/Darwin evidence, source implementation and final gates remain work to perform, not evidence of a present planning contradiction. C-F1 is distinct: source-only review approves adc882's workflow validator repair; original8133 REJECT remains historical. It does not resolve B-F1 or qualify the current source.
 
-The actual spec contains 24 FRs, 8 NFRs, 10 constraints and 10 success criteria: **52 distinct items**. All 42 FR/NFR/C IDs are explicitly referenced in current WP frontmatter; the 10 SCs were mapped freshly by their concrete outcomes to detailed subtask acceptance. Every T001–T107 appears once, has guidance, observable acceptance and evidence controls, and maps to at least one requirement. All 52 items have planned task coverage; no task is orphaned. These are planning coverage results, not requirement satisfaction verdicts.
+Duplication/ambiguity pass: FR behavior, NFR measurable quality, constraints and SC observed outcomes deliberately overlap at public boundaries and final gates. Their common obligations are compatible. Historical appendices are scoped supersessions, not blanket latest-paragraph precedence. WP05's short verification prose mentions later WP11 proof, while concrete T023 requires immediate live type/open CLI callers and common DoD forbids zero-caller debt; actual detailed acceptance controls the earlier slice and WP11 supplies subsequent full journeys. No deferred producer-only completion follows from that shorthand.
 
-Duplication pass: FR/NFR/SC repetitions express respectively behavior, measurable quality and observable mission outcomes. The repeated default/native/privacy requirements intentionally apply at multiple public boundaries and final gates; they are not incompatible duplicate promises. Repeated appendices preserve dated evidence and sequencing decisions. Only C's specifically contradictory internal aggregate-120m method is superseded; no broad latest-paragraph precedence is inferred.
+Consistency/underspecification pass: artifact contracts pin exact signed bytes/refs, local expected-head CAS versus immutable imported forks, pure schema/evolution, required/optional logical/exact closure, private eleven-field intent and truthful operation lookup. Host contract pins grants/session identities, first-prefix clock, cancellation versus dispatched uncertainty, result/response settlement and finite child ownership. Native Background wrappers remain; host contexts use the existing common per-request gate. Default/no-loader/performance and actual adopter/package evidence are explicit. Every107 task has guidance, observable acceptance and evidence controls; no task is orphaned. All52 requirements have concrete planned task coverage. This is coverage, not a satisfaction finding.
 
-Ambiguity/underspecification pass: signed IDs/refs/request replay, local CAS versus imported forks, exact schema evolution, collection order and required/optional/logical/exact closure are concretely pinned in artifact-v1 and literal fixtures. Host grants, first-byte clocks, request/control/response settlement, cancellation versus dispatched uncertainty, ownership/cleanup and selected-policy unsupported custom writes are pinned in host-v1. Ordinary/native configuration and measurement method are explicit in default-workflow. No current requirement depends on speculative later B values. The remaining matrix placeholders are A1; provisional B values are visibly inactive, not hidden implementation defaults.
+Ordering pass: all26 dependencies form an acyclic DAG, WP01 is ancestor of every other WP, and contract-only WP02 precedes affected implementation. Early producer slices have immediate public callers. Native/artifact adapters and observation precede standalone consumers; three consumers precede docs→defaults→package→independent review. WP25 remains WP24-dependent; WP26 stays ineligible until normal WP25 approval. No new task/WP/lane/status is introduced.
 
-Task-order pass: the DAG is acyclic; WP01 is an ancestor of every other WP. Contract-only WP02 precedes model/registration/framing. Current detailed guidance exposes live CLI slices from WP03/04/05/06/07/08/10, rather than deferring every caller to WP11. Later full caller journeys supplement those narrow earlier slices. WP16 owns main's host classification; WP17 owns shared native context/lock seams, with direct CLI Background wrappers preserved. WP20/21/22 join at WP23, then default WP24 → package WP25 → independent WP26. No later package is made eligible by this analysis.
+Charter pass: preserve Go/Git independence, inert data, immutable signed histories, least authority, finite hostile-input consumption, independent evidence and normal governance. This B amendment changes test stimulus/ownership rather than public protocol, grants or product timing. Parent-owned delegation deliberately proves unavailable acknowledgment/ref effect, not native process lineage or cancellation of an executing real update-ref. Same-user host mediation is not a sandbox. No charter exception, external runtime dependency, signing format or generic orchestration framework is introduced. No charter MUST conflict is identified in this exact planning scope.
 
-Charter pass: the current bounded scope retains Go/Git native independence, inert repository data, immutable signed history, explicit least authority, finite hostile-input handling, public-boundary/non-vacuous controls, exact evidence binding, normal independent review and feature-only integration. No charter exception is requested. The POSIX shell in A is a test-process fixture and does not become a native-user runtime dependency. C changes qualification assembly through explicit decision, not default product policy or a mandatory hosted runtime. No new dependency, signed wire format, native authority or generic governance grant is introduced. No charter MUST conflict was found.
+## Activated B deadline acceptance
 
-## All 26 work-package boundaries
+The adopted literal2000ms request is a separate nested deadline leaf under the existing parent. Seed accepted type/open history with ordinary unwrapped setup, choose an unused actor/operation tuple, then install host-only wrapper. That session issues exactly one fresh mutation with no prior capabilities/read/lookup. Match FIRST exact arity `[--git-dir=<actual physical private dir>,cat-file,--batch-command]`. Actual requireGitRepository returns the private Git dir; resolve physical path and record lexical/physical distinction, rather than assuming common-dir or lexical repo/.git. Nonmatches exec pre-resolved absolute real Git.
 
-The following fresh readback summarizes the actual complete bodies; `wps.json` and `tasks.json` retain exact current details. Ownership is the current frontmatter/lane write scope. Narrow addendum exceptions do not replace it.
+Actual source inspection supports discrimination: extensionArtifactMutation loads history before choosing any writer; seeded refs reach newArtifactPreflightSession→cat-file --batch-command. Startup/monitor registration/repository/enablement/executable rechecks do not use this reader. Later artifact reads reuse the argv, so first-match/single-request/no-earlier-read discipline is necessary. Session source sets dispatched before adapter invocation. Thus the gate demonstrates an actual request adapter invocation reached the wrapper, not monitor startup and not real cat-file execution.
 
-| WP | Dependencies / lane | Subtasks | Owned/create | Authoritative surface | Observable boundary |
-|---|---|---|---|---|---|
-| WP01 | none / lane-a | T001, T002, T003, T004, T005, T006 | 8/7 | `replication_borrow_test.go` | Live native CLI plus original historical inputs; detector red control; healthy and corruption inventory controls; raw baseline metrics. |
-| WP02 | WP01 / lane-planning | T007, T008, T009, T010, T011 | 4/1 | `kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md` | Independent read-through can derive complete wire bytes and send handwritten valid/invalid requests without source-private assumptions. |
-| WP03 | WP02 / lane-b | T012, T013, T014, T015 | 6/6 | `internal/artifact/envelope.go` | Frozen independent byte vectors and signature tamper controls, later reused through live store and public CLI. |
-| WP04 | WP03 / lane-c | T016, T017, T018, T019 | 5/5 | `internal/artifact/schema.go` | Pure exported validation contracts with hostile declarative schemas, followed by WP11/WP22 live unrelated-model proof. |
-| WP05 | WP03, WP04 / lane-d | T020, T021, T022, T023 | 6/6 | `artifact_store.go` | Real Git object/ref inspection plus tamper/CAS/contribution refusal controls; public CLI caller proof arrives in WP11. |
-| WP06 | WP05 / lane-e | T024, T025, T026, T027 | 8/8 | `artifact_catalog.go` | Two actual actor streams, source-order permutations, stale/all-head negative controls and exact reconstructed state. |
-| WP07 | WP06 / lane-f | T028, T029, T030, T031 | 4/4 | `artifact_operation.go` | Real store fault stages plus actual restart and immutable replay controls; later WP11/WP18 call the same recovery seam. |
-| WP08 | WP06 / lane-g | T032, T033, T034, T035 | 4/4 | `artifact_closure.go` | Actual signed Git dependency sets, removed-schema/corrupt-object controls and private-marker export audit. |
-| WP09 | WP08 / lane-h | T036, T037, T038, T039 | 4/1 | `artifact_replication.go` | Two physical clones and a real bare remote, quarantine tamper/missing-dependency controls and original native refusal suite. |
-| WP10 | WP08 / lane-i | T040, T041, T042, T043 | 4/4 | `artifact_exchange.go` | Real regular files, independently initialized destination, bounded-consumption cases and no-effects snapshot checks. |
-| WP11 | WP07, WP09, WP10 / lane-j | T044, T045, T046, T047 | 3/3 | `artifact_commands_test.go` | Live built hn CLI exercises model/schema/store/recovery/transport with negative controls; no registry or specialized plugin required. |
-| WP12 | WP11 / lane-k | T048, T049, T050, T051 | 2/2 | `artifact_search.go` | Live plugin-free search, explicit over-budget patterns, stale selection and process-marker red controls. |
-| WP13 | WP02 / lane-l | T052, T053, T054, T055 | 6/6 | `internal/extension/manifest.go` | Live extension inspect/register plus native commands, missing/malformed configuration and deliberate process/read detectors. |
-| WP14 | WP13 / lane-m | T056, T057, T058, T059 | 3/3 | `internal/extension/grants.go` | Canonical repository alias cases, local lifecycle CLI, raw authorization vectors and prohibited-effect red controls. |
-| WP15 | WP13 / lane-n | T060, T061, T062, T063 | 6/6 | `internal/extension/protocol.go` | Independent handwritten byte streams, allocation-bound inputs and later real process stdio conformance. |
-| WP16 | WP14, WP15 / lane-o | T064, T065, T066, T067 | 7/6 | `internal/extension/session.go` | Actual hn host and external processes, observed PID exit, competing native request, timeout/oversize/secret controls. |
-| WP17 | WP16, WP11 / lane-p | T068, T069, T070, T071 | 6/4 | `extension_native_adapter.go` | Raw external stdio to live hn plus real native actors/contribution policy and forbidden-effect controls per family. |
-| WP18 | WP16, WP11, WP12 / lane-q | T072, T073, T074, T075 | 3/3 | `extension_artifact_adapter.go` | Live raw stdio custom model round trips, policy/grant negatives, full-state bounds and exact operation replay. |
-| WP19 | WP17, WP18 / lane-r | T076, T077, T078, T079 | 2/2 | `extension_changes.go` | Raw external observer, live native mutations, policy visibility transitions, stale/expired cuts and invalid-history controls. |
-| WP20 | WP19 / lane-s | T080, T081, T082, T083 | 5/5 | `examples/extensions/fake-tracker/main.go` | Independent executable round trip with lost reply, process restart, external journal and raw grant/echo/conflict controls. |
-| WP21 | WP19 / lane-t | T084, T085, T086, T087 | 4/4 | `examples/extensions/charter-model/main.go` | External generic publisher plus real independent clone and plugin-free inspection; exact old selection and inert-content controls. |
-| WP22 | WP19 / lane-u | T088, T089, T090, T091 | 5/5 | `examples/extensions/inventory-model/main.go` | Unrelated external executable, both real actors and clone portability, same generic caller/negative cases. |
-| WP23 | WP20, WP21, WP22 / lane-v | T092, T093, T094, T095 | 5/3 | `docs/extensions.md` | Copyable actual-binary examples and requirement/capability/error inventory compared with observed contracts. |
-| WP24 | WP23 / lane-w | T096, T097, T098, T099 | 9/9 | `extension_default_acceptance_test.go` | Original live native journeys, all seven configuration rows, historical byte equality and paired raw metrics with red controls. |
-| WP25 | WP24 / lane-x | T100, T101, T102, T103 | 14/13 | `extension_package_acceptance_test.go` | Exact distributed-candidate binary execution and fixed-source full suite; platform rows cannot be inferred from cross compilation. |
-| WP26 | WP25 / lane-y | T104, T105, T106, T107 | 4/4 | `docs/qualification/optional-extensions/independent/boundary-review.md` | Independent reviewer and actual native-user/author observations tied to exact package; no invented adopter evidence. |
+The wrapper execs the existing compiled test helper, publishes checked bounded arrival/PID/argv atomically and blocks with no descendants, real Git execution, object/intent/signing effects or voluntary exit. Raw peer sends valid mutation timeout_ms2000, NO cancel, and remains alive with stdout open until registered-child TERM. Require checked gate before deadline termination; no-match, wrong repo/arity, monitor refusal, early exit/EOF or safety action fails. Reader CommandContext cancellation/Kill/Wait is distinct from TERM of the registered peer. No false reader TERM-receipt requirement is introduced.
 
-## Requirement coverage summary
+Strict result is nonzero CLI and exact host-origin uncertain_operation, recovery inspect_operation, exact original hn-artifact/1 actor/operation tuple. No cancelled/uncertain union. Source records first host-observed prefix byte, computes absolute request deadline from it, supplies that context to dispatch/history reader, and joins writer on interruption. Peer-write/gate/TERM/parent monotonic brackets provide honest observed consistency; sender time is not exported host-first-byte time. Existing H09's peer-send→TERM allowance is budget through budget+2s; public2s grace/5s exit remain. No exact inaccessible telemetry or socket framework is demanded.
 
-Every row below has concrete task coverage in current guidance/acceptance. Task mappings are fresh analyst semantic associations, not claims that every associated task independently proves the whole requirement. Explicit containing-WP refs are retained separately in requirements-coverage.json. All evidence adjudication remains pending at mission acceptance.
+After fully joined settlement restore ordinary environment and require complete protected snapshot equality under ONLY existing exclusions, unchanged ref and absent new intent/lock/object/signing effects. Read-only lookup must preserve snapshot and expose EXACT12 keys: status,protocol,actor,operation,family,type_id,request,resource_id,event_id,result,source_cut,reason. Require verified_absent, original protocol/actor/operation/type_id, valid stable source_cut; family/request/resource_id/event_id/result/reason all null. Actual artifactOperationResult/classifier and host wire shape support this. Uncertain host interruption followed by independently established absence is coherent: dispatch status alone does not prove a write. Then same formerly absent tuple must ordinarily mutate successfully, found lookup must match real event/ref advance, and unchanged-input replay must recover it. Positive success cannot replace the gated no-effect proof.
 
-| ID / requirement | Has task? | Relevant detailed task IDs |
-|---|---|---|
-| FR-001 — Preserve default workflow | yes | T003, T006, T096, T097, T099, T105 |
-| FR-002 — No implicit launch | yes | T004, T052, T054, T055, T097 |
-| FR-003 — Explicit local lifecycle | yes | T053, T054, T056, T058, T064, T067 |
-| FR-004 — Honest capability inventory | yes | T009, T055, T058, T061, T068, T075, T092, T104 |
-| FR-005 — Scoped host access | yes | T009, T056, T057, T059, T064, T069, T071, T073, T075 |
-| FR-006 — Existing native adapters | yes | T068, T069, T070, T071 |
-| FR-007 — Exact operation recovery | yes | T009, T028, T029, T030, T031, T045, T070, T074, T081, T082 |
-| FR-008 — Accepted change observation | yes | T010, T076, T077, T078, T079, T082, T083 |
-| FR-009 — Custom type declarations | yes | T007, T012, T016, T017, T044, T047, T072, T088 |
-| FR-010 — Structured record content | yes | T008, T012, T014, T017, T018, T020, T023, T044, T047, T088 |
-| FR-011 — Collaborative revisions | yes | T020, T024, T025, T027, T028, T029, T045, T047, T073, T074, T089 |
-| FR-012 — Collections and relationships | yes | T008, T018, T024, T026, T032, T033, T044, T047, T085, T090 |
-| FR-013 — Generic inspection and search | yes | T048, T049, T050, T051, T072, T090 |
-| FR-014 — Native portable storage | yes | T032, T033, T035, T036, T037, T038, T040, T042, T043, T046, T090, T102, T103 |
-| FR-015 — Safe unknown-type behavior | yes | T014, T016, T017, T021, T026, T033, T036, T042, T046, T050, T072, T075, T096 |
-| FR-016 — Type evolution | yes | T019, T027, T044, T047, T089 |
-| FR-017 — Authority continuity | yes | T003, T022, T039, T069, T071, T073, T076, T079, T096, T104 |
-| FR-018 — Public provenance | yes | T013, T020, T028, T031, T035, T040, T043, T068, T070, T081 |
-| FR-019 — Bounded external host | yes | T009, T060, T062, T064, T065, T066, T067, T102, T103 |
-| FR-020 — Structured diagnostics | yes | T008, T009, T010, T013, T014, T030, T045, T061, T062, T066, T068, T070, T074, T075, T077, T078, T079 |
-| FR-021 — Fake-tracker reference | yes | T080, T081, T082, T083 |
-| FR-022 — Charter-model reference | yes | T084, T085, T086, T087 |
-| FR-023 — Independent model proof | yes | T088, T089, T090, T091 |
-| FR-024 — Consumer documentation | yes | T009, T010, T011, T092, T093, T094, T095, T100, T102, T104, T105, T106, T107 |
-| NFR-001 — Default path isolation | yes | T004, T052, T054, T064, T067, T096, T097, T105 |
-| NFR-002 — Measured default overhead | yes | T005, T098 |
-| NFR-003 — Bounded consumption | yes | T008, T009, T014, T017, T018, T021, T026, T032, T033, T034, T041, T049, T050, T060, T063, T066, T075, T077, T079, T101, T103 |
-| NFR-004 — Failure containment | yes | T064, T065, T066, T067, T096, T099, T102, T103 |
-| NFR-005 — Historical integrity | yes | T003, T006, T013, T015, T023, T039, T096, T099 |
-| NFR-006 — Credential boundary | yes | T028, T031, T035, T040, T043, T053, T059, T067, T074, T075, T081, T095, T097, T103, T104 |
-| NFR-007 — Platform and variants | yes | T005, T100, T102, T107 |
-| NFR-008 — Generic portability | yes | T035, T038, T043, T083, T087, T090, T102, T103 |
-| C-001 — Separate mission | yes | T001, T002, T006, T099, T107 |
-| C-002 — Native independence | yes | T001, T005, T064, T067, T095, T100, T103, T105 |
-| C-003 — Optional activation | yes | T004, T017, T052, T053, T054, T058, T064, T085, T091 |
-| C-004 — No embedded doctrine | yes | T084, T085, T086, T087, T088, T091, T095, T106 |
-| C-005 — No enterprise connectors | yes | T080, T081, T082, T083, T093, T106 |
-| C-006 — Existing protocol preservation | yes | T003, T007, T013, T015, T020, T036, T039, T094 |
-| C-007 — Honest process boundary | yes | T064, T095, T104 |
-| C-008 — Narrow first capability set | yes | T009, T022, T057, T061, T069, T071, T073, T075, T092, T104 |
-| C-009 — No marketplace or frontend | yes | T009, T060, T064, T080, T095, T100 |
-| C-010 — Memory remains cognition | yes | T003, T019, T049, T051, T087, T091, T095 |
-| SC-001 — All baseline native journeys pass in extension-free, disabled and failure configurations with no additional setup or dependency; any default-workflow regression blocks mission acceptance. | yes | T003, T006, T096, T097, T099, T105 |
-| SC-002 — Paired default-path measurements meet NFR-002 and show zero implicit extension startup or registry parsing. | yes | T004, T005, T097, T098 |
-| SC-003 — One independently running module completes the fake-tracker round trip, lost-ack restart, duplicate observation and stale/conflict cases without duplicate native issue/comment creation. | yes | T080, T081, T082, T083 |
-| SC-004 — Raw ungranted/wrong-repository/incompatible requests refuse before prohibited effects in every documented denial case. | yes | T056, T057, T059, T069, T071, T073, T075, T104 |
-| SC-005 — Custom document, list and ticket types plus an unrelated inventory model are created, revised, conflicted, searched and exported through the same generic contract. | yes | T016, T018, T025, T027, T044, T047, T072, T084, T088, T089, T090 |
-| SC-006 — A second independently initialized clone reconstructs exact public IDs/history/types/relationships without the original module or private state. | yes | T032, T035, T038, T043, T087, T090, T102, T103 |
-| SC-007 — The charter-model consumer stores representative doctrine artifacts, a pack and an explicit exact-revision selection; merely storing or searching a directive activates nothing. | yes | T084, T085, T086, T087, T091 |
-| SC-008 — All documented resource limits and lifecycle failures have meaningful refusal/cleanup evidence; no silent truncation or success-on-timeout is accepted. | yes | T034, T041, T063, T066, T067, T075, T077, T079, T101, T103 |
-| SC-009 — Every claimed platform/variant has bound package evidence and every unsupported capability or missing observation is visible. | yes | T005, T055, T075, T092, T100, T102, T107 |
-| SC-010 — A new native user completes init, ticket/discussion and exchange tasks without encountering extension configuration; a separate extension-author trial uses the published guide and returns actual friction. | yes | T095, T105, T106, T107 |
+## Activated prepared/lost-ack acceptance and finite clocks
 
-## Current bounded A acceptance coherence
+Existing prepared/lost-ack parent names and all original assertion bodies remain required. Prepared gate is exact first physical-dir/hash-object/-w/--stdin after durable prepared intent and before real hash execution. Lost-ack gate is full exact source-issued physical-dir/update-ref/-m/message/original actor ref/actual candidate/seeded old argv. No command-name scan, directory-only match or unchecked marker qualifies.
 
-The only producer change is the real standalone fake-tracker `serve` ready-publication region and, if necessary, a tightly adjacent private raw-byte helper. Existing validation, nonnil Receipts, listener order, server behavior and error/listener cleanup remain. A same-directory unique 0600 temporary file must receive the entire unquoted raw URL, reject short/error writes, close successfully, and rename to final ready; failure cleanup must remove only owned temporary state. JSON writePrivate is unsuitable for a raw URL. No general journal helper refactor, directory creation/stale-path policy, new Go file or dependency is scoped.
+Fixed staged budget is timeout_ms20000, selected checked witness arrival≤10000ms FROM HOST LAUNCH, followed by exactly ONE complete4-byte-big-endian-length-framed `{"protocol":"hn.extension/1","cancel":"interrupted"}`. Peer checks full write, records completion, stays alive/stdout open until host TERM and promptly exits then. Checked stage→completed framed cancel→registered-child TERM→owned joined Wait order is mandatory. Host launch→Wait must be strictly<20000ms. Since request first byte follows launch, this conservatively proves pre-expiry settlement without equating launch and request clocks. It deliberately replaces the old conflated stimulus; it is not old2000ms test PASS or a public cap relaxation.
 
-This is traceable to FR-019/021, NFR-003/004 and SC-003/008 through existing WP20 public-consumer obligations and WP25 T101–T103 integration. The existing strict 15s/5ms consumer helper, malformed-byte rejection, immediate over-limit readiness rejection, 16MiB equality/+1, original credential/state equality and real authenticated public GET/no-effect assertions remain unchanged. Fixing the producer addresses its public discovery invariant for all consumers; it does not add tolerance to a strict failing reader.
+Keep original30000ms stall and fixed30000ms helper/enclosing safety. Any safety action, escalation, early EOF, voluntary exit, missing gate or deadline substitute is nonqualifying FAIL with owned cleanup. Raw peer/helper finite fallback prevents indefinite held stdout on host failure. No adaptive enlargement. Actual normal diagnostic packet reaches both original stages and retains their following recovery checks, host intervals about2.081s/2.078s. Controlled4s pre-stage delay yields host uncertainty near2.079s, ORIGINAL missing lost-ack marker failure, unchanged actual ref and unobserved update-ref. Private prepared intent may exist. This supports separating stimulus/arrival; it does not reproduce historical Intel scheduling, prove inaccessible phase timestamps or qualify fixed10s/20s on any target. Root's reviewed finite parameter choice is explicit and every supported target must actually pass.
 
-Deterministic OLD RED must exercise the same real serve entry with parent-prepared inputs and child-only RLIMIT_FSIZE=0/ignored SIGXFSZ, prove real EFBIG (including the one-byte scratch control), and fail because the old final ready path is exposed. A compile error or absent helper is not a causal RED. Corrected serve must leave final readiness absent and clean the owned temp file on failure, preserving input bytes. The unrestricted live-serve control must observe the exact complete raw URL/mode0600 and actually authenticate to HTTP, then stop/join. Rename-refusal/error cleanup needs its focused control; live compilation/runtime platform boundaries remain review obligations. This establishes failure-publication atomicity, not the precise old CI syscall schedule. Nothing was executed here.
+Preserve original prepared unchanged ref plus uncertain/private_intent_pending/result-null; lost-ack actual candidate/ref/event/found agreement; exact original actor/operation/immutable intent; changed-intent operation_conflict BEFORE retry; unchanged retry and same-event lost-ack replay; original actor lookup after rotation and old-actor write refusal; keyless operation/read/type/search; final signing repository_error; full protected signing/private-intent/object/ref state and cleanup. No assertion deletion, broadened error union or top-level parent replacement is authorized.
 
-WP20 still owns main.go/main_test.go and its historical approval. Before separate source authority, root must confirm WP20 inactive/no concurrent original-owner writer for these exact regions. This is a bounded integration exception, not a whole-file ownership transfer. The current plan explicitly contains that precondition; this analysis neither manufactures its confirmation nor claims a runtime ownership lease.
+## One actual parent-owned Git and failure semantics
 
-## Current B diagnostics versus held later B
+Lost-ack wrapper/helper has NO descendants. It exclusively claims one selection, writes one fresh correlated checked atomic bounded request and withholds acknowledgment. Before any Start, parent validates exact physical dir/ref/seeded-old/message/order/arity and valid ACTUAL host-issued candidate, not a fabricated OID or substitute writer. The host already constructed/signed/persisted that candidate and issued its update-ref. Parent executes exactly that source-issued command once using fixed pre-resolved absolute Git/argv array, no shell evaluation/request-chosen executable, repair, retry or rollback.
 
-Current B permits only bounded observation inside existing WP18 child/interrupted-recovery fixture regions after separate authority and original-owner inactivity/no-writer confirmation. One private observation totals at most **16KiB**; selected argv at most **4KiB**. Required observations are checked wrapper entry/match, exact selected command/argv, real-Git exit status, checked marker, parent send/exit times and final unwrapped ref. Environment, raw request/payload/signature/private intent content and unbounded diagnostics are excluded. Go parent monotonic intervals avoid a GNU-date assumption. Absent observed commands stay unobserved; an uncertain result alone does not name a reached stage.
+Freeze host cmd.Env/cmd.Dir before host Start; derive delegated env from those same bytes. Remove EVERY GIT_* key then append precisely GIT_NO_REPLACE_OBJECTS=1, GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_GLOBAL=os.DevNull, GIT_TERMINAL_PROMPT=0, GIT_NO_LAZY_FETCH=1. Keep remaining HOME/PATH/locale bytes and cwd, empty stdin,4096-byte bounded stdout and discarded stderr. This matches actual projectGit's filter/I/O contract. No later ambient reconstruction or environment dump. Require fresh fixture without executable reference-transaction hooks, alternate hooks config or descendant behavior; unexpected hooks fail/reassess.
 
-The older recovery-triage proposal's 512KiB trace allowance is context only and is superseded for CURRENT diagnostics by the adopted 16KiB/4KiB limits. No broad trace framework, production hook, session/adapter/store/context change or new classification is authorized. A bounded controlled pre-stage delay through the actual supplied host may demonstrate the old late-stage/2000ms conflation; it cannot reproduce Intel scheduling or select a new budget. Diagnostic overhead must remain visible, and no matched stage means no claimed phase attribution.
+Register cleanup/context BEFORE Start. Every successful Start gets exactly ONE Wait; pre-Start cancellation/Start failure has no child to Wait. Single consumers own host/Git Wait results; observers return errors through joined supervision rather than Fatal outside cleanup. Every returned path cancels/Waits active Git, stops/Waits host as needed and joins ALL observers. Check host active before Start and after actual Git exit0/Wait/output success; only then publish success witness atomically while wrapper remains blocked. Wrong/duplicate/incomplete/oversized/malformed request, nonzero/start/output failure, witness write/close/rename failure or host exit cannot publish qualifying success. Host-exit/Git-success/witness races need full later cancel/TERM/settlement while host active to qualify.
 
-All later stage-driven framed-cancel mechanisms, checked witness changes, a new deadline subcase, request/monitor discriminator, fixed stage budget and provisional 20000ms/10s values remain HELD. Preserve F1 exactly. Before any later activation, actual selected-phase evidence, a concrete exact gate→framed cancel→settlement design, original-owner/targeted independent assessment and root decision are required. The source-only dispatched-reader proposal is not a shortcut around these conditions.
+Ref publication can win an error/host-exit/witness race. ALWAYS inspect actual unwrapped final ref even on failure and retain potential publication for inspect/recovery; no no-effect or rollback claim on a failed experiment and no retry-to-green. This proves owned returned-path settlement and selected lost acknowledgment, not machine-death cleanup or pre-stage cancellation correctness.
 
-Every eventual separately reviewed change must retain literal 2000ms FIRST-HOST-OBSERVED-prefix-byte coverage, the actual supplied host/repository/request/operation/intent, prepared/lost-ack outcomes, real selected candidate/ref binding, original event/ref/no-effect/exact replay/changed conflict/actor rotation/keyless lookup/final signer assertions, and original cleanup. No timer-expiry surrogate for framed cancellation, synthetic publication witness, blanket allowed-error union or silent deadline reset is coherent with the contracts. Existing mutation240s, read/stage30s, startup10s, revocation250ms, TERM2s/exit5s and original native stage budgets remain hard.
+Observations use fresh private fixture temp dir outside protected repo/home, fixed filenames/counts, checked0600 temporary full write/close/rename and bounded reads. Total per-leaf evidence INCLUDING metadata/request/witness/argv≤16384 bytes and selected argv≤4096; overflow FAIL. Only public command/OIDs/PIDs/times/status/ref/snapshot digests are admissible; no request payload, environment, signatures/private intents/raw stderr. The future implementation must supply wrong gate/repo/ref/old/message/arity, malformed/oversized/duplicate/incomplete/no-match, nonzero Git, witness failure and host-exit race controls, proving owned cleanup and actual-ref inspection. These are finite implementation/evidence obligations, not tests executed by this analysis.
 
-The current failing leaf accepted uncertain_operation, then failed its absent lost-ack marker before later recovery checks. That proves missing marker, not failed exact recovery or which real-Git phase ran. Its 5.49s leaf includes other work. Prepared sibling and other passes do not erase the failed leaf. This distinction is concrete and testable under FR-007/020 and SC-008; diagnosis readiness is not cure/readiness for later B.
+## A/C and inherited scope remain exact
 
-## C revised method: complete coverage with an honestly different aggregate budget
+A is already source-only approved at adc882 within initial A/C/B-diagnostics scope: atomic full raw-URL same-dir0600 publication in actual fake-tracker producer, strict unchanged consumer, meaningful EFBIG old-red/new controls. This B amendment neither changes producer semantics nor grants broader helper ownership. C is the explicitly adopted qualification assembly revision: exact206 callbacks, heavy4/remaining202 in original relative order, all/heavy/remaining selectors, same four target jobs and both serial variants,120m per invocation and300m shared job. A row may consume two120m invocations; it does not prove the original all206 single120m process. Full-source120m and product clocks stay unchanged.
 
-I independently reconstructed the ACTUAL source's 14 direct t.Run registrations plus 192 inherited registry entries. The ordered 206-name inventory exactly equals the adopted adjacent regions inventory; every name is unique. Newline-terminated UTF-8 digest is `6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c`. `callbacks206.json` binds the actual callback expressions and inherited definition files; it is not a name-only assertion of future code equality. The special top-level fixture-fork dispatch is explicitly present in the baseline and must survive implementation.
+Fresh static extraction of current wp25QualificationJourneys records all206 actual names/callback expressions and digest `6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c`. Actual group union/disjoint/order matches adopted exact inventory; all14 direct plus192 inherited entries remain. Current source manifest retains69 limits-reconciliation entries and their honest evidence classifications. This is scope inventory, not runtime proof of every callback/assertion. C-F1 adc882 review resolves only workflow event schema/root-lifetime validation and retains group/identity/source-after/trace gates. A group record or parent-only PASS cannot be a native row; both complete same-identity groups, all nested run terminations, exact membership, no fail/skip/fallback and actual source-after/traces are mandatory.
 
-Heavy is exactly inherited-public-count-limits, lifecycle-limits, artifact-record-count-and-enclosing-deadline, TestArtifactBlobWriterProtocolCLI. Remaining is the other 202. Membership is disjoint, union exactly206, and both subsequences preserve baseline relative order. All 69 distinct limits-reconciliation entries from the actual source manifest are retained in limits69.json with current classifications, bounds and test routes. This is scope inventory, not a new independent proof of each assertion or removal of source-assisted/dominated/dormant labels. No original root callback, nested assertion, positive/refusal pair, map/receipt/public protected-state observation or sample is waived.
+Inherited metadata scopes remain their reviewed narrow exceptions: bounded raw count preflight before oversized-object inflation; artifact/native sequential worker metadata-before-body/hash/error/Wait ownership; actor-chain immutable index grouping; Darwin full-FD observers/snapshot detectors; fixed pair waves and fresh per-record authority; exact quarantine import-union validation; child-only2MiB E2BIG; active-session revocation cadence and ordinary-discovery-only omitted initial witness. They authorize no new B production edit. Their failures and source-specific evidence stay historical. Required100000/100001 plus separate99999 causal cases,16384/16385 maps/receipts/policy,45s migration, raw instrumentation/detectors and three standalone supplied consumers remain.
 
-The plan requires canonical registry selectors exactly all/heavy/remaining; inventory/digest/uniqueness validation before execution; exact complement accounting without skip events; every invocation's complete bundle/source/target/toolchain/reference/isolation/physical-temp/compiler-trap controls; same frozen supplied binaries/reference/harness; variant→heavy→remaining in the SAME four native target jobs and both serial variants. No new matrix, parallel roots, hardware, retry or new aggregation workflow is permitted.
+## Ownership, source preservation and final gates
 
-Each group executes once with `-test.timeout=120m`, distinct raw logs/commands/start/finish/exit/evidence. Failure is retained; the other group still runs for diagnostics. The existing **300m shared native job cap remains hard**. Only both validated groups from one target/variant/current run+attempt and identical candidate/reference/harness/source/toolchain may form a versioned whole-row composite. Neither a group record nor parent-only PASS is whole-row success. Actual direct-child RUN/PASS multisets must match exact expected membership; all nested run events must terminate successfully. Missing/extra/duplicate/overlap/unknown/unmatched/incomplete/fail/skip/nonzero/missing-finish/fallback/identity mismatch refuses the composite. Original trace and source-after evidence remain required. Synthetic validator corruptions must meaningfully refuse; a short toy case cannot qualify native8.
+All26 actual frontmatters equal the pre-B guarded baseline byte-for-byte (baseline encodes raw frontmatter as hex). Owner/create lists, profiles/roles/deps/base/target/authoritative surfaces are unchanged. No declared ownership overlap or lane scope mismatch exists. WP25 remains14 owned/13 create_intent with T100–T103 unfinished and target feature/optional-extensions. B prospectively edits ONLY necessary imports, existing raw child/helper/interrupted-recovery and tightly adjacent bounded fixture controls in extension_artifact_acceptance_test.go, under separate permission and inactive WP18/no-writer check. No whole-file transfer, new Go/module/dependency/parent or production host/session/store/adapter/context edit is coherent.
 
-**The aggregate method deliberately changes.** A target/variant row may consume two 120m invocations, so it does not prove all206 finish in a single120m process. The root decision supersedes ONLY that earlier contradictory internal assembly-method clause. The original DD standard 2h exhaustion stays FAIL. Product timers/caps and seven-check full-source120m stay unchanged. Both variants still share300m; the partial heavy58.28m/other-passed60.14m observations are not complete forecasts, guarantees, or permission to raise300m if exhausted. This is sufficient planning for an explicitly revised method and leaves its runtime feasibility unqualified.
+Freshly recomputed SOURCE all317 current inputs match initial8133 map SHA256 `6a7b5abbc24b66b4828788c6dd0b33278dcc019b07f87a5685a38f966c2e892c` for keyset/hash/bytes/modes/Git blobs; full filesystem modes match guarded activation baseline. PRIMARY220 similarly match guarded baseline. Actual DD tree comparison finds exactly four existing Go deltas: fake-tracker main.go/main_test.go, extension_artifact_acceptance_test.go and extension_package_acceptance_test.go; other313 are exact DD blobs/modes. SOURCE C-fix workflow stays hash/mode exact. Historical DD311 values are NOT current-source qualification. New final candidate needs fresh root311 inherited/all317 current attestation, unchanged keyset and protected313 comparison. This analysis's static integrity proof is not qualification.
 
-## Ownership, identity and preservation obligations
+Canonical complete24 approval payloads AND all26 current WP payloads equal activation baseline, including untruncated notes/review fields; before/after must retain them. Original78 remain in root's new20th stash321ad989f936fdf260bef3eee6859963abc9f044, all prior19 retained per supplied root preservation result. This delegate did not inspect stash payloads, restore originals, touch stash refs or change archives. Root owns original78 restoration after normal reentry and must not restore a stale primary snapshot into canonical COORD.
 
-All26 frontmatters are byte-identical to the actual pre-adoption parent of metadata commit a4d2ef33, including dependencies/profile/role/base/target, owner/create lists and authoritative surfaces. All lanes' declared write scopes equal those current owner lists; lane dependency sets agree with frontmatter; no declared ownership overlap or DAG cycle exists. WP25 stays14 owned/13 create_intent and WP24-dependent; its T100–T103 remain unfinished. No new task/WP/lane/group identity or approval is introduced.
+Before final WP25 approval, all unchanged gates remain: independent clean exact-diff/error/ownership review of implemented B and actual focused Linux/Darwin deadline/no-effect/positive replay and stage→cancel→TERM→settlement evidence under fixed bounds; fresh source/root identities; six unchanged default roots and COMPLETE4320 observations/2160 pairs/72 groups/144 elapsed+RSS criteria; all seven full-source race/static/build checks at original120m; all eight NEW actual supplied native composite target/variant rows. No old scoped PASS, source-suite exit or source-assisted helper can substitute. Prior DD native six scoped PASS, both Intel FAIL and36/43 unstarted remain historical under their actual identities; no remote status was queried and no historical result relabelled.
 
-Exactly four existing Go paths are prospective deltas: WP20 fake-tracker main.go/main_test.go, WP18 extension_artifact_acceptance_test.go (diagnostics only), and WP25 extension_package_acceptance_test.go. The existing qualification workflow is the fifth path. All adopted region baseline SHA256s match actual frozen SOURCE. No whole-file transfer or new Go/module key is allowed. Every other **313** of the **317** Go/module inputs must remain byte/mode exact DD after implementation. That protected complement is distinct from **311 inherited qualification identity** and **all317 current identity**: neither count substitutes for another. This fresh static pass independently rehashed all317 and all311 against their current retained proof maps; both match. Future changed bytes need NEW current-root attestations, not reuse of these DD maps as corrected-source qualification.
+Then normal independent WP25 formal review/approval, normal WP26 eligibility, T104 actual independent boundary review, T105/T106 two fresh independent public-guide-only cold native-user and extension-author trials tied to exact packages/guides with real friction, and T107 all52+24 actual adjudications. Implementer replay/CI/hypothetical users do not substitute. Noncircular preaccept P01–P05 precede P06 normal accept→feature-only merge→target full-suite→postmerge mission review→retrospective. P06 remains mandatory mission work; beta/pilot/issue23 acceptance, main and release stay outside this scope.
 
-Metadata adoption changed none of317 SOURCE inputs. Inherited cadence/discovery-witness, import-union, E2BIG, actor/count/A/B and RW01C/RW02B fixes and errors/order/caps remain binding. The closed-scope exceptions authorize no general production artifact/host/session/store/helper/authority/performance refactor. Old dates and preparation filenames are not source permission.
+## Integrity and recorder handoff
 
-## Honest evidence status and remaining mandatory work
+This external report is INPUT to normal `spec-kitty agent mission record-analysis`, never a direct replacement for repository analysis-report.md. Installed pure input collector/parser may validate hashes/carrier read-only; no recorder/finalizer/action/next/move-task/current.json operation ran. Actual normalized SDK fingerprints are retained separately; tasks.md SDK status normalization intentionally differs from raw adoption SHA. Parent must verify normal recording/currentness at actual record time.
 
-Retained current DD source/default review reports the seven source checks PASS and six fresh ordinary default roots PASS, with149 named default passes/zero fail/skip and independently recomputed COMPLETE4320 observations/2160pairs/72groups/144 elapsed+RSS criteria PASS at DD. The precise review scope and its recorded scheduling/observer/source-assisted limitations remain intact. This analysis read the retained review/root recomputation; it did not reexecute or independently re-audit all raw runtime records. Earlier failed sources remain failed, rather than being overwritten by DD success.
+All writes are in this new external analysis directory. Executions were read-only CLI profile/context, read-only Git and static Python hash/parser/readback only, with synchronous joined subprocesses. No test/build/application/probe/remote/new-agent execution or source/metadata/runtime/lifecycle mutation occurred. Initial external collector handled missing PRIMARY workflow after a read-only FileNotFoundError; raw-hex frontmatter comparison was corrected before final successful proof. Neither error generated product evidence or changed a repository. Final before/after guards and output hashes separately show exact HEAD/tree/index/status/metadata/runtime/source/mode/workflow preservation for PRIMARY/SOURCE/COORD. No analysis-report currentness is asserted merely because this file exists.
 
-Root's current readbacks grant only six SOURCE-SPECIFIC scoped native passes: four Linux rows and two Darwin ARM64 rows, with their recorded assertion/observer limits. They are not full WP25 approval, Intel pass, or transferable to a revised candidate. Intel run41387131324 attempt1/job125090993991 remains live according to the current assignment/root retained observation; no later remote query was performed. Its standard E04 equality-readiness failure, lost-ack marker failure and 2h cutoff remain FAIL/incomplete under their actual identity. The returned log is partial; no exhaustive terminal failure list, completed second variant or whole-job verdict is claimed. No unchanged retry/cancel/relabel/alias rewrite, or cross-source/group reuse is permitted.
+Metrics:52 requirements,107 unique tasks with complete acceptance/control bodies,26 WPs,100% planned requirement coverage,0 unmapped tasks,0 ownership overlaps/lane scope mismatches,0 current high/critical issues,1 medium acceptance-bookkeeping issue and1 low authority-presentation issue. Current planning is READY; B runtime F1, source authorization, all final qualifications and formal acceptance remain pending.
 
-After separately authorized implementation and focused causal old/new controls, all these gates remain mandatory:
+## All26 current work-package boundaries
 
-- Fresh independent clean exact-diff, ownership, error/order/cleanup and source review; fresh root311 inherited/all317 current bindings, four-delta/protected313 comparison and unchanged317 keyset.
-- Six unchanged default roots plus COMPLETE4320 observations/2160pairs/72groups/144 elapsed+RSS criteria at the final candidate, retaining collector/corpora/order/math/thresholds and every deliberate effect detector. Defaults remain hard; a producer or method correction supplies no automatic performance credit.
-- All seven unchanged fixed-source race/static/build checks, original full-source120m; actual eight NEW native composite target/variant rows under the revised method. Source-built helpers, a historical DD row or cross-build cannot substitute for supplied-package execution.
-- All206 callbacks/nested assertions, all69 limits and original refusal/effect scope; 100000/100001 plus separate99999 causal controls;16384/16385 maps/receipts/policy;45s migration; source error/witness/child ownership/caps; raw instrumentation traces and all three standalone supplied consumers. Actual Mac/Linux E2BIG controls and existing healthy boundaries remain required; platform success cannot be inferred.
-- NORMAL independent WP25 review/approval before WP26 eligibility. WP26 T104 actual independent boundary review; T105/T106 two fresh independent cold public-guide-only native-user/extension-author trials with exact candidate/guide identities and real friction. CI, implementer replay, source assistance and hypothetical users are insufficient.
-- T107 actual52 FR/NFR/C/SC adjudications PLUS24 canonical FR acceptance-matrix judgments; noncircular preaccept criteria P01–P05 before P06 normal accept→feature-only merge→target fullsuite/postmerge mission review→retrospective. P06 is mandatory mission work, not an already-achieved prerequisite. Beta/pilot/issue23 acceptance, main and release stay outside scope.
+| WP | Dependencies/lane | Subtasks | Owned/create | Authoritative surface |
+|---|---|---|---|---|
+| WP01 | none/lane-a | T001,T002,T003,T004,T005,T006 | 8/7 | replication_borrow_test.go |
+| WP02 | WP01/lane-planning | T007,T008,T009,T010,T011 | 4/1 | kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md |
+| WP03 | WP02/lane-b | T012,T013,T014,T015 | 6/6 | internal/artifact/envelope.go |
+| WP04 | WP03/lane-c | T016,T017,T018,T019 | 5/5 | internal/artifact/schema.go |
+| WP05 | WP03,WP04/lane-d | T020,T021,T022,T023 | 6/6 | artifact_store.go |
+| WP06 | WP05/lane-e | T024,T025,T026,T027 | 8/8 | artifact_catalog.go |
+| WP07 | WP06/lane-f | T028,T029,T030,T031 | 4/4 | artifact_operation.go |
+| WP08 | WP06/lane-g | T032,T033,T034,T035 | 4/4 | artifact_closure.go |
+| WP09 | WP08/lane-h | T036,T037,T038,T039 | 4/1 | artifact_replication.go |
+| WP10 | WP08/lane-i | T040,T041,T042,T043 | 4/4 | artifact_exchange.go |
+| WP11 | WP07,WP09,WP10/lane-j | T044,T045,T046,T047 | 3/3 | artifact_commands_test.go |
+| WP12 | WP11/lane-k | T048,T049,T050,T051 | 2/2 | artifact_search.go |
+| WP13 | WP02/lane-l | T052,T053,T054,T055 | 6/6 | internal/extension/manifest.go |
+| WP14 | WP13/lane-m | T056,T057,T058,T059 | 3/3 | internal/extension/grants.go |
+| WP15 | WP13/lane-n | T060,T061,T062,T063 | 6/6 | internal/extension/protocol.go |
+| WP16 | WP14,WP15/lane-o | T064,T065,T066,T067 | 7/6 | internal/extension/session.go |
+| WP17 | WP16,WP11/lane-p | T068,T069,T070,T071 | 6/4 | extension_native_adapter.go |
+| WP18 | WP16,WP11,WP12/lane-q | T072,T073,T074,T075 | 3/3 | extension_artifact_adapter.go |
+| WP19 | WP17,WP18/lane-r | T076,T077,T078,T079 | 2/2 | extension_changes.go |
+| WP20 | WP19/lane-s | T080,T081,T082,T083 | 5/5 | examples/extensions/fake-tracker/main.go |
+| WP21 | WP19/lane-t | T084,T085,T086,T087 | 4/4 | examples/extensions/charter-model/main.go |
+| WP22 | WP19/lane-u | T088,T089,T090,T091 | 5/5 | examples/extensions/inventory-model/main.go |
+| WP23 | WP20,WP21,WP22/lane-v | T092,T093,T094,T095 | 5/3 | docs/extensions.md |
+| WP24 | WP23/lane-w | T096,T097,T098,T099 | 9/9 | extension_default_acceptance_test.go |
+| WP25 | WP24/lane-x | T100,T101,T102,T103 | 14/13 | extension_package_acceptance_test.go |
+| WP26 | WP25/lane-y | T104,T105,T106,T107 | 4/4 | docs/qualification/optional-extensions/independent/boundary-review.md |
 
-## Recorder input and integrity
+Each full current verification strategy and DoD is retained in WP26-boundary-readiness.json; all bodies/frontmatters remain in wps-full26.json.
 
-This report is the INPUT carrier for NORMAL `spec-kitty agent mission record-analysis`; it must not be copied directly over repository analysis-report.md. The installed pure `collect_input_artifact_hashes` was used read-only to capture the actual SDK fingerprints in recorder-input-fingerprints.json. In particular tasks.md's SDK status-normalized digest differs from its raw adopted file SHA256; that is intentional SDK behavior, not evidence of file drift. Parent must verify normal recorder output/currentness at recording time. No record-analysis, finalizer, action implement/review, move-task, status event, current.json, acceptance or merge was invoked by this delegate.
+## All52 requirement traceability
 
-All outputs are external in this new directory. Static Python hash/parser/readback tooling was the only execution besides read-only Git/CLI context; no application/compiler/build/test/probe or remote call ran. One initial external script syntax typo was corrected before its first successful analysis run; it generated no product observation and changed no repository state. Final before/after guards and output hashes are separate artifacts. PRIMARY/SOURCE/COORD tracked bytes, mission/canonical bytes, HEAD/status and git index must remain identical to the opening captures. COORD's single preexisting untracked dossier projection must remain unchanged, not cleaned. User-original archival/stash restoration remains root-owned; no originals/archive/stash payloads were restored or manipulated here.
+Planned coverage only; the exact original requirement bodies and task acceptance are in requirements52-coverage.json/tasks-full107.json.
 
-Metrics:52 distinct requirements;107 tasks;26WPs;100% planned requirement coverage;0 unmapped tasks;0 ownership overlap;0 lane dependency/scope mismatches;0 current-scope high/critical issues;1 medium acceptance-bookkeeping finding;1 low authority-presentation finding. F1/P1 remains one separate held later-activation blocker, and all runtime qualification/acceptance readiness remains pending.
+| Requirement | Concrete planned task evidence |
+|---|---|
+| FR-001 | T003,T004,T006,T096,T097,T099,T105 |
+| FR-002 | T004,T052,T054,T055,T097 |
+| FR-003 | T053,T054,T056,T058,T064,T067 |
+| FR-004 | T009,T055,T057,T058,T068,T075,T092 |
+| FR-005 | T009,T056,T057,T059,T061,T064,T069,T073,T075 |
+| FR-006 | T068,T069,T070,T071,T082 |
+| FR-007 | T009,T028,T029,T030,T031,T045,T070,T074,T081,T082,T093 |
+| FR-008 | T010,T076,T077,T078,T079,T082,T083 |
+| FR-009 | T007,T008,T011,T012,T016,T017,T019,T023,T044,T084,T088 |
+| FR-010 | T007,T008,T012,T014,T017,T018,T020,T023,T044,T047,T089 |
+| FR-011 | T020,T024,T025,T027,T028,T044,T047,T073,T086,T089 |
+| FR-012 | T008,T018,T026,T032,T044,T084,T085,T089 |
+| FR-013 | T044,T046,T048,T049,T050,T051,T072,T087,T090 |
+| FR-014 | T020,T021,T032,T033,T034,T035,T036,T037,T038,T039,T040,T041,T042,T043,T046,T090,T102 |
+| FR-015 | T008,T014,T019,T021,T026,T033,T036,T046,T048,T072 |
+| FR-016 | T008,T019,T027,T044,T086,T089 |
+| FR-017 | T022,T036,T037,T056,T057,T059,T068,T069,T071,T073,T076,T078,T096 |
+| FR-018 | T007,T013,T020,T028,T031,T035,T040,T068,T081 |
+| FR-019 | T009,T060,T061,T062,T063,T064,T065,T066,T067,T101,T103 |
+| FR-020 | T008,T009,T010,T014,T029,T030,T045,T055,T061,T062,T066,T070,T074,T075,T077,T078,T093 |
+| FR-021 | T080,T081,T082,T083 |
+| FR-022 | T084,T085,T086,T087 |
+| FR-023 | T088,T089,T090,T091 |
+| FR-024 | T009,T010,T011,T092,T093,T094,T095,T100,T102,T106 |
+| NFR-001 | T004,T052,T054,T064,T065,T067,T096,T097,T105 |
+| NFR-002 | T005,T098 |
+| NFR-003 | T008,T009,T014,T017,T018,T021,T026,T032,T033,T034,T041,T049,T050,T060,T063,T066,T075,T077,T079,T101,T103 |
+| NFR-004 | T064,T065,T066,T067,T096,T099,T102,T103 |
+| NFR-005 | T002,T003,T006,T013,T015,T023,T039,T096,T099 |
+| NFR-006 | T028,T031,T035,T040,T043,T053,T059,T067,T074,T075,T081,T095,T097,T103,T104 |
+| NFR-007 | T005,T055,T100,T102,T107 |
+| NFR-008 | T035,T038,T043,T083,T087,T090,T102,T103 |
+| C-001 | T001,T006,T099,T107 |
+| C-002 | T001,T005,T064,T067,T095,T100,T103,T105 |
+| C-003 | T017,T052,T053,T054,T056,T058,T064,T085,T091 |
+| C-004 | T084,T085,T086,T087,T088,T091,T095,T106 |
+| C-005 | T080,T081,T082,T083,T093,T106 |
+| C-006 | T003,T007,T013,T015,T020,T036,T039,T094 |
+| C-007 | T064,T065,T095,T104 |
+| C-008 | T009,T022,T057,T061,T069,T071,T073,T075,T092,T104 |
+| C-009 | T009,T054,T060,T064,T080,T095,T100 |
+| C-010 | T003,T019,T049,T051,T087,T091,T095 |
+| SC-001 | T003,T006,T096,T097,T099,T105 |
+| SC-002 | T004,T005,T097,T098 |
+| SC-003 | T080,T081,T082,T083 |
+| SC-004 | T056,T057,T059,T069,T071,T073,T075,T104 |
+| SC-005 | T016,T018,T025,T027,T044,T047,T072,T084,T088,T089,T090 |
+| SC-006 | T032,T035,T038,T043,T087,T090,T102,T103 |
+| SC-007 | T084,T085,T086,T087,T091 |
+| SC-008 | T034,T041,T063,T066,T067,T075,T077,T079,T101,T103 |
+| SC-009 | T005,T055,T075,T092,T100,T102,T107 |
+| SC-010 | T095,T105,T106,T107 |
