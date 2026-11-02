@@ -608,16 +608,46 @@ jobs:
             if $name == "heavy" then [$inventory[] | select(. as $n | heavy | index($n))]
             elif $name == "remaining" then [$inventory[] | select(. as $n | heavy | index($n) | not)]
             else error("unknown qualification group") end;
-          def eventscomplete:
+          # Go1.26 test2json metadata is optional; present fields have their
+          # actual converter types. Unknown actions/tests cannot hide as output.
+          def eventshape:
+            type == "object" and
+            ((keys - ["Time","Action","Package","Test","Elapsed","Output","FailedBuild","Key","Value","Path"]) | length)==0 and
+            all(to_entries[]; if .key == "Elapsed" then (.value | type)=="number" and .value>=0 else (.value | type)=="string" end) and
+            (.Action as $action | ["start","run","pause","cont","pass","bench","fail","output","skip","attr","artifacts"] | index($action)) != null and
+            (if has("Test") then (.Test | length)>0 and .Action != "start"
+             else (.Action as $action | ["start","output","pass","fail","skip","bench"] | index($action)) != null end) and
+            (has("Output") == (.Action == "output")) and
+            (if has("Elapsed") then (.Action == "pass" or .Action == "fail" or .Action == "bench") else true end) and
+            (if has("FailedBuild") then .Action == "fail" else true end) and
+            (if has("Key") or has("Value") then .Action == "attr" else true end) and
+            (if has("Path") then .Action == "artifacts" else true end);
+          def eventscomplete($inventory):
+            "TestExtensionPackageQualification" as $overall |
+            [$inventory[] | $overall+"/"+.] as $declared |
             reduce .[] as $e ({active:[],done:[],bad:false};
-              if $e.Test == null then .
+              if ($e | eventshape | not) then .bad=true
+              elif $e.Action == "fail" or $e.Action == "skip" then .bad=true
+              elif $e.Test == null then .
               elif $e.Action == "run" then
+                # Only the declared direct-root boundary is inferred. A literal
+                # t.Run("inventory.test/part") needs no intermediate RUN.
+                [$declared[] | select(. as $root | $e.Test == $root or ($e.Test | startswith($root+"/")))] as $roots |
                 if ((.active + .done) | index($e.Test)) != null then .bad=true
+                elif $e.Test == $overall then .active += [$e.Test]
+                elif ($roots | length)!=1 or (.active | index($overall)) == null then .bad=true
+                elif $e.Test != $roots[0] and (.active | index($roots[0])) == null then .bad=true
                 else .active += [$e.Test] end
               elif $e.Action == "pass" then
                 if (.active | index($e.Test)) == null or any(.active[]; startswith($e.Test+"/")) then .bad=true
                 else .active -= [$e.Test] | .done += [$e.Test] end
-              elif $e.Action == "fail" or $e.Action == "skip" then .bad=true else . end) |
+              elif $e.Action == "pause" or $e.Action == "cont" then
+                if (.active | index($e.Test)) == null then .bad=true else . end
+              else
+                # Output/attributes/artifact metadata may refer to an already
+                # completed test, but never to a test with no observed RUN.
+                if ((.active + .done) | index($e.Test)) == null then .bad=true else . end
+              end) |
             .bad == false and (.active | length)==0;
           def validgroup($inventory;$identity):
             . as $g | .record as $r |
@@ -625,7 +655,7 @@ jobs:
             ([.events[] | select(.Test != null and .Action == "run") | .Test]) as $runs |
             ([.events[] | select(.Test != null and .Action == "pass") | .Test]) as $passes |
             ([.events[] | select(.Action == "run" and (.Test // "" | startswith("TestExtensionPackageQualification/"))) | .Test | split("/") | select(length == 2) | .[1]]) as $direct |
-            (($g.events | eventscomplete) and $g.exit == 0 and ($g.started | length)>0 and ($g.finished | length)>0 and $g.fallback == false and
+            (($g.events | eventscomplete($inventory)) and $g.exit == 0 and ($g.started | length)>0 and ($g.finished | length)>0 and $g.fallback == false and
              ($g.command | length)>0 and ($g.log_sha256 | test("^[0-9a-f]{64}$")) and
              $r.schema == "hn.extension-package-group/1" and $r.result == "PASS" and $r.source_fallback == false and
              $r.identity == $identity and $r.canonical_inventory == $inventory and
