@@ -1,0 +1,94 @@
+{
+  "schema": "hn.prospective-expiry-diagnostic-verification/1",
+  "date": "2026-11-02",
+  "status": "ROOT PENDING; NOT EXECUTED; no gate satisfied",
+  "activation_order": [
+    "Independent review of this exact design and exact six metadata payloads",
+    "Root targeted preservation of original78 using a NEW root-owned21st stash; retain all20 existing stashes",
+    "Root exact six-payload metadata adoption",
+    "Normal finalizer and planning-commit refresh",
+    "Fresh independent ACTUAL analysis of activated diagnostic scope",
+    "Normal record-analysis and next",
+    "Normal WP25 implementation reentry",
+    "SEPARATE explicit exact-region diagnostic-only source permission"
+  ],
+  "actual_failure_basis": {
+    "source": "b389b4dda20f6cbe419e359e5f5cbbfab5d4c497",
+    "outer_ROOT6503": "exit1 after4262.878s per root handoff; fully reaped",
+    "driver_elapsed_seconds": 4262.7011548670125,
+    "sole_named_failure": "TestExtensionChangesRealTenMinuteExpiry response.1 absent after15s, before callback1/final expiry assertion",
+    "cause": "UNRESOLVED; pure TTL refusal would still publish.1",
+    "all317_after_failure_exact": true,
+    "six_later_checks": "NEVER STARTED",
+    "B_new_source_leaves": "all3 passed at H; not new-source/native qualification",
+    "scoped_default_performance": "149/4320/144 passed at H only; no full gate credit"
+  },
+  "source_diff_checks": [
+    "Only allowed imports/child instrumentation/changesRun Start-Wait-failure seam/tightly adjacent finite controls in existing test file",
+    "Expiry770-821 and success transcript259-280 hashes exact H; callbacks execute synchronously on testing goroutine",
+    "No production, raw framing, general helper API, request/state semantics, timers/caps/assertions/registry/workflow changes",
+    "Other316 inputs exact H; all317 keysets/full modes; cumulative5 Go deltas vs DD/protected312 complement"
+  ],
+  "meaningful_controls": [
+    {
+      "name": "old-red-real-host-settlement",
+      "required": "Use actual supplied hn extension run and existing registered raw child: initial real capture, then existing out-of-range $9.capture resolver causes original exit92 after continue-0/before response1. Add only the opt-in control dispatcher first, run it with changesRun still byte-exact H, and freeze intermediate source/child/host identities. OLD helper exhibits original15s missing-response wait and loses expected public host/unavailable_module/do_not_retry terminal detail; no duplicate old helper/new exit hook. Assert observable failure class and missing diagnostic, not missing symbol/compile failure. Preserve actual source/binary/control identity; no TTL-cause inference."
+    },
+    {
+      "name": "new-early-settlement",
+      "required": "Same actual host/resolver92 control; require precisely host/unavailable_module/do_not_retry and preserve public CLI origin/code/recovery, actual CLI exit/signal and Start/Wait/observation monotonic times; exactly one Wait per successful Start; fail when testing goroutine next regains control, not during synchronous callback sleep. Last peer phase/exit intent agree; actual CLI terminal status is separately joined, child settlement separately checked; no raw stderr."
+    },
+    {
+      "name": "unresponsive-timeout",
+      "required": "Keep actual15s response deadline and5ms polling; Actual hn command remains unsettled through deadline: exact opt-in raw peer withholds one received-response publication and stays alive under original pause loop; actual host stays inside original30s idle clock until15s timeout/TERM. Record trigger=timeout separately from cleanup-induced settlement, not a product-stall claim. A finite truly nonsettling direct command additionally checks safety; an intentionally stopped CLI is CONTinued by control cleanup before TERM and that stimulus is nonqualifying. All owned peers observed absent; no timeout increase/process framework."
+    },
+    {
+      "name": "positive-paused-peer",
+      "required": "Actual public capture/page success with a pause spanning at least one original20s keepalive; unchanged callback/continuation and final successful transcript semantics. Confirm last keepalive request/result phases without extra keepalive or altered schedule."
+    },
+    {
+      "name": "callback-Fatal-cleanup",
+      "required": "Nested testing subprocess invokes callback Fatal synchronously; defers TERM/Wait/join and preserve bounded evidence before TempDir cleanup, then outer control checks expected failure and no leaked owned child. No t.Fatal on Wait goroutine."
+    },
+    {
+      "name": "write-and-overflow-failures",
+      "required": "Checked observation short/write/close/rename refusal,2KiB peer and8KiB terminal limits and16KiB total overflow; malformed/oversized CLI envelope and phase record refuse explicit diagnostic completeness. Redaction sentinel control proves no request/data/env/signature/private state/raw stderr emission. Retain public counts/digests and fixed-file cleanup; no silent truncation."
+    },
+    {
+      "name": "cleanup-and-single-Wait",
+      "required": "Start failure=>zero Wait; successfulStart=>one Wait on success, early exit, timeout, callback Fatal and observation failure. Buffers never read before joined completion. Ordinary CLI TERM allows existing child-group cleanup;5s budget, hardKill fallback nonqualifying. Verify owned peer terminated using controlled child handle/process observation external to result inference; fallback or unverifiable child cleanup cannot qualify."
+    }
+  ],
+  "actual_expiry_followup": "After separate source permission/review, a fresh actual unchanged TestExtensionChangesRealTenMinuteExpiry run must retain real600s session and final expired refusal or a precise newly retained failure. Synthetic controls cannot replace it. Diagnostics alone does not repair/prove original cause or resolve the known missing postresponse-before-expiry clock guard. Any scheduling/clock-proof change requires separate root design/scope decision.",
+  "evidence_bounds": {
+    "peer_record_max_bytes": 2048,
+    "terminal_record_max_bytes": 8192,
+    "total_per_call_including_metadata_and_transient_observation_files_max_bytes": 16384,
+    "fixed_observation_slots": [
+      "peer.json",
+      "peer.next",
+      "failure.json",
+      "failure.next"
+    ],
+    "persisted_failure_files_per_call": 1,
+    "mode": "0600, checked full write/close/atomic rename; fixed exclusive temp slots, no append",
+    "markers": "Fixed previous/current response and continuation plus final-transcript presence,size,digest slots; absent/unreadable/oversized states explicit. Never contents.",
+    "retained_fields": "Test/call correlation (bounded), parent timestamps/monotonic elapsed, trigger/cleanup/Wait outcome, joined stdout/stderr sizes+SHA256, bounded parsed public CLI ok/error origin/code/recovery only, last peer phase/request-index/result/keepalive ordinal/timestamp and explicit-exit intent; optional self PID for absence audit only; explicit unknowns",
+    "forbidden": "Request/data payloads, raw stdout/stderr/module diagnostics, environment, signatures, private intent or consumer-state contents; operation/message/public tokens omitted"
+  },
+  "unchanged_final_gates": [
+    "Independent exact-diff/error-path/ownership review; fresh root311 inherited/all317 current bytes/fullmodes/keysets and312 DD-complement binding",
+    "Six unchanged default roots/all149 and COMPLETE4320 observations/2160 pairs/72 groups/144 elapsed+RSS criteria",
+    "All seven full frozen-source race/static/build checks with original120m full-source bound",
+    "All eight NEW actual native composite target/variant rows; exact206 parents/69 limits; C fixed heavy4/remaining202 serial120m invocations/300m job; no mixed-source groups",
+    "All100000/100001 and separate99999 causal controls;16384/16385/maps/receipts/policy;45s migration; detectors/raw traces/three standalone consumers",
+    "Formal WP25 review then WP26 eligibility and two fresh independent public-docs-only cold trials",
+    "52 requirement/criterion and24 FR preaccept judgments, normal accept, feature-only merge, target validation, postmerge review and retrospective; no main/release"
+  ],
+  "native_attempt": "41434652393 attempt1 immutable H continues; no cancel/rerun/alias rewrite; any outcome remains old-H-only",
+  "source_permission_granted": false,
+  "tests_or_builds_or_probes_run_by_this_packet": false,
+  "formal_WP_approval": false,
+  "qualification_PASS": false,
+  "lifecycle_mutation": false
+}

@@ -1,0 +1,130 @@
+{
+  "schema": "hn.prospective-expiry-diagnostic-regions/1",
+  "date": "2026-11-02",
+  "status": "ROOT PENDING EXTERNAL DRAFT; no source permission",
+  "planning_primary": "c31169c17bde18467b735f29385e35cc76165f24",
+  "source": "b389b4dda20f6cbe419e359e5f5cbbfab5d4c497",
+  "tree": "64a1153bee3333be76d342a01bb39f08d3612625",
+  "source_permission_granted": false,
+  "only_source_path": "extension_changes_acceptance_test.go",
+  "anchor_sha256": "9fb5ef1a50f8de8926340c6d341ca6d594bbcc1e6cbaf7df46f4d4c62371f482",
+  "anchor_git_blob": "a02cad501b98df1d275c327e5201b4e623720765",
+  "git_mode": "100644",
+  "stat_mode": 33204,
+  "ownership": "Already WP25-owned via original eight-test maintenance transfer; original WP19 approved/inactive. Root maintainer exception for exact diagnostic seam after normal activation; no whole-file transfer.",
+  "allowed_regions": [
+    {
+      "lines_at_H": [
+        3,
+        20
+      ],
+      "bytes": 240,
+      "sha256": "6bbf0338350ac595c915c84f17091f7ba9325fec4ea8095688632f3e3964d866",
+      "purpose": "Necessary diagnostic-only imports"
+    },
+    {
+      "lines_at_H": [
+        61,
+        190
+      ],
+      "bytes": 4304,
+      "sha256": "a54dcaef9d3640a652648432aebfdd9e1b17f22816dc504cf4d35ae0d449c668",
+      "symbol": "TestExtensionChangesChild",
+      "purpose": "Bounded last-phase/explicit-terminal observation only; exact opt-in control dispatcher in existing nonchild branch; retain raw framing and all request/state/pause behavior"
+    },
+    {
+      "lines_at_H": [
+        200,
+        258
+      ],
+      "bytes": 1749,
+      "sha256": "ff4cad4fb25f17c59f9aae32e25c37dea435b381315a22879862783a89df98f8",
+      "symbol": "changesRun",
+      "purpose": "Successful Start/exactly-one Wait owner; joined settlement observation, unchanged polling/callbacks, error-path cleanup and safe failure evidence. Preserve helper signature and existing ordinary response decode."
+    },
+    {
+      "insertion_after_H_line": 281,
+      "before_symbol": "changesSelection",
+      "purpose": "Tightly adjacent private bounded observation/settlement helpers and finite opt-in controls only; no new top-level test parent/new file/general framework"
+    }
+  ],
+  "protected_exact_regions": [
+    {
+      "lines_at_H": [
+        23,
+        47
+      ],
+      "bytes": 1321,
+      "sha256": "5998475f358bac0464df762c76b6f14c89d3bd8df6acccf95f2319820fe222ef",
+      "symbol": "changesFixture"
+    },
+    {
+      "lines_at_H": [
+        191,
+        199
+      ],
+      "bytes": 143,
+      "sha256": "3457057360f31967d68531070624cdf2e1c7778f0462d263685f246d5cb5652f",
+      "symbol": "slicesContainsInt"
+    },
+    {
+      "lines_at_H": [
+        259,
+        280
+      ],
+      "bytes": 698,
+      "sha256": "fef1065dbf91cf49484ed899851dec1bca58cc2139845bbc71eb461d397d56d6",
+      "purpose": "Existing HN_WP19_EVIDENCE successful transcript block and return"
+    },
+    {
+      "lines_at_H": [
+        770,
+        821
+      ],
+      "bytes": 1959,
+      "sha256": "8e430df135bcadfca90c3112d3844bb4a399491de2718dfe6d968e8654a11b2a",
+      "symbol": "TestExtensionChangesRealTenMinuteExpiry",
+      "purpose": "Whole test body including advertised expiry-1s, real600s and final expiry+1s invalidation remains byte-exact"
+    }
+  ],
+  "protected_other_journey_bodies": "Every other existing journey body/selector/assertion is byte-exact; source line numbers are anchor only, content hashes are proof anchors.",
+  "source_accounting": {
+    "current_Go_inputs": 317,
+    "fresh_inherited_identity": 311,
+    "new_only_exception": "extension_changes_acceptance_test.go",
+    "other316_H_exact": true,
+    "prior_four_Go_deltas_vs_DD": [
+      "examples/extensions/fake-tracker/main.go",
+      "examples/extensions/fake-tracker/main_test.go",
+      "extension_artifact_acceptance_test.go",
+      "extension_package_acceptance_test.go"
+    ],
+    "cumulative_five_Go_deltas_vs_DD": [
+      "examples/extensions/fake-tracker/main.go",
+      "examples/extensions/fake-tracker/main_test.go",
+      "extension_artifact_acceptance_test.go",
+      "extension_package_acceptance_test.go",
+      "extension_changes_acceptance_test.go"
+    ],
+    "protected_DD_complement_after_separate_source_authority": 312,
+    "all317_keyset_and_full_modes_required": true
+  },
+  "unchanged_special_surfaces": [
+    "extension_artifact_acceptance_test.go exact reviewed B bytes",
+    "examples/extensions/fake-tracker/main.go and main_test.go exact A fixes",
+    "extension_package_acceptance_test.go exact C harness/206 registry",
+    "current qualification workflow including C-F1 validator exact",
+    "all production code and public contracts"
+  ],
+  "read_only_proof_anchors": [
+    "extension_commands.go:cmdExtension public terminal {ok,data,error} JSON envelope",
+    "extension_host_command.go:36-104 signal.NotifyContext and startup/session separation",
+    "extension_host_lifecycle_test.go:21-43 unchanged hostRead/hostWrite raw framing and abrupt70/71/72/73 exits",
+    "internal/extension/session.go:20-37 clocks/RunResult;248-256 first-prefix deadline;395ff run;607/779 idle clocks",
+    "internal/extension/process.go:265-295 owned child group TERM/2s grace/5s exit/join",
+    "extension_changes.go:410-457 dispatch expiry;585-618 before/after rendering/persistence expiry checks",
+    "contracts/host-v1.md:172-185,214-224,500-508",
+    "contracts/conformance-fixtures.md:1871 capture10min"
+  ],
+  "no_new_task_WP_dependency_or_ownership_entry": true
+}
