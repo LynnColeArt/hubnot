@@ -162,3 +162,112 @@ func TestReplicationReceiptAcceptsObjectsAnotherTransactionLeftDenied(t *testing
 	firstAccepted, _ := acceptedMemoryRef("origin", identity.Actor, first.Envelope.Stream)
 	assertRefValue(t, firstAccepted, first.Commit)
 }
+
+func deniedAmong(t *testing.T, objects []string) []string {
+	t.Helper()
+	denied, _, err := loadReplicationAcceptanceState(mustGitText(t, "rev-parse", "--absolute-git-dir"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found []string
+	for _, id := range objects {
+		if denied[id] {
+			found = append(found, id)
+		}
+	}
+	return found
+}
+
+// A complete receipt whose anchor survived a crash can still be rewritten
+// as validated by recovery, so a later transaction through another remote
+// must not leave out the objects that receipt accepts.
+func TestReplicationReceiptDoesNotRelyOnAnAnchoredReceipt(t *testing.T) {
+	_, remote, receiver, _, first := setupMemoryReplicationFixture(t)
+	if err := os.Chdir(receiver); err != nil {
+		t.Fatal(err)
+	}
+	mustGit(t, "remote", "add", "mirror", remote)
+	stream := []string{first.Envelope.Stream}
+	origin := ReplicationSelection{Version: replicationSelectionVersion, Remote: "origin", Memories: stream, Budgets: defaultReplicationBudgets()}
+	mirror := ReplicationSelection{Version: replicationSelectionVersion, Remote: "mirror", Memories: stream, Budgets: defaultReplicationBudgets()}
+
+	// The complete receipt is written, then the process stops before it
+	// removes the pending anchor.
+	replicationRecordTransaction = func(gitDir string, result replicationTransactionResult, state string) error {
+		if err := recordReplicationTransaction(gitDir, result, state); err != nil {
+			return err
+		}
+		if state == "complete" {
+			return os.ErrClosed
+		}
+		return nil
+	}
+	_, err := runReplicationTransaction(origin)
+	replicationRecordTransaction = recordReplicationTransaction
+	if err == nil {
+		t.Fatal("origin transaction did not stop after its complete receipt")
+	}
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	if anchors, _ := filepath.Glob(filepath.Join(gitDir, "hn", "replication", "anchors", "*.json")); len(anchors) != 1 {
+		t.Fatalf("expected the origin anchor to survive, found %d", len(anchors))
+	}
+	if _, err := runReplicationTransaction(mirror); err != nil {
+		t.Fatal(err)
+	}
+	objects := reachableFrom(t, first.Commit)
+	if denied := deniedAmong(t, objects); len(denied) != 0 {
+		t.Fatalf("mirror import left %d objects denied", len(denied))
+	}
+	// Recovery rewrites the anchored origin receipt as validated, and the
+	// recovering transaction stops before it completes.
+	replicationAfterCopyHook = func() error { return os.ErrClosed }
+	_, err = runReplicationTransaction(origin)
+	replicationAfterCopyHook = nil
+	if err == nil {
+		t.Fatal("recovering origin transaction did not stop")
+	}
+	if receipts := replicationReceipts(t); len(receipts) == 0 {
+		t.Fatal("no receipts")
+	}
+	if denied := deniedAmong(t, objects); len(denied) != 0 {
+		t.Fatalf("the stream imported through mirror became denied: %d objects", len(denied))
+	}
+}
+
+// A transaction that validated another transaction's whole pending set
+// completes it, even when its own receipt records only part of that set.
+func TestReplicationReconciliationUsesTheWholeValidatedClosure(t *testing.T) {
+	publisher, _, receiver, identity, first := setupMemoryReplicationFixture(t)
+	if err := os.Chdir(publisher); err != nil {
+		t.Fatal(err)
+	}
+	second := appendReplicableMemory(t, identity, fullMemoryID("b"), nil, "independent second stream")
+	secondRef := mustMemoryRef(t, identity.Actor, second.Envelope.Stream)
+	mustGit(t, "push", "-q", "origin", secondRef+":"+secondRef)
+	if err := os.Chdir(receiver); err != nil {
+		t.Fatal(err)
+	}
+	firstOnly := ReplicationSelection{Version: replicationSelectionVersion, Remote: "origin", Memories: []string{first.Envelope.Stream}, Budgets: defaultReplicationBudgets()}
+	both := ReplicationSelection{Version: replicationSelectionVersion, Remote: "origin", Memories: []string{first.Envelope.Stream, second.Envelope.Stream}, Budgets: defaultReplicationBudgets()}
+	replicationAfterCopyHook = func() error { return os.ErrClosed }
+	_, err := runReplicationTransaction(both)
+	replicationAfterCopyHook = nil
+	if err == nil {
+		t.Fatal("first transaction did not stop after copy")
+	}
+	if _, err := runReplicationTransaction(firstOnly); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runReplicationTransaction(both); err != nil {
+		t.Fatal(err)
+	}
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	anchors, err := filepath.Glob(filepath.Join(gitDir, "hn", "replication", "anchors", "*.json"))
+	if err != nil || len(anchors) != 0 {
+		t.Fatalf("interrupted transaction was not reconciled: anchors %v, %v", anchors, err)
+	}
+	denied, pending, err := loadReplicationAcceptanceState(gitDir)
+	if err != nil || len(denied) != 0 || len(pending) != 0 {
+		t.Fatalf("after reconciliation: denied=%d pending=%d err=%v", len(denied), len(pending), err)
+	}
+}
