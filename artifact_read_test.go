@@ -4820,7 +4820,7 @@ func intelWitnessLowFD(t *testing.T) {
 	if c.Mode != "lowFD" {
 		switch c.Mode {
 		case "E2BIG":
-			t.Setenv("HN_INTEL_HUGE_CHILD_ONLY", strings.Repeat("x", 256*1024))
+			t.Setenv("HN_INTEL_HUGE_CHILD_ONLY", strings.Repeat("x", 2*1024*1024))
 		case "missing-exec":
 			t.Setenv("PATH", t.TempDir())
 		case "bad-interpreter":
