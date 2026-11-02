@@ -729,6 +729,18 @@ func changesDiagnosticReadPeer(path string) (*changesDiagnosticPeer, string) {
 	if readErr != nil || closeErr != nil || len(raw) > 2048 {
 		return nil, "unreadable"
 	}
+	// Struct decoding alone accepts absent/null primitives as zero values.
+	// Admit the complete existing wire schema before projecting typed fields.
+	var fields map[string]json.RawMessage
+	if !changesDiagnosticJSON(raw, &fields) || len(fields) != 8 {
+		return nil, "malformed"
+	}
+	for _, key := range []string{"observation_failure", "phase", "pid", "request", "keepalive", "keepalive_ok", "exit_intent", "at"} {
+		value, present := fields[key]
+		if !present || bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
+			return nil, "malformed"
+		}
+	}
 	if !changesDiagnosticJSON(raw, &peer) {
 		return nil, "malformed"
 	}
@@ -1152,6 +1164,97 @@ func changesDiagnosticStorageControls(t *testing.T) {
 			if peer, status := changesDiagnosticReadPeer(path); peer != nil || (status != "malformed" && status != "oversized") {
 				t.Fatal("invalid phase accepted")
 			}
+		}
+	})
+	t.Run("required-fields", func(t *testing.T) {
+		keys := []string{"observation_failure", "phase", "pid", "request", "keepalive", "keepalive_ok", "exit_intent", "at"}
+		wrongTypes := map[string]json.RawMessage{
+			"observation_failure": json.RawMessage(`0`), "phase": json.RawMessage(`0`),
+			"pid": json.RawMessage(`"1"`), "request": json.RawMessage(`"0"`),
+			"keepalive": json.RawMessage(`"0"`), "exit_intent": json.RawMessage(`"0"`),
+			"keepalive_ok": json.RawMessage(`"false"`), "at": json.RawMessage(`0`),
+		}
+		for _, phase := range []string{"pause", "explicit-exit", "observation-failure"} {
+			t.Run(phase, func(t *testing.T) {
+				complete := changesDiagnosticPeer{Phase: phase, PID: os.Getpid(), Request: 0, Exit: -1, At: time.Now().UTC()}
+				if phase == "explicit-exit" {
+					complete.Exit = 0
+				}
+				if phase == "observation-failure" {
+					complete.Exit, complete.ObservationFailure = 99, "write-failure"
+				}
+				raw, err := json.Marshal(complete)
+				if err != nil {
+					t.Fatal(err)
+				}
+				path := filepath.Join(t.TempDir(), "peer.json")
+				check := func(t *testing.T, wire []byte, valid bool) {
+					t.Helper()
+					if err := os.WriteFile(path, wire, 0600); err != nil {
+						t.Fatal(err)
+					}
+					peer, status := changesDiagnosticReadPeer(path)
+					if valid {
+						if status != "valid" || peer == nil || !reflect.DeepEqual(*peer, complete) {
+							t.Fatal("complete peer changed")
+						}
+					} else if peer != nil || status != "malformed" {
+						t.Fatal("incomplete or incorrectly typed peer accepted")
+					}
+				}
+				t.Run("complete", func(t *testing.T) { check(t, raw, true) })
+				for _, key := range keys {
+					for _, mutation := range []string{"delete", "null", "wrong-type"} {
+						t.Run(key+"/"+mutation, func(t *testing.T) {
+							var fields map[string]json.RawMessage
+							if err := json.Unmarshal(raw, &fields); err != nil {
+								t.Fatal(err)
+							}
+							switch mutation {
+							case "delete":
+								delete(fields, key)
+							case "null":
+								fields[key] = json.RawMessage(`null`)
+							case "wrong-type":
+								fields[key] = wrongTypes[key]
+							}
+							wire, err := json.Marshal(fields)
+							if err != nil {
+								t.Fatal(err)
+							}
+							check(t, wire, false)
+						})
+					}
+				}
+				for _, key := range []string{"pid", "request", "keepalive", "exit_intent"} {
+					t.Run(key+"/fractional-type", func(t *testing.T) {
+						var fields map[string]json.RawMessage
+						if err := json.Unmarshal(raw, &fields); err != nil {
+							t.Fatal(err)
+						}
+						fields[key] = json.RawMessage(`0.5`)
+						wire, err := json.Marshal(fields)
+						if err != nil {
+							t.Fatal(err)
+						}
+						check(t, wire, false)
+					})
+				}
+				for _, value := range []string{`"invalid"`, `"0001-01-01T00:00:00Z"`} {
+					t.Run("invalid-time/"+value, func(t *testing.T) {
+						var fields map[string]json.RawMessage
+						if err := json.Unmarshal(raw, &fields); err != nil {
+							t.Fatal(err)
+						}
+						fields["at"] = json.RawMessage(value)
+						wire, err := json.Marshal(fields)
+						if err != nil {
+							t.Fatal(err)
+						}
+						check(t, wire, false)
+					})
+				}
+			})
 		}
 	})
 	t.Run("public-redaction", func(t *testing.T) {
