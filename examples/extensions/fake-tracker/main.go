@@ -17,6 +17,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
@@ -874,11 +875,32 @@ func serve(args []string) error {
 		return err
 	}
 	defer listener.Close()
-	if err = os.WriteFile(*ready, []byte("http://"+listener.Addr().String()), 0600); err != nil {
+	if err = publishReady(*ready, []byte("http://"+listener.Addr().String())); err != nil {
 		return err
 	}
 	server := &http.Server{Handler: service, ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 10 * time.Second}
 	return server.Serve(listener)
+}
+
+// Publish only a complete, successfully closed raw URL at the final path.
+func publishReady(path string, raw []byte) error {
+	file, err := os.CreateTemp(filepath.Dir(path), ".ready-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(file.Name())
+	n, writeErr := file.Write(raw)
+	closeErr := file.Close()
+	if writeErr != nil {
+		return writeErr
+	}
+	if n != len(raw) {
+		return io.ErrShortWrite
+	}
+	if closeErr != nil {
+		return closeErr
+	}
+	return os.Rename(file.Name(), path)
 }
 
 // These private checks cover only the connector's declared/consumed public

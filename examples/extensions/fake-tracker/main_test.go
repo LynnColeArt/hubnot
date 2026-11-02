@@ -2,22 +2,27 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 )
 
 func TestPrivateAndWireBounds(t *testing.T) {
@@ -805,6 +810,155 @@ func TestNativeMutationErrorKeepsItsRecoveryMeaning(t *testing.T) {
 				if _, err := x.intent("update-2", params); err == nil || err.Error() != tc.code || output.Len() != 0 {
 					t.Fatal("definitive mutation refusal retried", err, output.String())
 				}
+			}
+		})
+	}
+}
+
+// The shell applies the limit only to this joined test child, after the parent
+// has prepared the real serve inputs. No production fault switch is involved.
+func TestServeReadyChild(t *testing.T) {
+	mode := os.Getenv("HN_READY_TEST_CHILD")
+	if mode == "" {
+		return
+	}
+	root := os.Getenv("HN_READY_TEST_ROOT")
+	args := []string{"--state", filepath.Join(root, "state"), "--credential", filepath.Join(root, "credential"), "--ready", filepath.Join(root, "ready")}
+	if mode == "limited" {
+		scratch := filepath.Join(root, "scratch")
+		err := os.WriteFile(scratch, []byte("x"), 0600)
+		if !errors.Is(err, syscall.EFBIG) {
+			t.Fatalf("scratch did not prove actual EFBIG: %v", err)
+		}
+		if err = os.Remove(scratch); err != nil {
+			t.Fatal(err)
+		}
+		err = serve(args)
+		if !errors.Is(err, syscall.EFBIG) {
+			t.Fatalf("serve did not reach actual EFBIG: %v", err)
+		}
+		t.Logf("actual scratch and serve EFBIG: %v", err)
+		if _, err = os.Stat(filepath.Join(root, "ready")); !os.IsNotExist(err) {
+			t.Fatalf("failed publication exposed final ready path: %v", err)
+		}
+		residue, err := filepath.Glob(filepath.Join(root, ".ready-*"))
+		if err != nil || len(residue) != 0 {
+			t.Fatal("temporary publication residue", residue, err)
+		}
+		return
+	}
+	if err := serve(args); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestServeReadyPublication(t *testing.T) {
+	for _, mode := range []string{"limited", "http", "rename-error", "missing-directory"} {
+		t.Run(mode, func(t *testing.T) {
+			root := t.TempDir()
+			state := []byte(`{"item":{"id":"42","version":1,"title":"ready"},"receipts":{},"writes":0}`)
+			credential := []byte(`{"token":"ready-secret"}`)
+			for name, raw := range map[string][]byte{"state": state, "credential": credential} {
+				if err := os.WriteFile(filepath.Join(root, name), raw, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			defer func() {
+				for name, want := range map[string][]byte{"state": state, "credential": credential} {
+					got, err := os.ReadFile(filepath.Join(root, name))
+					if err != nil || !bytes.Equal(got, want) {
+						t.Errorf("input changed: %s %v", name, err)
+					}
+				}
+			}()
+			if mode == "rename-error" || mode == "missing-directory" {
+				ready := filepath.Join(root, "ready")
+				if mode == "rename-error" {
+					if err := os.Mkdir(ready, 0700); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					ready = filepath.Join(root, "absent", "ready")
+				}
+				err := serve([]string{"--state", filepath.Join(root, "state"), "--credential", filepath.Join(root, "credential"), "--ready", ready})
+				if err == nil {
+					t.Fatal("publication failure accepted")
+				}
+				t.Logf("actual publication refusal: %v", err)
+				residue, _ := filepath.Glob(filepath.Join(root, ".ready-*"))
+				if len(residue) != 0 {
+					t.Fatal("temporary publication residue", residue)
+				}
+				return
+			}
+			self, err := os.Executable()
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, self, "-test.run=^TestServeReadyChild$", "-test.v")
+			if mode == "limited" {
+				cmd = exec.CommandContext(ctx, "sh", "-c", `trap '' XFSZ; ulimit -f 0; exec "$@"`, "ready-limit", self, "-test.run=^TestServeReadyChild$", "-test.v")
+			}
+			cmd.Env = append(os.Environ(), "HN_READY_TEST_CHILD="+mode, "HN_READY_TEST_ROOT="+root)
+			if mode == "limited" {
+				raw, err := cmd.CombinedOutput()
+				t.Logf("joined limited child: %s", raw)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
+			var output bytes.Buffer
+			cmd.Stdout = &output
+			cmd.Stderr = &output
+			if err := cmd.Start(); err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				_ = cmd.Process.Kill()
+				err := cmd.Wait()
+				t.Logf("serve child joined: %v %s", err, output.String())
+			}()
+			deadline := time.Now().Add(10 * time.Second)
+			var ready []byte
+			for {
+				ready, err = os.ReadFile(filepath.Join(root, "ready"))
+				if err == nil {
+					break
+				}
+				if !os.IsNotExist(err) || time.Now().After(deadline) {
+					t.Fatal("ready", err)
+				}
+				time.Sleep(5 * time.Millisecond)
+			}
+			address := string(ready)
+			if !strings.HasPrefix(address, "http://127.0.0.1:") || strings.ContainsAny(address, "\n\r\"") {
+				t.Fatalf("incomplete raw URL %q", address)
+			}
+			info, err := os.Stat(filepath.Join(root, "ready"))
+			if err != nil || info.Mode().Perm() != 0600 {
+				t.Fatal("ready mode", info, err)
+			}
+			req, err := http.NewRequest("GET", address+"/item", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Authorization", "Bearer ready-secret")
+			client := &http.Client{Timeout: 5 * time.Second}
+			response, err := client.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			raw, err := io.ReadAll(response.Body)
+			closeErr := response.Body.Close()
+			if err != nil || closeErr != nil || response.StatusCode != 200 || !bytes.Contains(raw, []byte(`"id":"42"`)) {
+				t.Fatal(response.StatusCode, string(raw), err, closeErr)
+			}
+			residue, _ := filepath.Glob(filepath.Join(root, ".ready-*"))
+			if len(residue) != 0 {
+				t.Fatal(residue)
 			}
 		})
 	}

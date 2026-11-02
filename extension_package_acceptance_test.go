@@ -102,24 +102,17 @@ func TestExtensionPackageQualification(t *testing.T) {
 		t.Setenv(key, references[name])
 	}
 	wp25MissingReferenceControl(t)
-	t.Run("native-public-journey", func(t *testing.T) { wp25NativePublicJourney(t, binary) })
-	t.Run("remaining-typed-limits", func(t *testing.T) { wp25RemainingTypedLimits(t, binary, references) })
-	t.Run("direct-envelope", func(t *testing.T) { wp25EnvelopeBounds(t, binary) })
-	t.Run("management-limits", func(t *testing.T) { wp25ManagementLimits(t, binary) })
-	t.Run("standalone-local-input-limits", func(t *testing.T) { wp25ConsumerInputLimits(t, references) })
-	t.Run("selected-ref-live-bound", wp25SelectedRefLimit)
-	t.Run("native-limits", wp25NativeLimits)
-	t.Run("inherited-public-count-limits", func(t *testing.T) { wp25InheritedPublicCountLimits(t, binary) })
-	t.Run("lifecycle-limits", func(t *testing.T) { wp25LifecycleLimits(t, binary) })
-	t.Run("artifact-limits", wp25ArtifactLimits)
-	t.Run("read-object-and-aggregate-limits", wp25ReadBudgets)
-	t.Run("exchange-object-limit", wp25ExchangeObjectLimit)
-	t.Run("artifact-parent-limit", wp25ArtifactParentLimit)
-	t.Run("artifact-record-count-and-enclosing-deadline", wp25ArtifactRecordCountLimit)
-	// These are real supplied-host public calls. Signed fixture construction,
-	// hostile peers in this test executable and source-assisted context checks
-	// retain those narrower labels; none is a standalone reference substitute.
-	for _, journey := range wp25PublicJourneys {
+	registry := wp25QualificationJourneys(binary, references)
+	group := os.Getenv("HN_WP25_GROUP")
+	if group == "" {
+		group = "all"
+	}
+	journeys, names, complement, err := wp25SelectQualificationJourneys(registry, group)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The exact original callbacks and compiled-self naming exception remain.
+	for _, journey := range journeys {
 		if journey.name == "TestExtensionFakeTrackerNativeDefaultInert" {
 			t.Run(journey.name, func(t *testing.T) { wp25TopLevelFixtureJourney(t, journey.name) })
 		} else {
@@ -134,9 +127,18 @@ func TestExtensionPackageQualification(t *testing.T) {
 		if err := os.MkdirAll(evidence, 0700); err != nil {
 			t.Fatal(err)
 		}
-		report := map[string]any{"schema": "hn.extension-package-row/1", "source_commit": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD")), "source_tree": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD^{tree}")), "target": runtime.GOOS + "/" + runtime.GOARCH, "harness_compiler": runtime.Version(), "qualified_git_version": strings.TrimSpace(runOperationalGit(t, ".", "--version")), "harness_sha256": wp25Digest(t, wp25Self(t)), "variant": variant, "executable": binary, "executable_sha256": wp25Digest(t, binary), "references": references, "source_fallback": false, "result": "PASS"}
+		referenceHashes := map[string]string{}
+		for name, path := range references {
+			referenceHashes[name] = wp25Digest(t, path)
+		}
+		identity := map[string]any{"source_commit": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD")), "source_tree": strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD^{tree}")), "target": runtime.GOOS + "/" + runtime.GOARCH, "harness_compiler": runtime.Version(), "qualified_git_version": strings.TrimSpace(runOperationalGit(t, ".", "--version")), "harness_sha256": wp25Digest(t, wp25Self(t)), "variant": variant, "executable_sha256": wp25Digest(t, binary), "reference_sha256": referenceHashes, "run_id": os.Getenv("GITHUB_RUN_ID"), "run_attempt": os.Getenv("GITHUB_RUN_ATTEMPT")}
+		inventory := make([]string, len(registry))
+		for i, j := range registry {
+			inventory[i] = j.name
+		}
+		report := map[string]any{"schema": "hn.extension-package-group/1", "group": group, "identity": identity, "canonical_inventory": inventory, "inventory_sha256": wp25QualificationInventorySHA256, "expected_roots": names, "excluded_roots": complement, "source_fallback": false, "result": "PASS"}
 		raw, _ := json.MarshalIndent(report, "", "  ")
-		if err := os.WriteFile(filepath.Join(evidence, variant+"-row.json"), append(raw, '\n'), 0600); err != nil {
+		if err := os.WriteFile(filepath.Join(evidence, group+"-group.json"), append(raw, '\n'), 0600); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -464,199 +466,338 @@ type wp25Journey struct {
 	run  func(*testing.T)
 }
 
-var wp25PublicJourneys = []wp25Journey{
-	{"TestArtifactStoreHistoricalNativeBytesCLI", TestArtifactStoreHistoricalNativeBytesCLI},
-	{"TestArtifactStoreIntentLockAndUncertainCLI", TestArtifactStoreIntentLockAndUncertainCLI},
-	{"TestArtifactStoreCASRaceCLI", TestArtifactStoreCASRaceCLI},
-	{"TestArtifactStoreIntentStageContractCLI", TestArtifactStoreIntentStageContractCLI},
-	{"TestArtifactStorePrivateIntentByteBudgetCLI", TestArtifactStorePrivateIntentByteBudgetCLI},
-	{"TestArtifactStoreStrictIntentCLI", TestArtifactStoreStrictIntentCLI},
-	{"TestArtifactStoreExactRetryRecoveryCLI", TestArtifactStoreExactRetryRecoveryCLI},
-	{"TestArtifactStoreStrictNestedIntentCLI", TestArtifactStoreStrictNestedIntentCLI},
-	{"TestArtifactStoreIntentPayloadShapeCLI", TestArtifactStoreIntentPayloadShapeCLI},
-	{"TestArtifactCatalogCollectionAndCycleCLI", TestArtifactCatalogCollectionAndCycleCLI},
-	{"TestArtifactClosureBeyondExchangeAncestryCLI", TestArtifactClosureBeyondExchangeAncestryCLI},
-	{"TestArtifactSchemaCommands", TestArtifactSchemaCommands},
-	{"TestArtifactStorePublishCLI", TestArtifactStorePublishCLI},
-	{"TestArtifactStoreOpenAndRefusalsCLI", TestArtifactStoreOpenAndRefusalsCLI},
-	{"TestArtifactStoreSelectedPolicyCLI", TestArtifactStoreSelectedPolicyCLI},
-	{"TestArtifactStoreTypeEvolutionCLI", TestArtifactStoreTypeEvolutionCLI},
-	{"TestArtifactStoreSHA256GitCLI", TestArtifactStoreSHA256GitCLI},
-	{"TestArtifactStoreAcceptedReadCLI", TestArtifactStoreAcceptedReadCLI},
-	{"TestArtifactStoreMissingObjectNoFetchCLI", TestArtifactStoreMissingObjectNoFetchCLI},
-	{"TestArtifactStoreLargeVerifiedParentContextCLI", TestArtifactStoreLargeVerifiedParentContextCLI},
-	{"TestArtifactStoreConflictingActorGitHistoriesCLI", TestArtifactStoreConflictingActorGitHistoriesCLI},
-	{"TestArtifactStoreCorruptGitObjectCLI", TestArtifactStoreCorruptGitObjectCLI},
-	{"TestArtifactStoreKeylessReadCLI", TestArtifactStoreKeylessReadCLI},
-	{"TestArtifactStoreOpeningReplayObservesImportedHeadsCLI", TestArtifactStoreOpeningReplayObservesImportedHeadsCLI},
-	{"TestArtifactStoreExplicitPublicSources", TestArtifactStoreExplicitPublicSources},
-	{"TestArtifactStoreSourceChangesDuringRead", TestArtifactStoreSourceChangesDuringRead},
-	{"TestNativeContributionClosureProtocolCLI", TestNativeContributionClosureProtocolCLI},
-	{"TestNativeContributionLegacyFaultsCLI", TestNativeContributionLegacyFaultsCLI},
-	{"TestNativeRetainedClosurePublicCLI", TestNativeRetainedClosurePublicCLI},
-	{"TestNativeContributionClassicGitProgress", TestNativeContributionClassicGitProgress},
-	{"TestNativeContributionClosureCancellationCLI", TestNativeContributionClosureCancellationCLI},
-	{"TestNativeContributionStderrHolderCLI", TestNativeContributionStderrHolderCLI},
-	{"TestNativeContributionPrivateHelperBounds", TestNativeContributionPrivateHelperBounds},
-	{"TestNativeContributionLargeBlobPublicCLI", TestNativeContributionLargeBlobPublicCLI},
-	{"TestNativeContributionWorkerSetupOwnership", TestNativeContributionWorkerSetupOwnership},
-	{"TestExtensionChangesPrivateProofAccountingAndEviction", TestExtensionChangesPrivateProofAccountingAndEviction},
-	{"TestArtifactStoreCountPreflightGraphCLI", TestArtifactStoreCountPreflightGraphCLI},
-	{"TestArtifactStoreFullReaderProtocolCLI", TestArtifactStoreFullReaderProtocolCLI},
-	{"TestArtifactFullReaderOwnerFinalizationCLI", TestArtifactFullReaderOwnerFinalizationCLI},
-	{"TestArtifactFullReaderCancellationCLI", TestArtifactFullReaderCancellationCLI},
-	{"TestArtifactFullReaderOneShotLifecycle", TestArtifactFullReaderOneShotLifecycle},
-	{"TestArtifactIOPipeOwnership", TestArtifactIOPipeOwnership},
-	{"TestArtifactFullReaderFirstErrorCLI", TestArtifactFullReaderFirstErrorCLI},
-	{"TestArtifactBlobWriterProtocolCLI", TestArtifactBlobWriterProtocolCLI},
-	{"TestArtifactBlobWriterUnreachablePublicCLI", TestArtifactBlobWriterUnreachablePublicCLI},
-	{"TestArtifactStoreCountPreflightBatchProtocolCLI", TestArtifactStoreCountPreflightBatchProtocolCLI},
-	{"TestArtifactStoreCountPreflightBeforeBodyCLI", TestArtifactStoreCountPreflightBeforeBodyCLI},
-	{"TestArtifactStoreCountPreflightUniqueCommitBytesCLI", TestArtifactStoreCountPreflightUniqueCommitBytesCLI},
-	{"TestArtifactStoreCountPreflightRawParentCLI", TestArtifactStoreCountPreflightRawParentCLI},
-	{"TestArtifactStoreCountPreflightCancellationCLI", TestArtifactStoreCountPreflightCancellationCLI},
-	{"TestArtifactClosureCausalRefusalsCLI", TestArtifactClosureCausalRefusalsCLI},
-	{"TestArtifactClosureMissingGitObjectCLI", TestArtifactClosureMissingGitObjectCLI},
-	{"TestArtifactClosurePublicOnlyReconstructionCLI", TestArtifactClosurePublicOnlyReconstructionCLI},
-	{"TestArtifactClosureSelectorRefusalsCLI", TestArtifactClosureSelectorRefusalsCLI},
-	{"TestArtifactClosureSelectedPrefixCLI", TestArtifactClosureSelectedPrefixCLI},
-	{"TestArtifactClosureLogicalConflictAndCycleCLI", TestArtifactClosureLogicalConflictAndCycleCLI},
-	{"TestArtifactClosureConversionDependenciesCLI", TestArtifactClosureConversionDependenciesCLI},
-	{"TestArtifactGitIndependentClonesCLI", TestArtifactGitIndependentClonesCLI},
-	{"TestArtifactGitCausalRefusalsCLI", TestArtifactGitCausalRefusalsCLI},
-	{"TestArtifactGitSelectorRefusalsCLI", TestArtifactGitSelectorRefusalsCLI},
-	{"TestArtifactGitLogicalHeadsAndOrderCLI", TestArtifactGitLogicalHeadsAndOrderCLI},
-	{"TestArtifactGitAncestryLimitCLI", TestArtifactGitAncestryLimitCLI},
-	{"TestArtifactGitPolicyBeforeEffectsCLI", TestArtifactGitPolicyBeforeEffectsCLI},
-	{"TestArtifactGitSHA256CLI", TestArtifactGitSHA256CLI},
-	{"TestArtifactGitWireBudgetBeforeCopyCLI", TestArtifactGitWireBudgetBeforeCopyCLI},
-	{"TestArtifactGitDispatchedPushFailureIsUncertainCLI", TestArtifactGitDispatchedPushFailureIsUncertainCLI},
-	{"TestArtifactGitIndependentNativeSelectionBudgetCLI", TestArtifactGitIndependentNativeSelectionBudgetCLI},
-	{"TestArtifactGitFrozenRawBodiesCLI", TestArtifactGitFrozenRawBodiesCLI},
-	{"TestArtifactGitFetchNamedAcceptedNamespaceCLI", TestArtifactGitFetchNamedAcceptedNamespaceCLI},
-	{"TestArtifactGitFetchNamedNamespaceRace", TestArtifactGitFetchNamedNamespaceRace},
-	{"TestArtifactGitNamedTransactionStaleOldIsAtomic", TestArtifactGitNamedTransactionStaleOldIsAtomic},
-	{"TestArtifactGitFetchAcknowledgementCLI", TestArtifactGitFetchAcknowledgementCLI},
-	{"TestArtifactExchangeIndependentCLI", TestArtifactExchangeIndependentCLI},
-	{"TestArtifactExchangeRefusalsCLI", TestArtifactExchangeRefusalsCLI},
-	{"TestArtifactExchangeOpaqueCLI", TestArtifactExchangeOpaqueCLI},
-	{"TestArtifactExchangeSelectorRefusalsCLI", TestArtifactExchangeSelectorRefusalsCLI},
-	{"TestArtifactExchangeWireBoundCLI", TestArtifactExchangeWireBoundCLI},
-	{"TestArtifactExchangeMissingSchemaCLI", TestArtifactExchangeMissingSchemaCLI},
-	{"TestArtifactExchangeShapesAndHeadsCLI", TestArtifactExchangeShapesAndHeadsCLI},
-	{"TestArtifactExchangeCASWrongOldCLI", TestArtifactExchangeCASWrongOldCLI},
-	{"TestArtifactExchangeOpaqueAggregateAndLockCLI", TestArtifactExchangeOpaqueAggregateAndLockCLI},
-	{"TestArtifactExchangeDepthLiveCLI", TestArtifactExchangeDepthLiveCLI},
-	{"TestArtifactExchangeSelectedPolicyCLI", TestArtifactExchangeSelectedPolicyCLI},
-	{"TestArtifactExchangeMalformedSignaturePreservationCLI", TestArtifactExchangeMalformedSignaturePreservationCLI},
-	{"TestArtifactExchangeLostAcknowledgementCLI", TestArtifactExchangeLostAcknowledgementCLI},
-	{"TestArtifactExchangeFrozenTransportBodiesCLI", TestArtifactExchangeFrozenTransportBodiesCLI},
-	{"TestArtifactExchangeRefAliasesBeyondObjectCountCLI", TestArtifactExchangeRefAliasesBeyondObjectCountCLI},
-	{"TestArtifactExchangeUnreachableObjectsCLI", TestArtifactExchangeUnreachableObjectsCLI},
-	{"TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI", TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI},
-	{"TestArtifactExchangeNamedAcceptedRefIsolationCLI", TestArtifactExchangeNamedAcceptedRefIsolationCLI},
-	{"TestArtifactRevisionLiveCLI", TestArtifactRevisionLiveCLI},
-	{"TestArtifactRevisionIndependentActorsCLI", TestArtifactRevisionIndependentActorsCLI},
-	{"TestArtifactRevisionCausalRefusalsCLI", TestArtifactRevisionCausalRefusalsCLI},
-	{"TestArtifactRevisionEnvelopeBytesCLI", TestArtifactRevisionEnvelopeBytesCLI},
-	{"TestArtifactRevisionResumeOriginalCandidateCLI", TestArtifactRevisionResumeOriginalCandidateCLI},
-	{"TestArtifactOperationReadOnlyCLI", TestArtifactOperationReadOnlyCLI},
-	{"TestArtifactOperationPublishedLookupAndRetryCLI", TestArtifactOperationPublishedLookupAndRetryCLI},
-	{"TestArtifactOperationFoundAndSourceCutCLI", TestArtifactOperationFoundAndSourceCutCLI},
-	{"TestArtifactOperationWriterEvidenceCLI", TestArtifactOperationWriterEvidenceCLI},
-	{"TestArtifactOperationNewWriterCLI", TestArtifactOperationNewWriterCLI},
-	{"TestArtifactOperationRefusalsAndBoundsCLI", TestArtifactOperationRefusalsAndBoundsCLI},
-	{"TestArtifactOperationInterruptedRestartCLI", TestArtifactOperationInterruptedRestartCLI},
-	{"TestArtifactOperationInvalidPublicHistoryCLI", TestArtifactOperationInvalidPublicHistoryCLI},
-	{"TestArtifactOperationJournalFailureCLI", TestArtifactOperationJournalFailureCLI},
-	{"TestArtifactOperationCurrentConflictAndPublicReconstructionCLI", TestArtifactOperationCurrentConflictAndPublicReconstructionCLI},
-	{"TestArtifactListLiveCLI", TestArtifactListLiveCLI},
-	{"TestArtifactLocalHelpAndHumanListCLI", TestArtifactLocalHelpAndHumanListCLI},
-	{"TestArtifactListExactPageBoundCLI", TestArtifactListExactPageBoundCLI},
-	{"TestArtifactSearchHelpAndPublicOnlyReaderCLI", TestArtifactSearchHelpAndPublicOnlyReaderCLI},
-	{"TestArtifactSearchPublicCLI", TestArtifactSearchPublicCLI},
-	{"TestArtifactSearchPagingAndRefusalsCLI", TestArtifactSearchPagingAndRefusalsCLI},
-	{"TestArtifactSearchEntireSelectionBudgetCLI", TestArtifactSearchEntireSelectionBudgetCLI},
-	{"TestArtifactSearchOversizedPageCLI", TestArtifactSearchOversizedPageCLI},
-	{"TestArtifactSearchConflictAndUnselectedCLI", TestArtifactSearchConflictAndUnselectedCLI},
-	{"TestArtifactSearchInertConsumerControlCLI", TestArtifactSearchInertConsumerControlCLI},
-	{"TestArtifactFullPublicJourneyCLI", TestArtifactFullPublicJourneyCLI},
-	{"TestArtifactCombinedOpaqueAndNativeCLI", TestArtifactCombinedOpaqueAndNativeCLI},
-	{"TestArtifactCombinedFetchLostAcknowledgementCLI", TestArtifactCombinedFetchLostAcknowledgementCLI},
-	{"TestExtensionRegistrationCLI", TestExtensionRegistrationCLI},
-	{"TestExtensionRegistryRawArrayTypesCLI", TestExtensionRegistryRawArrayTypesCLI},
-	{"TestExtensionArtifactReadGrantCLI", TestExtensionArtifactReadGrantCLI},
-	{"TestExtensionEnablementCLI", TestExtensionEnablementCLI},
-	{"TestExtensionFrameInspectCLI", TestExtensionFrameInspectCLI},
-	{"TestExtensionFrameInspectPartialDeadlineCLI", TestExtensionFrameInspectPartialDeadlineCLI},
-	{"TestExtensionFrameInputRestoresStdin", TestExtensionFrameInputRestoresStdin},
-	{"TestExtensionRunCLI", TestExtensionRunCLI},
-	{"TestExtensionRunRefusalsCLI", TestExtensionRunRefusalsCLI},
-	{"TestExtensionRunDisableAndSlotsCLI", TestExtensionRunDisableAndSlotsCLI},
-	{"TestExtensionRunNoImplicitLaunchCLI", TestExtensionRunNoImplicitLaunchCLI},
-	{"TestExtensionRunStartupDeadlineCLI", TestExtensionRunStartupDeadlineCLI},
-	{"TestExtensionRunRemoveAcrossRepositoriesCLI", TestExtensionRunRemoveAcrossRepositoriesCLI},
-	{"TestExtensionRunIdleDoesNotHoldNativeLockCLI", TestExtensionRunIdleDoesNotHoldNativeLockCLI},
-	{"TestExtensionRunIdleDeadlineCLI", TestExtensionRunIdleDeadlineCLI},
-	{"TestExtensionRunCrashCleansPipeOwningDescendantCLI", TestExtensionRunCrashCleansPipeOwningDescendantCLI},
-	{"TestExtensionNativeIdentityMissingCLI", TestExtensionNativeIdentityMissingCLI},
-	{"TestExtensionNativeSixFamiliesCLI", TestExtensionNativeSixFamiliesCLI},
-	{"TestExtensionNativeGrantDenialsCLI", TestExtensionNativeGrantDenialsCLI},
-	{"TestExtensionNativeGovernedSixFamiliesCLI", TestExtensionNativeGovernedSixFamiliesCLI},
-	{"TestExtensionNativePendingAndPolicyRefusalCLI", TestExtensionNativePendingAndPolicyRefusalCLI},
-	{"TestExtensionNativeSelectedCutAndPagingCLI", TestExtensionNativeSelectedCutAndPagingCLI},
-	{"TestExtensionNativeInvalidHistoryCLI", TestExtensionNativeInvalidHistoryCLI},
-	{"TestExtensionNativeCancellationSettlementCLI", TestExtensionNativeCancellationSettlementCLI},
-	{"TestExtensionNativeConflictAndResolveGrantCLI", TestExtensionNativeConflictAndResolveGrantCLI},
-	{"TestExtensionNativeUnboundAndUnsupportedFramesCLI", TestExtensionNativeUnboundAndUnsupportedFramesCLI},
-	{"TestExtensionNativeMissingSignerDoesNotInitializeCLI", TestExtensionNativeMissingSignerDoesNotInitializeCLI},
-	{"TestExtensionNativeBusyLockBeforeWriterCLI", TestExtensionNativeBusyLockBeforeWriterCLI},
-	{"TestExtensionNativePrivateReservationLookupCLI", TestExtensionNativePrivateReservationLookupCLI},
-	{"TestExtensionArtifactTypeReadRawCLI", TestExtensionArtifactTypeReadRawCLI},
-	{"TestExtensionArtifactModelsRawCLI", TestExtensionArtifactModelsRawCLI},
-	{"TestExtensionArtifactGrantRefusalsRawCLI", TestExtensionArtifactGrantRefusalsRawCLI},
-	{"TestExtensionArtifactSearchBoundsAndCursorRawCLI", TestExtensionArtifactSearchBoundsAndCursorRawCLI},
-	{"TestExtensionArtifactFullResponseAtAndOverRawCLI", TestExtensionArtifactFullResponseAtAndOverRawCLI},
-	{"TestExtensionArtifactOpaqueRawCLI", TestExtensionArtifactOpaqueRawCLI},
-	{"TestExtensionArtifactInterruptedRecoveryRawCLI", TestExtensionArtifactInterruptedRecoveryRawCLI},
-	{"TestExtensionArtifactPolicyAndValidationRawCLI", TestExtensionArtifactPolicyAndValidationRawCLI},
-	{"TestExtensionArtifactConflictRawCLI", TestExtensionArtifactConflictRawCLI},
-	{"TestExtensionArtifactNoReadGrantRawCLI", TestExtensionArtifactNoReadGrantRawCLI},
-	{"TestExtensionArtifactSelectedTypeCutRawCLI", TestExtensionArtifactSelectedTypeCutRawCLI},
-	{"TestExtensionArtifactEmptyNamespaceCutRawCLI", TestExtensionArtifactEmptyNamespaceCutRawCLI},
-	{"TestExtensionArtifactPostProjectionSourceRecheckRawCLI", TestExtensionArtifactPostProjectionSourceRecheckRawCLI},
-	{"TestExtensionArtifactReplayIntentFieldsRawCLI", TestExtensionArtifactReplayIntentFieldsRawCLI},
-	{"TestExtensionChangesRawEmptyCapture", TestExtensionChangesRawEmptyCapture},
-	{"TestExtensionChangesPagingAndDurableNativeAppend", TestExtensionChangesPagingAndDurableNativeAppend},
-	{"TestExtensionChangesStalePageAndSafeRescan", TestExtensionChangesStalePageAndSafeRescan},
-	{"TestExtensionChangesCustomAndMixedAppend", TestExtensionChangesCustomAndMixedAppend},
-	{"TestExtensionChangesAuthorizationAndVerifierLoss", TestExtensionChangesAuthorizationAndVerifierLoss},
-	{"TestExtensionChangesUnsupportedCustomPolicyBeforeState", TestExtensionChangesUnsupportedCustomPolicyBeforeState},
-	{"TestExtensionChangesInvalidHistoryAndQuarantine", TestExtensionChangesInvalidHistoryAndQuarantine},
-	{"TestExtensionChangesGovernedTwoActorVisibility", TestExtensionChangesGovernedTwoActorVisibility},
-	{"TestExtensionChangesRawEntryCapacity", TestExtensionChangesRawEntryCapacity},
-	{"TestExtensionChangesRawCanonicalCapacity", TestExtensionChangesRawCanonicalCapacity},
-	{"TestExtensionChangesRealTenMinuteExpiry", TestExtensionChangesRealTenMinuteExpiry},
-	{"TestExtensionChangesRawWireBoundary", TestExtensionChangesRawWireBoundary},
-	{"TestExtensionChangesRawTypedBoundaries", TestExtensionChangesRawTypedBoundaries},
-	{"TestExtensionChangesNativeDefaultRemainsInert", TestExtensionChangesNativeDefaultRemainsInert},
-	{"TestExtensionChangesVerifiedHistoryRewindInvalidates", TestExtensionChangesVerifiedHistoryRewindInvalidates},
-	{"TestExtensionChangesAllVisibleCommentRevisions", TestExtensionChangesAllVisibleCommentRevisions},
-	{"TestExtensionChangesSourceRaceDuringPage", TestExtensionChangesSourceRaceDuringPage},
-	{"TestExtensionFakeTrackerStandaloneRecovery", TestExtensionFakeTrackerStandaloneRecovery},
-	{"TestExtensionFakeTrackerReplacementDisconnectAndInvalidation", TestExtensionFakeTrackerReplacementDisconnectAndInvalidation},
-	{"TestExtensionFakeTrackerConcurrentEditsRefuseWithoutResolution", TestExtensionFakeTrackerConcurrentEditsRefuseWithoutResolution},
-	{"TestExtensionFakeTrackerRawGrantRepositoryAndPrivacyControls", TestExtensionFakeTrackerRawGrantRepositoryAndPrivacyControls},
-	{"TestExtensionFakeTrackerNativeDefaultInert", TestExtensionFakeTrackerNativeDefaultInert},
-	{"TestExtensionFakeTrackerRecoveryKeepsOriginalContentAndParents", TestExtensionFakeTrackerRecoveryKeepsOriginalContentAndParents},
-	{"TestExtensionFakeTrackerRejectsHostResponseFaults", TestExtensionFakeTrackerRejectsHostResponseFaults},
-	{"TestExtensionFakeTrackerConsumedUncertaintyRecovery", TestExtensionFakeTrackerConsumedUncertaintyRecovery},
-	{"TestExtensionCharterStandaloneJourney", TestExtensionCharterStandaloneJourney},
-	{"TestExtensionCharterMissingRequiredType", TestExtensionCharterMissingRequiredType},
-	{"TestInventoryStandalonePublicJourney", TestInventoryStandalonePublicJourney},
-	{"TestInventoryMissingRequiredSchemaPublicExchange", TestInventoryMissingRequiredSchemaPublicExchange},
-	{"TestInventoryStructuredFieldBounds", TestInventoryStructuredFieldBounds},
-	{"TestInventorySuppliedConsumerResponseFaultsStopBeforeEffects", TestInventorySuppliedConsumerResponseFaultsStopBeforeEffects},
+const wp25QualificationInventorySHA256 = "6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c"
+
+func wp25HeavyQualificationRoot(name string) bool {
+	switch name {
+	case "inherited-public-count-limits", "lifecycle-limits", "artifact-record-count-and-enclosing-deadline", "TestArtifactBlobWriterProtocolCLI":
+		return true
+	}
+	return false
+}
+
+func wp25SelectQualificationJourneys(registry []wp25Journey, group string) ([]wp25Journey, []string, []string, error) {
+	if group != "all" && group != "heavy" && group != "remaining" {
+		return nil, nil, nil, fmt.Errorf("unknown qualification group %q", group)
+	}
+	names := []string{}
+	seen := map[string]bool{}
+	heavy := 0
+	for _, j := range registry {
+		if j.run == nil || seen[j.name] || j.name == "" {
+			return nil, nil, nil, fmt.Errorf("invalid qualification registry %q", j.name)
+		}
+		seen[j.name] = true
+		names = append(names, j.name)
+		if wp25HeavyQualificationRoot(j.name) {
+			heavy++
+		}
+	}
+	digest := fmt.Sprintf("%x", sha256.Sum256([]byte(strings.Join(names, "\n")+"\n")))
+	if len(names) != 206 || heavy != 4 || digest != wp25QualificationInventorySHA256 {
+		return nil, nil, nil, fmt.Errorf("qualification inventory changed: %d roots %d heavy %s", len(names), heavy, digest)
+	}
+	selected := []wp25Journey{}
+	expected := []string{}
+	complement := []string{}
+	for _, j := range registry {
+		if group == "all" || (group == "heavy") == wp25HeavyQualificationRoot(j.name) {
+			selected = append(selected, j)
+			expected = append(expected, j.name)
+		} else {
+			complement = append(complement, j.name)
+		}
+	}
+	return selected, expected, complement, nil
+}
+
+func TestWP25QualificationGroups(t *testing.T) {
+	registry := wp25QualificationJourneys("", nil)
+	for group, count := range map[string]int{"all": 206, "heavy": 4, "remaining": 202} {
+		selected, names, excluded, err := wp25SelectQualificationJourneys(registry, group)
+		if err != nil || len(selected) != count || len(names) != count || len(excluded) != 206-count {
+			t.Fatal(group, len(selected), err)
+		}
+		// Selection retains the actual original callback values, not replacement stubs.
+		at := 0
+		for _, j := range registry {
+			if at < len(selected) && selected[at].name == j.name {
+				if reflect.ValueOf(j.run).Pointer() != reflect.ValueOf(selected[at].run).Pointer() {
+					t.Fatal("callback changed", j.name)
+				}
+				at++
+			}
+		}
+		if at != len(selected) {
+			t.Fatal("selection order changed")
+		}
+	}
+	for _, group := range []string{"", "unknown", "Heavy"} {
+		if _, _, _, err := wp25SelectQualificationJourneys(registry, group); err == nil {
+			t.Fatal("unknown selector accepted", group)
+		}
+	}
+	for _, kind := range []string{"omit", "duplicate", "unknown", "nil", "reorder"} {
+		broken := append([]wp25Journey(nil), registry...)
+		switch kind {
+		case "omit":
+			broken = broken[1:]
+		case "duplicate":
+			broken[1] = broken[0]
+		case "unknown":
+			broken[0].name = "unknown"
+		case "nil":
+			broken[0].run = nil
+		case "reorder":
+			broken[0], broken[1] = broken[1], broken[0]
+		}
+		if _, _, _, err := wp25SelectQualificationJourneys(broken, "all"); err == nil {
+			t.Fatal("broken inventory accepted", kind)
+		}
+	}
+}
+
+// Focused selector proof is supplementary; these two real callbacks cannot
+// produce a qualification group/row and require an explicitly supplied host.
+func TestWP25QualificationSelectedCallbacks(t *testing.T) {
+	binary := os.Getenv("HN_WP05_BINARY")
+	if binary == "" {
+		t.Log("source-suite only: no supplied selector-proof host")
+		return
+	}
+	t.Setenv("HN_WP18_BINARY", binary)
+	t.Setenv("XDG_CONFIG_HOME", "")
+	registry := wp25QualificationJourneys(binary, nil)
+	for _, group := range []string{"heavy", "remaining"} {
+		t.Run(group, func(t *testing.T) {
+			selected, _, _, err := wp25SelectQualificationJourneys(registry, group)
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := "TestArtifactBlobWriterProtocolCLI"
+			if group == "remaining" {
+				want = "TestExtensionArtifactTypeReadRawCLI"
+			}
+			for _, j := range selected {
+				if j.name == want {
+					t.Run(j.name, j.run)
+					return
+				}
+			}
+			t.Fatal("selected live callback absent", want)
+		})
+	}
+}
+
+func wp25QualificationJourneys(binary string, references map[string]string) []wp25Journey {
+	return []wp25Journey{
+		{"native-public-journey", func(t *testing.T) { wp25NativePublicJourney(t, binary) }},
+		{"remaining-typed-limits", func(t *testing.T) { wp25RemainingTypedLimits(t, binary, references) }},
+		{"direct-envelope", func(t *testing.T) { wp25EnvelopeBounds(t, binary) }},
+		{"management-limits", func(t *testing.T) { wp25ManagementLimits(t, binary) }},
+		{"standalone-local-input-limits", func(t *testing.T) { wp25ConsumerInputLimits(t, references) }},
+		{"selected-ref-live-bound", wp25SelectedRefLimit},
+		{"native-limits", wp25NativeLimits},
+		{"inherited-public-count-limits", func(t *testing.T) { wp25InheritedPublicCountLimits(t, binary) }},
+		{"lifecycle-limits", func(t *testing.T) { wp25LifecycleLimits(t, binary) }},
+		{"artifact-limits", wp25ArtifactLimits},
+		{"read-object-and-aggregate-limits", wp25ReadBudgets},
+		{"exchange-object-limit", wp25ExchangeObjectLimit},
+		{"artifact-parent-limit", wp25ArtifactParentLimit},
+		{"artifact-record-count-and-enclosing-deadline", wp25ArtifactRecordCountLimit},
+		{"TestArtifactStoreHistoricalNativeBytesCLI", TestArtifactStoreHistoricalNativeBytesCLI},
+		{"TestArtifactStoreIntentLockAndUncertainCLI", TestArtifactStoreIntentLockAndUncertainCLI},
+		{"TestArtifactStoreCASRaceCLI", TestArtifactStoreCASRaceCLI},
+		{"TestArtifactStoreIntentStageContractCLI", TestArtifactStoreIntentStageContractCLI},
+		{"TestArtifactStorePrivateIntentByteBudgetCLI", TestArtifactStorePrivateIntentByteBudgetCLI},
+		{"TestArtifactStoreStrictIntentCLI", TestArtifactStoreStrictIntentCLI},
+		{"TestArtifactStoreExactRetryRecoveryCLI", TestArtifactStoreExactRetryRecoveryCLI},
+		{"TestArtifactStoreStrictNestedIntentCLI", TestArtifactStoreStrictNestedIntentCLI},
+		{"TestArtifactStoreIntentPayloadShapeCLI", TestArtifactStoreIntentPayloadShapeCLI},
+		{"TestArtifactCatalogCollectionAndCycleCLI", TestArtifactCatalogCollectionAndCycleCLI},
+		{"TestArtifactClosureBeyondExchangeAncestryCLI", TestArtifactClosureBeyondExchangeAncestryCLI},
+		{"TestArtifactSchemaCommands", TestArtifactSchemaCommands},
+		{"TestArtifactStorePublishCLI", TestArtifactStorePublishCLI},
+		{"TestArtifactStoreOpenAndRefusalsCLI", TestArtifactStoreOpenAndRefusalsCLI},
+		{"TestArtifactStoreSelectedPolicyCLI", TestArtifactStoreSelectedPolicyCLI},
+		{"TestArtifactStoreTypeEvolutionCLI", TestArtifactStoreTypeEvolutionCLI},
+		{"TestArtifactStoreSHA256GitCLI", TestArtifactStoreSHA256GitCLI},
+		{"TestArtifactStoreAcceptedReadCLI", TestArtifactStoreAcceptedReadCLI},
+		{"TestArtifactStoreMissingObjectNoFetchCLI", TestArtifactStoreMissingObjectNoFetchCLI},
+		{"TestArtifactStoreLargeVerifiedParentContextCLI", TestArtifactStoreLargeVerifiedParentContextCLI},
+		{"TestArtifactStoreConflictingActorGitHistoriesCLI", TestArtifactStoreConflictingActorGitHistoriesCLI},
+		{"TestArtifactStoreCorruptGitObjectCLI", TestArtifactStoreCorruptGitObjectCLI},
+		{"TestArtifactStoreKeylessReadCLI", TestArtifactStoreKeylessReadCLI},
+		{"TestArtifactStoreOpeningReplayObservesImportedHeadsCLI", TestArtifactStoreOpeningReplayObservesImportedHeadsCLI},
+		{"TestArtifactStoreExplicitPublicSources", TestArtifactStoreExplicitPublicSources},
+		{"TestArtifactStoreSourceChangesDuringRead", TestArtifactStoreSourceChangesDuringRead},
+		{"TestNativeContributionClosureProtocolCLI", TestNativeContributionClosureProtocolCLI},
+		{"TestNativeContributionLegacyFaultsCLI", TestNativeContributionLegacyFaultsCLI},
+		{"TestNativeRetainedClosurePublicCLI", TestNativeRetainedClosurePublicCLI},
+		{"TestNativeContributionClassicGitProgress", TestNativeContributionClassicGitProgress},
+		{"TestNativeContributionClosureCancellationCLI", TestNativeContributionClosureCancellationCLI},
+		{"TestNativeContributionStderrHolderCLI", TestNativeContributionStderrHolderCLI},
+		{"TestNativeContributionPrivateHelperBounds", TestNativeContributionPrivateHelperBounds},
+		{"TestNativeContributionLargeBlobPublicCLI", TestNativeContributionLargeBlobPublicCLI},
+		{"TestNativeContributionWorkerSetupOwnership", TestNativeContributionWorkerSetupOwnership},
+		{"TestExtensionChangesPrivateProofAccountingAndEviction", TestExtensionChangesPrivateProofAccountingAndEviction},
+		{"TestArtifactStoreCountPreflightGraphCLI", TestArtifactStoreCountPreflightGraphCLI},
+		{"TestArtifactStoreFullReaderProtocolCLI", TestArtifactStoreFullReaderProtocolCLI},
+		{"TestArtifactFullReaderOwnerFinalizationCLI", TestArtifactFullReaderOwnerFinalizationCLI},
+		{"TestArtifactFullReaderCancellationCLI", TestArtifactFullReaderCancellationCLI},
+		{"TestArtifactFullReaderOneShotLifecycle", TestArtifactFullReaderOneShotLifecycle},
+		{"TestArtifactIOPipeOwnership", TestArtifactIOPipeOwnership},
+		{"TestArtifactFullReaderFirstErrorCLI", TestArtifactFullReaderFirstErrorCLI},
+		{"TestArtifactBlobWriterProtocolCLI", TestArtifactBlobWriterProtocolCLI},
+		{"TestArtifactBlobWriterUnreachablePublicCLI", TestArtifactBlobWriterUnreachablePublicCLI},
+		{"TestArtifactStoreCountPreflightBatchProtocolCLI", TestArtifactStoreCountPreflightBatchProtocolCLI},
+		{"TestArtifactStoreCountPreflightBeforeBodyCLI", TestArtifactStoreCountPreflightBeforeBodyCLI},
+		{"TestArtifactStoreCountPreflightUniqueCommitBytesCLI", TestArtifactStoreCountPreflightUniqueCommitBytesCLI},
+		{"TestArtifactStoreCountPreflightRawParentCLI", TestArtifactStoreCountPreflightRawParentCLI},
+		{"TestArtifactStoreCountPreflightCancellationCLI", TestArtifactStoreCountPreflightCancellationCLI},
+		{"TestArtifactClosureCausalRefusalsCLI", TestArtifactClosureCausalRefusalsCLI},
+		{"TestArtifactClosureMissingGitObjectCLI", TestArtifactClosureMissingGitObjectCLI},
+		{"TestArtifactClosurePublicOnlyReconstructionCLI", TestArtifactClosurePublicOnlyReconstructionCLI},
+		{"TestArtifactClosureSelectorRefusalsCLI", TestArtifactClosureSelectorRefusalsCLI},
+		{"TestArtifactClosureSelectedPrefixCLI", TestArtifactClosureSelectedPrefixCLI},
+		{"TestArtifactClosureLogicalConflictAndCycleCLI", TestArtifactClosureLogicalConflictAndCycleCLI},
+		{"TestArtifactClosureConversionDependenciesCLI", TestArtifactClosureConversionDependenciesCLI},
+		{"TestArtifactGitIndependentClonesCLI", TestArtifactGitIndependentClonesCLI},
+		{"TestArtifactGitCausalRefusalsCLI", TestArtifactGitCausalRefusalsCLI},
+		{"TestArtifactGitSelectorRefusalsCLI", TestArtifactGitSelectorRefusalsCLI},
+		{"TestArtifactGitLogicalHeadsAndOrderCLI", TestArtifactGitLogicalHeadsAndOrderCLI},
+		{"TestArtifactGitAncestryLimitCLI", TestArtifactGitAncestryLimitCLI},
+		{"TestArtifactGitPolicyBeforeEffectsCLI", TestArtifactGitPolicyBeforeEffectsCLI},
+		{"TestArtifactGitSHA256CLI", TestArtifactGitSHA256CLI},
+		{"TestArtifactGitWireBudgetBeforeCopyCLI", TestArtifactGitWireBudgetBeforeCopyCLI},
+		{"TestArtifactGitDispatchedPushFailureIsUncertainCLI", TestArtifactGitDispatchedPushFailureIsUncertainCLI},
+		{"TestArtifactGitIndependentNativeSelectionBudgetCLI", TestArtifactGitIndependentNativeSelectionBudgetCLI},
+		{"TestArtifactGitFrozenRawBodiesCLI", TestArtifactGitFrozenRawBodiesCLI},
+		{"TestArtifactGitFetchNamedAcceptedNamespaceCLI", TestArtifactGitFetchNamedAcceptedNamespaceCLI},
+		{"TestArtifactGitFetchNamedNamespaceRace", TestArtifactGitFetchNamedNamespaceRace},
+		{"TestArtifactGitNamedTransactionStaleOldIsAtomic", TestArtifactGitNamedTransactionStaleOldIsAtomic},
+		{"TestArtifactGitFetchAcknowledgementCLI", TestArtifactGitFetchAcknowledgementCLI},
+		{"TestArtifactExchangeIndependentCLI", TestArtifactExchangeIndependentCLI},
+		{"TestArtifactExchangeRefusalsCLI", TestArtifactExchangeRefusalsCLI},
+		{"TestArtifactExchangeOpaqueCLI", TestArtifactExchangeOpaqueCLI},
+		{"TestArtifactExchangeSelectorRefusalsCLI", TestArtifactExchangeSelectorRefusalsCLI},
+		{"TestArtifactExchangeWireBoundCLI", TestArtifactExchangeWireBoundCLI},
+		{"TestArtifactExchangeMissingSchemaCLI", TestArtifactExchangeMissingSchemaCLI},
+		{"TestArtifactExchangeShapesAndHeadsCLI", TestArtifactExchangeShapesAndHeadsCLI},
+		{"TestArtifactExchangeCASWrongOldCLI", TestArtifactExchangeCASWrongOldCLI},
+		{"TestArtifactExchangeOpaqueAggregateAndLockCLI", TestArtifactExchangeOpaqueAggregateAndLockCLI},
+		{"TestArtifactExchangeDepthLiveCLI", TestArtifactExchangeDepthLiveCLI},
+		{"TestArtifactExchangeSelectedPolicyCLI", TestArtifactExchangeSelectedPolicyCLI},
+		{"TestArtifactExchangeMalformedSignaturePreservationCLI", TestArtifactExchangeMalformedSignaturePreservationCLI},
+		{"TestArtifactExchangeLostAcknowledgementCLI", TestArtifactExchangeLostAcknowledgementCLI},
+		{"TestArtifactExchangeFrozenTransportBodiesCLI", TestArtifactExchangeFrozenTransportBodiesCLI},
+		{"TestArtifactExchangeRefAliasesBeyondObjectCountCLI", TestArtifactExchangeRefAliasesBeyondObjectCountCLI},
+		{"TestArtifactExchangeUnreachableObjectsCLI", TestArtifactExchangeUnreachableObjectsCLI},
+		{"TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI", TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI},
+		{"TestArtifactExchangeNamedAcceptedRefIsolationCLI", TestArtifactExchangeNamedAcceptedRefIsolationCLI},
+		{"TestArtifactRevisionLiveCLI", TestArtifactRevisionLiveCLI},
+		{"TestArtifactRevisionIndependentActorsCLI", TestArtifactRevisionIndependentActorsCLI},
+		{"TestArtifactRevisionCausalRefusalsCLI", TestArtifactRevisionCausalRefusalsCLI},
+		{"TestArtifactRevisionEnvelopeBytesCLI", TestArtifactRevisionEnvelopeBytesCLI},
+		{"TestArtifactRevisionResumeOriginalCandidateCLI", TestArtifactRevisionResumeOriginalCandidateCLI},
+		{"TestArtifactOperationReadOnlyCLI", TestArtifactOperationReadOnlyCLI},
+		{"TestArtifactOperationPublishedLookupAndRetryCLI", TestArtifactOperationPublishedLookupAndRetryCLI},
+		{"TestArtifactOperationFoundAndSourceCutCLI", TestArtifactOperationFoundAndSourceCutCLI},
+		{"TestArtifactOperationWriterEvidenceCLI", TestArtifactOperationWriterEvidenceCLI},
+		{"TestArtifactOperationNewWriterCLI", TestArtifactOperationNewWriterCLI},
+		{"TestArtifactOperationRefusalsAndBoundsCLI", TestArtifactOperationRefusalsAndBoundsCLI},
+		{"TestArtifactOperationInterruptedRestartCLI", TestArtifactOperationInterruptedRestartCLI},
+		{"TestArtifactOperationInvalidPublicHistoryCLI", TestArtifactOperationInvalidPublicHistoryCLI},
+		{"TestArtifactOperationJournalFailureCLI", TestArtifactOperationJournalFailureCLI},
+		{"TestArtifactOperationCurrentConflictAndPublicReconstructionCLI", TestArtifactOperationCurrentConflictAndPublicReconstructionCLI},
+		{"TestArtifactListLiveCLI", TestArtifactListLiveCLI},
+		{"TestArtifactLocalHelpAndHumanListCLI", TestArtifactLocalHelpAndHumanListCLI},
+		{"TestArtifactListExactPageBoundCLI", TestArtifactListExactPageBoundCLI},
+		{"TestArtifactSearchHelpAndPublicOnlyReaderCLI", TestArtifactSearchHelpAndPublicOnlyReaderCLI},
+		{"TestArtifactSearchPublicCLI", TestArtifactSearchPublicCLI},
+		{"TestArtifactSearchPagingAndRefusalsCLI", TestArtifactSearchPagingAndRefusalsCLI},
+		{"TestArtifactSearchEntireSelectionBudgetCLI", TestArtifactSearchEntireSelectionBudgetCLI},
+		{"TestArtifactSearchOversizedPageCLI", TestArtifactSearchOversizedPageCLI},
+		{"TestArtifactSearchConflictAndUnselectedCLI", TestArtifactSearchConflictAndUnselectedCLI},
+		{"TestArtifactSearchInertConsumerControlCLI", TestArtifactSearchInertConsumerControlCLI},
+		{"TestArtifactFullPublicJourneyCLI", TestArtifactFullPublicJourneyCLI},
+		{"TestArtifactCombinedOpaqueAndNativeCLI", TestArtifactCombinedOpaqueAndNativeCLI},
+		{"TestArtifactCombinedFetchLostAcknowledgementCLI", TestArtifactCombinedFetchLostAcknowledgementCLI},
+		{"TestExtensionRegistrationCLI", TestExtensionRegistrationCLI},
+		{"TestExtensionRegistryRawArrayTypesCLI", TestExtensionRegistryRawArrayTypesCLI},
+		{"TestExtensionArtifactReadGrantCLI", TestExtensionArtifactReadGrantCLI},
+		{"TestExtensionEnablementCLI", TestExtensionEnablementCLI},
+		{"TestExtensionFrameInspectCLI", TestExtensionFrameInspectCLI},
+		{"TestExtensionFrameInspectPartialDeadlineCLI", TestExtensionFrameInspectPartialDeadlineCLI},
+		{"TestExtensionFrameInputRestoresStdin", TestExtensionFrameInputRestoresStdin},
+		{"TestExtensionRunCLI", TestExtensionRunCLI},
+		{"TestExtensionRunRefusalsCLI", TestExtensionRunRefusalsCLI},
+		{"TestExtensionRunDisableAndSlotsCLI", TestExtensionRunDisableAndSlotsCLI},
+		{"TestExtensionRunNoImplicitLaunchCLI", TestExtensionRunNoImplicitLaunchCLI},
+		{"TestExtensionRunStartupDeadlineCLI", TestExtensionRunStartupDeadlineCLI},
+		{"TestExtensionRunRemoveAcrossRepositoriesCLI", TestExtensionRunRemoveAcrossRepositoriesCLI},
+		{"TestExtensionRunIdleDoesNotHoldNativeLockCLI", TestExtensionRunIdleDoesNotHoldNativeLockCLI},
+		{"TestExtensionRunIdleDeadlineCLI", TestExtensionRunIdleDeadlineCLI},
+		{"TestExtensionRunCrashCleansPipeOwningDescendantCLI", TestExtensionRunCrashCleansPipeOwningDescendantCLI},
+		{"TestExtensionNativeIdentityMissingCLI", TestExtensionNativeIdentityMissingCLI},
+		{"TestExtensionNativeSixFamiliesCLI", TestExtensionNativeSixFamiliesCLI},
+		{"TestExtensionNativeGrantDenialsCLI", TestExtensionNativeGrantDenialsCLI},
+		{"TestExtensionNativeGovernedSixFamiliesCLI", TestExtensionNativeGovernedSixFamiliesCLI},
+		{"TestExtensionNativePendingAndPolicyRefusalCLI", TestExtensionNativePendingAndPolicyRefusalCLI},
+		{"TestExtensionNativeSelectedCutAndPagingCLI", TestExtensionNativeSelectedCutAndPagingCLI},
+		{"TestExtensionNativeInvalidHistoryCLI", TestExtensionNativeInvalidHistoryCLI},
+		{"TestExtensionNativeCancellationSettlementCLI", TestExtensionNativeCancellationSettlementCLI},
+		{"TestExtensionNativeConflictAndResolveGrantCLI", TestExtensionNativeConflictAndResolveGrantCLI},
+		{"TestExtensionNativeUnboundAndUnsupportedFramesCLI", TestExtensionNativeUnboundAndUnsupportedFramesCLI},
+		{"TestExtensionNativeMissingSignerDoesNotInitializeCLI", TestExtensionNativeMissingSignerDoesNotInitializeCLI},
+		{"TestExtensionNativeBusyLockBeforeWriterCLI", TestExtensionNativeBusyLockBeforeWriterCLI},
+		{"TestExtensionNativePrivateReservationLookupCLI", TestExtensionNativePrivateReservationLookupCLI},
+		{"TestExtensionArtifactTypeReadRawCLI", TestExtensionArtifactTypeReadRawCLI},
+		{"TestExtensionArtifactModelsRawCLI", TestExtensionArtifactModelsRawCLI},
+		{"TestExtensionArtifactGrantRefusalsRawCLI", TestExtensionArtifactGrantRefusalsRawCLI},
+		{"TestExtensionArtifactSearchBoundsAndCursorRawCLI", TestExtensionArtifactSearchBoundsAndCursorRawCLI},
+		{"TestExtensionArtifactFullResponseAtAndOverRawCLI", TestExtensionArtifactFullResponseAtAndOverRawCLI},
+		{"TestExtensionArtifactOpaqueRawCLI", TestExtensionArtifactOpaqueRawCLI},
+		{"TestExtensionArtifactInterruptedRecoveryRawCLI", TestExtensionArtifactInterruptedRecoveryRawCLI},
+		{"TestExtensionArtifactPolicyAndValidationRawCLI", TestExtensionArtifactPolicyAndValidationRawCLI},
+		{"TestExtensionArtifactConflictRawCLI", TestExtensionArtifactConflictRawCLI},
+		{"TestExtensionArtifactNoReadGrantRawCLI", TestExtensionArtifactNoReadGrantRawCLI},
+		{"TestExtensionArtifactSelectedTypeCutRawCLI", TestExtensionArtifactSelectedTypeCutRawCLI},
+		{"TestExtensionArtifactEmptyNamespaceCutRawCLI", TestExtensionArtifactEmptyNamespaceCutRawCLI},
+		{"TestExtensionArtifactPostProjectionSourceRecheckRawCLI", TestExtensionArtifactPostProjectionSourceRecheckRawCLI},
+		{"TestExtensionArtifactReplayIntentFieldsRawCLI", TestExtensionArtifactReplayIntentFieldsRawCLI},
+		{"TestExtensionChangesRawEmptyCapture", TestExtensionChangesRawEmptyCapture},
+		{"TestExtensionChangesPagingAndDurableNativeAppend", TestExtensionChangesPagingAndDurableNativeAppend},
+		{"TestExtensionChangesStalePageAndSafeRescan", TestExtensionChangesStalePageAndSafeRescan},
+		{"TestExtensionChangesCustomAndMixedAppend", TestExtensionChangesCustomAndMixedAppend},
+		{"TestExtensionChangesAuthorizationAndVerifierLoss", TestExtensionChangesAuthorizationAndVerifierLoss},
+		{"TestExtensionChangesUnsupportedCustomPolicyBeforeState", TestExtensionChangesUnsupportedCustomPolicyBeforeState},
+		{"TestExtensionChangesInvalidHistoryAndQuarantine", TestExtensionChangesInvalidHistoryAndQuarantine},
+		{"TestExtensionChangesGovernedTwoActorVisibility", TestExtensionChangesGovernedTwoActorVisibility},
+		{"TestExtensionChangesRawEntryCapacity", TestExtensionChangesRawEntryCapacity},
+		{"TestExtensionChangesRawCanonicalCapacity", TestExtensionChangesRawCanonicalCapacity},
+		{"TestExtensionChangesRealTenMinuteExpiry", TestExtensionChangesRealTenMinuteExpiry},
+		{"TestExtensionChangesRawWireBoundary", TestExtensionChangesRawWireBoundary},
+		{"TestExtensionChangesRawTypedBoundaries", TestExtensionChangesRawTypedBoundaries},
+		{"TestExtensionChangesNativeDefaultRemainsInert", TestExtensionChangesNativeDefaultRemainsInert},
+		{"TestExtensionChangesVerifiedHistoryRewindInvalidates", TestExtensionChangesVerifiedHistoryRewindInvalidates},
+		{"TestExtensionChangesAllVisibleCommentRevisions", TestExtensionChangesAllVisibleCommentRevisions},
+		{"TestExtensionChangesSourceRaceDuringPage", TestExtensionChangesSourceRaceDuringPage},
+		{"TestExtensionFakeTrackerStandaloneRecovery", TestExtensionFakeTrackerStandaloneRecovery},
+		{"TestExtensionFakeTrackerReplacementDisconnectAndInvalidation", TestExtensionFakeTrackerReplacementDisconnectAndInvalidation},
+		{"TestExtensionFakeTrackerConcurrentEditsRefuseWithoutResolution", TestExtensionFakeTrackerConcurrentEditsRefuseWithoutResolution},
+		{"TestExtensionFakeTrackerRawGrantRepositoryAndPrivacyControls", TestExtensionFakeTrackerRawGrantRepositoryAndPrivacyControls},
+		{"TestExtensionFakeTrackerNativeDefaultInert", TestExtensionFakeTrackerNativeDefaultInert},
+		{"TestExtensionFakeTrackerRecoveryKeepsOriginalContentAndParents", TestExtensionFakeTrackerRecoveryKeepsOriginalContentAndParents},
+		{"TestExtensionFakeTrackerRejectsHostResponseFaults", TestExtensionFakeTrackerRejectsHostResponseFaults},
+		{"TestExtensionFakeTrackerConsumedUncertaintyRecovery", TestExtensionFakeTrackerConsumedUncertaintyRecovery},
+		{"TestExtensionCharterStandaloneJourney", TestExtensionCharterStandaloneJourney},
+		{"TestExtensionCharterMissingRequiredType", TestExtensionCharterMissingRequiredType},
+		{"TestInventoryStandalonePublicJourney", TestInventoryStandalonePublicJourney},
+		{"TestInventoryMissingRequiredSchemaPublicExchange", TestInventoryMissingRequiredSchemaPublicExchange},
+		{"TestInventoryStructuredFieldBounds", TestInventoryStructuredFieldBounds},
+		{"TestInventorySuppliedConsumerResponseFaultsStopBeforeEffects", TestInventorySuppliedConsumerResponseFaultsStopBeforeEffects},
+	}
 }
 
 func wp25EnvelopeBounds(t *testing.T, binary string) {

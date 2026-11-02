@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	c "hubnot/internal/contribution"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -55,9 +56,17 @@ func TestExtensionArtifactChild(t *testing.T) {
 	}
 	responses := []any{}
 	for _, request := range requests {
+		sent := time.Now()
 		hostWrite(request)
+		if request["request_id"] == "interrupted" {
+			observation, _ := json.Marshal(map[string]any{"request_id": "interrupted", "send_utc": sent.UTC().Format(time.RFC3339Nano), "frame_written_after_ns": time.Since(sent).Nanoseconds(), "timeout_ms": request["timeout_ms"], "clock_boundary": "immediately before hostWrite; observation written after frame, before waiting; diagnostic I/O adds overhead"})
+			if len(observation) > 1024 || os.WriteFile(os.Args[at+1]+".timing", observation, 0600) != nil {
+				os.Exit(85)
+			}
+		}
 		responses = append(responses, hostRead(os.Stdin))
 	}
+
 	raw, _ = json.Marshal(map[string]any{"hello": hello, "responses": responses})
 	if os.WriteFile(os.Args[at+1], raw, 0600) != nil {
 		os.Exit(83)
@@ -581,12 +590,40 @@ func TestExtensionArtifactInterruptedRecoveryRawCLI(t *testing.T) {
 			wrapper := t.TempDir()
 			marker := filepath.Join(wrapper, "reached")
 			action := "hash-object"
-			effect := ""
 			if stage == "lost-ack" {
 				action = "update-ref"
-				effect = "'" + git + "' \"$@\" || exit $?; "
 			}
-			script := "#!/bin/sh\nfor arg do if [ \"$arg\" = " + action + " ]; then " + effect + ": > \"$HN_WP18_REACHED\"; exec sleep 30; fi; done\nexec '" + git + "' \"$@\"\n"
+			// Observe only this fixture's selected public Git argv. No stdin,
+			// environment, signatures or private intent contents enter the observation.
+			quote := func(v string) string { return "'" + strings.ReplaceAll(v, "'", "'\"'\"'") + "'" }
+			observation := filepath.Join(wrapper, "selected")
+			delay := ""
+			if os.Getenv("HN_WP18_DIAGNOSTIC_DELAY") == "1" && stage == "lost-ack" {
+				// Supplementary causal diagnostic only; original deadline/assertion remain.
+				delay = `for arg do if [ "$arg" = hash-object ]; then argv=$(printf '<%s>\n' "$@"); if [ "${#argv}" -gt 4096 ]; then exit 93; fi; printf 'pre-stage-delay=hash-object\nargv=%s\n' "$argv" > ` + quote(filepath.Join(wrapper, "delay")) + ` || exit 92; exec sleep 4; fi; done
+`
+			}
+			script := "#!/bin/sh\numask 077\nexport LC_ALL=C\n" + delay +
+				`for arg do if [ "$arg" = ` + action + ` ]; then
+argv=$(printf '<%s>\n' "$@"); if [ "${#argv}" -gt 4096 ]; then exit 93; fi
+matched_dir=false; for value do if [ "$value" = ` + quote("--git-dir="+filepath.Join(f.repo, ".git")) + ` ]; then matched_dir=true; fi; done
+printf 'actual-git-dir-match=%s\n' "$matched_dir" > ` + quote(observation) + ` || exit 92
+printf 'matched-action=` + action + `\nexpected-git-dir=%s\nargv=%s\n' ` + quote(filepath.Join(f.repo, ".git")) + ` "$argv" >> ` + quote(observation) + ` || exit 92
+`
+			if stage == "lost-ack" {
+				script += quote(git) + ` "$@"; status=$?; printf 'real-git-exit=%s\n' "$status" >> ` + quote(observation) + ` || exit 92; if [ "$status" != 0 ]; then exit "$status"; fi
+`
+			} else {
+				script += `printf 'real-git-exit=unobserved-not-run\n' >> ` + quote(observation) + ` || exit 92
+`
+			}
+			script += `: > "$HN_WP18_REACHED" || exit 94
+printf 'marker-write=0\n' >> ` + quote(observation) + ` || exit 92
+exec sleep 30
+fi; done
+exec ` + quote(git) + ` "$@"
+`
+
 			if e = os.WriteFile(filepath.Join(wrapper, "git"), []byte(script), 0700); e != nil {
 				t.Fatal(e)
 			}
@@ -594,7 +631,10 @@ func TestExtensionArtifactInterruptedRecoveryRawCLI(t *testing.T) {
 			cmd := exec.Command(f.binary, "extension", "run", f.module, "--json")
 			cmd.Dir = f.repo
 			cmd.Env = operationalTestEnvironmentWith(f.home, map[string]string{"HN_WP18_CHILD": "1", "PATH": wrapper + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP18_REACHED": marker})
+			started := time.Now()
 			output, runErr := cmd.CombinedOutput()
+			elapsed := time.Since(started)
+			extensionArtifactRecoveryObservation(t, f, git, stage, wrapper, marker, started, elapsed, cmd, runErr, beforeRef, bytes.Contains(output, []byte(`"code":"uncertain_operation"`)))
 			if runErr == nil || !bytes.Contains(output, []byte(`"code":"uncertain_operation"`)) {
 				t.Fatalf("host interruption: %v %s", runErr, output)
 			}
@@ -647,6 +687,49 @@ func TestExtensionArtifactInterruptedRecoveryRawCLI(t *testing.T) {
 			f.request("artifact.mutate", params, "repository_error")
 		})
 	}
+}
+
+// A single bounded record retains actual phase evidence even when the original
+// marker assertion fails. Missing observations remain explicitly unobserved.
+func extensionArtifactRecoveryObservation(t *testing.T, f *extensionArtifactFixture, git, stage, wrapper, marker string, started time.Time, elapsed time.Duration, host *exec.Cmd, hostErr error, before string, uncertain bool) {
+	t.Helper()
+	read := func(path string, limit int) string {
+		file, err := os.Open(path)
+		if os.IsNotExist(err) {
+			return "unobserved"
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := io.ReadAll(io.LimitReader(file, int64(limit)+1))
+		closeErr := file.Close()
+		if err != nil || closeErr != nil || len(raw) > limit {
+			t.Fatal("bounded recovery observation", path, err, closeErr, len(raw))
+		}
+		return string(raw)
+	}
+	selected := read(filepath.Join(wrapper, "selected"), 6144)
+	timing := read(f.output+".timing", 1024)
+	delay := read(filepath.Join(wrapper, "delay"), 4224)
+	_, markerErr := os.Stat(marker)
+	final := exec.Command(git, "--git-dir="+filepath.Join(f.repo, ".git"), "rev-parse", artifactRef(f.actor))
+	final.Dir = f.repo
+	final.Env = operationalTestEnvironment(f.home)
+	ref, refErr := final.Output()
+	if refErr != nil || len(ref) > 256 {
+		t.Fatal("unwrapped final ref", refErr)
+	}
+	exit := -1
+	if host.ProcessState != nil {
+		exit = host.ProcessState.ExitCode()
+	}
+	event := map[string]any{"test": t.Name(), "control": "artifact-interruption-phase-observation", "stage": stage, "host_sha256": wp25Digest(t, f.binary), "started_utc": started.UTC().Format(time.RFC3339Nano), "host_exit_after_ns": elapsed.Nanoseconds(), "host_exit": exit, "host_error": fmt.Sprint(hostErr), "uncertain_operation_observed": uncertain, "host_exit_utc": started.Add(elapsed).UTC().Format(time.RFC3339Nano), "selected_git_observation": selected, "child_send_response": timing, "controlled_delay": delay, "marker_error": fmt.Sprint(markerErr), "before_ref": before, "final_ref_unwrapped": strings.TrimSpace(string(ref)), "final_git_exit": final.ProcessState.ExitCode(), "timing_caveat": "diagnostic I/O adds overhead; unobserved inner phases and historical Intel scheduling are unknown;2000ms request unchanged"}
+	raw, err := json.Marshal(event)
+	if err != nil || len(raw) > 16384 {
+		t.Fatal("recovery observation exceeds bound", len(raw), err)
+	}
+	t.Log(string(raw))
+	wp25Record(t, event)
 }
 
 func TestExtensionArtifactPolicyAndValidationRawCLI(t *testing.T) {

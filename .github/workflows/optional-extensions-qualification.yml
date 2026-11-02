@@ -601,31 +601,108 @@ jobs:
           export HN_WP25_GO_TRAP="$evidence/go-trap-positive.log"
           if go version; then exit 1; fi
           test -s "$HN_WP25_GO_TRAP"
+          # This validator is deliberately local to these two fixed groups.
+          cat > "$evidence/validate-composite.jq" <<'JQ'
+          def heavy: ["inherited-public-count-limits","lifecycle-limits","artifact-record-count-and-enclosing-deadline","TestArtifactBlobWriterProtocolCLI"];
+          def groupnames($inventory;$name):
+            if $name == "heavy" then [$inventory[] | select(. as $n | heavy | index($n))]
+            elif $name == "remaining" then [$inventory[] | select(. as $n | heavy | index($n) | not)]
+            else error("unknown qualification group") end;
+          def eventscomplete:
+            reduce .[] as $e ({active:[],done:[],bad:false};
+              if $e.Test == null then .
+              elif $e.Action == "run" then
+                if ((.active + .done) | index($e.Test)) != null then .bad=true
+                else .active += [$e.Test] end
+              elif $e.Action == "pass" then
+                if (.active | index($e.Test)) == null or any(.active[]; startswith($e.Test+"/")) then .bad=true
+                else .active -= [$e.Test] | .done += [$e.Test] end
+              elif $e.Action == "fail" or $e.Action == "skip" then .bad=true else . end) |
+            .bad == false and (.active | length)==0;
+          def validgroup($inventory;$identity):
+            . as $g | .record as $r |
+            groupnames($inventory;$r.group) as $expected |
+            ([.events[] | select(.Test != null and .Action == "run") | .Test]) as $runs |
+            ([.events[] | select(.Test != null and .Action == "pass") | .Test]) as $passes |
+            ([.events[] | select(.Action == "run" and (.Test // "" | startswith("TestExtensionPackageQualification/"))) | .Test | split("/") | select(length == 2) | .[1]]) as $direct |
+            (($g.events | eventscomplete) and $g.exit == 0 and ($g.started | length)>0 and ($g.finished | length)>0 and $g.fallback == false and
+             ($g.command | length)>0 and ($g.log_sha256 | test("^[0-9a-f]{64}$")) and
+             $r.schema == "hn.extension-package-group/1" and $r.result == "PASS" and $r.source_fallback == false and
+             $r.identity == $identity and $r.canonical_inventory == $inventory and
+             $r.inventory_sha256 == "6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c" and
+             $r.expected_roots == $expected and $r.excluded_roots == [$inventory[] | select(. as $n | $expected | index($n) | not)] and
+             $direct == $expected and ($runs | length) == ($runs | unique | length) and ($runs | sort) == ($passes | sort) and
+             ($runs | map(select(. == "TestExtensionPackageQualification")) | length) == 1 and
+             all($runs[]; . == "TestExtensionPackageQualification" or startswith("TestExtensionPackageQualification/")) and
+             all($g.events[]; .Action != "fail" and .Action != "skip"));
+          def valididentity:
+            (.source_commit | test("^[0-9a-f]{40}$")) and (.source_tree | test("^[0-9a-f]{40}$")) and
+            (.harness_sha256 | test("^[0-9a-f]{64}$")) and (.executable_sha256 | test("^[0-9a-f]{64}$")) and
+            (.reference_sha256 | keys) == ["charter","fake-tracker","inventory"] and
+            all(.reference_sha256[]; test("^[0-9a-f]{64}$")) and .harness_compiler == "go1.26.4" and
+            (.qualified_git_version | startswith("git version ")) and
+            (.target == "linux/amd64" or .target == "linux/arm64" or .target == "darwin/amd64" or .target == "darwin/arm64");
+          .inventory as $inventory | .identity as $identity |
+          if ($identity | valididentity) and ($inventory | length)==206 and ($inventory | unique | length)==206 and
+             (.groups | length)==2 and [.groups[].record.group]==["heavy","remaining"] and
+             all(.groups[]; validgroup($inventory;$identity)) and
+             ([.groups[].record.expected_roots[]] | sort)==($inventory | sort) and
+             ([.groups[].record.expected_roots[]] | length)==206 and
+             ($identity.run_id | length)>0 and ($identity.run_attempt | test("^[1-9][0-9]*$")) and
+             ($identity.variant == "standard" or $identity.variant == "native-only")
+          then {schema:"hn.extension-package-row/2",method:"two-fixed-serial-groups-120m-each-300m-shared-job",aggregate_budget_revision:"Does not establish one-process aggregate120m completion; historical timeout remains FAIL",result:"GROUPS_VALIDATED",identity:$identity,inventory_sha256:"6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c",root_count:206,groups:[.groups[]|{group:.record.group,manifest:.record,command,log_sha256,exit,started,finished}]}
+          else error("incomplete or inconsistent qualification groups") end
+          JQ
           result=0
           for variant in standard native-only; do
             export HN_WP25_VARIANT="$variant"
-            export HN_WP25_EVIDENCE="$evidence/$variant"
-            export HN_WP25_GO_TRAP="$evidence/$variant-go-fallback.log"
-            mkdir "$HN_WP25_EVIDENCE"
-            date -u > "$HN_WP25_EVIDENCE/started"
-            printf '%s\n' 'qualification-harness -test.run ^TestExtensionPackageQualification$ -test.timeout 120m -hn-package-dir unpacked -hn-package-bundle candidate -hn-package-version 0.0.0-optional-extensions-qualification.1 -hn-package-compiler go1.26.4' > "$HN_WP25_EVIDENCE/command.txt"
-            row=0
-            test "$TEST2JSON" = "$RUNNER_TEMP/qualification-test2json"
-            test -f "$TEST2JSON" && test -x "$TEST2JSON"
-            test "$(shasum -a 256 "$TEST2JSON" | cut -d ' ' -f1)" = "$TEST2JSON_SHA256"
-            "$TEST2JSON" -t -p hubnot "$RUNNER_TEMP/qualification-harness" -test.v=test2json -test.count=1 -test.timeout=120m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/qualification-assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.jsonl" || row=$?
-            if ! jq -s -e '([.[] | select(.Action == "pass" and .Test == "TestExtensionPackageQualification")] | length) == 1 and ([.[] | select(.Action == "fail" or .Action == "skip")] | length) == 0' "$HN_WP25_EVIDENCE/results.jsonl" > "$HN_WP25_EVIDENCE/execution-events-validated.txt"; then row=1; fi
-            test -s "$HN_WP25_EVIDENCE/$variant-row.json" || row=1
-            printf '%s\n' "$row" > "$HN_WP25_EVIDENCE/exit"
-            date -u > "$HN_WP25_EVIDENCE/finished"
-            if [ "$row" != 0 ] || [ -e "$HN_WP25_GO_TRAP" ]; then result=1; fi
+            variant_evidence="$evidence/$variant"
+            mkdir "$variant_evidence"
+            for group in heavy remaining; do
+              export HN_WP25_GROUP="$group"
+              export HN_WP25_EVIDENCE="$variant_evidence/$group"
+              export HN_WP25_GO_TRAP="$evidence/$variant-$group-go-fallback.log"
+              mkdir "$HN_WP25_EVIDENCE"
+              date -u > "$HN_WP25_EVIDENCE/started"
+              printf '%s\n' "HN_WP25_GROUP=$group qualification-harness -test.run ^TestExtensionPackageQualification$ -test.count=1 -test.timeout 120m -hn-package-dir unpacked -hn-package-bundle candidate -hn-package-version 0.0.0-optional-extensions-qualification.1 -hn-package-compiler go1.26.4" > "$HN_WP25_EVIDENCE/command.txt"
+              group_exit=0
+              test "$TEST2JSON" = "$RUNNER_TEMP/qualification-test2json"
+              test -f "$TEST2JSON" && test -x "$TEST2JSON"
+              test "$(shasum -a 256 "$TEST2JSON" | cut -d ' ' -f1)" = "$TEST2JSON_SHA256"
+              "$TEST2JSON" -t -p hubnot "$RUNNER_TEMP/qualification-harness" -test.v=test2json -test.count=1 -test.timeout=120m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/qualification-assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.jsonl" || group_exit=$?
+              printf '%s\n' "$group_exit" > "$HN_WP25_EVIDENCE/exit"
+              date -u > "$HN_WP25_EVIDENCE/finished"
+              fallback=false
+              if [ -e "$HN_WP25_GO_TRAP" ]; then fallback=true; fi
+              # Retain each group's manifest, log, exact exit and finish even if
+              # the other group failed. No retry or early group omission.
+              if [ "$group_exit" != 0 ] || [ "$fallback" = true ] || [ ! -s "$HN_WP25_EVIDENCE/$group-group.json" ]; then result=1; fi
+              if [ -s "$HN_WP25_EVIDENCE/$group-group.json" ]; then
+                if ! jq -n --slurpfile record "$HN_WP25_EVIDENCE/$group-group.json" --slurpfile events "$HN_WP25_EVIDENCE/results.jsonl" --argjson exit "$group_exit" --argjson fallback "$fallback" --rawfile started "$HN_WP25_EVIDENCE/started" --rawfile finished "$HN_WP25_EVIDENCE/finished" --rawfile command "$HN_WP25_EVIDENCE/command.txt" --arg log_sha256 "$(shasum -a 256 "$HN_WP25_EVIDENCE/results.jsonl" | cut -d ' ' -f1)" '{record:$record[0],events:$events,exit:$exit,fallback:$fallback,started:$started,finished:$finished,command:$command,log_sha256:$log_sha256}' > "$HN_WP25_EVIDENCE/composite-input.json"; then result=1; fi
+              fi
+            done
+            heavy="$variant_evidence/heavy/composite-input.json"
+            remaining="$variant_evidence/remaining/composite-input.json"
+            if [ -s "$heavy" ] && [ -s "$remaining" ]; then
+              if ! jq -s '{inventory:.[0].record.canonical_inventory,identity:.[0].record.identity,groups:.}' "$heavy" "$remaining" > "$variant_evidence/composite-input.json"; then result=1; fi
+              # The inventory is frozen independently of either supplied record.
+              inventory_sha=$(jq -r '.inventory[]' "$variant_evidence/composite-input.json" | shasum -a 256 | cut -d ' ' -f1)
+              identity_ok=0
+              jq -e --arg source "$(git rev-parse HEAD)" --arg tree "$(git rev-parse 'HEAD^{tree}')" --arg target '${{ matrix.target }}' --arg variant "$variant" --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" --arg harness "$(shasum -a 256 "$RUNNER_TEMP/qualification-harness" | cut -d ' ' -f1)" '.identity | .source_commit==$source and .source_tree==$tree and .target==$target and .variant==$variant and .run_id==$run and .run_attempt==$attempt and .harness_sha256==$harness' "$variant_evidence/composite-input.json" > "$variant_evidence/identity-validated.txt" || identity_ok=1
+              if [ "$inventory_sha" = 6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c ] && [ "$identity_ok" = 0 ]; then
+                if ! jq -e -f "$evidence/validate-composite.jq" "$variant_evidence/composite-input.json" > "$variant_evidence/composite-groups.json.tmp"; then result=1
+                else mv "$variant_evidence/composite-groups.json.tmp" "$variant_evidence/composite-groups.json"; fi
+              else result=1; fi
+            else result=1; fi
           done
           exit "$result"
       - name: Record final API identities and unchanged source
+        id: source_after
         if: always()
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          TRACE_OUTCOME: ${{ steps.trace.outcome }}
         run: |
           set -euo pipefail
           evidence="$RUNNER_TEMP/native-evidence"
@@ -634,6 +711,14 @@ jobs:
           git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source-inputs.after.sha256"
           cmp "$evidence/source-inputs.before.sha256" "$evidence/source-inputs.after.sha256"
           git diff --exit-code
+          # A validated group pair becomes a whole row only after the unchanged
+          # source and original instrumentation controls have also succeeded.
+          test "$TRACE_OUTCOME" = success
+          for variant in standard native-only; do
+            jq -e '.schema == "hn.extension-package-row/2" and .result == "GROUPS_VALIDATED"' "$evidence/$variant/composite-groups.json"
+            jq '.result="PASS" | .final_controls={source_after:"PASS",instrumentation:"PASS"}' "$evidence/$variant/composite-groups.json" > "$evidence/$variant/$variant-row.json.tmp"
+            mv "$evidence/$variant/$variant-row.json.tmp" "$evidence/$variant/$variant-row.json"
+          done
       - uses: actions/upload-artifact@v4
         id: upload
         if: always()
@@ -649,10 +734,15 @@ jobs:
           PREPARE_OUTCOME: ${{ steps.prepare.outcome }}
           TRACE_OUTCOME: ${{ steps.trace.outcome }}
           JOURNEYS_OUTCOME: ${{ steps.journeys.outcome }}
+          SOURCE_AFTER_OUTCOME: ${{ steps.source_after.outcome }}
           EVIDENCE_ARTIFACT: ${{ steps.upload.outputs.artifact-id }}
         run: |
           printf 'prepare=%s\ntrace=%s\njourneys=%s\nevidence_artifact_id=%s\n' "$PREPARE_OUTCOME" "$TRACE_OUTCOME" "$JOURNEYS_OUTCOME" "$EVIDENCE_ARTIFACT"
           test "$PREPARE_OUTCOME" = success
           test "$TRACE_OUTCOME" = success
           test "$JOURNEYS_OUTCOME" = success
+          test "$SOURCE_AFTER_OUTCOME" = success
+          for variant in standard native-only; do
+            jq -e ' .schema == "hn.extension-package-row/2" and .result == "PASS" and .root_count == 206 and .final_controls == {source_after:"PASS",instrumentation:"PASS"} and [.groups[].group] == ["heavy","remaining"]' "$RUNNER_TEMP/native-evidence/$variant/$variant-row.json"
+          done
           test -n "$EVIDENCE_ARTIFACT"
