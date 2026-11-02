@@ -495,7 +495,7 @@ func Run(parent context.Context, cfg SessionConfig) (result RunResult, runErr er
 	monitorDone := make(chan struct{})
 	go func() {
 		defer close(monitorDone)
-		tick := time.NewTicker(RevocationInterval)
+		tick := time.NewTicker(RevocationInterval / 2)
 		defer tick.Stop()
 		childDone := child.done
 		var exitGrace <-chan time.Time

@@ -5268,3 +5268,199 @@ func intelWitnessCompletedAdmission(t *testing.T, f *artifactCLIFixture, actualG
 	}
 	wp25Record(t, map[string]any{"control": "intel-completed-success-admission", "source_assisted": true, "proof_scope": "entry admission of the same successfully completed primary; not a dynamic post-done transition or supplied-package claim", "original_parent_live_at_completion": true, "job_error_before_and_after_cancel": fmt.Sprint(job.err), "raw_stdout": string(original), "expected_stdout": expected.String(), "argv": args, "completed_at_ns": completedAt, "parent_cancelled_at_ns": cancelledAt, "uncancelled_admission_error": fmt.Sprint(admitted), "cancelled_admission_error": fmt.Sprint(refused), "real_command_succeeded_before_parent_cancel": true, "all_direct_PIDs_absent_before_parent_cancel": true, "ledger": rows, "FD_before": baseline, "FD_after": after})
 }
+
+// The wrapper delegates to actual Git. Its only injected observations are the
+// named initial/final witness fault or the named persisted ref update, after
+// capturing the real first complete enumeration. No production hook is used.
+func nativeDiscoveryGit(t *testing.T, f *artifactCLIFixture, mode, ref, replacement string) string {
+	t.Helper()
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	quote := func(v string) string { return "'" + strings.ReplaceAll(v, "'", "'\"'\"'") + "'" }
+	ledger := filepath.Join(root, "ledger")
+	body := filepath.Join(root, "body")
+	first := filepath.Join(root, "first")
+	update := quote(git) + " --git-dir=" + quote(filepath.Join(f.repo, ".git")) + " update-ref "
+	if mode == "remove" {
+		update += "-d " + quote(ref)
+	} else {
+		update += quote(ref) + " " + quote(replacement)
+	}
+	script := "#!/bin/sh\nset -eu\n" +
+		"printf '%s\\n' \"$*\" >> " + quote(ledger) + "\n" +
+		"case \" $* \" in\n" +
+		" *' cat-file '*) : > " + quote(body) + ";;\n" +
+		"esac\n" +
+		"case \" $* \" in\n" +
+		" *' show-ref '*|*' --count=65 '*)\n" +
+		"  if { [ " + quote(mode) + " = first-fault ] && [ ! -e " + quote(body) + " ]; } || { [ " + quote(mode) + " = final-fault ] && [ -e " + quote(body) + " ]; }; then exit 93; fi;;\n" +
+		"esac\n" +
+		"case \" $* \" in\n" +
+		" *' --count=100001 '*)\n" +
+		"  if [ ! -e " + quote(first) + " ]; then\n" +
+		"   : > " + quote(first) + "\n" +
+		"   " + quote(git) + " \"$@\" > " + quote(first+".selection") + "\n" +
+		"   case " + quote(mode) + " in change|remove|add) " + update + ";; esac\n" +
+		"   cat " + quote(first+".selection") + "\n   exit 0\n  fi;;\n" +
+		"esac\nexec " + quote(git) + " \"$@\"\n"
+	if err = os.WriteFile(filepath.Join(root, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", root+string(os.PathListSeparator)+os.Getenv("PATH"))
+	return ledger
+}
+
+func nativeDiscoveryLedger(t *testing.T, path string) string {
+	t.Helper()
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wp25Record(t, map[string]any{"control": "native-discovery-real-Git-ledger", "raw": string(raw)})
+	if strings.Contains(string(raw), " fetch ") {
+		t.Fatal("history reader fetched objects")
+	}
+	return string(raw)
+}
+
+func TestArtifactDiscoveryComposition(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		for _, route := range []string{"ordinary", "explicit"} {
+			for _, mode := range []string{"healthy", "first-fault", "final-fault"} {
+				t.Run(format+"/"+route+"/"+mode, func(t *testing.T) {
+					root := t.TempDir()
+					f := &artifactCLIFixture{t: t, repo: filepath.Join(root, "repo"), home: filepath.Join(root, "home")}
+					f.git("init", "--quiet", "--object-format="+format)
+					ref := artifactFrozenRef(t, f)
+					commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+					// Cross a real 64-pattern worker boundary, sharing one valid
+					// immutable history. This remains a bounded 65-ref fixture.
+					for i := 0; i < 65; i++ {
+						alias := fmt.Sprintf("refs/hn/remotes/p%03d/artifacts/", i) + strings.TrimPrefix(ref, "refs/hn/artifacts/")
+						f.git("update-ref", alias, commit)
+					}
+					t.Chdir(f.repo)
+					sources, err := artifactSources(context.Background(), filepath.Join(f.repo, ".git"))
+					if err != nil {
+						t.Fatal(err)
+					}
+					baseline, err := loadArtifactHistoryFromSources(context.Background(), filepath.Join(f.repo, ".git"), sources)
+					if err != nil {
+						t.Fatal(err)
+					}
+					cut, err := baseline.sourceCut()
+					if err != nil {
+						t.Fatal(err)
+					}
+					// Deliberately reverse caller input: admission must sort a copy.
+					for i, j := 0, len(sources)-1; i < j; i, j = i+1, j-1 {
+						sources[i], sources[j] = sources[j], sources[i]
+					}
+					original := append([]artifactSource(nil), sources...)
+					ledger := nativeDiscoveryGit(t, f, mode, ref, commit)
+					before := f.snapshot()
+					fds := intelWitnessFDs(t)
+					var h *artifactHistory
+					if route == "ordinary" {
+						h, err = loadArtifactHistory(context.Background())
+					} else {
+						h, err = loadArtifactHistoryFromSources(context.Background(), filepath.Join(f.repo, ".git"), sources)
+					}
+					trace := nativeDiscoveryLedger(t, ledger)
+					t.Logf("route=%s mode=%s witness_commands=%d complete_enumerations=%d error=%v", route, mode, strings.Count(trace, " show-ref "), strings.Count(trace, " --count=100001 "), err)
+					if !reflect.DeepEqual(fds, intelWitnessFDs(t)) || !reflect.DeepEqual(sources, original) {
+						t.Fatal("reader leaked descriptors or changed supplied source snapshot")
+					}
+					f.unchanged(before)
+					if mode == "final-fault" || mode == "first-fault" && route == "explicit" {
+						intelWitnessResult(t, err, "verification_failure")
+						if !strings.Contains(trace, " --count=65 ") {
+							t.Fatal("failed witness never attempted its original fallback")
+						}
+						return
+					}
+					intelWitnessResult(t, err, "")
+					wantWitness, wantEnumerations, wantCut := 2, 2, cut
+					if route == "explicit" {
+						wantWitness, wantEnumerations, wantCut = 4, 0, ""
+					}
+					if strings.Count(trace, " show-ref ") != wantWitness || strings.Count(trace, " --count=100001 ") != wantEnumerations {
+						t.Fatalf("wrong source composition: want %d witnesses/%d complete enumerations; ledger:\n%s", wantWitness, wantEnumerations, trace)
+					}
+					if h.Cut != wantCut || len(h.ByID) != 1 || string(h.ByID[artifactVectorID].verified.Bytes()) != artifactVector || !reflect.DeepEqual(h.Sources, baseline.Sources) || len(h.readObjects) != 4 {
+						t.Fatal("reader changed exact signed output, complete selection, verification or Cut", h)
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestArtifactDiscoveryPersistedChangesAndPrecedence(t *testing.T) {
+	for _, mode := range []string{"add", "remove", "change", "integrity", "raw-count-bytes"} {
+		t.Run(mode, func(t *testing.T) {
+			root := t.TempDir()
+			f := &artifactCLIFixture{t: t, repo: filepath.Join(root, "repo"), home: filepath.Join(root, "home")}
+			f.git("init", "--quiet")
+			ref := artifactFrozenRef(t, f)
+			commit := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			if mode == "integrity" {
+				commit = artifactRawCommit(t, f, artifactVector, strings.Repeat("A", 86), "", "hn artifact "+artifactVectorID, false)
+			}
+			if mode == "raw-count-bytes" {
+				// A real oversized raw commit must hit the unchanged count
+				// preflight's metadata-before-body byte guard, before integrity.
+				path := filepath.Join(root, "oversized-commit")
+				body := "tree " + f.git("rev-parse", commit+"^{tree}") + "\nauthor Fixture <fixture@example.invalid> 1 +0000\ncommitter Fixture <fixture@example.invalid> 1 +0000\n\n" + strings.Repeat("x", artifactReadObjectBytes)
+				if err := os.WriteFile(path, []byte(body), 0600); err != nil {
+					t.Fatal(err)
+				}
+				commit = f.git("hash-object", "-t", "commit", "-w", path)
+			}
+			f.git("update-ref", ref, commit)
+			alternate := artifactRawCommit(t, f, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			if alternate == commit {
+				alternate = f.git("-c", "user.name=Changed", "-c", "user.email=fixture@example.invalid", "commit-tree", f.git("rev-parse", commit+"^{tree}"), "-m", "hn artifact "+artifactVectorID)
+			}
+			target, action := ref, mode
+			if mode == "add" {
+				target = strings.Replace(ref, "refs/hn/", "refs/hn/remotes/added/", 1)
+			}
+			if mode == "integrity" || mode == "raw-count-bytes" {
+				action = "remove"
+			}
+			t.Chdir(f.repo)
+			ledger := nativeDiscoveryGit(t, f, action, target, alternate)
+			_, err := loadArtifactHistory(context.Background())
+			trace := nativeDiscoveryLedger(t, ledger)
+			code, message := "concurrent_update", "artifact source witness changed while reading"
+			if mode == "remove" {
+				message = "artifact source witness missing while reading"
+			}
+			if mode == "add" {
+				message = "artifact sources changed while reading"
+			}
+			if mode == "integrity" {
+				code, message = "verification_failure", "invalid artifact signature"
+			}
+			if mode == "raw-count-bytes" {
+				code, message = "resource_limit", "artifact object exceeds read limit"
+			}
+			wp25Record(t, map[string]any{"control": "discovery-persisted-and-mixed-invalid", "mode": mode, "error": fmt.Sprint(err), "ledger": trace})
+			intelWitnessResult(t, err, code)
+			var failure *artifact.Error
+			if !errors.As(err, &failure) || failure.Message != message {
+				t.Fatalf("wrong accepted precedence/diagnostic: got %v want %s/%s", err, code, message)
+			}
+			// Explicit supplied-source precedence stays at the original initial
+			// witness, including these same mixed-invalid captured objects.
+			if mode == "integrity" || mode == "raw-count-bytes" {
+				_, err = loadArtifactHistoryFromSources(context.Background(), filepath.Join(f.repo, ".git"), []artifactSource{{ref, commit}})
+				intelWitnessResult(t, err, "concurrent_update")
+			}
+		})
+	}
+}

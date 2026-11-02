@@ -6,8 +6,14 @@ import (
 	"errors"
 	"io"
 	"os"
+	"os/exec"
+	"os/signal"
+	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -570,6 +576,206 @@ func TestSessionMutationLossAndSettledRefusal(t *testing.T) {
 				t.Fatalf("expected one writer, got %d", calls)
 			}
 			assertSessionPIDGone(t, pid)
+		})
+	}
+}
+
+// This peer records the actual TERM delivered to a running optional process.
+func TestSessionCadenceAsset(t *testing.T) {
+	for i, arg := range os.Args {
+		if arg != "--cadence-root" {
+			continue
+		}
+		root := os.Args[i+1]
+		path := filepath.Join(root, strconv.Itoa(os.Getpid()))
+		term := make(chan os.Signal, 1)
+		signal.Notify(term, syscall.SIGTERM)
+		_ = assetRead()
+		if os.WriteFile(path+".ready", []byte(strconv.FormatInt(time.Now().UnixNano(), 10)), 0600) != nil {
+			os.Exit(70)
+		}
+		assetWrite(map[string]any{"protocol": HostProtocol, "ready": true})
+		<-term
+		if os.WriteFile(path+".term", []byte(strconv.FormatInt(time.Now().UnixNano(), 10)), 0600) != nil {
+			os.Exit(71)
+		}
+		os.Exit(0)
+	}
+}
+
+func sessionCadenceFixture(t *testing.T) (SessionConfig, string) {
+	t.Helper()
+	cfg, _ := sessionFixture(t, "idle")
+	root := t.TempDir()
+	reg, err := NewRegistration(cfg.Registration.Manifest, cfg.Registration.Executable, []string{"-test.run=^TestSessionCadenceAsset$", "--", "--cadence-root", root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	reg, err = Register(filepath.Join(t.TempDir(), "extensions", "registry.json"), reg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = cfg.Store.Set(reg, true, []Grant{{"native:issue", []string{"read", "create"}}}); err != nil {
+		t.Fatal(err)
+	}
+	cfg.Registration = reg
+	cfg.Dispatch = func(context.Context, Invocation) (any, error) {
+		return nil, failure("invalid_input", "idle cadence peer unexpectedly requested dispatch")
+	}
+	cfg.Recheck = func(ctx context.Context, binding Binding) (Registration, EnablementEntry, error) {
+		entry, _, err := cfg.Store.Entry(reg)
+		if err == nil {
+			err = Authorize(reg, entry, binding, Access{Method: "capabilities.list"}, false)
+		}
+		return reg, entry, err
+	}
+	return cfg, root
+}
+
+func sessionCadenceReady(t *testing.T, root string, count int) []string {
+	t.Helper()
+	deadline := time.Now().Add(3 * time.Second)
+	for {
+		paths, err := filepath.Glob(filepath.Join(root, "*.ready"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(paths) == count {
+			return paths
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("only %d of %d real hosts became ready", len(paths), count)
+		}
+		time.Sleep(time.Millisecond)
+	}
+}
+
+func TestSessionRevocationCadenceHeadroom(t *testing.T) {
+	cfg, root := sessionCadenceFixture(t)
+	original := cfg.Recheck
+	var checked time.Time
+	cfg.Recheck = func(ctx context.Context, binding Binding) (Registration, EnablementEntry, error) {
+		if _, startupOrRequest := ctx.Deadline(); !startupOrRequest {
+			checked = time.Now()
+			// Reserve a known, bounded fresh-check cost. The old 250ms initial
+			// sleep cannot both do this work and deliver TERM within 250ms.
+			time.Sleep(60 * time.Millisecond)
+		}
+		reg, entry, err := original(ctx, binding)
+		if _, bounded := ctx.Deadline(); !bounded && err == nil {
+			if _, e := os.Stat(filepath.Join(root, "revoked")); e == nil {
+				err = failure("denied_access", "fresh recheck observed revoked registration")
+			}
+		}
+		return reg, entry, err
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan error, 1)
+	go func() { _, err := Run(ctx, cfg); done <- err }()
+	joined := false
+	defer func() {
+		cancel()
+		if !joined {
+			<-done
+		}
+	}()
+	ready := sessionCadenceReady(t, root, 1)[0]
+	revoked := time.Now()
+	if err := os.WriteFile(filepath.Join(root, "revoked"), []byte("revoked"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	err := <-done
+	joined = true
+	expectGrantError(t, err, "denied_access")
+	raw, err := os.ReadFile(strings.TrimSuffix(ready, ".ready") + ".term")
+	if err != nil {
+		t.Fatal("real child never acknowledged TERM", err)
+	}
+	ns, err := strconv.ParseInt(string(raw), 10, 64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	term := time.Unix(0, ns)
+	t.Logf("revoked=%d fresh_check=%d actual_TERM=%d notice=%s", revoked.UnixNano(), checked.UnixNano(), ns, term.Sub(revoked))
+	if checked.Before(revoked) || term.Sub(revoked) > RevocationInterval {
+		t.Fatalf("active host missed unchanged 250ms revocation bound: %s", term.Sub(revoked))
+	}
+	pid, err := strconv.Atoi(filepath.Base(strings.TrimSuffix(ready, ".ready")))
+	if err != nil || syscall.Kill(pid, 0) != syscall.ESRCH {
+		t.Fatal("Run returned without reaping its actual host", pid, err)
+	}
+}
+
+// Bounded development evidence: the real monitor invokes fresh Git and hashes
+// the executable on every check, for one and four simultaneously active hosts.
+// This does not replace native package H14 or default/RSS qualification.
+func TestSessionActiveRecheckIO(t *testing.T) {
+	for _, count := range []int{1, 4} {
+		t.Run(strconv.Itoa(count), func(t *testing.T) {
+			cfg, root := sessionCadenceFixture(t)
+			if out, err := exec.Command("git", "-C", cfg.Directory, "init", "--quiet").CombinedOutput(); err != nil {
+				t.Fatal(err, string(out))
+			}
+			original := cfg.Recheck
+			var mu sync.Mutex
+			checks, gitBytes := 0, 0
+			var ioTime time.Duration
+			cfg.Recheck = func(ctx context.Context, binding Binding) (Registration, EnablementEntry, error) {
+				start := time.Now()
+				out, err := exec.CommandContext(ctx, "git", "-C", cfg.Directory, "rev-parse", "--absolute-git-dir").Output()
+				if err != nil {
+					return Registration{}, EnablementEntry{}, err
+				}
+				if _, _, err = cfg.Registration.Availability(); err != nil {
+					return Registration{}, EnablementEntry{}, err
+				}
+				if _, bounded := ctx.Deadline(); !bounded {
+					mu.Lock()
+					checks++
+					gitBytes += len(out)
+					ioTime += time.Since(start)
+					mu.Unlock()
+				}
+				return original(ctx, binding)
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			done := make(chan error, count)
+			pending := 0
+			defer func() {
+				cancel()
+				for i := 0; i < pending; i++ {
+					<-done
+				}
+			}()
+			for i := 0; i < count; i++ {
+				pending++
+				go func() { _, err := Run(ctx, cfg); done <- err }()
+				sessionCadenceReady(t, root, i+1)
+			}
+			ready := sessionCadenceReady(t, root, count)
+			start := time.Now()
+			time.Sleep(800 * time.Millisecond)
+			cancel()
+			for i := 0; i < count; i++ {
+				err := <-done
+				pending--
+				expectGrantError(t, err, "cancelled")
+			}
+			info, err := os.Stat(cfg.Registration.Executable)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("active_hosts=%d observed=%s monitor_checks=%d actual_Git_stdout_bytes=%d executable_bytes_hashed=%d cumulative_Git_and_hash_time=%s", count, time.Since(start), checks, gitBytes, int64(checks)*info.Size(), ioTime)
+			if checks < count*2 {
+				t.Fatal("active monitor did not perform repeated real Git/hash checks")
+			}
+			for _, path := range ready {
+				pid, err := strconv.Atoi(filepath.Base(strings.TrimSuffix(path, ".ready")))
+				if err != nil || syscall.Kill(pid, 0) != syscall.ESRCH {
+					t.Fatal("active I/O host not reaped", pid, err)
+				}
+			}
 		})
 	}
 }

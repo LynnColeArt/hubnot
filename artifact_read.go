@@ -298,7 +298,11 @@ func loadArtifactHistory(ctx context.Context) (*artifactHistory, error) {
 	if e != nil {
 		return nil, e
 	}
-	h, e := loadArtifactHistoryFromSources(ctx, dir, sources)
+	admitted, oidLength, e := artifactAdmitHistorySources(ctx, dir, sources)
+	if e != nil {
+		return nil, e
+	}
+	h, e := artifactReadAdmittedHistory(ctx, dir, admitted, oidLength)
 	if e != nil {
 		return nil, e
 	}
@@ -322,21 +326,34 @@ func loadArtifactHistory(ctx context.Context) (*artifactHistory, error) {
 // internal verification data, never a public accepted-view query result. A caller
 // must keep the supplied objects available while using its budgeted reader.
 func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []artifactSource) (*artifactHistory, error) {
+	admitted, oidLength, e := artifactAdmitHistorySources(ctx, dir, sources)
+	if e != nil {
+		return nil, e
+	}
+	if e := artifactCheckSourceWitnesses(ctx, dir, admitted); e != nil {
+		return nil, e
+	}
+	return artifactReadAdmittedHistory(ctx, dir, admitted, oidLength)
+}
+
+// Both compositions admit the same copied, sorted selection. The discovery
+// caller retains its original complete observation for the final comparison.
+func artifactAdmitHistorySources(ctx context.Context, dir string, sources []artifactSource) ([]artifactSource, int, error) {
 	if ctx.Err() != nil {
-		return nil, artifactFailure("cancelled", "artifact read cancelled")
+		return nil, 0, artifactFailure("cancelled", "artifact read cancelled")
 	}
 	if !filepath.IsAbs(dir) {
-		return nil, artifactFailure("repository_error", "explicit artifact Git directory must be absolute")
+		return nil, 0, artifactFailure("repository_error", "explicit artifact Git directory must be absolute")
 	}
 	if len(sources) > artifactReadEntries {
-		return nil, artifactFailure("resource_limit", "selected artifact ref limit exceeded")
+		return nil, 0, artifactFailure("resource_limit", "selected artifact ref limit exceeded")
 	}
 	format, e := projectGit(ctx, dir, nil, 32, "rev-parse", "--show-object-format")
 	if e != nil {
 		if ctx.Err() != nil {
-			return nil, artifactFailure("cancelled", "artifact read cancelled")
+			return nil, 0, artifactFailure("cancelled", "artifact read cancelled")
 		}
-		return nil, artifactFailure("repository_error", "cannot identify explicit artifact Git repository")
+		return nil, 0, artifactFailure("repository_error", "cannot identify explicit artifact Git repository")
 	}
 	oidLength := 40
 	switch strings.TrimSpace(string(format)) {
@@ -344,24 +361,27 @@ func loadArtifactHistoryFromSources(ctx context.Context, dir string, sources []a
 	case "sha256":
 		oidLength = 64
 	default:
-		return nil, artifactFailure("repository_error", "unsupported explicit artifact Git object format")
+		return nil, 0, artifactFailure("repository_error", "unsupported explicit artifact Git object format")
 	}
 	sources = append([]artifactSource{}, sources...)
 	sort.Slice(sources, func(i, j int) bool { return sources[i].Ref < sources[j].Ref })
 	for i, source := range sources {
 		if ctx.Err() != nil {
-			return nil, artifactFailure("cancelled", "artifact read cancelled")
+			return nil, 0, artifactFailure("cancelled", "artifact read cancelled")
 		}
 		if _, ok := parseArtifactRef(source.Ref); !ok || !validGitOID(source.OID) || len(source.OID) != oidLength || source.OID != strings.ToLower(source.OID) {
-			return nil, artifactFailure("invalid_history", "invalid explicit artifact source")
+			return nil, 0, artifactFailure("invalid_history", "invalid explicit artifact source")
 		}
 		if i > 0 && sources[i-1].Ref == source.Ref {
-			return nil, artifactFailure("invalid_history", "duplicate explicit artifact source")
+			return nil, 0, artifactFailure("invalid_history", "duplicate explicit artifact source")
 		}
 	}
-	if e := artifactCheckSourceWitnesses(ctx, dir, sources); e != nil {
-		return nil, e
-	}
+	return sources, oidLength, nil
+}
+
+// Full immutable-history verification always ends with the original witnesses.
+func artifactReadAdmittedHistory(ctx context.Context, dir string, sources []artifactSource, oidLength int) (*artifactHistory, error) {
+	var e error
 	if e := artifactPreflightRecordCount(ctx, dir, sources, oidLength); e != nil {
 		return nil, e
 	}
