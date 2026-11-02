@@ -1,0 +1,50 @@
+{
+  "schema": "wp25.e2big-fixture-portability.regions.v1",
+  "status": "EXTERNAL_PROPOSAL_ROOT_PENDING_NOT_AUTHORITY",
+  "source_commit": "43574af5b57217df15a6ccf0b8f5c29cadc28593",
+  "source_tree": "13e20b3be58f14e0cb394a5ca999ec7ceae4437a",
+  "source_path": "artifact_read_test.go",
+  "source_git_blob": "13d2812965e4dd77bf4de89a68bc19eabef12164",
+  "source_sha256": "86bec9842f64699561a7b9ee0c5e975841820ee062fe703a3a0692a130f06633",
+  "source_bytes": 225916,
+  "historical_c844_byte_identical": true,
+  "allowed_source_paths": [
+    "artifact_read_test.go"
+  ],
+  "unchanged_other_Go_module_inputs": 316,
+  "Go_module_keyset_count": 317,
+  "regions": [
+    {
+      "path": "artifact_read_test.go",
+      "context_start_line": 4815,
+      "context_end_line": 4863,
+      "context_sha256": "1433df2789669aca171d11ddb78abf1cfb686204a8f7ad9a964d86f4581a7b1b",
+      "context_bytes": 1880,
+      "exact_replacement_line": 4823,
+      "old_value_bytes": 262144,
+      "new_value_bytes": 2097152,
+      "new_environment_entry_bytes_including_key_equals_and_NUL": 2097178,
+      "change": "Replace only strings.Repeat(\"x\", 256*1024) with strings.Repeat(\"x\", 2*1024*1024). Permit only one directly colocated explanatory comment; no other statement/import/helper edits."
+    }
+  ],
+  "ownership": {
+    "owner": "WP25",
+    "basis": "Existing14-path owned_files and2026-10-31 exclusive test-only transfer",
+    "new_inactive_owner_exception_required": false,
+    "normal_root_scope_authorization_still_required": true
+  },
+  "freeze_reconciliation": {
+    "latest_import_union_baseline": "c84402877996015cf33784bebd826e5be4981a4a",
+    "historical_other_Go_module_inputs": 315,
+    "explicit_additive_exception": "artifact_read_test.go only; no implicit invalidation of prior freeze",
+    "combined_unchanged_other_Go_module_inputs_vs_c844": 314,
+    "preserve_current4357_import_union_fix_paths": [
+      "artifact_exchange.go",
+      "artifact_exchange_commands_test.go"
+    ],
+    "new_fixture_only_delta_vs4357_other_inputs": 316
+  },
+  "execution_performed": false,
+  "repo_edits_performed": false,
+  "approval_or_lifecycle_authority": false
+}
