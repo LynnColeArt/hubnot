@@ -86,8 +86,11 @@ jobs:
           for archive in "$RUNNER_TEMP/portability-packages"/hubnot_0.0.0-portability-proof_"$(go env GOOS)"_"$(go env GOARCH)"*.tar.gz; do
             tar -xzf "$archive" -C "$RUNNER_TEMP/portability-unpacked"
           done
-      - name: Actual standard and native-only package public journeys
-        run: go test -race -count=1 -timeout 3m -v -run '^TestPortableCollaborationIntegratedPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/portability-unpacked"
+      - name: Standard and native-only package install and runtime smoke
+        # Full collaboration stays in the explicit native integration pipeline.
+        env:
+          GORACE: atexit_sleep_ms=0
+        run: go test -race -count=1 -timeout 2m -v -run '^TestBetaPlatformPackageInstallAndRuntime$' . -args -hn-package-dir "$RUNNER_TEMP/portability-unpacked"
   candidate-request:
     name: Validate optional candidate request
     if: github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions'
