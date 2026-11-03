@@ -1,7 +1,7 @@
 {
-  "event_count": 30,
-  "last_event_id": "01M6HVRBZYWKXD16M4BH4AQ6VJ",
-  "materialized_at": "2026-11-03T23:26:21.694698+00:00",
+  "event_count": 32,
+  "last_event_id": "01M6HVTXZPJQQHCPAE9ZHJ7GX7",
+  "materialized_at": "2026-11-03T23:27:45.648257+00:00",
   "mission_number": "",
   "mission_slug": "runner-efficiency-01M6HH8H",
   "mission_type": "",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 1
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -149,11 +149,19 @@
       }
     },
     "WP05": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M6HJCN2M89T8H3T0M6QQMDAC",
-      "last_transition_at": "2026-11-03T20:42:40.596714+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M6HVTXZPJQQHCPAE9ZHJ7GX7",
+      "last_transition_at": "2026-11-03T23:27:45.648257+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 710017,
+      "shell_pid_created_at": "1793748459.87"
     }
   }
 }
