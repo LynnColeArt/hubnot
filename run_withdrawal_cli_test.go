@@ -25,11 +25,15 @@ func TestRunWithdrawalCLI(t *testing.T) {
 	}
 	git := exec.Command("git", "rev-parse", "--absolute-git-dir")
 	gitDir, err := git.Output()
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		t.Setenv("GIT_DIR", strings.TrimSpace(string(gitDir)))
+		t.Setenv("GIT_WORK_TREE", source)
+	} else {
+		// Native CI may execute an extracted source snapshot without any .git.
+		// Do not invent a worktree stamp or require one to compile source controls.
+		t.Setenv("GOFLAGS", strings.TrimSpace(os.Getenv("GOFLAGS")+" -buildvcs=false"))
+		t.Log("source snapshot has no Git stamp; compile source with -buildvcs=false")
 	}
-	t.Setenv("GIT_DIR", strings.TrimSpace(string(gitDir)))
-	t.Setenv("GIT_WORK_TREE", source)
 
 	for _, variant := range []struct{ name, tags string }{{"standard", ""}, {"native-only", "nogithub,noforge"}} {
 		t.Run(variant.name, func(t *testing.T) {
