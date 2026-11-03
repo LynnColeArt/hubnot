@@ -6,6 +6,14 @@ experimental. Beta prerelease publication does not by itself adopt the full
 
 ## Unreleased
 
+### Fixed
+
+- Replication receipts record newly accepted objects without repeating every
+  settled object closure. Full validated closure remains available for recovery,
+  and transaction allocation avoids IDs belonging to retained receipts/anchors.
+  Existing receipts are not compacted. Andrew's [PR #32](https://github.com/LynnColeArt/hubnot/pull/32)
+  is merged on `main`; this fix is not in the published beta.2 packages.
+
 ### Documentation
 
 - Refreshed the README, support/platform guides, packaging and feature guidance
@@ -13,7 +21,7 @@ experimental. Beta prerelease publication does not by itself adopt the full
   frozen alpha, beta.1 and extension-mission qualification records.
 - Added an isolated plugin quickstart and a release checklist requiring open
   PR/issue review before candidate freeze and publication. Documented beta.2's
-  receipt-growth issue and the separately reviewed proposed fix in PR #32.
+  receipt-growth issue and the separately reviewed, now merged fix in PR #32.
 
 ## [0.1.0-beta.2](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.2) — 2026-11-03
 

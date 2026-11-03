@@ -107,7 +107,7 @@ remain unchanged.
 
 Known beta.2 issue: [replication receipt growth](docs/releases/0.1.0-beta.2.md#known-replication-performance-issue)
 can make long-lived clones progressively slower. [PR #32](https://github.com/LynnColeArt/hubnot/pull/32)
-contains a proposed fix that is not in these published binaries.
+is merged on `main` for a future release; its fix is not in these published binaries.
 
 ## Build and verify
 
