@@ -1,5 +1,11 @@
 # Implementation Plan: Optional extensions and custom types
 
+**Current CI decision (2026-11-03):**
+[Native CI integration](ci-integration-decision.md) supersedes the historical
+hosted exhaustive scheduling and automatic whole-corpus rerun requirements below.
+Production limits, default behavior, evidence identity and acceptance requirements
+remain in force. Preserve the frozen Mac candidate while integrating CI maintenance.
+
 **Branch / planning base / mission merge target**: feature/optional-extensions
 **Date**: 2026-10-30
 **Spec**: [spec.md](spec.md)
