@@ -353,7 +353,10 @@ func TestRunnerTargetConfiguredAuthenticationAndSanitization(t *testing.T) {
 		t.Fatal(err)
 	}
 	config := filepath.Join(home, ".gitconfig")
-	mustGit(t, "config", "--file", config, "credential.helper", helper)
+	// Reset any machine-level helper only in this fixture's temporary config;
+	// then prove the intentionally configured helper survives sanitization.
+	mustGit(t, "config", "--file", config, "--add", "credential.helper", "")
+	mustGit(t, "config", "--file", config, "--add", "credential.helper", helper)
 	mustGit(t, "config", "--file", config, "url."+server.URL+"/.insteadOf", "https://native-fixture.invalid/")
 	mustGit(t, "remote", "set-url", "origin", "https://native-fixture.invalid/remote.git")
 	// Redirects and injected config must not override this configured repository.
@@ -392,6 +395,7 @@ func TestRunnerTargetBuiltinPromptsDisabled(t *testing.T) {
 	}
 	home := t.TempDir()
 	mustGit(t, "config", "--file", filepath.Join(home, ".gitconfig"), "core.askPass", askpass)
+	mustGit(t, "config", "--file", filepath.Join(home, ".gitconfig"), "credential.helper", "")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("WWW-Authenticate", `Basic realm="no credentials"`)
 		w.WriteHeader(401)
