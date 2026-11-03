@@ -1,7 +1,9 @@
 # Interrupted operations and upgrades
 
-This guide implements the prospective [beta support contract](beta-support.md).
-Current releases remain alpha. A journal schema is a storage contract, not a
+This guide documents the implemented recovery boundaries toward the prospective
+[beta support contract](beta-support.md). The current release is the
+[0.1.0-beta.2 prerelease](releases/0.1.0-beta.2.md); publication does not adopt
+the full contract. A journal schema is a storage contract, not a
 product release number. There is no blanket promise to resume every historical
 alpha journal with a newer binary.
 

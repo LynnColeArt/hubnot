@@ -5,6 +5,7 @@ Extensions add an explicitly started local executable; there is no automatic
 installation, discovery, provider connection, account, daemon, or required language
 runtime. Generic [artifact commands](artifacts-v1.md) work without extensions.
 The [consumer guide](extension-consumers.md) contains optional source examples.
+New to plugins? Start with the [isolated inventory-ticket walkthrough](plugin-quickstart.md).
 
 The current host protocol is **`hn.extension/1`**, carried over private stdio pipes.
 Manifest, registry, repository declaration and enablement versions are respectively
@@ -15,9 +16,9 @@ older released executable supports the new protocols.
 
 ## Contract reference, online or offline
 
-The version-pinned [host contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md) defines the wire protocol. The
-same source also contains the [artifact contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md),
-[conformance fixtures](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md), and [default-workflow contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/default-workflow.md).
+The release-pinned [host contract](https://github.com/LynnColeArt/hubnot/blob/v0.1.0-beta.2/kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md) defines the wire protocol. The
+same source also contains the [artifact contract](https://github.com/LynnColeArt/hubnot/blob/v0.1.0-beta.2/kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md),
+[conformance fixtures](https://github.com/LynnColeArt/hubnot/blob/v0.1.0-beta.2/kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md), and [default-workflow contract](https://github.com/LynnColeArt/hubnot/blob/v0.1.0-beta.2/kitty-specs/optional-extensions-01M661C0/contracts/default-workflow.md).
 These links identify published contract bytes; using an extension does not require
 GitHub or a network connection.
 
@@ -27,9 +28,9 @@ that revision. Inside its root, open
 `kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md` and the other three
 Markdown files in that directory. Read them as text or with a Markdown viewer;
 Go is not needed. Binary packages include product guides but do not include this
-contract directory. For the qualification candidate, the linked revision is
-`d5aee5d0226c2e86615c1a0910d3cc8b9592cce7`; use the matching source archive rather
-than assuming a later checkout describes an older binary.
+contract directory. For [0.1.0-beta.2](releases/0.1.0-beta.2.md), the linked tag
+resolves to `58c14768dfd094ce8dfaac747591c1e66d9a64de`; use its matching source
+archive rather than assuming a later checkout describes an older binary.
 
 ## Explicit lifecycle
 

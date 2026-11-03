@@ -407,6 +407,12 @@ to reset its allowance. Never restore private keys for a normal observer.
 
 ## Evidence and remaining qualification
 
+CLI navigation limitation in beta.2: the global help menu advertises
+`hn contribution help`, but that subcommand is not implemented and can refuse
+with `contributions disabled or no authority selected`. Use the grammar and
+recipes in this guide; do not enable contribution authority merely to obtain
+help. This documentation update does not change the published executable.
+
 `TestBetaContributionPublicVariants` in
 `beta_contribution_acceptance_test.go` runs standard and actual combined
 `nogithub,noforge` source executables with a closed, Git-only child environment.

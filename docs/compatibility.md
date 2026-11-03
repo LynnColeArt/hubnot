@@ -7,6 +7,11 @@ archives** below, read by current standard and native-only (`noforge`) builds.
 This does not qualify every release command, operating system, provider adapter,
 or private alpha recovery journal, and does not itself declare a beta release.
 
+The current [0.1.0-beta.2 prerelease](releases/0.1.0-beta.2.md) contains these
+compatibility checks, but its bounded package smoke does not rerun the complete
+released-writer corpus. Beta.2 has not been added as a historical writer fixture;
+the table below remains the actual immutable corpus inventory.
+
 | Released writer | Released source commit | Native facts | Project archive |
 | --- | --- | --- | --- |
 | 0.0.1-dev | `f82b57420f0c825a9ea6f3b9f93ede680c8cf06f` | Tested | Not introduced yet |

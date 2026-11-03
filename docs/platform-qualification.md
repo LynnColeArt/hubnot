@@ -1,7 +1,31 @@
-# Candidate package qualification
+# Package qualification and historical evidence
 
-Status: qualification in progress, 2026-10-29. The published `0.0.3-dev` is an
-alpha. `0.1.0-beta.1` is an **unpublished qualification candidate**, not a beta
+## Current release: 0.1.0-beta.2
+
+**Published prerelease, November 3, 2026.** Both standard and native-only exact
+packages passed bounded native smoke on Linux AMD64, Linux ARM64 (Golden
+Goddess) and Apple Silicon (Pink Menace). These are non-race package observations,
+not a new exhaustive or source race-suite result. Intel Macs are outside this
+prerelease's supported set by explicit maintainer decision. Developer ID signing
+and notarization remain pending; Mac browser-download/Gatekeeper behavior is
+uncertified.
+
+Use the [beta.2 release record](releases/0.1.0-beta.2.md) for download links,
+source/package identities, observed environments, test scope and current
+platform decisions. [Project CI](project-ci.md) describes the bounded hosted
+smoke and explicit native integration/stress/soak tiers. The broader
+[support contract](beta-support.md) remains prospective.
+
+## Historical beta.1 qualification campaign
+
+**The remaining sections preserve the earlier beta-readiness campaign, not the
+current release status or the recommended CI schedule.** Source hashes, version
+labels, failures and pending observations below belong to those candidate bytes.
+Do not relabel them as beta.2 passes. In particular, the historical Intel failures
+remain failures even though Intel is no longer a supported prerelease target.
+
+At the October 29 checkpoint, qualification was in progress and the published
+`0.0.3-dev` was an alpha. `0.1.0-beta.1` was an **unpublished qualification candidate**, not a beta
 release or tag. The contribution promotion context gap was repaired at `5bedb38c`;
 that candidate passed both Linux rows and every Mac Apple Silicon group. Intel's
 ordinary WP13 qualification failed under the former 45-second outer watchdog;

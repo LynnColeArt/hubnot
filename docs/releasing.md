@@ -6,7 +6,7 @@ without Python, a Unix shell, Docker, provider CLIs or a provider account.
 
 ```text
 go build -trimpath -o hn-release ./cmd/hn-release
-hn-release --source . --rev COMMIT --version 0.0.2-dev --out ../release-0.0.2-dev
+./hn-release --source . --rev COMMIT --version 0.1.0-beta.2 --out ../release-0.1.0-beta.2
 ```
 
 On Windows, build `hn-release.exe` and invoke `hn-release.exe` (or its full
@@ -30,14 +30,54 @@ The default targets are `linux/amd64`, `linux/arm64`, `darwin/amd64` and
 For a subset, use comma-separated `--targets` and `--variants`, for example:
 
 ```text
-hn-release --rev COMMIT --version 0.0.2-dev --out ../release-linux --targets linux/amd64 --variants native-only
+./hn-release --rev COMMIT --version 0.1.0-beta.2 --out ../release-linux --targets linux/amd64 --variants native-only
 ```
 
 Unknown or duplicate targets/variants are refused. Windows CLI distribution is
-outside this release matrix. `native-only` builds with `nogithub,noforge`:
-`nogithub` excludes GitHub before all-adapter `noforge` support is integrated,
-and remains GitHub-specific. The combined tags exclude all installed network
-adapters once `noforge` is integrated. They retain native Git collaboration.
+outside this release matrix. `native-only` builds with `nogithub,noforge`, which
+excludes all installed network adapters while retaining native Git collaboration.
+The `nogithub` tag alone remains GitHub-specific.
+
+The packager's four-target default is a build inventory, not a runtime support
+promise. [Beta.2](releases/0.1.0-beta.2.md) supports Linux AMD64/ARM64 and Apple
+Silicon, with Intel Mac artifacts retained unqualified in its complete bundle.
+New supported-only builds may use
+`--targets linux/amd64,linux/arm64,darwin/arm64`; this produces different
+provenance/checksum files and is not a reproduction of the full beta.2 bundle.
+Reproducing beta.2 requires its exact source commit, Go 1.26.4, version and
+original four-target/two-variant selection. Use a new local output directory;
+do not replace already published assets with a new build.
+
+## Release review checklist
+
+Before freezing a candidate:
+
+1. Inventory open native proposals/issues and any provider PRs/issues, including
+   contributor fixes. Review changes
+   relevant to correctness, data integrity, recovery, performance and supported
+   platforms. Record which fixes are included and why any known problem is
+   deferred; an unrelated feature PR need not block a release.
+2. Resolve the included fixes and select the exact committed source, compiler,
+   version, platform/variant set and known limitations. Build from that clean
+   source only after the review decisions are recorded.
+3. Qualify those exact package bytes on each claimed native target. Keep bounded
+   package smoke separate from explicit deeper native CI work; source rebuilds
+   and another candidate's results do not qualify the release.
+4. Recheck that contribution/fix inventory before publication. If a relevant new
+   finding changes the release decision, document it and qualify a new candidate
+   when code changes. Do not silently move an old PASS to new binaries.
+5. Publish current download links, exact test scope and outstanding problems,
+   then verify the tag target and downloaded asset checksums. Published assets
+   remain immutable; later code fixes need a new version. Documentation-only
+   corrections can describe the original bytes without rebuilding them.
+
+This is a maintainer review procedure, not a hosted-service requirement in
+`hn-release` or an automatically enabled product-policy gate.
+
+The beta.2 follow-up review found [PR #32](https://github.com/LynnColeArt/hubnot/pull/32)
+was already open before packaging. Its replication receipt-growth fix was not
+included. That omission motivates the explicit PR/issue inventory above; see
+the [beta.2 known issue](releases/0.1.0-beta.2.md#known-replication-performance-issue).
 
 ## Source and build inputs
 
@@ -110,13 +150,17 @@ output collisions, compiler failures and cancellation.
 
 Before packaging a migration change, run the [filesystem portability
 gates](filesystem-portability.md) on Linux and macOS with their normal temporary
-environments. The hosted PR workflow runs those same Go commands. Do not add
-physical-path or TMPDIR workarounds to make acceptance pass. Case-collision
+environments. Hosted PRs run the [bounded native actions](project-ci.md) and
+exact-package install/runtime checks; the full deep suite remains explicit.
+Do not add physical-path or TMPDIR workarounds to make acceptance pass. Case-collision
 fixtures must construct committed Git trees rather than assume the checkout's
 filesystem is case-sensitive. Published binary runtime qualification remains a
 separate check for each target and variant; a source test is not a substitute.
 
-| Platform | WP01 verification scope |
+The following table is the historical WP01 packager-host evidence, not a current
+runtime matrix for the application:
+
+| Platform | Historical WP01 verification scope |
 | --- | --- |
 | Linux AMD64 packager host | Executed packaging and archive/refusal tests with Go 1.26.4. |
 | Linux/macOS AMD64/ARM64 artifact targets | Cross-compilation and archive inspection; runtime execution must be reported separately for each target. |

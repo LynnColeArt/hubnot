@@ -1,8 +1,9 @@
 # Native contribution foundation (hn.contribution/1)
 
-WP10 specifies and implements a library contract. The commands below are the
-WP11–13 integration contract, **not commands implemented by WP10**. Existing
-native commands keep their behavior until live integration is delivered. No
+This document records the foundation library contract and its implemented
+WP11–13 command integration. The [contributor and moderator guide](contributions.md)
+is the operator entry point; work-package ownership notes below are historical
+implementation provenance, not a claim that the commands are still planned. No
 endpoint, daemon, provider account, second identity or automatic worker is added.
 Contributions, protected checks, automerge and audits are independent opt-ins.
 
