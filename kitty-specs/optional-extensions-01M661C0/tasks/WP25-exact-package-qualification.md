@@ -77,6 +77,14 @@ Use the `/ad-hoc-profile-load` skill to load the profile specified in frontmatte
 
 ## Objectives and success criteria
 
+**Maintainer decision, 2026-11-03:** apply
+[the native CI integration decision](../ci-integration-decision.md) before the
+historical scheduling instructions below. Coordinator-owned CI maintenance uses
+native fast/stress/soak tiers and bounded hosted package smoke. Keep the frozen
+Mac source/packages intact, retain all assertions and actual platform requirements,
+and label source-assisted, smoke and exhaustive evidence separately. This decision
+does not mark T100–T103 complete or grant a WP approval.
+
 Exact package platform and build qualification.
 
 Exact distributed-candidate binary execution and fixed-source full suite; platform rows cannot be inferred from cross compilation.
