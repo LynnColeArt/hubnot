@@ -23,6 +23,23 @@ import (
 )
 
 var betaPackageBundle = flag.String("hn-package-bundle", "", "immutable candidate asset directory; independently verify all archives")
+var betaPackageTargets = flag.String("hn-package-targets", "linux/amd64,linux/arm64,darwin/amd64,darwin/arm64", "explicit complete target matrix expected in the candidate bundle")
+
+func betaPackageTargetSet(value string) (map[string]bool, error) {
+	targets := make(map[string]bool)
+	for _, target := range strings.Split(value, ",") {
+		switch target {
+		case "linux/amd64", "linux/arm64", "darwin/amd64", "darwin/arm64":
+		default:
+			return nil, fmt.Errorf("unknown candidate target %q", target)
+		}
+		if targets[target] {
+			return nil, fmt.Errorf("duplicate candidate target %q", target)
+		}
+		targets[target] = true
+	}
+	return targets, nil
+}
 
 func betaFileDigest(t *testing.T, name string) string {
 	t.Helper()
@@ -45,9 +62,14 @@ func TestBetaPlatformCandidateBundle(t *testing.T) {
 	}
 	var manifest release.Provenance
 	betaReadJSON(t, filepath.Join(*betaPackageBundle, "PROVENANCE.json"), &manifest)
+	targets, err := betaPackageTargetSet(*betaPackageTargets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	archiveCount := 2*len(targets) + 1 // Both variants per declared target, plus source.
 	head := strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD"))
 	tree := strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD^{tree}"))
-	if manifest.Schema != "hn.release/1" || manifest.SourceCommit != head || manifest.SourceTree != tree || manifest.Version != *portablePackageVersion || manifest.Compiler != *portablePackageCompiler || len(manifest.Assets) != 9 {
+	if manifest.Schema != "hn.release/1" || manifest.SourceCommit != head || manifest.SourceTree != tree || manifest.Version != *portablePackageVersion || manifest.Compiler != *portablePackageCompiler || len(manifest.Assets) != archiveCount {
 		t.Fatalf("candidate manifest does not bind the requested source/tree/version/compiler/full matrix: %+v", manifest)
 	}
 	raw, err := os.ReadFile(filepath.Join(*betaPackageBundle, "SHA256SUMS"))
@@ -65,8 +87,8 @@ func TestBetaPlatformCandidateBundle(t *testing.T) {
 			t.Fatal("transported checksum mismatch", fields[1], got)
 		}
 	}
-	if len(checksums) != 10 || checksums["PROVENANCE.json"] == "" {
-		t.Fatal("checksums must cover nine archives and provenance")
+	if len(checksums) != archiveCount+1 || checksums["PROVENANCE.json"] == "" {
+		t.Fatal("checksums must cover the declared archives and provenance")
 	}
 	seen := map[string]bool{}
 	for _, asset := range manifest.Assets {
@@ -142,10 +164,8 @@ func TestBetaPlatformCandidateBundle(t *testing.T) {
 			if expected != asset.Name {
 				t.Fatal("archive name and target disagree")
 			}
-			switch build.Target {
-			case "linux/amd64", "linux/arm64", "darwin/amd64", "darwin/arm64":
-			default:
-				t.Fatal("unknown target")
+			if !targets[build.Target] {
+				t.Fatal("archive target is outside the declared candidate matrix", build.Target)
 			}
 		}
 		t.Logf("transported archive=%s sha256=%s build=%+v", asset.Name, asset.SHA256, build)

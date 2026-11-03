@@ -113,6 +113,13 @@ authority to accept itself.
 
 ## Immutable evaluation context
 
+Candidate creation proves the signed base is an ancestor of the head before
+opening or revising a proposal. Non-descending candidates refuse before signing
+or creating refs, matching receiver validation. Exact stored parent objects can
+prove ancestry behind a shallow marker; missing required history refuses with
+an explicit dependency diagnosis. This prevention does not rewrite an already
+signed invalid actor history or offer an automatic local-event truncation tool.
+
 A candidate signs both a base and a head commit. Its governance policy is
 always loaded from:
 

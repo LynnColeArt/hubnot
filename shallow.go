@@ -1622,6 +1622,19 @@ func guardCandidateCreationDependencies(operation, base, head string) error {
 	if err := guardBasePolicy(operation, base, "", ""); err != nil {
 		return err
 	}
+	ancestor, missing, err := exactCommitAncestor(base, head)
+	if err != nil {
+		return err
+	}
+	if missing != "" {
+		return classifyShallowDependency(exactDependency{
+			Operation: operation, Kind: shallowMergeAncestor, MissingID: missing,
+			ObjectType: "commit",
+		}, fmt.Errorf("proposal ancestry requires unavailable parent %s", missing))
+	}
+	if !ancestor {
+		return fmt.Errorf("proposal head %s does not descend from base %s", head, base)
+	}
 	policy, _, _, err := loadPolicy(base)
 	if err != nil {
 		return err

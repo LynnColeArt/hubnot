@@ -86,7 +86,7 @@ func runnerOnce(options runnerOptions) (bool, error) {
 }
 
 func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error) {
-	if err := cmdSync([]string{options.Remote}); err != nil {
+	if err := runnerSync(options.Remote); err != nil {
 		return false, err
 	}
 	events, err := collectEvents()
@@ -113,17 +113,17 @@ func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error)
 		if alreadyRan {
 			continue
 		}
-		fmt.Printf("Runner accepted request %s from %s for pipeline %s\n", shortID(request.ID), shortID(request.Event.Actor), oneLine(request.Event.Pipeline))
+		runnerLog("Runner accepted request %s from %s for pipeline %s", shortID(request.ID), shortID(request.Event.Actor), oneLine(request.Event.Pipeline))
 		stored, err := executeRunRequest(ctx, events, request, identity, options.Backend, false)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "hn runner: skipped %s: %v\n", shortID(request.ID), err)
+			runnerError("skipped %s: %v", shortID(request.ID), err)
 			if firstError == nil {
 				firstError = err
 			}
 			continue
 		}
-		fmt.Printf("Runner recorded %s result %s with %s backend\n", stored.Event.Outcome, shortID(stored.ID), options.Backend.Name())
-		if err := cmdSync([]string{options.Remote}); err != nil {
+		runnerLog("Runner recorded %s result %s with %s backend", stored.Event.Outcome, shortID(stored.ID), options.Backend.Name())
+		if err := runnerSync(options.Remote); err != nil {
 			return true, err
 		}
 		return true, nil
@@ -132,7 +132,7 @@ func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error)
 		return false, firstError
 	}
 	if options.ReportNoPending {
-		fmt.Printf("No pending %s requests from actor %s.\n", oneLine(options.Pipeline), shortID(options.AcceptedActor))
+		runnerLog("No pending %s requests from actor %s.", oneLine(options.Pipeline), shortID(options.AcceptedActor))
 	}
 	return false, nil
 }
@@ -140,15 +140,15 @@ func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error)
 func runnerWatch(options runnerOptions) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	fmt.Printf("Watching %s for pipeline %s requests from actor %s with %s backend\n", options.Remote, oneLine(options.Pipeline), shortID(options.AcceptedActor), options.Backend.Name())
+	runnerLog("Watching %s for pipeline %s requests from actor %s with %s backend", safeDiagnostic(options.Remote), oneLine(options.Pipeline), shortID(options.AcceptedActor), options.Backend.Name())
 	for {
 		ran, err := runnerOnceContext(ctx, options)
 		if err != nil {
 			if ctx.Err() != nil {
-				fmt.Println("Runner stopped.")
+				runnerLog("Runner stopped.")
 				return nil
 			}
-			fmt.Fprintf(os.Stderr, "hn runner: %v\n", err)
+			runnerError("%v", err)
 			ran = false
 		}
 		if ran {
@@ -160,9 +160,29 @@ func runnerWatch(options runnerOptions) error {
 			if !timer.Stop() {
 				<-timer.C
 			}
-			fmt.Println("Runner stopped.")
+			runnerLog("Runner stopped.")
 			return nil
 		case <-timer.C:
 		}
 	}
+}
+
+func runnerLog(format string, args ...any) {
+	fmt.Printf("%s %s\n", time.Now().UTC().Format(time.RFC3339), fmt.Sprintf(format, args...))
+}
+
+func runnerError(format string, args ...any) {
+	fmt.Fprintf(os.Stderr, "%s hn runner: %s\n", time.Now().UTC().Format(time.RFC3339), fmt.Sprintf(format, args...))
+}
+
+func runnerSync(remote string) error {
+	started := time.Now()
+	runnerLog("Runner sync started for %s", safeDiagnostic(remote))
+	err := cmdSync([]string{remote})
+	if err != nil {
+		runnerLog("Runner sync failed for %s after %s", safeDiagnostic(remote), time.Since(started).Round(time.Millisecond))
+	} else {
+		runnerLog("Runner sync completed for %s after %s", safeDiagnostic(remote), time.Since(started).Round(time.Millisecond))
+	}
+	return err
 }

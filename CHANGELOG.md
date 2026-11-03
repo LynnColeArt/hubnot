@@ -8,6 +8,13 @@ experimental. Beta prerelease publication does not by itself adopt the full
 
 ### Fixed
 
+- Proposal open/revise refuse a head that does not descend from the base before
+  signing or creating refs, including exact-parent checks in shallow layouts
+  ([#28](https://github.com/LynnColeArt/hubnot/issues/28)).
+- Runner status/errors carry UTC timestamps and sync start/end/duration messages;
+  run request output explicitly reminds operators to publish with `hn sync`
+  ([#29](https://github.com/LynnColeArt/hubnot/issues/29),
+  [#31](https://github.com/LynnColeArt/hubnot/issues/31)).
 - Replication receipts record newly accepted objects without repeating every
   settled object closure. Full validated closure remains available for recovery,
   and transaction allocation avoids IDs belonging to retained receipts/anchors.
