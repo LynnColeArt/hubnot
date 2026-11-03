@@ -146,5 +146,93 @@
       "functional_evidence": null,
       "instrumentation_evidence": null
     }
-  ]
+  ],
+  "ci_integration": {
+    "decision": "../../../../kitty-specs/optional-extensions-01M661C0/ci-integration-decision.md",
+    "integrated_ci_source": "f5ea2531cf0a547a19578662589924d97ca36bdf",
+    "frozen_candidate": {
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "run_id": 41465035433,
+      "run_attempt": 1,
+      "artifact_id": 13149409710,
+      "overall_conclusion": "cancelled",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433",
+      "preserved": true
+    },
+    "hosted_job_observations": [
+      {
+        "target": "linux/amd64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344477749,
+        "conclusion": "success",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344477749",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      },
+      {
+        "target": "linux/arm64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344477753,
+        "conclusion": "success",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344477753",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      },
+      {
+        "target": "darwin/amd64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344477764,
+        "conclusion": "cancelled",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344477764",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      },
+      {
+        "target": "darwin/arm64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344478073,
+        "conclusion": "success",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344478073",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      }
+    ],
+    "independent_apple_silicon_observation": {
+      "scope": "exact_frozen_packages",
+      "install_and_runtime": "reported_pass",
+      "browser_download_launch": "reported_blocked",
+      "gatekeeper_exit": 3,
+      "direct_launch_exit": 137,
+      "url": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846"
+    },
+    "acceptance": "PENDING",
+    "row_statuses_unchanged": true,
+    "next": [
+      "Native Intel bounded functional/package evidence",
+      "Mac distribution signing/notarization decision and exact downloaded signed-package retest",
+      "Independent WP25 review; then WP26 boundary and adopter observations"
+    ],
+    "native_fast_verification": {
+      "source": "f5ea2531cf0a547a19578662589924d97ca36bdf",
+      "request": "sha256:25a8db702d6fe3d57eae215759e754262f658758328c0fc42364ecb3e92d2a9e",
+      "result": "sha256:017f21ff05ef96fdf3cc26b821f924043fcce2f15fbab9fb7f6c1f0a0906f0cf",
+      "outcome": "passed",
+      "duration_ms": 96790,
+      "backend": "sandbox",
+      "platform": "linux/amd64",
+      "scope": "isolated verification clone; project trusted-runner roles unchanged"
+    }
+  }
 }

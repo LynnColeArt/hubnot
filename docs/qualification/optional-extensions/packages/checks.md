@@ -3,6 +3,38 @@
 Qualification is **PENDING**. This report does not publish a release or claim beta,
 issue23, main, adopter-trial or mission acceptance.
 
+## Current qualification scope — 2026-11-03
+
+The maintainer's [native CI integration decision](../../../../kitty-specs/optional-extensions-01M661C0/ci-integration-decision.md)
+supersedes the historical exhaustive hosted scheduling described later in this
+file. Native Hubnot fast/stress/soak requests and bounded hosted package smoke
+replace repeated full corpora on every hosted target. Tests and production
+limits remain intact. Old exhaustive results retain their original scope;
+new smoke results cannot be relabeled as exhaustive passes.
+
+The frozen Mac candidate remains `3dcbb96091c6191bc5d98cde9dbd1d2b98433f95`,
+run `41465035433` attempt 1, artifact `13149409710`. Both Linux hosted jobs
+and the Apple Silicon hosted job report success; the Intel Mac job was
+cancelled and remains incomplete. The overall cancelled run is not a pass.
+The matrix records these job observations separately from final row acceptance.
+
+Independent Pink Menace testing of the exact Apple Silicon packages passed the
+installation/runtime check, but browser-downloaded quarantined copies failed
+Gatekeeper and direct launch. This is a **distribution-launch blocker**, not a
+reason to repeat the large edge-case fixtures. See
+[issue #24](https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846).
+Signing/notarization and the resulting exact packages require native Mac retest.
+No candidate bytes have been replaced to incorporate the CI changes.
+
+The integrated coordination head `f5ea2531cf0a547a19578662589924d97ca36bdf`
+passed the native `test` pipeline in the default Linux Bubblewrap sandbox. Its
+signed source-bound result is recorded in `platform-matrix.json`. Execution used
+an isolated clone and a verification actor; project trusted-runner roles remain
+unchanged. Subsequent evidence-only documentation does not change the tested
+action, pipeline, Go inputs or frozen package candidate.
+
+## Earlier evidence and implementation history
+
 The candidate uses Go1.26.4 and the existing Go-only `cmd/hn-release` with internal
 version `0.0.0-optional-extensions-qualification.1`. Eight independent packages
 cover Linux/macOS, AMD64/ARM64, standard and combined `nogithub,noforge` builds.
