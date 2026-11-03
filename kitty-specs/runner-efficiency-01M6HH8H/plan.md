@@ -124,6 +124,32 @@ native local CI; do not extend hosted PR test matrices or
 add synthetic million-case loops. Record exact commands/head, scope and exits;
 never describe a scoped suite as a full-suite pass.
 
+### Native full-suite execution amendment (2026-11-03)
+
+The first WP01 monolithic command at f60d4046 timed out after 1200 seconds
+while an artifact transport subtest had run for only one second. Preserve that
+run as failed/incomplete; it establishes neither an assertion failure nor that
+the timeout predates this change. The following execution method applies to
+every WP's full-source requirement, including the commands in its task prompt.
+
+Run complete, disjoint native race-test partitions at each reviewed source
+head. Inventory all packages and runnable tests, examples and fuzz seed targets;
+prove the union of selections equals the full inventory, with no duplicate or
+omitted target. Keep each process bounded, retain every existing assertion,
+fixture size, real-clock wait and per-case deadline, and record exact source,
+environment, tags, commands, exits and legitimate platform/tool skips. Reuse
+passing package evidence only at the same unchanged source head. Existing
+source-assisted binary hooks may reuse one executable built from that head.
+Bound local concurrency to avoid resource collisions. A partition failure is
+a gate failure; it must be investigated, never hidden by a passing subset.
+
+This changes aggregation only: complete race coverage remains required before
+each review. Fast and selected integration/stress tiers are not substitutes for
+the complete inventory. Do not widen the failed aggregate timer, retry its
+unchanged monolithic invocation, weaken application checks or expand hosted CI.
+The independent reviewer agreed this preserves the charter's required coverage;
+the original timeout and adjudication are retained in the external WP01 evidence.
+
 Changes are source-only until a later separately requested release. Withdrawal
 is only written by an explicit command; old readers may reject that new kind
 and its actor-history advancement. Document this boundary and provide static
