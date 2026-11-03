@@ -17,22 +17,7 @@ import (
 // invoke the project's own fast pipeline recursively. Expectations below come
 // from the public runner contract, not scheduler or withdrawal internals.
 func TestRunnerEfficiencyPublicJourney(t *testing.T) {
-	source, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	gitDir, err := exec.Command("git", "rev-parse", "--absolute-git-dir").Output()
-	if err == nil {
-		t.Setenv("GIT_DIR", strings.TrimSpace(string(gitDir)))
-		t.Setenv("GIT_WORK_TREE", source)
-	} else {
-		t.Setenv("GOFLAGS", strings.TrimSpace(os.Getenv("GOFLAGS")+" -buildvcs=false"))
-		t.Log("metadata-free source snapshot: child compilation uses -buildvcs=false")
-	}
-	// Choose the child's actual tags explicitly: parent go test tags do not
-	// propagate to go build. Native-only keeps this representative check small.
-	cli := newBetaContributionCLI(t, betaContributionBinary(t, true))
-	t.Logf("source=%s; explicit child tags=nogithub,noforge; compiled source, not release certification", source)
+	cli := newBetaContributionCLI(t, runnerAcceptanceBinary(t, true))
 	owner := cli.repository()
 	cli.git(owner, "config", "maintenance.auto", "false")
 	cli.git(owner, "config", "gc.auto", "0")
@@ -310,4 +295,37 @@ func runnerAcceptanceHead(t *testing.T, cli *betaContributionCLI, repo, actor st
 	t.Helper()
 	raw := cli.process(repo, "git", true, "show", "refs/hn/actors/"+actor+":event.json")
 	return fmt.Sprintf("sha256:%x", sha256.Sum256(raw)), raw
+}
+
+// Keep the fixed moderated legacy-identity refusal in bounded routine CI without
+// selecting the complete withdrawal matrix. Critical validation still executes
+// the existing public helper in both actual executable variants.
+func TestRunnerEfficiencyModeratedLegacyRefusal(t *testing.T) {
+	cli := newBetaContributionCLI(t, runnerAcceptanceBinary(t, false))
+	runWithdrawalModeration(cli)
+}
+
+func runnerAcceptanceBinary(t *testing.T, native bool) string {
+	t.Helper()
+	source, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	gitDir, err := exec.Command("git", "rev-parse", "--absolute-git-dir").Output()
+	if err == nil {
+		t.Setenv("GIT_DIR", strings.TrimSpace(string(gitDir)))
+		t.Setenv("GIT_WORK_TREE", source)
+	} else {
+		t.Setenv("GOFLAGS", strings.TrimSpace(os.Getenv("GOFLAGS")+" -buildvcs=false"))
+		t.Log("metadata-free source snapshot: child compilation uses -buildvcs=false")
+	}
+	// Choose the child's actual tags explicitly: parent go test tags do not
+	// propagate to go build. Native-only keeps this representative check small.
+	binary := betaContributionBinary(t, native)
+	tags := ""
+	if native {
+		tags = "nogithub,noforge"
+	}
+	t.Logf("source=%s; explicit child tags=%q; compiled source, not release certification", source, tags)
+	return binary
 }
