@@ -34,40 +34,93 @@ CI services.
 implemented and exercised. It does not mean production-ready: compatibility is
 not yet stable, the security boundary is intentionally narrow, and the
 deferred work in [Completed alpha boundary](#completed-alpha-boundary) is the
-remaining roadmap. [0.1.0-beta.2](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.2)
+remaining roadmap. [0.1.0-beta.3](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.3)
 is a published beta prerelease, not completion of every beta acceptance gate.
 The [prospective beta support contract](docs/beta-support.md) records the broader
 compatibility, recovery and qualification goals; its full support promise has
-not been adopted. [Current package evidence](docs/releases/0.1.0-beta.2.md)
-identifies the tested bytes, supported platform scope and remaining limits.
+not been adopted. The [current release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.3)
+identify the tested bytes, platform scope and remaining limits; the
+[beta.2 evidence](docs/releases/0.1.0-beta.2.md) remains a historical record.
 
 ## Download and install
 
-[Hubnot 0.1.0-beta.2](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.2)
+[Hubnot 0.1.0-beta.3](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.3)
 is the current prerelease for Linux AMD64/ARM64 and Apple Silicon Macs.
 Prebuilt executables require **Git 2.x** on your PATH. Running them requires no
 Python, Go, Docker, or forge account.
 
-The **exact downloadable standard and native-only binaries passed bounded native
-smoke checks on all three platforms**. Linux ARM64 ran on Golden Goddess;
-Apple Silicon ran on Pink Menace with macOS 26.5.1 and no Rosetta translation
-([report #33](https://github.com/LynnColeArt/hubnot/issues/33)). Checks covered
-installation, memory regex, migration and five extension journeys per variant.
-They used supplied non-race harnesses without rebuilding the application; this
-is representative smoke, not an exhaustive suite or a new race-suite result.
+The **exact downloadable Linux standard and native-only binaries passed bounded
+native smoke checks** on AMD64 and on Golden Goddess's ARM64 host. Checks covered
+installation, memory regex, migration, proposal ancestry and five extension
+journeys per variant, plus a separate source-bound corruption regression.
+They used supplied non-race harnesses without rebuilding the application.
+Mac portability CI passed for the release source, but **runtime testing of the
+exact beta.3 Apple Silicon release binaries is still pending**. Pink Menace's
+[beta.2 report #33](https://github.com/LynnColeArt/hubnot/issues/33) qualifies the
+earlier files. These are bounded observations, not an exhaustive suite or a new
+full race-suite result.
 
-**Mac Developer ID signing and notarization are pending.** Apple Silicon runtime
-testing used terminal-acquired, linker ad-hoc-signed copies without quarantine.
-Browser-download/Gatekeeper installation remains uncertified; earlier browser
-launch failures are not resolved by the runtime pass. Intel Macs are outside
-this prerelease's supported platform set. Existing Intel artifacts remain
-unqualified members of the complete build bundle, not supported downloads.
+**Mac Developer ID signing and notarization are pending.**
+Browser-download/Gatekeeper installation remains uncertified. Intel Macs are
+outside this prerelease's target set; beta.3 contains no Intel Mac packages.
+
+### Debian and Ubuntu (APT)
+
+The [Kinetic Actor package archive](https://packages.kinetic.actor/) provides
+signed Debian packages for Linux **AMD64 and ARM64**. Set up the archive once:
+
+```sh
+sudo apt update
+sudo apt install ca-certificates curl
+sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://packages.kinetic.actor/kinetic-actor-archive-keyring.gpg | sudo tee /etc/apt/keyrings/kinetic-actor.gpg > /dev/null
+sudo chmod 0644 /etc/apt/keyrings/kinetic-actor.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kinetic-actor.gpg] https://packages.kinetic.actor/ ./' | sudo tee /etc/apt/sources.list.d/kinetic-actor.list
+sudo apt update
+sudo apt install hubnot
+hn version
+```
+
+Archive key fingerprint: `6733 FF4F 9843 269A 7655 3614 28E8 F420 ED86 67BC`.
+The `signed-by` setting scopes this key to the archive; no global `apt-key`
+trust is needed.
+
+For the **native-only** variant, use `sudo apt install hubnot-native` instead.
+The two packages conflict: both provide `/usr/bin/hn`, so choose one. If an older
+archive installation is earlier on your PATH, make sure it does not shadow
+`/usr/bin/hn` (`command -v hn` shows the selected executable).
+
+To upgrade an existing standard installation or list available versions:
+
+```sh
+sudo apt update
+sudo apt install --only-upgrade hubnot
+apt list -a hubnot
+```
+
+Use `hubnot-native` in those commands for a native-only installation. Beta.3's
+Debian version is `0.1.0~beta.3-1`; the `~` preserves ordering before a future
+final release. Older versions are retained in the archive.
+
+These packages wrap the checksum-verified upstream static executables. APT
+installs Git and CA certificates and recommends Bubblewrap for optional Linux
+pipeline sandboxing. Installation enables no daemon or application policy;
+Go and Python are not runtime dependencies. Package provenance and release
+documentation are installed under `/usr/share/doc/hubnot/` or
+`/usr/share/doc/hubnot-native/`. The archive publishes its
+[package checksums and provenance](https://packages.kinetic.actor/package-manifest.json).
+
+Archive installation, upgrades and variant switching were tested on Debian 12
+and Ubuntu 24.04 AMD64. ARM64 Debian packages passed checksum/static architecture
+checks; their installation has not yet been runtime-tested.
+
+### Release archives (Linux and macOS)
 
 | Platform | CPU | Standard | Native only |
 | --- | --- | --- | --- |
-| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_amd64_native-only.tar.gz) |
-| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_arm64_native-only.tar.gz) |
-| macOS | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_darwin_arm64_native-only.tar.gz) |
+| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot_0.1.0-beta.3_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot_0.1.0-beta.3_linux_amd64_native-only.tar.gz) |
+| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot_0.1.0-beta.3_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot_0.1.0-beta.3_linux_arm64_native-only.tar.gz) |
+| macOS | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot_0.1.0-beta.3_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot_0.1.0-beta.3_darwin_arm64_native-only.tar.gz) |
 
 Standard builds include the optional GitHub, GitLab, Forgejo/Codeberg, Gitea,
 Bitbucket Cloud and Azure DevOps adapters. Native-only builds omit every network
@@ -76,12 +129,12 @@ independent audits and local `hn gh issue` commands. Both variants install as
 `hn`; choose one. Protected checks, automerge and audits remain independently
 disabled by default.
 
-Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/SHA256SUMS)
+Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/SHA256SUMS)
 alongside your archive and verify it before extraction. On Linux, use
 `sha256sum --ignore-missing -c SHA256SUMS`. On macOS, use
 `shasum -a 256 <archive.tar.gz>` and compare the matching checksum entry.
-The [source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_source.tar.gz)
-and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/PROVENANCE.json)
+The [source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot_0.1.0-beta.3_source.tar.gz)
+and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/PROVENANCE.json)
 are also available.
 Extract your archive, enter its directory, then install:
 
@@ -96,18 +149,17 @@ Keep that PATH setting in your shell configuration if needed. The archives also
 contain the MIT license, build provenance, and product documentation. See the
 [changelog](CHANGELOG.md) for release history and platform qualification.
 
-Published asset digests and downloaded bytes match the tested bundle. All eight
-application packages passed static architecture/build-info checks; runtime
-claims apply only to the three supported targets above. The optional
-[qualification test kit](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot-0.1.0-beta.2-test-kit.tar.gz)
-is separate from the application. See the [release evidence](docs/releases/0.1.0-beta.2.md)
-for exact source/compiler identities, test scope, historical handoff files and
-Mac distribution limits. Earlier release assets and their qualification records
-remain unchanged.
-
-Known beta.2 issue: [replication receipt growth](docs/releases/0.1.0-beta.2.md#known-replication-performance-issue)
-can make long-lived clones progressively slower. [PR #32](https://github.com/LynnColeArt/hubnot/pull/32)
-is merged on `main` for a future release; its fix is not in these published binaries.
+Published asset digests and downloaded bytes match the frozen bundle. All six
+application packages passed static architecture/build-info checks; exact
+runtime observations currently cover Linux only. The optional
+[qualification test kit](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.3/hubnot-0.1.0-beta.3-test-kit.tar.gz)
+is separate from the application. See the
+[release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.3)
+for source/compiler identities, test scope, historical staging files and Mac
+distribution limits. Earlier release assets and qualification records remain
+unchanged. Beta.3 includes the replication receipt-growth fix from
+[PR #32](https://github.com/LynnColeArt/hubnot/pull/32); existing receipts are not
+compacted.
 
 ## Build and verify
 
@@ -127,14 +179,14 @@ go build -trimpath -tags noforge -o hn-native .
 Ordinary source builds retain the development version string `0.0.1-dev`;
 the release packager sets the requested product version at link time.
 
-Packaging 0.1.0-beta.2 uses Go and Git alone, with no Python requirement. The
+Packaging 0.1.0-beta.3 uses Go and Git alone, with no Python requirement. The
 published archives were built with Go 1.26.4 from commit
-`58c14768dfd094ce8dfaac747591c1e66d9a64de`. Build the Go-only packager and
+`852f9d0bdfebb9635efdd122bad5f9d546d7c15b`. Build the Go-only packager and
 select that exact revision to reproduce them:
 
 ```sh
 go build -trimpath -o hn-release ./cmd/hn-release
-./hn-release --rev 58c14768dfd094ce8dfaac747591c1e66d9a64de --version 0.1.0-beta.2 --out NEW_DIRECTORY
+./hn-release --rev 852f9d0bdfebb9635efdd122bad5f9d546d7c15b --version 0.1.0-beta.3 --targets linux/amd64,linux/arm64,darwin/arm64 --out NEW_DIRECTORY
 ```
 
 Use a clean checkout; tracked changes are refused even with an explicit revision.
@@ -147,15 +199,14 @@ module network, and writes normalized binary/source archives, `BUILD.json`,
 native-only packages exclude all network adapters with `nogithub,noforge`;
 the published first release's native-only assets excluded GitHub only.
 
-The complete release matrix was packaged on Linux. Native Apple Silicon
+The beta.3 release matrix was packaged on Linux. Native Apple Silicon
 packager execution was separately demonstrated for its native target pair;
 Windows packager-host execution remains unverified. CLI target cross-compilation
 requires separate runtime evidence, as qualified above. The packager's four-target
-default is broader than this prerelease's three supported runtime targets;
-new supported-only builds can select `--targets linux/amd64,linux/arm64,darwin/arm64`.
-That subset has different provenance/checksums and does not reproduce the complete
-beta.2 bundle. See [release packaging](docs/releasing.md). The immutable first
-release's `build-release.py` still requires Python 3.12+, Git and Go 1.26.4 to
+default is broader than beta.3's three packaged targets; the command above
+explicitly excludes Intel Macs. See [release packaging](docs/releasing.md).
+The immutable first release's `build-release.py` still requires Python 3.12+,
+Git and Go 1.26.4 to
 reproduce its historical archives; its tags and assets stay unchanged.
 Windows CLI distribution remains outside the current target set.
 
