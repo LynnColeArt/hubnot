@@ -91,7 +91,7 @@ Enabled contribution moderation retains its runner restrictions.
 
 | ID | Requirement | Status |
 |---|---|---|
-| NFR-001 | Target probes are cancellable, have a deadline at most 15 seconds and output bound at most 64 KiB, and do not prompt for credentials. | Open |
+| NFR-001 | Target probes are cancellable, have a deadline at most 15 seconds and output bound at most 64 KiB, and disable built-in Git/SSH interactive prompts on supported transports. Explicitly configured credential helpers remain operator-trusted configuration, with bounded failure and no credential replacement. | Open |
 | NFR-002 | Tests use real Git/CLI/backend markers and finite deadlines. Hosted CI keeps bounded portability scope; deep concurrency/capacity trials remain native/manual. | Open |
 | NFR-003 | Refusal/skips preserve signed facts, refs and backend effects except normal pre-existing sync and documented private recovery diagnostics. | Open |
 

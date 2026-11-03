@@ -47,6 +47,12 @@ Targeted staging; unrelated snapshot/stashes and old candidates remain unchanged
   result, deadline, cancellation and bounded-output refusal prevent execution.
   Reuse intentional cmdSync Git authentication semantics; disable interactive
   Git/SSH askpass and ambient object/config overrides without inventing credentials.
+  Preserve normal config-file credential helpers and SSH agent/config. Standard
+  OpenSSH uses batch mode; unsupported custom SSH wrappers refuse actionably
+  rather than losing identity/proxy arguments. Arbitrary configured credential
+  helpers are operator-trusted executables, not a hostile-process sandbox or
+  universal promise that custom code cannot show UI. All probe execution remains
+  bounded, with no interactive stdin and failed observation preventing execution.
 - run.withdraw: existing Subject=request ID, Body=reason (trimmed nonblank,
   <=4096 UTF-8 bytes); no repeated pipeline/head/definition. Strict new-kind
   shape and raw JSON validation, preserving all legacy signed bytes.
@@ -89,21 +95,32 @@ flowchart LR
 | WP04 | Withdrawal CLI, discovery, projections and execution integration | WP03 | ci.go, runner.go, main usage, moderation boundary; CLI tests |
 | WP05 | Independent integrated acceptance, maintained docs and issue reconciliation | WP04 | docs, ci/fast-tests.txt, integrated CLI controls and mission records |
 
-Use a single sequential lane/workspace because these WPs share core validation
-and execution surfaces. Each WP is implemented by an agent and reviewed by a
+Use sequential dependency-ordered computed workspaces because these WPs share
+core validation and execution surfaces. WP02-WP04 all own runner.go: WP03
+integrates observed withdrawal enforcement as soon as its wire kind is accepted,
+before the CLI writer is exposed. Each WP is implemented by an agent and reviewed by a
 different agent against a fixed head. The root orchestrator authors planning
 and records scheduling/acceptance, not production implementation.
+Ownership may compute separate upstream policy and downstream acceptance lanes;
+their dependencies remain sequential. Mission contracts remain planning records,
+not code-WP ownership used to force an artificial lane grouping.
 
 ## Validation and rollout
 
 WP01 first runs existing native fast/default/distributed-pipeline controls
 before refactoring and preserves their passing behavior. Every WP requires
-real focused race tests, diff-scoped gofmt, vet/build and diff checks at the
-reviewed head; tests derive from observable contracts and have positive controls.
+real focused race tests, the charter's full source race gate
+(go test -race -timeout 20m ./...), diff-scoped gofmt, vet/build and diff checks
+at the reviewed head. Run the full gate natively/local, not in hosted CI;
+the existing README declares the 20-minute timeout. Do not rerun an unchanged
+successful full gate merely for handoff: independent review verifies exact-head
+evidence and runs relevant focused controls. Tests derive from observable
+contracts and have positive controls.
 Final integrated evidence runs native fast, migration and integration tiers,
 standard plus nogithub/noforge critical selections, legacy compatibility and
-withdrawal replication/archive/shallow recovery cases. Full/stress/capacity/soak
-work uses explicit native local CI; do not extend hosted PR test matrices or
+withdrawal replication/archive/shallow recovery cases and the full source race
+gate at the final changed head. Full/stress/capacity/soak work uses explicit
+native local CI; do not extend hosted PR test matrices or
 add synthetic million-case loops. Record exact commands/head, scope and exits;
 never describe a scoped suite as a full-suite pass.
 
