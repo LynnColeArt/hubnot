@@ -1,7 +1,10 @@
 # Beta support contract
 
-**Status: prospective, 2026-10-28. Hubnot 0.0.3-dev is an alpha prerelease.**
-This contract defines the support promise to qualify before the first beta.
+**Status: prospective support promise; updated November 3, 2026.**
+Hubnot [0.1.0-beta.2](releases/0.1.0-beta.2.md) is a published beta prerelease
+with bounded exact-package evidence for Linux AMD64/ARM64 and Apple Silicon.
+Its publication does not adopt this full contract or complete the beta mission.
+This contract defines the broader support promise still being qualified.
 It takes effect when a beta release explicitly adopts it and publishes its
 passing support matrix. Writing this document does not qualify a beta or change
 the guarantees of earlier alpha releases.
@@ -33,22 +36,27 @@ boundaries are detailed in [governance](governance-v0.md), [CI](ci-v0.md) and
 
 ## Candidate platforms and Git configurations
 
-The beta targets Linux and macOS on AMD64 and ARM64, with standard and native-only
-packages. Each supported beta combination must identify the tested OS release,
-architecture, Git version, filesystem and actual package. The current statement
-that prebuilt alpha applications need Git 2.x is a dependency description, not
-a promise that every Git 2.x release or host configuration is qualified.
+The current prerelease targets Linux AMD64/ARM64 and macOS Apple Silicon, with
+standard and native-only packages. **Intel Macs are outside its supported set**
+by the maintainer's November 3, 2026 decision; Intel runtime qualification is
+not a release requirement. Existing Intel archives remain unqualified artifacts
+of the complete build bundle. Each supported combination must identify the
+observed OS, architecture, Git version, filesystem details when recorded and
+actual package. The statement that prebuilt applications need Git 2.x is a
+dependency description, not a promise that every Git 2.x release or host
+configuration is qualified.
 
-| Candidate combination | Current 0.0.3-dev observation | Evidence still needed for beta |
+| Current combination | 0.1.0-beta.2 exact-package observation | Remaining boundary |
 | --- | --- | --- |
-| Linux AMD64, both variants | Exact release packages passed smoke checks and the integrated public journey | Candidate beta packages and declared environment matrix |
-| Linux ARM64, both variants | Exact release packages passed runtime smoke checks | Candidate beta packages and declared environment matrix |
-| macOS Apple Silicon, both variants | Native rebuilds from the release source with Go 1.26.6 passed the integrated journey without path/TMPDIR workarounds | Execution of the downloadable Go 1.26.4 release binaries remains pending; candidate beta package/install qualification |
-| macOS Intel, both variants | Release archives, architecture, checksums and provenance inspected; binaries not executed | Intel runtime and candidate beta package/install qualification |
+| Linux AMD64, both variants | Native bounded smoke PASS, including download-back verification; Git 2.43.0 | No blanket OS/Git/filesystem or exhaustive-suite promise |
+| Linux ARM64, both variants | Native bounded smoke PASS on Golden Goddess, Ubuntu 24.04.4 LTS, Git 2.43.0 | Exact filesystem subtype/case behavior not established; broader beta gates remain |
+| macOS Apple Silicon, both variants | Native bounded smoke PASS on Pink Menace, macOS 26.5.1, Apple Git 2.50.1; no rebuild or Rosetta | Developer ID/notarization pending; browser/Gatekeeper path uncertified; filesystem/case behavior not recorded |
+| macOS Intel | Outside the supported prerelease set | No native beta.2 runtime claim; existing artifacts unqualified |
 
-These observations come from the [0.0.3-dev release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev).
-They do not transfer automatically to a new candidate. Windows distribution is
-outside this beta target set.
+These are the [beta.2 release observations](releases/0.1.0-beta.2.md), using
+non-race harnesses and five extension smoke roots per variant, not older alpha
+rebuilds or an exhaustive suite. They do not transfer automatically to a new
+candidate. Windows distribution is outside this beta target set.
 
 **Mac distribution decision, 2026-11-03:** the maintainer accepts Mac beta
 packages without Developer ID signing or notarization as a documented beta
@@ -58,8 +66,8 @@ limitation: browser-downloaded quarantined copies of the extension candidate
 were rejected and direct launch failed, as recorded in
 [issue #24](https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846).
 Native runtime/CI passes do not certify that download/install path. Missing
-independent installation observations remain pending; this decision supplies
-neither a successful browser-install result nor general beta acceptance.
+independent browser-installation observations remain pending; this decision
+supplies neither a successful browser-install result nor general beta acceptance.
 
 An ordinary full local checkout and local bare Git transport form the baseline.
 Shallow repositories require complete selected dependencies or the explicit
@@ -114,9 +122,11 @@ Beta qualification must rehearse two distinct recoveries:
 - **Private disaster recovery:** restore a protected signer backup only after
   fencing the former writer and reconciling the latest available actor chain
   and any continuing memory-stream roots. Restoring a key and running `hn sync`
-  alone does not restore the local signing position. The pending recovery work
-  must refuse an append from a stale/divergent local actor head when conflicting
-  accepted history is already known locally, without silently adopting it.
+  alone does not restore the local signing position. The implemented
+  [recovery checks](recovery.md) refuse an append from a stale/divergent local
+  actor head when conflicting accepted history is already known locally,
+  without silently adopting it. This does not detect an unknown disconnected
+  writer or certify a live hosted disaster-recovery service.
 
 Normal additional devices use distinct actors. The client cannot discover an
 unknown disconnected writer or guarantee the global latest history. No backup,
@@ -162,8 +172,8 @@ The beta decision must trace each supported surface to evidence for:
 6. Independent adopter journeys through installation, collaboration, migration,
    upgrade and restoration, with release-blocking findings resolved.
 
-Unexecuted cases remain pending. A future beta release must identify this
-contract, its supported matrix and known limitations; it cannot silently narrow
+Unexecuted cases remain pending. A release adopting the full promise must
+identify this contract, its supported matrix and known limitations; it cannot silently narrow
 the promise to make a gate pass. Later changes to supported data or interfaces
 need documented rationale, explicit compatibility/migration consequences and
 review. This contract requires no mandatory hosted checks, default policy gates,

@@ -1,8 +1,10 @@
 # Backup and recovery
 
-Hubnot currently ships as an operational alpha. These procedures are rehearsed
-locally by `TestBetaRecoveryJourneys` with standard and `noforge` binaries; they
-are not a claim of beta qualification, hosted disaster recovery or key escrow.
+Hubnot currently ships as the [0.1.0-beta.2 prerelease](releases/0.1.0-beta.2.md).
+These procedures are rehearsed locally by `TestBetaRecoveryJourneys` with
+standard and `noforge` binaries; they are not a claim of full beta acceptance,
+hosted disaster recovery or key escrow. Exact-package smoke is narrower than
+this complete source-level recovery rehearsal.
 Use the compatible `hn` version, Git, and a standalone repository. Commands below
 use full actor fingerprints, full memory stream IDs and exact Git object IDs.
 

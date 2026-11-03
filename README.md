@@ -12,12 +12,14 @@ lives in `.hn/`. The obsolete `.nh/` directory is ignored; its earlier contents
 remain in Git history. Legacy `.git/nh/**` and `refs/nh/*` state is also ignored.
 Hubnot creates fresh identities and facts only in the active namespace.
 
-The current operational alpha supports signed issues, planning projects and items,
+The current beta prerelease supports signed issues, planning projects and items,
 threaded discussions, versioned native workflows, immutable proposal
 candidates and revisions, reviews, CI requests/results/logs, governance
 decisions and merge facts, distinct device actors, policy amendments, selected
 quarantined replication, exact shallow-history recovery, deliberate signed
-agent memory, portable project migrations and independent observational audits.
+agent memory with lexical and regex search, portable project migrations,
+independent observational audits, optional contribution/moderation workflows,
+and custom typed artifacts with an explicitly started local extension host.
 It remains an experimental protocol, not a stable or hardened multi-tenant system.
 
 ## Project status
@@ -32,34 +34,40 @@ CI services.
 implemented and exercised. It does not mean production-ready: compatibility is
 not yet stable, the security boundary is intentionally narrow, and the
 deferred work in [Completed alpha boundary](#completed-alpha-boundary) is the
-post-alpha roadmap. The [prospective beta support contract](docs/beta-support.md)
-defines the compatibility, recovery and qualification work required before a beta.
+remaining roadmap. [0.1.0-beta.2](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.2)
+is a published beta prerelease, not completion of every beta acceptance gate.
+The [prospective beta support contract](docs/beta-support.md) records the broader
+compatibility, recovery and qualification goals; its full support promise has
+not been adopted. [Current package evidence](docs/releases/0.1.0-beta.2.md)
+identifies the tested bytes, supported platform scope and remaining limits.
 
 ## Download and install
 
-[Hubnot 0.0.3-dev](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev)
-is the current alpha prerelease, including the macOS migration portability fixes.
+[Hubnot 0.1.0-beta.2](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.2)
+is the current prerelease for Linux AMD64/ARM64 and Apple Silicon Macs.
 Prebuilt executables require **Git 2.x** on your PATH. Running them requires no
 Python, Go, Docker, or forge account.
 
-Both Linux architectures passed runtime smoke checks in standard and native-only
-variants. Both Apple Silicon variants rebuilt from this release's source on a
-Mac passed the full integration journey without path or TMPDIR workarounds.
-**Testing of the exact downloadable Mac binaries is still pending for both
-Apple Silicon and Intel.** The native Mac rebuild used Go 1.26.6; these published
-packages use Go 1.26.4.
+The **exact downloadable standard and native-only binaries passed bounded native
+smoke checks on all three platforms**. Linux ARM64 ran on Golden Goddess;
+Apple Silicon ran on Pink Menace with macOS 26.5.1 and no Rosetta translation
+([report #33](https://github.com/LynnColeArt/hubnot/issues/33)). Checks covered
+installation, memory regex, migration and five extension journeys per variant.
+They used supplied non-race harnesses without rebuilding the application; this
+is representative smoke, not an exhaustive suite or a new race-suite result.
 
-The path failures recorded in [issue #16](https://github.com/LynnColeArt/hubnot/issues/16)
-are fixed in this release, with permanent Linux/macOS regression gates described
-in [filesystem portability](docs/filesystem-portability.md). The earlier
-0.0.2-dev packages remain unchanged and retain their documented workaround.
+**Mac Developer ID signing and notarization are pending.** Apple Silicon runtime
+testing used terminal-acquired, linker ad-hoc-signed copies without quarantine.
+Browser-download/Gatekeeper installation remains uncertified; earlier browser
+launch failures are not resolved by the runtime pass. Intel Macs are outside
+this prerelease's supported platform set. Existing Intel artifacts remain
+unqualified members of the complete build bundle, not supported downloads.
 
 | Platform | CPU | Standard | Native only |
 | --- | --- | --- | --- |
-| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_amd64_native-only.tar.gz) |
-| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_linux_arm64_native-only.tar.gz) |
-| macOS | Intel | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_amd64_native-only.tar.gz) |
-| macOS | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_darwin_arm64_native-only.tar.gz) |
+| Linux | Intel / AMD 64-bit | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_amd64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_amd64_native-only.tar.gz) |
+| Linux | ARM64 | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_linux_arm64_native-only.tar.gz) |
+| macOS | Apple Silicon | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_darwin_arm64.tar.gz) | [Download](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_darwin_arm64_native-only.tar.gz) |
 
 Standard builds include the optional GitHub, GitLab, Forgejo/Codeberg, Gitea,
 Bitbucket Cloud and Azure DevOps adapters. Native-only builds omit every network
@@ -68,12 +76,12 @@ independent audits and local `hn gh issue` commands. Both variants install as
 `hn`; choose one. Protected checks, automerge and audits remain independently
 disabled by default.
 
-Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/SHA256SUMS)
+Download [SHA256SUMS](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/SHA256SUMS)
 alongside your archive and verify it before extraction. On Linux, use
 `sha256sum --ignore-missing -c SHA256SUMS`. On macOS, use
 `shasum -a 256 <archive.tar.gz>` and compare the matching checksum entry.
-The [source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/hubnot_0.0.3-dev_source.tar.gz)
-and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.0.3-dev/PROVENANCE.json)
+The [source archive](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot_0.1.0-beta.2_source.tar.gz)
+and [build provenance](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/PROVENANCE.json)
 are also available.
 Extract your archive, enter its directory, then install:
 
@@ -88,17 +96,14 @@ Keep that PATH setting in your shell configuration if needed. The archives also
 contain the MIT license, build provenance, and product documentation. See the
 [changelog](CHANGELOG.md) for release history and platform qualification.
 
-All eleven release assets reproduced byte-for-byte with Go 1.26.4, and published
-downloads match the verified local bundle. Linux AMD64 and ARM64 runtime smoke
-checks covered signed native issues, saved archive migration, exact imported
-actor history and local continuation. Linux AMD64 packages also passed the
-integrated public acceptance journey. Native Mac verification passed from the
-same source, as described above; execution of the exact Go 1.26.4 Mac release
-binaries remains pending for both Intel and Apple Silicon.
-macOS downloads have no Apple Developer ID signature or notarization, so a
-quarantined download may require approval in Privacy & Security. The
-[release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev)
-include the detailed platform evidence and distribution limits.
+Published asset digests and downloaded bytes match the tested bundle. All eight
+application packages passed static architecture/build-info checks; runtime
+claims apply only to the three supported targets above. The optional
+[qualification test kit](https://github.com/LynnColeArt/hubnot/releases/download/v0.1.0-beta.2/hubnot-0.1.0-beta.2-test-kit.tar.gz)
+is separate from the application. See the [release evidence](docs/releases/0.1.0-beta.2.md)
+for exact source/compiler identities, test scope, historical handoff files and
+Mac distribution limits. Earlier release assets and their qualification records
+remain unchanged.
 
 ## Build and verify
 
@@ -107,23 +112,28 @@ are not required for the following build and test commands.
 
 ```sh
 go build -trimpath -o hn .
-go test -count=1 ./...
+# Bounded development feedback; the full suite remains an explicit deep check.
+./.hn/actions/ci fast
 
 # Omit GitHub only, or every network adapter. Native commands remain available.
 go build -trimpath -tags nogithub -o hn-local .
 go build -trimpath -tags noforge -o hn-native .
 ```
 
-Packaging 0.0.3-dev uses Go and Git alone, with no Python requirement. The
+Ordinary source builds retain the development version string `0.0.1-dev`;
+the release packager sets the requested product version at link time.
+
+Packaging 0.1.0-beta.2 uses Go and Git alone, with no Python requirement. The
 published archives were built with Go 1.26.4 from commit
-`01a152cfbb822a7be9ccbc51dac34e3caa0cf925`. Build the Go-only packager and
+`58c14768dfd094ce8dfaac747591c1e66d9a64de`. Build the Go-only packager and
 select that exact revision to reproduce them:
 
 ```sh
 go build -trimpath -o hn-release ./cmd/hn-release
-./hn-release --rev 01a152cfbb822a7be9ccbc51dac34e3caa0cf925 --version 0.0.3-dev --out NEW_DIRECTORY
+./hn-release --rev 58c14768dfd094ce8dfaac747591c1e66d9a64de --version 0.1.0-beta.2 --out NEW_DIRECTORY
 ```
 
+Use a clean checkout; tracked changes are refused even with an explicit revision.
 The output directory must not exist. Optional `--source DIRECTORY`,
 `--targets linux/amd64,linux/arm64,darwin/amd64,darwin/arm64` and
 `--variants standard,native-only` select declared inputs. The packager isolates
@@ -136,7 +146,11 @@ the published first release's native-only assets excluded GitHub only.
 The complete release matrix was packaged on Linux. Native Apple Silicon
 packager execution was separately demonstrated for its native target pair;
 Windows packager-host execution remains unverified. CLI target cross-compilation
-requires separate runtime evidence, as qualified above. The immutable first
+requires separate runtime evidence, as qualified above. The packager's four-target
+default is broader than this prerelease's three supported runtime targets;
+new supported-only builds can select `--targets linux/amd64,linux/arm64,darwin/arm64`.
+That subset has different provenance/checksums and does not reproduce the complete
+beta.2 bundle. See [release packaging](docs/releasing.md). The immutable first
 release's `build-release.py` still requires Python 3.12+, Git and Go 1.26.4 to
 reproduce its historical archives; its tags and assets stay unchanged.
 Windows CLI distribution remains outside the current target set.
@@ -294,6 +308,41 @@ there is no mandatory account, service, SDK, or unmodified-`gh` API bridge.
 Imported facts remain usable after transport removal. Foreign workflows and
 Projects automation rules are not assumed equivalent to native execution.
 
+## Optional custom types and local extensions
+
+`hn artifact` stores signed custom documents, ordered lists and tickets with pure
+versioned schemas. Generic reads, bounded literal/regex search and public exchange
+work without a plugin. Domain rules and the meaning of custom fields stay with
+the consumer; schema validation or signed content does not activate policy,
+doctrine, prompts or execution.
+
+`hn extension` can explicitly register, enable and run a trusted local executable
+over stdio with declared capabilities and repository grants. Cloning a declaration,
+reading a record or running an ordinary native command never starts an extension.
+Extensions are same-user processes, not a hostile-code sandbox. The optional
+fake-tracker, charter-model and inventory examples demonstrate generic integration;
+they do not embed Spec Kitty doctrine or provide production enterprise connectors.
+
+```sh
+hn artifact help
+hn extension help
+```
+
+See [portable artifacts](docs/artifacts-v1.md), [the extension contract](docs/extensions.md)
+and [consumer recipes](docs/extension-consumers.md).
+
+## Optional contribution and moderation workflow
+
+Contributors can hand over signed issues, replies, discussions and code proposals
+as bounded local files without upstream push access or a provider account.
+Receiving, admitting and hiding content use explicitly configured project
+authority; admission grants no review, runner or merge authority. The workflow
+starts no listener or background service and leaves immutable history intact.
+
+See [contributor and moderator guidance](docs/contributions.md) for setup,
+standalone operation, moderation, capacity and recovery. Optional hosting or
+standing acceptance is not inferred from this file-based workflow.
+
 ## Distinct device actors
 
 Initialize another clone independently, then exchange only the output of
@@ -394,6 +443,8 @@ hn replication select origin --memory sha256:<full-stream-id>
 hn sync origin
 hn memory index rebuild
 hn memory recall --at HEAD --topic architecture --json
+# Explicit regex fallback when lexical recall misses the wording:
+hn memory grep --at HEAD --topic architecture --json 'stream[-_ ]isolat.*'
 ```
 
 Default recall is policy-qualified, active, local-only, and bounded to 20
@@ -401,6 +452,8 @@ records and 65,536 encoded content bytes. Every item retains its full IDs,
 anchor, lifecycle edges, evidence, applicability, signature, trust class, and
 content digest. Memory content and handoff next actions are untrusted inert
 data—not instructions, truth, policy authority, or permission to act.
+Regex grep shares the verified recall filters and bounded pages; it is an explicit
+choice, not automatic fallback. See [memory regex semantics](docs/memory-v0.md#explicit-regex-fallback).
 
 Add sorted `memory.trustedActors` and `memory.trustedKinds` to the exact commit's
 `.hn/policy.json` to qualify default recall. Without it, valid signed memory is
@@ -496,6 +549,11 @@ hn project-item help
 hn discussion help
 hn discussion-reply help
 hn workflow help
+hn artifact help
+hn extension help
+hn contribution authority set|show; prepare|receive|pending|inspect|decide|archive|restore|baseline|retained|intake|rollover
+hn migrate help
+hn audit help
 hn transfer import|export|capabilities --provider PROVIDER
 hn github import|export --repo OWNER/REPO
 hn proposal open|revise|list|show|status
@@ -508,7 +566,7 @@ hn runner once|watch --accept-pipeline NAME --accept-actor ACTOR
 hn decide PROPOSAL <--accept|--reject> [--body TEXT]
 hn merge PROPOSAL
 hn automerge PROPOSAL --rule NAME [--execute]
-hn memory record|handoff|supersede|retract|challenge|show|recall|index
+hn memory record|handoff|supersede|retract|challenge|show|recall|grep|index
 hn replication select|show [REMOTE] [--memory STREAM]...
 hn sync [REMOTE] [--recover-shallow]
 hn log
@@ -549,24 +607,33 @@ for configuration, protected baselines, execution boundaries and recovery.
 
 ## Completed alpha boundary
 
-The operational-alpha column is implemented. The deferred column describes
-the post-alpha roadmap; those capabilities are not implied by alpha completion.
+The operational-alpha column records the original implemented boundary. Newer
+optional contribution/moderation, regex memory and custom artifact/extension
+features are described above. The deferred column records remaining work;
+alpha completion and beta prerelease publication do not promise those features.
 
 | Area | Operational alpha | Explicitly deferred |
 | --- | --- | --- |
 | Policy | Show, validate, diff, and govern amendments from exact base bytes; opt-in protected checks and explicit native automerge | Background merge queues and implicit role migration |
-| Identity | Distinct actors, mutual device/successor facts, local keyring, retryable planned rotation | Lost-key, compromise, social/organizational recovery, or concurrent writers sharing one actor key |
-| Replication | Exact selections, quarantine, positive budgets, validation, atomic accepted refs, compatibility-all | Portable hard pre-download quotas, moderation, selective deletion, and global redaction |
+| Identity | Distinct actors, mutual device/successor facts, local keyring, retryable planned rotation | Lost-key recovery without a usable protected backup, compromise, social/organizational recovery, or concurrent writers sharing one actor key |
+| Replication | Exact selections, quarantine, positive budgets, validation, atomic accepted refs, compatibility-all | Portable hard pre-download quotas, a network moderation service, selective deletion, and global redaction |
 | CI | Repository-defined actions, default Bubblewrap runner, explicit unsafe host fallback | Secrets, configurable network access, strong CPU/memory/disk/process quotas, and portable/container backends |
 | Memory | Signed streams, exact anchors/evidence, lifecycle projection, bounded lexical recall, disposable local index, and selected transport | Automatic capture, embeddings, semantic truth, autonomous action, federation, moderation, redaction, retention enforcement, and erasure guarantees |
-| Product | CLI and Git-native signed facts | Notifications, general search, web UI, discovery, and a stable protocol compatibility promise |
+| Product | CLI and Git-native signed facts | Notifications, global cross-resource search, web UI, discovery, and an adopted stable compatibility promise |
 
-Published immutable facts may be superseded by new facts, but the alpha cannot
+Published immutable facts may be superseded by new facts, but Hubnot cannot
 promise global erasure from every replica.
 
 ## Documentation
 
 - [Changelog and next-release requirements](CHANGELOG.md)
+- [Current beta.2 downloads, evidence and platform decisions](docs/releases/0.1.0-beta.2.md)
+- [Prospective beta support contract](docs/beta-support.md)
+- [Historical data compatibility](docs/compatibility.md)
+- [Backup and recovery](docs/recovery.md)
+- [Interrupted operations and upgrades](docs/operation-recovery.md)
+- [Guided and scripted project migration](docs/migration-cli.md)
+- [Optional contribution and moderation](docs/contributions.md)
 - [Rich issues](docs/issues-v1.md)
 - [Projects and typed items](docs/projects-v1.md)
 - [Discussions and pinned answers](docs/discussions-v1.md)

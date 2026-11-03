@@ -5,6 +5,11 @@ objects reachable through `refs/hn/*`. This document records direct
 observations only; it does not infer support for providers or configurations
 that were not tested. Hosting UI/API state is not evidence.
 
+These dated transport observations are distinct from optional provider API
+adapters and the [current release's package runtime matrix](releases/0.1.0-beta.2.md).
+Earlier `nh` commands/paths below are preserved historical observations; the
+active executable and namespace are `hn`, with no legacy compatibility bridge.
+
 | Remote | Result | Observed |
 | --- | --- | --- |
 | Local bare Git repository | Actor/candidate/memory refs, exact selected fetch, quarantine, budgets, and fresh-clone reconstruction passed | 2026-08-31 |

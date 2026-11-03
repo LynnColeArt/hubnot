@@ -26,6 +26,19 @@ certification checks the exact downloaded binaries on each claimed architecture;
 it does not require repeating every OS-independent stress corpus on every Mac.
 Known functional or data-integrity failures still need resolution before release.
 
+For the published beta.2 bytes, use the [release qualification kit and recorded
+results](releases/0.1.0-beta.2.md), rather than building another candidate under
+a test label. Its three native supported targets passed the bounded non-race
+runner. Intel Macs are outside that prerelease's support scope even though an
+explicit development workflow may still include an Intel runner.
+
+For an explicitly requested new hosted extension-smoke campaign, select
+`qualification=optional-extensions` and provide the exact committed
+`extension_source`. The legacy default `qualification=beta` retains the older
+beta.1 candidate campaign and its build/reuse inputs; it is not the published
+beta.2 artifact or the ordinary PR smoke route. Build labels and synthetic PR
+merge checks do not certify released binaries.
+
 PR package checks use `TestBetaPlatformPackageInstallAndRuntime`: exact executable
 provenance, PATH installation, memory regex and literal-temp migration round trips
 for both variants. The longer full collaboration journey remains unchanged in

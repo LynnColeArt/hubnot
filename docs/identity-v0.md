@@ -208,7 +208,7 @@ policy amendment is required if the successor should become authoritative.
 
 ## Explicit deferrals
 
-The operational alpha does not implement:
+The current beta prerelease does not implement:
 
 - lost-key recovery or rotation after the predecessor key is unavailable;
 - compromise response or revocation with global erasure;

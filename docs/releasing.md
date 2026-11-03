@@ -6,7 +6,7 @@ without Python, a Unix shell, Docker, provider CLIs or a provider account.
 
 ```text
 go build -trimpath -o hn-release ./cmd/hn-release
-hn-release --source . --rev COMMIT --version 0.0.2-dev --out ../release-0.0.2-dev
+./hn-release --source . --rev COMMIT --version 0.1.0-beta.2 --out ../release-0.1.0-beta.2
 ```
 
 On Windows, build `hn-release.exe` and invoke `hn-release.exe` (or its full
@@ -30,14 +30,23 @@ The default targets are `linux/amd64`, `linux/arm64`, `darwin/amd64` and
 For a subset, use comma-separated `--targets` and `--variants`, for example:
 
 ```text
-hn-release --rev COMMIT --version 0.0.2-dev --out ../release-linux --targets linux/amd64 --variants native-only
+./hn-release --rev COMMIT --version 0.1.0-beta.2 --out ../release-linux --targets linux/amd64 --variants native-only
 ```
 
 Unknown or duplicate targets/variants are refused. Windows CLI distribution is
-outside this release matrix. `native-only` builds with `nogithub,noforge`:
-`nogithub` excludes GitHub before all-adapter `noforge` support is integrated,
-and remains GitHub-specific. The combined tags exclude all installed network
-adapters once `noforge` is integrated. They retain native Git collaboration.
+outside this release matrix. `native-only` builds with `nogithub,noforge`, which
+excludes all installed network adapters while retaining native Git collaboration.
+The `nogithub` tag alone remains GitHub-specific.
+
+The packager's four-target default is a build inventory, not a runtime support
+promise. [Beta.2](releases/0.1.0-beta.2.md) supports Linux AMD64/ARM64 and Apple
+Silicon, with Intel Mac artifacts retained unqualified in its complete bundle.
+New supported-only builds may use
+`--targets linux/amd64,linux/arm64,darwin/arm64`; this produces different
+provenance/checksum files and is not a reproduction of the full beta.2 bundle.
+Reproducing beta.2 requires its exact source commit, Go 1.26.4, version and
+original four-target/two-variant selection. Use a new local output directory;
+do not replace already published assets with a new build.
 
 ## Source and build inputs
 
@@ -110,13 +119,17 @@ output collisions, compiler failures and cancellation.
 
 Before packaging a migration change, run the [filesystem portability
 gates](filesystem-portability.md) on Linux and macOS with their normal temporary
-environments. The hosted PR workflow runs those same Go commands. Do not add
-physical-path or TMPDIR workarounds to make acceptance pass. Case-collision
+environments. Hosted PRs run the [bounded native actions](project-ci.md) and
+exact-package install/runtime checks; the full deep suite remains explicit.
+Do not add physical-path or TMPDIR workarounds to make acceptance pass. Case-collision
 fixtures must construct committed Git trees rather than assume the checkout's
 filesystem is case-sensitive. Published binary runtime qualification remains a
 separate check for each target and variant; a source test is not a substitute.
 
-| Platform | WP01 verification scope |
+The following table is the historical WP01 packager-host evidence, not a current
+runtime matrix for the application:
+
+| Platform | Historical WP01 verification scope |
 | --- | --- |
 | Linux AMD64 packager host | Executed packaging and archive/refusal tests with Go 1.26.4. |
 | Linux/macOS AMD64/ARM64 artifact targets | Cross-compilation and archive inspection; runtime execution must be reported separately for each target. |

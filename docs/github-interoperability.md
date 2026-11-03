@@ -27,6 +27,12 @@ select the exact endpoint, version, scope and credential mode deliberately.
 | Bitbucket Cloud | `2.0` | Source-only repository/PR-conversation/workflow preservation; retired issues and destination PR recreation unavailable. No Jira substitution or app passwords. |
 | Azure DevOps | Services `services-7.1`, Server 2022 `server-7.0` | Mapped work-item/comment read/write. Organization/collection and project required; repository optional for Boards-only work, required for code/PR/YAML. Explicit process/type/state mappings and supplied Entra bearer/PAT; no OAuth registration. |
 
+"Tested profile" names the implemented conformance profile and its checked
+mapping/refusal behavior, not blanket live-account certification. The
+[beta support contract](beta-support.md#provider-support-and-practical-limits)
+keeps live provider/resource/direction evidence separate. Native beta.2 package
+smoke does not exercise production provider writes.
+
 Mapped native/remote issue content, raw retrieved source bytes and destination
 recreation are different capabilities. A source URL or unread/private resource
 is not preserved data. Preserve supported PR/MR/review/thread/planning detail as

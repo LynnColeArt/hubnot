@@ -3,9 +3,11 @@
 Use [the host contract](extensions.md) for lifecycle, grants, fourteen methods,
 framing and errors, and [portable artifacts](artifacts-v1.md) for generic storage.
 These source examples are separate optional executables, not installed services,
-SDKs, production connectors or public release assets. Native Hubnot users need
+SDKs or production connectors. Native Hubnot users need
 only `hn` and Git; building an example from a source checkout additionally needs
-the checkout's Go toolchain. There are no sample-asset download links implied here.
+the checkout's Go toolchain. The [beta.2 qualification kit](releases/0.1.0-beta.2.md#assets-and-historical-handoff-records)
+supplies reference copies for its bounded tests; they are not installed with
+`hn` or a supported production connector distribution.
 
 ## Choose the smallest sample
 
@@ -315,7 +317,13 @@ management summary with a successful business request.
 
 ## Compatibility and evidence scope
 
-This guide was qualified on Linux AMD64 with Go 1.26.4 and Git 2.43.0 against source
+The current published package observations and exact identities are in
+[beta.2 release evidence](releases/0.1.0-beta.2.md). They cover bounded smoke on
+Linux AMD64/ARM64 and Apple Silicon; they do not rerun every recipe below.
+The following WP23 observations remain historical, tied to their own bytes.
+
+This guide was originally qualified on Linux AMD64 with Go 1.26.4 and Git 2.43.0
+against source
 `6b2fe2e2d55e30ebc28bfc1cb6a4d9f7824508a5`, tree
 `f38de81c3a657a18a159a1a9aaf11770974c7038`. All 311 Go/module inputs match the approved
 three-consumer union (tracker `63e9a537`, charter `23983b5b`, inventory `7bee433c`).
@@ -345,10 +353,12 @@ additionally checks generated-ID CLI operations and exact refused-effect control
 
 Unchanged complex host mechanisms and bounds retain their independently approved
 source-bound WP02–WP22 evidence; documentation does not create a new platform pass.
-Final **all eight** Linux/macOS × AMD64/ARM64 × standard/native-only package rows,
-paired default performance, cold native-user/extension-author trials and final
-independent acceptance remain pending their qualification work packages. No human
-adoption, repaired-Mac, beta acceptance or release-publication claim follows here.
+Later extension-mission package/default measurements and separate AI-agent
+native-user/extension-author trials are retained in the
+[historical qualification records](qualification/README.md); that mission merged
+in PR #25. The beta.2 release adds its own exact-package observations. Historical
+recipe replay does not establish human adoption, production integration, full
+beta acceptance, Intel Mac support or browser-download certification.
 
 ## Author checklist
 

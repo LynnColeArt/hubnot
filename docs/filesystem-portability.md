@@ -39,9 +39,12 @@ physical TMPDIR in the child. The existing compiled standard/`nogithub`/`noforge
 public journey also keeps its closed child environment unchanged.
 
 The source PR jobs additionally use `hn-release` to build the exact checked-out
-commit's standard/native-only archives for the runner's native platform. The
-same public journey can consume their extracted binaries with the test-only
-`-hn-package-dir` and optional `-hn-package-version` flags. It validates each
+commit's standard/native-only archives for the runner's native platform, then
+run the bounded `TestBetaPlatformPackageInstallAndRuntime` check on both variants.
+The longer `TestPortableCollaborationIntegratedPublicVariants` journey remains
+an explicit native integration/full-suite check. It can consume extracted
+binaries with the test-only `-hn-package-dir` and optional `-hn-package-version`
+flags. It validates each
 BUILD source commit, architecture, variant, version and executable digest
 before running the unchanged scenario. There is no fallback source rebuild for
 a missing/invalid package; the separate `nogithub` subtest is explicitly skipped
@@ -67,6 +70,20 @@ snapshot. Keep the complete byte-for-byte assertion; do not ignore disappearing
 files or weaken it to accommodate unrelated fixture background activity.
 
 ## Repeatable gates
+
+For ordinary development and PR feedback, run the same bounded actions used by
+the hosted workflow:
+
+```sh
+./.hn/actions/ci fast
+./.hn/actions/ci migration
+```
+
+The migration action keeps the complete platform-specific regression selection
+in three balanced shards with the original 2-minute race-test cap per shard.
+See [project CI](project-ci.md) for step/job caps and deeper native tiers. The
+following broader direct commands remain explicit local qualification tools;
+they are not all duplicated on every hosted PR:
 
 ```sh
 go test -race -count=1 -timeout 10m ./internal/safepath ./internal/release ./cmd/hn-release
@@ -106,16 +123,20 @@ published binary. A missing host stays explicitly unverified.
 paths must be physical, and the CLI's own environment must use a physical
 temporary directory (for example `TMPDIR=/private/tmp`). Setting the outer
 test's TMPDIR alone does not repair explicit alias paths or a closed child
-environment. Published `0.0.2-dev` assets remain unchanged; the source fix must
-be qualified and packaged in a subsequent release.
+environment. Published `0.0.2-dev` assets remain unchanged. The fix shipped in
+`0.0.3-dev`; [beta.2 exact-package checks](releases/0.1.0-beta.2.md) now also pass
+on native Apple Silicon with literal aliases and no child TMPDIR workaround.
 
 ## Immutable beta candidate qualification
 
-The optional workflow dispatch now builds one eight-package candidate bundle
-with pinned Go 1.26.4 and version `0.1.0-beta.1`, then transports the same bytes
-to explicit Linux AMD64/ARM64 and macOS Intel/Apple Silicon jobs. It retains the
-source PR checks separately. See [candidate package qualification](platform-qualification.md)
-for the frozen source, observed matrix and distribution limits.
+The published [beta.2 bundle](releases/0.1.0-beta.2.md) was built once with pinned
+Go 1.26.4 and version `0.1.0-beta.2`; the same bytes were transported to the three
+supported native targets. It supplies a separate non-race qualification kit.
+The legacy `qualification=beta` hosted dispatch still uses its historical
+`0.1.0-beta.1` build label; the optional-extension dispatch has a distinct
+qualification label. Neither is the published beta.2 bundle. Current dispatch
+scope is documented in [project CI](project-ci.md); old full-matrix observations
+remain in [historical qualification](platform-qualification.md).
 
 Explicit package flags also route `buildMigrationCLIBinary` through the same
 verifier, so released-writer, public recovery and migration-journal journeys

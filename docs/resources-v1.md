@@ -1,4 +1,4 @@
-# Native resources (alpha)
+# Native resources v1
 
 Projects, project items, discussions, replies and workflows are signed Git facts.
 They need Git and a native identity for writes; reads need no identity, provider,

@@ -1,7 +1,9 @@
 # Hubnot protocol v0 experiment
 
-This document records the format implemented by the operational alpha. It is a
-testable sketch, not a compatibility promise. Existing version-0 event payloads
+This document records the native `hn/0` format introduced in the operational
+alpha and retained by the beta prerelease. Product and wire versions are
+independent; the [prospective beta support contract](beta-support.md) has not
+been adopted in full. Existing version-0 event payloads
 and event IDs were not changed when identity continuity was added. Agent memory
 is the separate additive `hn-memory/0` protocol documented in
 [memory-v0.md](memory-v0.md); memory records are not inserted into `hn/0`
@@ -345,7 +347,7 @@ separate explicit `git push` for that outcome.
 - Hosted ref retention, large-scale behavior, and providers not listed in
   [host compatibility](host-compatibility.md) remain unproven.
 
-## Alpha native resource kinds
+## Native resource kinds
 
 The optional-native-resource expansion registers `project`, `project-item`,
 `discussion`, `discussion-reply` and `workflow` `.open` / `.revise` facts under the
