@@ -20,6 +20,7 @@ Root adopts a project CI maintenance overlay consisting of these exact paths:
 - `.github/workflows/optional-extensions-qualification.yml`
 - `.hn/actions/ci`
 - `.hn/pipelines/test.json`
+- `.hn/pipelines/integration.json`
 - `.hn/pipelines/stress.json`
 - `.hn/pipelines/stress-artifacts.json`
 - `.hn/pipelines/soak.json`
@@ -40,14 +41,18 @@ edits to the frozen lane-x worktree. The native policy file is unchanged.
    shared fast action also runs in the optional GitHub portability jobs.
 2. Hosted PR portability jobs have a ten-minute cap. Explicit hosted package
    smoke uses a ten-minute build cap and fifteen-minute native job caps, with
-   thirteen existing product journeys per variant and a three-minute invocation
-   timeout. A smoke pass is never an exhaustive qualification pass.
+   five focused extension journeys per variant and a three-minute invocation
+   timeout, plus a separate two-minute install/runtime check. A smoke pass is
+   never an exhaustive qualification pass.
 3. The original 206-journey registry, at/over-limit assertions, 100000-record
    fixtures and real ten-minute expiry remain intact. Deep stress and soak runs
    are explicit native requests, not mandatory repeats on every hosted platform.
    Full-suite and historical/default-performance tools remain available. Run
    affected checks when their inputs change; do not rerun a multi-hour corpus
    solely because a documentation or CI-scheduling commit changed HEAD.
+   The explicit native `integration` pipeline runs the broad native collaboration,
+   artifact/recovery and three reference-consumer journeys with a ten-minute
+   step cap and source-assisted binaries.
 4. Actual native package execution is still required for each claimed platform
    and variant. Cross-compilation is not native runtime evidence. Source-assisted
    checks and exact-package checks retain distinct labels and exact identities.
@@ -90,7 +95,7 @@ attempt 1, artifact `13149409710`, and all existing aliases/assets/results.
 Do not rebuild or replace those bytes, cancel the external Mac investigation,
 or reinterpret its observations as runs against the new CI source. The old
 candidate's harness does not implement the new smoke selector: never dispatch
-the new smoke workflow against that old source and claim compatibility.
+   the new smoke workflow against that old source and claim compatibility.
 
 The CI delta changes no production Go or module input relative to the frozen
 candidate. This permits scoped reuse of unchanged-code evidence with explicit
@@ -109,6 +114,42 @@ Next work, in order:
 4. Complete normal independent WP25 review, then WP26's boundary review and
    independent native-user/extension-author trials. Missing external observations
    cannot be replaced by implementer replay. Acceptance remains pending.
+
+## Smoke scope correction after actual Mac execution
+
+Post-integration run `41589853578` used exact source
+`3f4c1a39a4fde59a0c2c04c0f38446de5b08a391`. Both Linux targets passed all
+thirteen selected journeys per variant. Both Mac targets hit the unchanged
+three-minute enclosing test timeout while running the broad native collaboration
+journey or the next artifact journey; those four variant attempts are incomplete,
+not passes. Logs and artifacts are retained. An earlier dispatch `41589800580`
+had an incorrect operator-supplied candidate SHA and was cancelled; it provides
+no qualification evidence.
+
+The corrective scheduling change keeps the three-minute hosted invocation cap
+and the entire 206-entry registry. Hosted extension smoke selects the five
+existing registration, enablement, explicit run, inert launch and raw artifact
+type-read callbacks. The existing package install/runtime test separately checks
+both exact native variants within two minutes. The broader native collaboration
+callback is exposed unchanged through `TestProjectCINativePublicJourney` for the
+explicit native integration action, alongside the six-family, artifact recovery
+and three reference-consumer journeys. The action builds and pins source-assisted
+executables; it does not claim to certify a downloaded archive. This adds no
+production feature, relaxed public timeout or changed stress assertion.
+
+## Mac distribution prerequisite confirmed by the maintainer
+
+On 2026-11-03 the maintainer confirmed that no Developer ID setup is available
+yet. Normal browser-download certification therefore remains blocked separately
+from CLI functional/platform testing. The next distribution work needs Developer
+ID signing and notarization setup, followed by validation of the resulting exact
+downloaded packages with quarantine retained. See Apple's
+[custom notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow).
+Account enrollment and signing identity availability are external prerequisites;
+this integration does not create an account, purchase a membership or claim a
+signing result. Signing will change executable/archive digests, so future signed
+assets need new provenance, checksums and native runtime/launch observations.
+Keep the existing unsigned candidate and its evidence intact.
 
 The original primary checkout's 78 dirty entries and 21 retained stashes remain
 preserved. A generated untracked coordination dossier that collided with the

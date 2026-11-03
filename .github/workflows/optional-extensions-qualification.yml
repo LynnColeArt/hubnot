@@ -180,6 +180,8 @@ jobs:
           git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source.before"
           go test -race -c -o "$RUNNER_TEMP/smoke.test" .
           result=0
+          # Short native install/runtime proof covers both package variants.
+          "$RUNNER_TEMP/smoke.test" -test.v -test.count=1 -test.timeout=2m -test.run '^TestBetaPlatformPackageInstallAndRuntime$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$evidence/install-runtime.log" || result=1
           for variant in standard native-only; do
             export HN_WP25_VARIANT="$variant" HN_WP25_EVIDENCE="$evidence/$variant"
             mkdir "$HN_WP25_EVIDENCE"

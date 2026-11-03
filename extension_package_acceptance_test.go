@@ -480,12 +480,9 @@ func wp25HeavyQualificationRoot(name string) bool {
 // retain their full sizes in the explicit native Hubnot stress pipelines.
 func wp25SmokeQualificationRoot(name string) bool {
 	switch name {
-	case "native-public-journey", "TestExtensionRegistrationCLI", "TestExtensionEnablementCLI",
-		"TestExtensionRunCLI", "TestExtensionRunNoImplicitLaunchCLI", "TestExtensionNativeSixFamiliesCLI",
-		"TestExtensionArtifactTypeReadRawCLI", "TestArtifactFullPublicJourneyCLI",
-		"TestExtensionChangesRawEmptyCapture", "TestExtensionArtifactInterruptedRecoveryRawCLI",
-		"TestExtensionFakeTrackerStandaloneRecovery", "TestExtensionCharterStandaloneJourney",
-		"TestInventoryStandalonePublicJourney":
+	case "TestExtensionRegistrationCLI", "TestExtensionEnablementCLI",
+		"TestExtensionRunCLI", "TestExtensionRunNoImplicitLaunchCLI",
+		"TestExtensionArtifactTypeReadRawCLI":
 		return true
 	}
 	return false
@@ -530,7 +527,7 @@ func wp25SelectQualificationJourneys(registry []wp25Journey, group string) ([]wp
 
 func TestWP25QualificationGroups(t *testing.T) {
 	registry := wp25QualificationJourneys("", nil)
-	for group, count := range map[string]int{"all": 206, "heavy": 4, "remaining": 202, "smoke": 13} {
+	for group, count := range map[string]int{"all": 206, "heavy": 4, "remaining": 202, "smoke": 5} {
 		selected, names, excluded, err := wp25SelectQualificationJourneys(registry, group)
 		if err != nil || len(selected) != count || len(names) != count || len(excluded) != 206-count {
 			t.Fatal(group, len(selected), err)
@@ -1717,6 +1714,18 @@ func wp25ConsumerInputLimits(t *testing.T, references map[string]string) {
 }
 func TestExtensionPackageConsumerInputLimits(t *testing.T) {
 	wp25ConsumerInputLimits(t, map[string]string{"charter": charterConsumer(t), "inventory": inventoryBinary(t), "fake-tracker": fakeTrackerBinary(t)})
+}
+
+// The same native journey is available independently of package qualification.
+// The project action explicitly builds and supplies a source-assisted binary.
+func TestProjectCINativePublicJourney(t *testing.T) {
+	binary := os.Getenv("HN_PROJECT_CI_BINARY")
+	if binary == "" {
+		t.Log("explicit native CI source-assisted binary required")
+		return
+	}
+	t.Logf("source-assisted native CI executable SHA256 %s", wp25Digest(t, binary))
+	wp25NativePublicJourney(t, binary)
 }
 
 // The existing plain Go/Git public journey, bound directly to this row's verified

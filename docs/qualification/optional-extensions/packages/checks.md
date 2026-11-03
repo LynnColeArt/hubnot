@@ -24,7 +24,18 @@ Gatekeeper and direct launch. This is a **distribution-launch blocker**, not a
 reason to repeat the large edge-case fixtures. See
 [issue #24](https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846).
 Signing/notarization and the resulting exact packages require native Mac retest.
+The maintainer confirmed on 2026-11-03 that no Developer ID setup is available yet.
 No candidate bytes have been replaced to incorporate the CI changes.
+
+The first post-integration smoke run `41589853578`, at source
+`3f4c1a39a4fde59a0c2c04c0f38446de5b08a391`, passed on both Linux targets but
+timed out on both Mac targets. All thirteen selected Linux journeys per variant
+were independently checked from artifacts; the four Mac variant attempts remain
+incomplete. The broad native journey exceeded the three-minute harness budget.
+Current hosted scope is therefore install/runtime plus five focused extension
+callbacks; broad cross-feature, recovery and consumer journeys execute through
+the explicit native `integration` pipeline. This changes scheduling, not the
+full registry, public limits or assertions. Historical timeout evidence is kept.
 
 The integrated coordination head `f5ea2531cf0a547a19578662589924d97ca36bdf`
 passed the native `test` pipeline in the default Linux Bubblewrap sandbox. Its

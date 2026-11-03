@@ -215,7 +215,8 @@
       "browser_download_launch": "reported_blocked",
       "gatekeeper_exit": 3,
       "direct_launch_exit": 137,
-      "url": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846"
+      "url": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846",
+      "developer_id_setup": "not_available; maintainer confirmed 2026-11-03"
     },
     "acceptance": "PENDING",
     "row_statuses_unchanged": true,
@@ -233,6 +234,15 @@
       "backend": "sandbox",
       "platform": "linux/amd64",
       "scope": "isolated verification clone; project trusted-runner roles unchanged"
+    },
+    "initial_post_integration_smoke": {
+      "run_id": 41589853578,
+      "source": "3f4c1a39a4fde59a0c2c04c0f38446de5b08a391",
+      "overall_conclusion": "failure",
+      "linux_variants": "4 PASS, artifact-verified, 13 selected roots each",
+      "mac_variants": "4 TIMED_OUT at 180 seconds; no group pass",
+      "correction": "Five focused hosted callbacks plus package install/runtime; broad journeys in native integration pipeline",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41589853578"
     }
   }
 }

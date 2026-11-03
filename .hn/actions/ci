@@ -31,7 +31,7 @@ case "${1-}" in
     go test -race -count=1 -timeout=2m -run "$pattern" .
     go vet ./...
     ;;
-  stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry)
+  integration|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry)
     # Native execution extracts a source snapshot, not the operator's .git or
     # private keys. Build its CLI once; source-assisted tests use that binary.
     scratch=$(mktemp -d "${TMPDIR:-/tmp}/hn-ci.XXXXXX")
@@ -42,7 +42,17 @@ case "${1-}" in
     export HN_WP04_BINARY="$scratch/hn" HN_WP05_BINARY="$scratch/hn"
     export HN_WP13_BINARY="$scratch/hn" HN_WP15_BINARY="$scratch/hn"
     export HN_WP16_BINARY="$scratch/hn" HN_WP17_BINARY="$scratch/hn" HN_WP18_BINARY="$scratch/hn"
+    export HN_WP21_BINARY="$scratch/hn" HN_WP22_BINARY="$scratch/hn"
     case "$1" in
+      integration)
+        go build -buildvcs=false -trimpath -o "$scratch/fake-tracker" ./examples/extensions/fake-tracker
+        go build -buildvcs=false -trimpath -o "$scratch/charter" ./examples/extensions/charter-model
+        go build -buildvcs=false -trimpath -o "$scratch/inventory" ./examples/extensions/inventory-model
+        export HN_WP20_CONSUMER="$scratch/fake-tracker" HN_WP21_CONSUMER="$scratch/charter" HN_WP22_CONSUMER="$scratch/inventory"
+        export HN_PROJECT_CI_BINARY="$scratch/hn"
+        test_name='Test(ProjectCINativePublicJourney|ArtifactFullPublicJourneyCLI|ExtensionNativeSixFamiliesCLI|ExtensionArtifactInterruptedRecoveryRawCLI|ExtensionFakeTrackerStandaloneRecovery|ExtensionCharterStandaloneJourney|InventoryStandalonePublicJourney)'
+        budget=8m
+        ;;
       stress-counts) test_name=TestExtensionPackageInheritedPublicCountLimits; budget=30m;;
       stress-artifacts) test_name=TestExtensionPackageArtifactLimits; budget=20m;;
       stress-lifecycle) test_name=TestExtensionPackageLifecycleLimits; budget=30m;;
@@ -51,5 +61,5 @@ case "${1-}" in
     esac
     go test -race -count=1 -timeout="$budget" -run "^($test_name)$" .
     ;;
-  *) echo 'usage: .hn/actions/ci fast|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry' >&2; exit 2;;
+  *) echo 'usage: .hn/actions/ci fast|integration|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry' >&2; exit 2;;
 esac

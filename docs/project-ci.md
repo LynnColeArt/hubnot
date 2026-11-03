@@ -9,7 +9,8 @@ Ordinary users do not enable a runner, install Go, or configure any of this.
 | Tier | Execution | Budget and purpose |
 | --- | --- | --- |
 | Fast regressions | Native `test` pipeline; same action on GitHub PRs | 5-minute native step; 10-minute hosted job cap. Internal unit tests, selected core regressions, native CI protocol, vet. |
-| Package smoke | Explicit GitHub package run or native Mac certification | 13 representative extension journeys per variant; 3 minutes per invocation, 15-minute native job cap. Exact packages, core collaboration, opt-in extensions, recovery and supplied consumers. |
+| Package smoke | Explicit GitHub package run or native Mac certification | Install/runtime checks plus 5 focused extension journeys per variant; 2-minute install and 3-minute extension invocation caps, 15-minute native job cap. |
+| Integration | Explicit native `integration` pipeline | 10-minute step cap. Full native collaboration, artifact recovery and three supplied reference-consumer journeys, using source-assisted binaries. |
 | Stress | Explicit native `stress` pipeline | Separate bounded steps for large record/ref/byte limits, lifecycle faults and observation capacity. Run when these mechanisms change, or during a deliberate deep audit. |
 | Real-clock soak | Explicit native `soak` pipeline | The unchanged ten-minute expiry test, separately requested. |
 
@@ -26,7 +27,7 @@ Known functional or data-integrity failures still need resolution before release
 
 ## Native requests and signed results
 
-The tracked definitions are `.hn/pipelines/test.json`, `stress.json`,
+The tracked definitions are `.hn/pipelines/test.json`, `integration.json`, `stress.json`,
 `stress-artifacts.json` (a focused stress request), and `soak.json`. They invoke
 the tracked `.hn/actions/ci` entry point. For an existing signed proposal:
 
@@ -37,6 +38,7 @@ hn run show FULL_REQUEST_ID
 hn run logs FULL_RESULT_ID
 
 # Separate, explicit requests when deeper evidence is needed:
+hn run request FULL_PROPOSAL_ID integration
 hn run request FULL_PROPOSAL_ID stress
 hn run request FULL_PROPOSAL_ID soak
 ```
@@ -71,7 +73,8 @@ requirement. See [runner behavior and boundaries](ci-v0.md).
 
 The native executor extracts the requested source snapshot, without exposing
 the operator's Git directory or keys. Stress actions build that snapshot's CLI
-once and supply it to the existing tests. Those are **source-assisted** results;
+once and supply it to the existing tests. Integration also builds the three
+reference consumers from that snapshot. Those are **source-assisted** results;
 their logs name the request commit and executable hash. They do not certify a
 downloaded release archive. Package smoke checks transported checksums, build
 metadata, native architecture, both variants and supplied reference executables.
@@ -88,6 +91,7 @@ Authorized deferred audits and explicit finding follow-up remain available via
 
 ```sh
 ./.hn/actions/ci fast
+./.hn/actions/ci integration
 ./.hn/actions/ci stress-artifacts
 ./.hn/actions/ci stress-counts
 ./.hn/actions/ci stress-lifecycle
