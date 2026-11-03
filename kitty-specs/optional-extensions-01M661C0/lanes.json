@@ -55,7 +55,6 @@
       "write_scope": [
         "artifact_commands.go",
         "artifact_envelope_commands.go",
-        "artifact_envelope_commands_test.go",
         "internal/artifact/canonical.go",
         "internal/artifact/canonical_test.go",
         "internal/artifact/envelope.go",
@@ -64,6 +63,7 @@
       "predicted_surfaces": [
         "api",
         "artifact-rendering",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -103,7 +103,6 @@
       ],
       "write_scope": [
         "artifact_schema_commands.go",
-        "artifact_schema_commands_test.go",
         "internal/artifact/content.go",
         "internal/artifact/content_test.go",
         "internal/artifact/schema.go",
@@ -112,6 +111,7 @@
       "predicted_surfaces": [
         "api",
         "artifact-rendering",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -127,7 +127,6 @@
       ],
       "write_scope": [
         "extension_enablement.go",
-        "extension_enablement_test.go",
         "internal/extension/grants.go",
         "internal/extension/grants_test.go"
       ],
@@ -157,6 +156,8 @@
       ],
       "predicted_surfaces": [
         "api",
+        "artifact-rendering",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -172,7 +173,6 @@
       ],
       "write_scope": [
         "artifact_read.go",
-        "artifact_read_test.go",
         "artifact_store.go",
         "artifact_store_commands.go",
         "artifact_store_commands_test.go",
@@ -182,6 +182,7 @@
       "predicted_surfaces": [
         "api",
         "artifact-rendering",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -295,7 +296,6 @@
       ],
       "write_scope": [
         "artifact_replication.go",
-        "artifact_replication_test.go",
         "docs/replication-v0.md",
         "quarantine.go",
         "replication.go"
@@ -365,12 +365,12 @@
       ],
       "write_scope": [
         "artifact_search.go",
-        "artifact_search_acceptance_test.go",
         "artifact_search_test.go"
       ],
       "predicted_surfaces": [
         "api",
         "artifact-rendering",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -433,7 +433,6 @@
       ],
       "write_scope": [
         "extension_changes.go",
-        "extension_changes_acceptance_test.go",
         "extension_changes_test.go"
       ],
       "predicted_surfaces": [
@@ -479,8 +478,7 @@
         "examples/extensions/charter-model/README.md",
         "examples/extensions/charter-model/main.go",
         "examples/extensions/charter-model/main_test.go",
-        "examples/extensions/charter-model/model.go",
-        "extension_charter_acceptance_test.go"
+        "examples/extensions/charter-model/model.go"
       ],
       "predicted_surfaces": [
         "api",
@@ -552,10 +550,15 @@
         "docs/qualification/optional-extensions/default/matrix.json",
         "docs/qualification/optional-extensions/default/metrics.csv",
         "extension_default_acceptance_test.go",
-        "extension_default_performance_test.go"
+        "extension_default_performance_test.go",
+        "internal/extension/vocabulary_test.go",
+        "optional_bootstrap.go",
+        "optional_bootstrap_test.go"
       ],
       "predicted_surfaces": [
         "api",
+        "artifact-rendering",
+        "legacy-cleanup",
         "tracker-integration",
         "workspace"
       ],
@@ -572,13 +575,22 @@
       "write_scope": [
         ".github/workflows/optional-extensions-qualification.yml",
         ".github/workflows/portability.yml",
+        "artifact_envelope_commands_test.go",
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "artifact_schema_commands_test.go",
+        "artifact_search_acceptance_test.go",
         "docs/qualification/optional-extensions/packages/checks.md",
         "docs/qualification/optional-extensions/packages/manifest.json",
         "docs/qualification/optional-extensions/packages/platform-matrix.json",
+        "extension_changes_acceptance_test.go",
+        "extension_charter_acceptance_test.go",
+        "extension_enablement_test.go",
         "extension_package_acceptance_test.go"
       ],
       "predicted_surfaces": [
         "api",
+        "app-shell",
         "artifact-rendering",
         "legacy-cleanup",
         "tracker-integration",
@@ -611,10 +623,10 @@
       "parallel_group": 16
     }
   ],
-  "computed_at": "2026-10-31T12:41:10.163244+00:00",
+  "computed_at": "2026-11-02T12:54:19.643311+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [
     "WP02"
   ],
-  "planning_commit_sha": "c7cbb28b93f364970a0c349aa831b649d9f5dc34"
+  "planning_commit_sha": "6cc29e567447cb7ede902a419d6c5245660cd346"
 }

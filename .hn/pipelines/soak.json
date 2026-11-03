@@ -1,0 +1,6 @@
+{
+  "version": "hn.pipeline/0",
+  "steps": [
+    {"name": "Real ten-minute capture expiry", "command": "./.hn/actions/ci", "args": ["soak-expiry"], "timeoutSeconds": 1200}
+  ]
+}

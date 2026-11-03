@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/heap"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -379,6 +380,13 @@ func ObserveResourceOperation(events []StoredEvent, actor, key, family string) (
 	return &ResourceOperationResult{ResourceID: resourceRootID(*prior), EventID: prior.ID, Actor: e.Actor, Operation: e.Operation, Kind: e.Kind, Intent: e.Intent, Parents: append([]string{}, e.Parents...), Request: e.Request, State: json.RawMessage(e.Body)}, nil
 }
 func MutateResource(input ResourceMutation) (*ResourceMutationResult, error) {
+	return MutateResourceContext(context.Background(), input)
+}
+
+func MutateResourceContext(ctx context.Context, input ResourceMutation) (*ResourceMutationResult, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if !validResourceFamily(input.Family) {
 		return nil, issueFailure("invalid_input", errors.New("unsupported resource family"))
 	}
@@ -401,9 +409,16 @@ func MutateResource(input ResourceMutation) (*ResourceMutationResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	return applyResourceMutation(input, identity, captured, events)
+	return applyResourceMutationContext(ctx, input, identity, captured, events)
 }
 func applyResourceMutation(input ResourceMutation, identity *Identity, captured Event, events []StoredEvent) (*ResourceMutationResult, error) {
+	return applyResourceMutationContext(context.Background(), input, identity, captured, events)
+}
+
+func applyResourceMutationContext(ctx context.Context, input ResourceMutation, identity *Identity, captured Event, events []StoredEvent) (*ResourceMutationResult, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if input.Actor != "" && input.Actor != identity.Actor {
 		return nil, issueFailure("actor_mismatch", errors.New("active signing actor differs from expected actor"))
 	}
@@ -444,7 +459,7 @@ func applyResourceMutation(input ResourceMutation, identity *Identity, captured 
 			if err != nil || recorded != prior.Event.Request {
 				return nil, issueFailure("invalid_history", errors.New("stored resource operation digest mismatch"))
 			}
-			if err := contributionRetryNative(prior); err != nil {
+			if err := contributionRetryNativeContext(ctx, prior); err != nil {
 				return nil, issueFailure("admission_pending", err)
 			}
 			view := cat.Resources[resourceRootID(*prior)]
@@ -485,12 +500,21 @@ func applyResourceMutation(input ResourceMutation, identity *Identity, captured 
 	if err != nil {
 		return nil, issueFailure("invalid_input", err)
 	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if err := contributionAuthorizeCandidate(event, events); err != nil {
 		return nil, issueFailure("permission_denied", err)
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	localPlan, err := contributionBeforeNative(event, identity, events)
 	if err != nil {
 		return nil, issueFailure("admission_refused", err)
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	stored, err := appendEvent(event, identity)
 	if err != nil {
@@ -500,7 +524,7 @@ func applyResourceMutation(input ResourceMutation, identity *Identity, captured 
 		}
 		return nil, issueFailure("repository_error", err)
 	}
-	if err := contributionFinishNative(stored, localPlan); err != nil {
+	if err := contributionFinishNativeContext(ctx, stored, localPlan); err != nil {
 		return nil, issueFailure("admission_pending", err)
 	}
 	afterEvents := append(append([]StoredEvent{}, events...), *stored)

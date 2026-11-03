@@ -40,6 +40,9 @@ create_intent:
 - docs/qualification/optional-extensions/default/matrix.json
 - docs/qualification/optional-extensions/default/metrics.csv
 - docs/qualification/optional-extensions/default/historical-hashes.json
+- optional_bootstrap.go
+- optional_bootstrap_test.go
+- internal/extension/vocabulary_test.go
 execution_mode: code_change
 owned_files:
 - extension_default_acceptance_test.go
@@ -48,6 +51,9 @@ owned_files:
 - docs/qualification/optional-extensions/default/matrix.json
 - docs/qualification/optional-extensions/default/metrics.csv
 - docs/qualification/optional-extensions/default/historical-hashes.json
+- optional_bootstrap.go
+- optional_bootstrap_test.go
+- internal/extension/vocabulary_test.go
 priority: P1
 role: implementer
 tags: []
@@ -243,3 +249,21 @@ Read canonical status/review references before implementation. Address every rej
 ## Activity log
 
 - 2026-10-30T09:50:45Z — planner-priti — Draft authored; root has not finalized tasks or authorized branch operations.
+
+## Bounded lazy-bootstrap integration amendment — 2026-10-31
+
+Root/architect-alphonso authorizes the region-specific integration correction documented in `WP24-default-workflow-qualification/integration-lazy-bootstrap.md`. The first three complete performance captures remain failures (12,960 observations); the latest has only two native-only CGO0 issue RSS groups over the unchanged budget. All original handler bindings and application semantics remain required.
+
+WP24 now creates `optional_bootstrap.go` and `optional_bootstrap_test.go`. The nineteen explicitly named old-path exceptions in that record permit only eighteen optional init removals, four typed-nil map declarations, four first-statement ensure barriers, directly caused comments/import cleanup and one existing test initialization fixture. Original file ownership and authoritative surfaces remain unchanged; all original owners are approved and inactive, and WP24 is the sole executor. Stop and coordinate root for any additional region or semantic change. This uses the existing small out-of-map coordination clause; it does not grant whole-file ownership or change guard policy. Preserve transparent normal warnings and all gates.
+
+T096/T099 additionally prove cold native optional state stays unconstructed, exact final binding/closure semantics, safe concurrent first use, and live explicit CLI/host behavior. Before new measurements, obtain an independent source-only correction review and root input attestation; this is not WP24 approval. Final normal WP24 review occurs only after every original functional/history/fault/detector/budget/race and full paired-performance requirement passes. No threshold, build setting, public wire contract, source data, supported capability, default user setup, dependency or release/target change is authorized.
+
+## Complete zero-startup integration amendment — 2026-10-31
+
+Root/architect-alphonso prospectively authorizes the complete bounded correction in `WP24-default-workflow-qualification/integration-zero-startup.md` and its exact regions/routing JSON. This explicitly supersedes only the earlier two eager router-key storage representation; all old authorization, review, scope and capture records remain immutable history. All21 artifact/3type/8extension/13adapter/2router handler bindings, closure arguments, native-map-first generic/nil override precedence and byte-identical public help remain required.
+
+Frozen d0f40fc96560f6d58f5b63a0eefe71d6635d2523 remains FAIL: two native-only CGO0 issue RSS rows exceed the unchanged budget by8/68KiB. All four complete captures and17,280 observations remain failed and immutable. The full source inventory found104 baseline global/init declarations unchanged and58 added declarations completely classified; the selected lifecycle correction removes seven fixed-map constructors, the empty capture-map constructor and the sole two-key optional registration init. No performance saving is predicted.
+
+Only `internal/extension/vocabulary_test.go` is added to WP24 owned_files/create_intent. The thirteen finite old-path exceptions, three already-owned source edits and exact unchanged-body boundaries are enumerated in the new record. Original ownership and authoritative surfaces stay intact; original owners WP10/WP11/WP13/WP14/WP15/WP16/WP19 are approved/inactive and WP24 alone executes these regions. Any owner reopening pauses that affected path. No additional region, dependency transfer, overlapping execution or blocking-guard bypass is authorized.
+
+The prospective source partition is316=311 newly root-attested dependency inputs+5WP24 source inputs. Preserve the closed311-input count and every exact input-hash comparison; add only the one new test path to the existing owned-input union. Fresh independent source-only correction review and root source/input freeze precede one complete fixed-source paired gate and all original final functional/history/fault/detector/budget/race/package/review obligations. No T096–T099 completion, approval, budget pass, release or platform claim is made by this amendment. No protocol/authority/error/data/native-setup/dependency/build-flag/budget change, old-candidate evidence substitution or policy/auth/sync/framework edit is authorized.

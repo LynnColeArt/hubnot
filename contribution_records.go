@@ -331,6 +331,23 @@ func (s contributionAuthoritySource) Historical(ref c.AuthorityRef) (c.Authority
 	if e != nil {
 		return c.Authority{}, e
 	}
+	if ref.Commit == s.a.Commit && ref.Digest == s.a.PolicyDigest {
+		if ctx.Err() != nil {
+			return c.Authority{}, c.ErrAuthority
+		}
+		if e := replicationPendingError(dir, ref.Commit); e != nil {
+			return c.Authority{}, c.ErrAuthority
+		}
+		raw, e := projectGit(ctx, dir, nil, maxPolicySize, "show", ref.Commit+"^{commit}:.hn/policy.json")
+		if e != nil {
+			return c.Authority{}, c.ErrAuthority
+		}
+		p, digest, e := parsePolicyBytes(raw)
+		if e != nil || digest != ref.Digest || p.Contributions == nil || s.a.Policy.Contributions == nil || p.Contributions.Project != s.a.Policy.Contributions.Project {
+			return c.Authority{}, c.ErrAuthority
+		}
+		return c.Authority{Ref: ref, Policy: p.Contributions, Maintainers: sortedStrings(p.Maintainers)}, nil
+	}
 	if _, e := projectGit(ctx, dir, nil, 256, "merge-base", "--is-ancestor", ref.Commit, s.a.Commit); e != nil {
 		return c.Authority{}, c.ErrAuthority
 	}

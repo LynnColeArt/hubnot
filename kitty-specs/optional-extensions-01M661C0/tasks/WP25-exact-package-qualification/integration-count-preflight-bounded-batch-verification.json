@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-31",
+  "status": "prospective requirements only; no test/pass/verdict",
+  "before_body_controls": {
+    "byte_equality": 8388608,
+    "one_over": 8388609,
+    "safe_fixture_ceiling_example": 9437184,
+    "huge_allocation_OOM_probe": false,
+    "assertions": [
+      "each info metadata response precedes host contents authorization",
+      "oversized selected commit AND ancestor refuse before their contents request/body allocation",
+      "unique-commit subset aggregate256MiB boundary charged before contents",
+      "exact OID/type/nonnegative size; repeated contents header must agree",
+      "exact body length and one LF, raw object hash before sole-parent parse",
+      "bounded metadata/header/stderr/input/output/pending work",
+      "failed/empty/malformed/missing output never empty-success"
+    ]
+  },
+  "real_Git_and_public_callers_required": true,
+  "peer_protocol_stage_assertions": "supplementary source-assisted evidence, explicitly labeled; never substitute for real Git/public binary count/byte controls",
+  "graph_cases": [
+    "unique selected immutable tips and overlapping ancestry",
+    "raw parent consistency in shallow/grafted repositories without bypass",
+    "consistent malformed multi-parent and missing-object refusal",
+    "SHA1/SHA256 exact raw-object identities",
+    "source movement witnesses and complete later verification unchanged"
+  ],
+  "numeric_count_controls": {
+    "at": 100000,
+    "over": 100001,
+    "threshold_fault": 99999,
+    "remove_preflight_fault": true,
+    "at_claim": "causal numeric-gate admission only if later independent30-second verification cancellation; no fabricated full-read success",
+    "over_exact": "resource_limit / selected artifact record limit exceeded",
+    "protected_state_equal": true
+  },
+  "lifecycle_cases": [
+    "empty selection spawns no batch child",
+    "one exact scoped child for nonempty selection",
+    "ordinary success, count/byte refusal, parse/protocol/hash errors, I/O failures and cancellation all close/cancel/kill+Wait-reap",
+    "no blocked pipe goroutine/detached writer/reader survives return",
+    "no fetch marker, config/ref/key/private-state side effects"
+  ],
+  "required_order": [
+    "retain H79c3 and all original source-specific causal inputs/results/reviews",
+    "meaningful original rejected-source before-body RED and fixed-source GREEN using safe fixtures",
+    "focused protocol/raw graph/error precedence/race and real Git/public caller checks",
+    "fresh independent source-only correction review",
+    "NEW root reviewed311 inherited map and full317 source/tree/binary attestation/freeze",
+    "fresh affected default/history/no-registry/no-effect/control checks and complete unchanged4320paired gate",
+    "new frozen full source/race/vet/build/format and all eight actual native package rows",
+    "normal final independent WP25 review and every remaining mission gate"
+  ],
+  "capture_obligations_unchanged": {
+    "observations": 4320,
+    "pairs_per_group": 30,
+    "settings": [
+      "frozen-cgo1",
+      "packager-cgo0"
+    ],
+    "variants": [
+      "standard",
+      "native-only"
+    ],
+    "cases": 9,
+    "states": [
+      "absent",
+      "large-unrelated"
+    ],
+    "elapsed": "max(10%,5ms)",
+    "RSS": "max(10%,1MiB)",
+    "baseline_assets_flags_sample_selection_math_collectors_controls_failure_retention": "UNCHANGED",
+    "all_prior_failures_immutable": true,
+    "historical_WP24_approval_not_rewritten": true
+  },
+  "qualified_Git_versions": "record actual Git version/capability per executed row; local2.43 advertisement is not broad2.x qualification",
+  "no_current_source_equivalence_or_performance_platform_claim": true
+}

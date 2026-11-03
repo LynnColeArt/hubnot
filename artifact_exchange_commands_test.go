@@ -1,0 +1,1617 @@
+package main
+
+import (
+	"bytes"
+	"context"
+	"crypto/sha1"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	c "hubnot/internal/contribution"
+	"hubnot/internal/safepath"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strings"
+	"testing"
+	"time"
+)
+
+// The same detector consumes public files and command diagnostics. Its poisoned
+// real-file control below proves a prohibited marker is actually observable.
+func exchangePrivateLeak(raw []byte, markers []string) string {
+	for _, marker := range markers {
+		if bytes.Contains(raw, []byte(marker)) {
+			return marker
+		}
+	}
+	return ""
+}
+
+func exchangeDestination(t *testing.T, source *artifactCLIFixture, format string) *artifactCLIFixture {
+	t.Helper()
+	root := t.TempDir()
+	dst := &artifactCLIFixture{t: t, binary: source.binary, repo: filepath.Join(root, "repo"), home: filepath.Join(root, "home")}
+	dst.git("init", "--quiet", "--object-format="+format)
+	return dst
+}
+func exchangeWrite(t *testing.T, value any) string {
+	t.Helper()
+	raw, e := json.Marshal(value)
+	if e != nil {
+		t.Fatal(e)
+	}
+	path := filepath.Join(t.TempDir(), "exchange.json")
+	if e = os.WriteFile(path, raw, 0600); e != nil {
+		t.Fatal(e)
+	}
+	return path
+}
+func exchangeExport(f *artifactCLIFixture, ids ...string) (string, map[string]any) {
+	f.t.Helper()
+	path := filepath.Join(f.t.TempDir(), "public.json")
+	args := []string{"artifact", "export", "--output", path, "--json"}
+	for _, id := range ids {
+		args = append(args, "--id", id)
+	}
+	return path, f.call("", "", args...)["data"].(map[string]any)
+}
+func TestArtifactExchangeIndependentCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			src := artifactCLIFormat(t, format)
+			dst := exchangeDestination(t, src, format)
+			typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
+			opening := revisionEvent(revisionCall(src, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "public exact text\n世界")), "open", ""))
+			tip := src.git("rev-parse", artifactRef(src.actor))
+			tail := revisionEvent(revisionCall(src, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "unselected tail")), "tail", ""))
+			marker := "WP10-PRIVATE-CREDENTIAL-KEY-GRANT-JOURNAL-SENTINEL"
+			for _, relative := range []string{".hn/private-key-marker", ".git/hn/extensions/grants/private", ".git/hn/artifacts/intents/private"} {
+				p := filepath.Join(src.repo, relative)
+				if e := os.MkdirAll(filepath.Dir(p), 0700); e != nil {
+					t.Fatal(e)
+				}
+				if e := os.WriteFile(p, []byte(marker), 0600); e != nil {
+					t.Fatal(e)
+				}
+			}
+			before := src.snapshot()
+			if evidence := os.Getenv("HN_WP10_EVIDENCE_DIR"); evidence != "" {
+				b, _ := json.MarshalIndent(map[string]any{"source": before, "destination": dst.snapshot(), "type": typ, "opening": opening, "tip": tip, "actor": src.actor}, "", "  ")
+				if e := os.WriteFile(filepath.Join(evidence, "initial-fixture.json"), b, 0600); e != nil {
+					t.Fatal(e)
+				}
+			}
+			path, out := exchangeExport(src, opening)
+			src.unchanged(before)
+			raw, e := os.ReadFile(path)
+			if e != nil {
+				t.Fatal(e)
+			}
+			markers := []string{marker, src.home, src.repo}
+			metadata, _ := json.Marshal(out)
+			for _, public := range [][]byte{raw, metadata} {
+				if found := exchangePrivateLeak(public, markers); found != "" {
+					t.Fatal("private export/diagnostic leak", found)
+				}
+			}
+			// Deliberately leak into a real file and feed it through the SAME
+			// detector; this is evidence that absence is not a broken scanner.
+			poisoned := filepath.Join(t.TempDir(), "deliberate-private-leak.json")
+			leaked, _ := json.Marshal(map[string]any{"diagnostics": []string{marker}})
+			if e = os.WriteFile(poisoned, leaked, 0600); e != nil {
+				t.Fatal(e)
+			}
+			leaked, e = os.ReadFile(poisoned)
+			if e != nil || exchangePrivateLeak(leaked, markers) != marker {
+				t.Fatal("private leak control was not detected", e)
+			}
+			if out["output_digest"] != eventID(raw) || out["records"] != float64(2) {
+				t.Fatal(out)
+			}
+			var wire map[string]any
+			if e = json.Unmarshal(raw, &wire); e != nil {
+				t.Fatal(e)
+			}
+			if wire["protocol"] != "hn-artifact-exchange/1" || wire["mode"] != "accepted" {
+				t.Fatal(wire)
+			}
+			refs := wire["refs"].([]any)
+			if len(refs) != 1 || refs[0].(map[string]any)["oid"] != tip || refs[0].(map[string]any)["ref"] != artifactRef(src.actor) {
+				t.Fatal("not minimal canonical prefix", refs)
+			}
+			again, _ := exchangeExport(src, opening)
+			second, _ := os.ReadFile(again)
+			if !bytes.Equal(raw, second) {
+				t.Fatal("nondeterministic export")
+			}
+			result := dst.call("", "", "artifact", "import", "--input", path, "--json")["data"].(map[string]any)
+			diagnostic, _ := json.Marshal(result)
+			if found := exchangePrivateLeak(diagnostic, markers); found != "" {
+				t.Fatal("import diagnostics leaked private state", found)
+			}
+			ids := []any{typ, opening}
+			if strings.Compare(typ, opening) > 0 {
+				ids = []any{opening, typ}
+			}
+			if !reflect.DeepEqual(result["imported_ids"], ids) || result["source_cut"] == "" {
+				t.Fatal(result)
+			}
+			if got := closureItems(dst, opening); !reflect.DeepEqual(got, closureItems(src, opening)) {
+				t.Fatal("public reconstruction differs", got)
+			}
+			dst.call("", "not_found", "artifact", "show", tail, "--json")
+			if dst.git("for-each-ref", "--format=%(refname)", "refs/hn/artifacts/") != "" {
+				t.Fatal("import installed local signing root")
+			}
+			for _, p := range []string{dst.home, filepath.Join(dst.repo, ".hn"), filepath.Join(dst.repo, ".git", "hn")} {
+				if _, e := os.Stat(p); !os.IsNotExist(e) {
+					t.Fatal("import created private state", p, e)
+				}
+			}
+			before = dst.snapshot()
+			dst.call("", "", "artifact", "import", "--input", path, "--json")
+			dst.call(string(raw), "", "artifact", "import", "--input", "-", "--json")
+			dst.unchanged(before)
+		})
+	}
+}
+func TestArtifactExchangeRefusalsCLI(t *testing.T) {
+	t.Run("import-union", exchangeImportUnionCLI)
+	src := artifactCLI(t)
+	typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
+	opening := revisionEvent(revisionCall(src, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "accepted")), "open", ""))
+	path, _ := exchangeExport(src, opening)
+	raw, _ := os.ReadFile(path)
+	var wire map[string]any
+	_ = json.Unmarshal(raw, &wire)
+	tests := []struct {
+		name, code string
+		change     func(map[string]any)
+	}{
+		{"missing-public-blob", "verification_failure", func(v map[string]any) {
+			objects := v["objects"].([]any)
+			for i, o := range objects {
+				if o.(map[string]any)["type"] == "blob" {
+					v["objects"] = append(objects[:i:i], objects[i+1:]...)
+					return
+				}
+			}
+		}},
+		{"corrupt-hash", "verification_failure", func(v map[string]any) { v["objects"].([]any)[0].(map[string]any)["data"] = "Y29ycnVwdA" }},
+		{"padded-base64", "invalid_input", func(v map[string]any) { v["objects"].([]any)[0].(map[string]any)["data"] = "YQ==" }},
+		{"duplicate-object", "invalid_input", func(v map[string]any) { v["objects"] = append(v["objects"].([]any), v["objects"].([]any)[0]) }},
+		{"duplicate-ref", "invalid_input", func(v map[string]any) { v["refs"] = append(v["refs"].([]any), v["refs"].([]any)[0]) }},
+		{"private-ref", "invalid_input", func(v map[string]any) { v["refs"].([]any)[0].(map[string]any)["ref"] = "refs/hn/private/key" }},
+		{"null-objects", "invalid_input", func(v map[string]any) { v["objects"] = nil }},
+		{"unknown-mode", "invalid_input", func(v map[string]any) { v["mode"] = "automatic" }},
+		{"tag-object", "invalid_input", func(v map[string]any) { v["objects"].([]any)[0].(map[string]any)["type"] = "tag" }},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			dst := exchangeDestination(t, src, "sha1")
+			var v map[string]any
+			_ = json.Unmarshal(raw, &v)
+			tc.change(v)
+			bad := exchangeWrite(t, v)
+			before := dst.snapshot()
+			dst.call("", tc.code, "artifact", "import", "--input", bad, "--json")
+			dst.unchanged(before)
+		})
+	}
+	for name, body := range map[string]string{"duplicate-key": strings.Replace(string(raw), `"protocol":`, `"protocol":"hn-artifact-exchange/1","protocol":`, 1), "trailing": string(raw) + " {}", "null-refs": `{"protocol":"hn-artifact-exchange/1","mode":"accepted","refs":null,"objects":[]}`} {
+		t.Run(name, func(t *testing.T) {
+			dst := exchangeDestination(t, src, "sha1")
+			bad := filepath.Join(t.TempDir(), "bad")
+			_ = os.WriteFile(bad, []byte(body), 0600)
+			before := dst.snapshot()
+			dst.call("", "invalid_input", "artifact", "import", "--input", bad, "--json")
+			dst.unchanged(before)
+		})
+	}
+	t.Run("symlink", func(t *testing.T) {
+		dst := exchangeDestination(t, src, "sha1")
+		link := filepath.Join(t.TempDir(), "link")
+		_ = os.Symlink(path, link)
+		before := dst.snapshot()
+		dst.call("", "invalid_input", "artifact", "import", "--input", link, "--json")
+		dst.unchanged(before)
+	})
+	t.Run("object-format", func(t *testing.T) {
+		dst := exchangeDestination(t, src, "sha256")
+		before := dst.snapshot()
+		dst.call("", "invalid_input", "artifact", "import", "--input", path, "--json")
+		dst.unchanged(before)
+	})
+}
+func TestArtifactExchangeOpaqueCLI(t *testing.T) {
+	src := artifactCLI(t)
+	dst := exchangeDestination(t, src, "sha1")
+	typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
+	path, _ := exchangeExport(src, typ)
+	raw, _ := os.ReadFile(path)
+	var bundle map[string]any
+	_ = json.Unmarshal(raw, &bundle)
+	// Explicit preservation stores public bodies without admitting even valid signed data.
+	before := dst.snapshot()
+	dst.call("", "invalid_input", "artifact", "import", "--input", path, "--preserve-opaque", "--preserve-opaque", "--json")
+	dst.unchanged(before)
+	acceptedPreserved := exchangeDestination(t, src, "sha1")
+	preserved := acceptedPreserved.call("", "", "artifact", "import", "--input", path, "--preserve-opaque", "--json")["data"].(map[string]any)
+	if preserved["mode"] != "opaque" || len(preserved["accepted_refs"].([]any)) != 0 || acceptedPreserved.git("for-each-ref", "--format=%(refname)", "refs/hn") != "" {
+		t.Fatal("preservation flag admitted accepted data", preserved)
+	}
+	bundle["mode"] = "opaque"
+	opaquePath := exchangeWrite(t, bundle)
+	before = dst.snapshot()
+	dst.call("", "invalid_input", "artifact", "import", "--input", opaquePath, "--json")
+	dst.unchanged(before)
+	result := dst.call("", "", "artifact", "import", "--input", opaquePath, "--preserve-opaque", "--json")["data"].(map[string]any)
+	if len(result["accepted_refs"].([]any)) != 0 || len(result["imported_ids"].([]any)) != 0 {
+		t.Fatal("opaque promoted", result)
+	}
+	ids := result["opaque_ids"].([]any)
+	if len(ids) != len(bundle["objects"].([]any)) {
+		t.Fatal(result)
+	}
+	if dst.git("for-each-ref", "--format=%(refname)", "refs/hn") != "" {
+		t.Fatal("opaque created accepted ref")
+	}
+	dst.call("", "not_found", "artifact", "show", typ, "--json")
+	id := ids[0].(string)
+	view := dst.call("", "", "artifact", "inspect", "--opaque", "--opaque-id", id, "--json")["data"].(map[string]any)
+	if view["opaque_id"] != id || view["validation"] != "opaque" {
+		t.Fatal(view)
+	}
+	out := filepath.Join(t.TempDir(), "opaque.json")
+	exported := dst.call("", "", "artifact", "export", "--opaque", "--opaque-id", id, "--output", out, "--json")["data"].(map[string]any)
+	if exported["records"] != float64(0) || len(exported["refs"].([]any)) != 0 || !reflect.DeepEqual(exported["opaque_ids"], []any{id}) {
+		t.Fatal(exported)
+	}
+	third := exchangeDestination(t, src, "sha1")
+	third.call("", "", "artifact", "import", "--input", out, "--preserve-opaque", "--json")
+	if !reflect.DeepEqual(view, third.call("", "", "artifact", "inspect", "--opaque", "--opaque-id", id, "--json")["data"]) {
+		t.Fatal("opaque body did not survive independently")
+	}
+	// Opaque IDs address only the bounded index, never arbitrary reachable ODB objects.
+	absent := "sha256:" + strings.Repeat("1", 64)
+	before = dst.snapshot()
+	dst.call("", "not_found", "artifact", "inspect", "--opaque", "--opaque-id", absent, "--json")
+	dst.unchanged(before)
+}
+func TestArtifactExchangeSelectorRefusalsCLI(t *testing.T) {
+	f := artifactCLI(t)
+	id := revisionEvent(f.publish(artifactStoreType, "type", ""))
+	out := filepath.Join(t.TempDir(), "out")
+	for _, args := range [][]string{
+		{"export", "--id", id, "--id", id, "--output", out},
+		{"export", "--id", id, "--output", out, "--output", out},
+		{"export", "--id", id, "--output", out, "--opaque"},
+		{"export", "--opaque", "--opaque-id", id, "--id", id, "--output", out},
+		{"export", "--output", out}, {"import", "--input", "-", "--id", id},
+		{"import", "--input", "-", "--input", "-"}, {"inspect", "--opaque", "--id", id},
+	} {
+		before := f.snapshot()
+		f.call("", "invalid_input", append([]string{"artifact"}, append(args, "--json")...)...)
+		f.unchanged(before)
+	}
+}
+
+func TestArtifactExchangeWireBoundCLI(t *testing.T) {
+	src := artifactCLI(t)
+	dst := exchangeDestination(t, src, "sha1")
+	o := exchangeObject("blob", []byte("public equality"))
+	raw, _ := json.Marshal(exchangeBundle(o))
+	raw = append(raw, bytes.Repeat([]byte(" "), 16777216-len(raw))...)
+	path := filepath.Join(t.TempDir(), "at-limit")
+	if e := os.WriteFile(path, raw, 0600); e != nil {
+		t.Fatal(e)
+	}
+	got := dst.call("", "", "artifact", "import", "--input", path, "--preserve-opaque", "--json")["data"].(map[string]any)
+	if !reflect.DeepEqual(got["opaque_ids"], []any{eventID([]byte("blob\x00public equality"))}) {
+		t.Fatal(got)
+	}
+	over := filepath.Join(t.TempDir(), "over-limit")
+	_ = os.WriteFile(over, append(raw, ' '), 0600)
+	before := dst.snapshot()
+	result := dst.call("", "resource_limit", "artifact", "import", "--input", over, "--preserve-opaque", "--json")
+	if !strings.Contains(result["error"].(map[string]any)["message"].(string), "wire") {
+		t.Fatal(result)
+	}
+	dst.unchanged(before)
+}
+func TestArtifactExchangeMissingSchemaCLI(t *testing.T) {
+	a, b := artifactCLI(t), artifactCLI(t)
+	schema := revisionEvent(a.publish(artifactStoreType, "type", ""))
+	schemaTip := a.git("rev-parse", artifactRef(a.actor))
+	revisionFetch(b, a, "schema")
+	opening := revisionEvent(revisionCall(b, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, "requires external exact schema")), "opening", ""))
+	path, _ := exchangeExport(b, opening)
+	raw, _ := os.ReadFile(path)
+	var v map[string]any
+	_ = json.Unmarshal(raw, &v)
+	omit := map[string]bool{}
+	for _, id := range strings.Fields(a.git("rev-list", "--objects", "--no-object-names", schemaTip)) {
+		omit[id] = true
+	}
+	objects := []any{}
+	for _, o := range v["objects"].([]any) {
+		if !omit[o.(map[string]any)["oid"].(string)] {
+			objects = append(objects, o)
+		}
+	}
+	v["objects"] = objects
+	refs := []any{}
+	for _, r := range v["refs"].([]any) {
+		if r.(map[string]any)["ref"] != artifactRef(a.actor) {
+			refs = append(refs, r)
+		}
+	}
+	v["refs"] = refs
+	dst := exchangeDestination(t, a, "sha1")
+	before := dst.snapshot()
+	result := dst.call("", "incomplete_dependency", "artifact", "import", "--input", exchangeWrite(t, v), "--json")
+	if !strings.Contains(result["error"].(map[string]any)["message"].(string), "schema") {
+		t.Fatal(result)
+	}
+	dst.unchanged(before)
+}
+func TestArtifactExchangeShapesAndHeadsCLI(t *testing.T) {
+	a, b := artifactCLI(t), artifactCLI(t)
+	schema := revisionEvent(a.publish(artifactStoreType, "type", ""))
+	opening := revisionEvent(revisionCall(a, "open", revisionInput(t, nil, []string{}, revisionPayload(schema, "original 世界")), "opening", ""))
+	revisionFetch(b, a, "a")
+	left := revisionEvent(revisionCall(a, "revise", revisionInput(t, opening, []string{opening}, revisionPayload(schema, "left")), "left", ""))
+	right := revisionEvent(revisionCall(b, "revise", revisionInput(t, opening, []string{opening}, revisionPayload(schema, "right")), "right", ""))
+	revisionFetch(a, b, "b")
+	ticketInput := strings.Replace(strings.Replace(artifactStoreType, "example.test/note", "example.test/ticket", 1), `"shape":"document"`, `"shape":"ticket"`, 1)
+	ticketSchema := revisionEvent(a.publish(ticketInput, "ticket-type", ""))
+	p := revisionPayload(ticketSchema, "ticket exact text")
+	p["shape"] = "ticket"
+	p["type_id"] = "example.test/ticket"
+	ticket := revisionEvent(revisionCall(a, "open", revisionInput(t, nil, []string{}, p), "ticket", ""))
+	listInput := strings.Replace(strings.Replace(artifactStoreType, "example.test/note", "example.test/list", 1), `"shape":"document"`, `"shape":"list"`, 1)
+	listSchema := revisionEvent(a.publish(listInput, "list-type", ""))
+	p = revisionPayload(listSchema, "ordered 雪\ne\u0301")
+	p["shape"] = "list"
+	p["type_id"] = "example.test/list"
+	p["members"] = []any{map[string]any{"member_id": "z-first", "target": opening, "target_mode": "logical", "required": true}, map[string]any{"member_id": "a-second", "target": ticket, "target_mode": "revision", "required": true}}
+	p["relationships"] = []any{map[string]any{"relation": "example.test/link", "target": left, "target_mode": "revision", "required": true}, map[string]any{"relation": "example.test/optional", "target": "sha256:" + strings.Repeat("d", 64), "target_mode": "revision", "required": false}}
+	list := revisionEvent(revisionCall(a, "open", revisionInput(t, nil, []string{}, p), "list", ""))
+	path, _ := exchangeExport(a, list)
+	dst := exchangeDestination(t, a, "sha1")
+	dst.call("", "", "artifact", "import", "--input", path, "--json")
+	for _, id := range []string{opening, ticket, list} {
+		if !reflect.DeepEqual(revisionReadView(a, id), revisionReadView(dst, id)) {
+			t.Fatal("shape/order/link/head view changed", id)
+		}
+	}
+	heads := revisionHeads(t, revisionReadView(dst, opening))
+	if len(heads) != 2 || !((heads[0] == left && heads[1] == right) || (heads[0] == right && heads[1] == left)) {
+		t.Fatal(heads)
+	}
+	if !reflect.DeepEqual(closureItems(a, list), closureItems(dst, list)) {
+		t.Fatal("exact public history changed")
+	}
+}
+
+func TestArtifactExchangeCASWrongOldCLI(t *testing.T) {
+	src := artifactCLI(t)
+	other := artifactCLI(t)
+	if other.actor > src.actor {
+		src, other = other, src
+	}
+	typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
+	first, _ := exchangeExport(src, typ)
+	dst := exchangeDestination(t, src, "sha1")
+	dst.call("", "", "artifact", "import", "--input", first, "--json")
+	ref := "refs/hn/remotes/imported/artifacts/" + src.actor + "/" + strings.TrimPrefix(artifactStream(src.actor), "sha256:")
+	old := dst.git("rev-parse", ref)
+	opening := revisionEvent(revisionCall(src, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "next")), "next", ""))
+	revisionFetch(other, src, "source")
+	otherOpening := revisionEvent(revisionCall(other, "open", revisionInput(t, nil, []string{}, revisionPayload(typ, "other actor")), "other", ""))
+	revisionFetch(src, other, "other")
+	path, exported := exchangeExport(src, opening, otherOpening)
+	if len(exported["refs"].([]any)) != 2 {
+		t.Fatal("CAS control must exercise two promoted refs", exported)
+	}
+	// Populate only public ODB bodies before the fault. This makes the post-refusal
+	// complete filesystem comparison sensitive to transaction effects themselves.
+	dst.git("fetch", "--quiet", "--no-tags", src.repo, artifactRef(src.actor)+":refs/hn/quarantine/wp10-control")
+	dst.git("fetch", "--quiet", "--no-tags", other.repo, artifactRef(other.actor)+":refs/hn/quarantine/wp10-other-control")
+	actualGit, e := exec.LookPath("git")
+	if e != nil {
+		t.Fatal(e)
+	}
+	wrap := t.TempDir()
+	marker := filepath.Join(t.TempDir(), "cas-dispatched")
+	script := "#!/bin/sh\ntarget=0; update=0\nfor arg do\n [ \"$arg\" = \"--git-dir=$HN_WP10_DEST\" ] && target=1\n [ \"$arg\" = update-ref ] && update=1\ndone\nif [ \"$target$update\" = 11 ]; then\n '" + actualGit + "' --git-dir=\"$HN_WP10_DEST\" update-ref -d \"$HN_WP10_REF\" \"$HN_WP10_OLD\" || exit 89\n : > \"$HN_WP10_MARKER\"\nfi\nexec '" + actualGit + "' \"$@\"\n"
+	if e = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); e != nil {
+		t.Fatal(e)
+	}
+	dst.overrides = map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP10_DEST": filepath.Join(dst.repo, ".git"), "HN_WP10_REF": ref, "HN_WP10_OLD": old, "HN_WP10_MARKER": marker}
+	before := dst.snapshot()
+	result := dst.call("", "concurrent_update", "artifact", "import", "--input", path, "--json")
+	artifactErrorShape(t, result, "artifact", "concurrent_update", "retry_identical", nil)
+	if _, e = os.Stat(marker); e != nil {
+		t.Fatal("CAS control never reached destination transaction", e)
+	}
+	if dst.git("for-each-ref", "--format=%(refname)", ref) != "" {
+		t.Fatal("wrong-old transaction published")
+	}
+	otherRef := "refs/hn/remotes/imported/artifacts/" + other.actor + "/" + strings.TrimPrefix(artifactStream(other.actor), "sha256:")
+	if dst.git("for-each-ref", "--format=%(refname)", otherRef) != "" {
+		t.Fatal("failed CAS partially promoted another selected ref")
+	}
+	dst.git("update-ref", ref, old)
+	// Contract§5/T042 forbids partial accepted publication. Git may prepare
+	// new EMPTY ref-parent directories before refusing CAS. Root adjudicated
+	// this narrower filesystem allowance; every file/object/private byte still
+	// must match and no other new path is permitted.
+	allowedParents := map[string]bool{}
+	gitDir := filepath.Join(dst.repo, ".git")
+	for _, selected := range []string{ref, otherRef} {
+		for parent := filepath.Dir(filepath.Join(gitDir, filepath.FromSlash(selected))); parent != gitDir; parent = filepath.Dir(parent) {
+			allowedParents[parent] = true
+		}
+	}
+	after := dst.snapshot()
+	for path := range after {
+		if _, existed := before[path]; existed {
+			continue
+		}
+		info, e := os.Lstat(path)
+		if e != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || !allowedParents[path] {
+			t.Fatal("CAS refusal created an unexpected path or data", path, e)
+		}
+		delete(after, path)
+	}
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("CAS refusal changed files, objects, private state or pre-existing directories")
+	}
+}
+func TestArtifactExchangeOpaqueAggregateAndLockCLI(t *testing.T) {
+	src := artifactCLI(t)
+	dst := exchangeDestination(t, src, "sha1")
+	objects := []artifactExchangeObject{}
+	for i := 0; i < 4096; i++ {
+		objects = append(objects, exchangeObject("blob", []byte(fmt.Sprintf("public opaque %d", i))))
+	}
+	path := exchangeWrite(t, exchangeBundle(objects...))
+	out := dst.call("", "", "artifact", "import", "--input", path, "--preserve-opaque", "--json")["data"].(map[string]any)
+	if len(out["opaque_ids"].([]any)) != 4096 {
+		t.Fatal("opaque equality truncated")
+	}
+	before := dst.snapshot()
+	dst.call("", "", "artifact", "import", "--input", path, "--preserve-opaque", "--json")
+	dst.unchanged(before)
+	over := exchangeWrite(t, exchangeBundle(exchangeObject("blob", []byte("new distinct opaque public object"))))
+	dst.call("", "resource_limit", "artifact", "import", "--input", over, "--preserve-opaque", "--json")
+	dst.unchanged(before)
+	index := filepath.Join(dst.repo, ".git", "hn", "artifact-opaque", "public.json")
+	lock, e := os.OpenFile(index+".lock", os.O_RDWR, 0600)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer lock.Close()
+	if e = artifactTestLock(lock); e != nil {
+		t.Fatal(e)
+	}
+	dst.call("", "concurrent_update", "artifact", "import", "--input", over, "--preserve-opaque", "--json")
+	dst.unchanged(before)
+	artifactTestUnlock(lock)
+	// Symlink replacement never redirects the private index reader/writer.
+	body, e := os.ReadFile(index)
+	if e != nil {
+		t.Fatal(e)
+	}
+	outside := filepath.Join(t.TempDir(), "outside")
+	_ = os.WriteFile(outside, body, 0600)
+	_ = os.Remove(index)
+	_ = os.Symlink(outside, index)
+	before = dst.snapshot()
+	dst.call("", "invalid_input", "artifact", "inspect", "--opaque", "--opaque-id", out["opaque_ids"].([]any)[0].(string), "--json")
+	dst.unchanged(before)
+}
+
+func TestArtifactExchangeDepthLiveCLI(t *testing.T) {
+	src := artifactCLI(t)
+	dst := exchangeDestination(t, src, "sha1")
+	previous, parent, last := "", "", ""
+	var atPath, atTip, actor string
+	for sequence := 1; sequence <= 257; sequence++ {
+		raw, sig := artifactSignedCLI(t, func(m map[string]any) {
+			actor = artifactText(m, "actor")
+			m["operation"] = fmt.Sprintf("exchange-depth-%d", sequence)
+			m["sequence"], m["previous"] = sequence, previous
+		})
+		last = eventID([]byte(raw))
+		parent = artifactRawCommit(t, src, raw, sig, parent, "hn artifact "+last, false)
+		previous = last
+		if sequence == 256 {
+			ref := artifactRef(actor)
+			src.git("update-ref", ref, parent)
+			atTip = parent
+			atPath, _ = exchangeExport(src, last)
+			result := dst.call("", "", "artifact", "import", "--input", atPath, "--json")["data"].(map[string]any)
+			if len(result["imported_ids"].([]any)) != 256 {
+				t.Fatal("depth256 silently truncated", result)
+			}
+		}
+	}
+	ref := artifactRef(actor)
+	src.git("update-ref", ref, parent)
+	before := src.snapshot()
+	output := filepath.Join(t.TempDir(), "refused")
+	v := src.call("", "resource_limit", "artifact", "export", "--id", last, "--output", output, "--json")
+	if !strings.Contains(v["error"].(map[string]any)["message"].(string), "depth") {
+		t.Fatal(v)
+	}
+	src.unchanged(before)
+	if _, e := os.Stat(output); !os.IsNotExist(e) {
+		t.Fatal("refused export wrote output")
+	}
+	atRaw, _ := os.ReadFile(atPath)
+	var bundle map[string]any
+	_ = json.Unmarshal(atRaw, &bundle)
+	bundle["refs"].([]any)[0].(map[string]any)["oid"] = parent
+	// Add only the independently enumerated257th commit/tree/blobs. This bypasses
+	// the refusing exporter to exercise the actual import consumer of the bad file.
+	for _, oid := range strings.Fields(src.git("rev-list", "--objects", "--no-object-names", atTip+".."+parent)) {
+		kind := src.git("cat-file", "-t", oid)
+		c := exec.Command("git", "cat-file", kind, oid)
+		c.Dir = src.repo
+		c.Env = operationalTestEnvironment(src.home)
+		body, e := c.Output()
+		if e != nil {
+			t.Fatal(e)
+		}
+		bundle["objects"] = append(bundle["objects"].([]any), map[string]any{"oid": oid, "type": kind, "data": base64.RawStdEncoding.EncodeToString(body)})
+	}
+	over := exchangeWrite(t, bundle)
+	before = dst.snapshot()
+	v = dst.call("", "resource_limit", "artifact", "import", "--input", over, "--json")
+	if !strings.Contains(v["error"].(map[string]any)["message"].(string), "depth") {
+		t.Fatal(v)
+	}
+	dst.unchanged(before)
+}
+func TestArtifactExchangeSelectedPolicyCLI(t *testing.T) {
+	src := artifactCLI(t)
+	typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
+	path, _ := exchangeExport(src, typ)
+	dst := artifactCLI(t)
+	policy := PolicyDocument{Version: policyVersion, Maintainers: []string{dst.actor}, Proposals: ProposalPolicy{RequiredAccepts: 1}, Pipelines: map[string]PipelinePolicy{}, Contributions: &c.Policy{Project: c.Digest([]byte("exchange refusal")), Moderators: []string{dst.actor}, Rules: []c.Rule{{Operation: c.IssueCreate, Automatic: true}}, Baseline: []string{}, Limits: c.DefaultLimits()}}
+	raw, _ := json.Marshal(policy)
+	p := filepath.Join(dst.repo, ".hn", "policy.json")
+	if e := os.MkdirAll(filepath.Dir(p), 0700); e != nil {
+		t.Fatal(e)
+	}
+	if e := os.WriteFile(p, raw, 0600); e != nil {
+		t.Fatal(e)
+	}
+	dst.git("add", ".hn/policy.json")
+	dst.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "Stored inert policy")
+	cmd := exec.Command(dst.binary, "contribution", "authority", "set", "--ref", dst.git("symbolic-ref", "HEAD"), "--expect", "absent")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironment(dst.home)
+	if out, e := cmd.CombinedOutput(); e != nil {
+		t.Fatal(e, string(out))
+	}
+	cmd = exec.Command(dst.binary, "identity", "show", "--json")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironment(dst.home)
+	if out, e := cmd.CombinedOutput(); e != nil {
+		t.Fatal(e, string(out))
+	}
+	before := dst.snapshot()
+	v := dst.call("", "unsupported_capability", "artifact", "import", "--input", path, "--json")
+	artifactErrorShape(t, v, "host", "unsupported_capability", "do_not_retry", nil)
+	dst.unchanged(before)
+	// Preservation is explicit public storage and admits no custom governed data.
+	result := dst.call("", "", "artifact", "import", "--input", path, "--preserve-opaque", "--json")["data"].(map[string]any)
+	if result["mode"] != "opaque" || len(result["accepted_refs"].([]any)) != 0 {
+		t.Fatal(result)
+	}
+	if dst.git("for-each-ref", "--format=%(refname)", "refs/hn/remotes/imported/artifacts/") != "" {
+		t.Fatal("preservation bypassed custom policy")
+	}
+}
+
+func exchangeGitOnlyBundle(t *testing.T, f *artifactCLIFixture, refs []artifactSource) *artifactExchange {
+	t.Helper()
+	seen := map[string]bool{}
+	objects := []artifactExchangeObject{}
+	for _, ref := range refs {
+		for _, oid := range strings.Fields(f.git("rev-list", "--objects", "--no-object-names", ref.OID)) {
+			if seen[oid] {
+				continue
+			}
+			seen[oid] = true
+			kind := f.git("cat-file", "-t", oid)
+			cmd := exec.Command("git", "cat-file", kind, oid)
+			cmd.Dir = f.repo
+			cmd.Env = operationalTestEnvironment(f.home)
+			body, e := cmd.Output()
+			if e != nil {
+				t.Fatal(e)
+			}
+			objects = append(objects, artifactExchangeObject{OID: oid, Type: kind, Data: base64.RawStdEncoding.EncodeToString(body), body: body})
+		}
+	}
+	return &artifactExchange{Protocol: "hn-artifact-exchange/1", Mode: "accepted", Refs: refs, Objects: objects}
+}
+func TestArtifactExchangeMalformedSignaturePreservationCLI(t *testing.T) {
+	src := artifactCLI(t)
+	bad := artifactRawCommit(t, src, artifactVector, strings.Repeat("A", 86), "", "hn artifact "+artifactVectorID, false)
+	ref := artifactFrozenRef(t, src)
+	src.git("update-ref", ref, bad)
+	bundle := exchangeGitOnlyBundle(t, src, []artifactSource{{ref, bad}})
+	path := exchangeWrite(t, bundle)
+	dst := exchangeDestination(t, src, "sha1")
+	before := dst.snapshot()
+	dst.call("", "verification_failure", "artifact", "import", "--input", path, "--json")
+	dst.unchanged(before)
+	result := dst.call("", "", "artifact", "import", "--input", path, "--preserve-opaque", "--json")["data"].(map[string]any)
+	if result["mode"] != "opaque" || len(result["accepted_refs"].([]any)) != 0 {
+		t.Fatal("malformed signature was admitted", result)
+	}
+	for _, raw := range bundle.Objects {
+		id := eventID(append([]byte(raw.Type+"\x00"), raw.body...))
+		v := dst.call("", "", "artifact", "inspect", "--opaque", "--opaque-id", id, "--json")["data"].(map[string]any)
+		if v["id"] != nil || v["envelope"] != nil || v["signature"] != nil || v["raw"].(map[string]any)["data"] != raw.Data {
+			t.Fatal("opaque inspection invented signature validity", v)
+		}
+	}
+	src.call("", "", "identity", "show", "--json")
+}
+
+func TestArtifactExchangeLostAcknowledgementCLI(t *testing.T) {
+	src := artifactCLI(t)
+	typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
+	path, _ := exchangeExport(src, typ)
+	dst := exchangeDestination(t, src, "sha1")
+	ref := "refs/hn/remotes/imported/artifacts/" + src.actor + "/" + strings.TrimPrefix(artifactStream(src.actor), "sha256:")
+	git, e := exec.LookPath("git")
+	if e != nil {
+		t.Fatal(e)
+	}
+	wrap := t.TempDir()
+	marker := filepath.Join(t.TempDir(), "committed-before-error")
+	script := "#!/bin/sh\ntarget=0;update=0\nfor arg do\n [ \"$arg\" = \"--git-dir=$HN_WP10_DEST\" ] && target=1\n [ \"$arg\" = update-ref ] && update=1\ndone\nif [ \"$target$update\" = 11 ];then\n '" + git + "' \"$@\" || exit $?\n : > \"$HN_WP10_MARKER\"\n exit 86\nfi\nexec '" + git + "' \"$@\"\n"
+	if e = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); e != nil {
+		t.Fatal(e)
+	}
+	overrides := map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP10_DEST": filepath.Join(dst.repo, ".git"), "HN_WP10_MARKER": marker}
+	before := dst.snapshot()
+	cmd := exec.Command(dst.binary, "artifact", "import", "--input", path, "--json")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironmentWith(dst.home, overrides)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	raw, callErr := cmd.Output()
+	var result map[string]any
+	if e = json.Unmarshal(raw, &result); e != nil {
+		t.Fatal(e, string(raw))
+	}
+	if _, e = os.Stat(marker); e != nil {
+		t.Fatal("control did not complete actual transaction", e)
+	}
+	tip := dst.git("rev-parse", ref)
+	if tip != src.git("rev-parse", artifactRef(src.actor)) {
+		t.Fatal("lost-ack fixture lacks committed public ref")
+	}
+	if evidence := os.Getenv("HN_WP10_EVIDENCE_DIR"); evidence != "" {
+		b, _ := json.MarshalIndent(map[string]any{"before": before, "after": dst.snapshot(), "response": result, "stderr": stderr.String(), "published_ref": ref, "published_oid": tip}, "", "  ")
+		if e = os.WriteFile(filepath.Join(evidence, "lost-ack-fixture.json"), b, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if callErr == nil || result["ok"] != false || result["error"].(map[string]any)["code"] != "uncertain_operation" {
+		t.Fatalf("committed Git exit error must be uncertain_operation: %v %s", callErr, raw)
+	}
+	artifactErrorShape(t, result, "artifact", "uncertain_operation", "inspect_operation", nil)
+	if _, e = os.Stat(dst.home); !os.IsNotExist(e) {
+		t.Fatal("transport installed signing identity", e)
+	}
+}
+
+func TestArtifactExchangeFrozenTransportBodiesCLI(t *testing.T) {
+	fixturePath := "kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md"
+	document, e := os.ReadFile(fixturePath)
+	if os.IsNotExist(e) {
+		document, e = exec.Command("git", "show", "feature/optional-extensions:"+fixturePath).Output()
+	}
+	if e != nil {
+		t.Fatal(e)
+	}
+	vectors := map[string]map[string]any{}
+	for _, block := range regexp.MustCompile("(?s)~~~json\\n(.*?)\\n~~~").FindAllSubmatch(document, -1) {
+		var meta map[string]any
+		if json.Unmarshal(block[1], &meta) != nil || meta["canonical_utf8_hex"] == nil {
+			continue
+		}
+		raw, e := hex.DecodeString(meta["canonical_utf8_hex"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		var env map[string]any
+		if e = json.Unmarshal(raw, &env); e != nil {
+			t.Fatal(e)
+		}
+		name, _ := env["operation"].(string)
+		if name == "type-note-v1" || name == "optional-missing-target" {
+			vectors[name] = meta
+		}
+	}
+	if len(vectors) != 2 {
+		t.Fatal("required frozen vectors missing")
+	}
+	src := artifactCLI(t)
+	expected := map[string]string{"type-note-v1": "sha256:c37a9d97a7347301bf621cadc26c7b2b709556be792f19bc058e493569757ee3", "optional-missing-target": "sha256:3b8ebecc72ddc736f0a0903a1e9ccbdde5de8ab23a36a3ebdf3f169e7765a510"}
+	for _, name := range []string{"type-note-v1", "optional-missing-target"} {
+		meta := vectors[name]
+		if meta["id"] != expected[name] {
+			t.Fatal("frozen identity drift", name)
+		}
+		raw, e := hex.DecodeString(meta["canonical_utf8_hex"].(string))
+		if e != nil {
+			t.Fatal(e)
+		}
+		if eventID(raw) != expected[name] {
+			t.Fatal("independent signed digest mismatch")
+		}
+		git := meta["git_sha1"].(map[string]any)
+		payload := src.gitInput(string(raw), "hash-object", "-w", "--stdin")
+		signature := src.gitInput(meta["signature"].(string), "hash-object", "-w", "--stdin")
+		if payload != git["payload_blob"] || signature != git["signature_blob"] {
+			t.Fatal("literal blob identity mismatch")
+		}
+		tree := src.gitInput("100644 blob "+payload+"\tartifact.json\n100644 blob "+signature+"\tsignature\n", "mktree")
+		if tree != git["tree"] {
+			t.Fatal("literal tree mismatch")
+		}
+		body := git["commit_body"].(string)
+		if strings.Contains(body, "<") {
+			t.Fatal("control lost the exact frozen unsigned metadata")
+		}
+		commit := src.gitInput(body, "hash-object", "--literally", "-w", "-t", "commit", "--stdin")
+		if commit != git["commit"] {
+			t.Fatal("literal commit bytes rewritten")
+		}
+		src.git("update-ref", meta["local_ref"].(string), commit)
+	}
+	root := expected["optional-missing-target"]
+	before := src.snapshot()
+	items := closureItems(src, root)
+	if len(items) != 2 {
+		t.Fatal("frozen known closure not accepted", items)
+	}
+	path, exported := exchangeExport(src, root)
+	src.unchanged(before)
+	if exported["records"] != float64(2) {
+		t.Fatal(exported)
+	}
+	dst := exchangeDestination(t, src, "sha1")
+	initial := dst.snapshot()
+	cmd := exec.Command(dst.binary, "artifact", "import", "--input", path, "--json")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironment(dst.home)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	raw, callErr := cmd.Output()
+	var result map[string]any
+	if e = json.Unmarshal(raw, &result); e != nil {
+		t.Fatal(e, string(raw))
+	}
+	if evidence := os.Getenv("HN_WP10_EVIDENCE_DIR"); evidence != "" {
+		wire, _ := os.ReadFile(path)
+		if e = os.WriteFile(filepath.Join(evidence, "frozen-public.json"), wire, 0600); e != nil {
+			t.Fatal(e)
+		}
+		observation, _ := json.MarshalIndent(map[string]any{"fixture_digest": eventID(document), "before": initial, "after": dst.snapshot(), "response": result, "stderr": stderr.String(), "accepted_source_items": items, "export_result": exported}, "", "  ")
+		if e = os.WriteFile(filepath.Join(evidence, "frozen-observation.json"), observation, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if callErr != nil || result["ok"] != true {
+		t.Fatalf("reader-accepted literal raw bodies must import unchanged: %v %s", callErr, raw)
+	}
+	if !reflect.DeepEqual(items, closureItems(dst, root)) {
+		t.Fatal("frozen public content/diagnostics changed")
+	}
+	for _, meta := range vectors {
+		git := meta["git_sha1"].(map[string]any)
+		cmd := exec.Command("git", "cat-file", "commit", git["commit"].(string))
+		cmd.Dir = dst.repo
+		cmd.Env = operationalTestEnvironment(dst.home)
+		body, e := cmd.Output()
+		if e != nil || string(body) != git["commit_body"].(string) {
+			t.Fatal("import rewrote literal unsigned Git transport bytes", e)
+		}
+	}
+	// Correct raw transport copying must still refuse a hash mismatch before effects.
+	wire, _ := os.ReadFile(path)
+	var damaged map[string]any
+	_ = json.Unmarshal(wire, &damaged)
+	damaged["objects"].([]any)[0].(map[string]any)["data"] = ""
+	badDst := exchangeDestination(t, src, "sha1")
+	snapshot := badDst.snapshot()
+	badDst.call("", "verification_failure", "artifact", "import", "--input", exchangeWrite(t, damaged), "--json")
+	badDst.unchanged(snapshot)
+}
+
+func TestArtifactExchangeRefAliasesBeyondObjectCountCLI(t *testing.T) {
+	src := artifactCLI(t)
+	commit := artifactRawCommit(t, src, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+	ref := artifactFrozenRef(t, src)
+	src.git("update-ref", ref, commit)
+	b := exchangeGitOnlyBundle(t, src, []artifactSource{{ref, commit}})
+	if len(b.Objects) != 4 {
+		t.Fatal("ref alias control must have exactly four public objects")
+	}
+	actor, _ := parseArtifactRef(ref)
+	b.Refs = []artifactSource{}
+	for i := 0; i < 4097; i++ {
+		b.Refs = append(b.Refs, artifactSource{"refs/hn/remotes/alias-" + fmt.Sprintf("%04d", i) + "/artifacts/" + actor + "/" + strings.TrimPrefix(artifactStream(actor), "sha256:"), commit})
+	}
+	path := exchangeWrite(t, b)
+	info, e := os.Stat(path)
+	if e != nil || info.Size() >= 16777216 {
+		t.Fatal("alias fixture exceeds wire bound", e)
+	}
+	dst := exchangeDestination(t, src, "sha1")
+	before := dst.snapshot()
+	sourceBefore := src.snapshot()
+	cmd := exec.Command(dst.binary, "artifact", "import", "--input", path, "--json")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironment(dst.home)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	raw, callErr := cmd.Output()
+	var response map[string]any
+	if e = json.Unmarshal(raw, &response); e != nil {
+		t.Fatal(e, string(raw))
+	}
+	src.unchanged(sourceBefore)
+	if evidence := os.Getenv("HN_WP10_EVIDENCE_DIR"); evidence != "" {
+		wire, _ := os.ReadFile(path)
+		_ = os.WriteFile(filepath.Join(evidence, "aliases-public.json"), wire, 0600)
+		v, _ := json.MarshalIndent(map[string]any{"before": before, "after": dst.snapshot(), "response": response, "stderr": stderr.String(), "objects": len(b.Objects), "refs": len(b.Refs), "wire_bytes": info.Size()}, "", "  ")
+		if e = os.WriteFile(filepath.Join(evidence, "aliases-observation.json"), v, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if callErr != nil || response["ok"] != true {
+		dst.unchanged(before)
+		t.Fatalf("4097distinct ref witnesses with4objects must not hit the object bound: %v %s", callErr, raw)
+	}
+	result := response["data"].(map[string]any)
+	expectedRef := "refs/hn/remotes/imported/artifacts/" + actor + "/" + strings.TrimPrefix(artifactStream(actor), "sha256:")
+	if !reflect.DeepEqual(result["imported_ids"], []any{artifactVectorID}) || !reflect.DeepEqual(result["accepted_refs"], []any{map[string]any{"ref": expectedRef, "oid": commit}}) {
+		t.Fatal("distinct source witnesses did not deduplicate exact actor prefix", result)
+	}
+	inspection := dst.call("", "", "artifact", "inspect", "--id", artifactVectorID, "--json")["data"].(map[string]any)
+	if inspection["source_cut"] != result["source_cut"] || result["source_cut"] == "" {
+		t.Fatal("import did not return actual destination Cut", result, inspection)
+	}
+	if !reflect.DeepEqual(closureItems(src, artifactVectorID), closureItems(dst, artifactVectorID)) {
+		t.Fatal("aliased public history changed")
+	}
+}
+
+func TestArtifactExchangeUnreachableObjectsCLI(t *testing.T) {
+	src := artifactCLI(t)
+	typ := revisionEvent(src.publish(artifactStoreType, "type", ""))
+	path, _ := exchangeExport(src, typ)
+	wire, e := os.ReadFile(path)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var bundle map[string]any
+	if e = json.Unmarshal(wire, &bundle); e != nil {
+		t.Fatal(e)
+	}
+	body := []byte("unselected public blob must not enter destination ODB or opaque index")
+	oid := src.gitInput(string(body), "hash-object", "--stdin")
+	extra := map[string]any{"oid": oid, "type": "blob", "data": base64.RawStdEncoding.EncodeToString(body)}
+	bundle["objects"] = append(bundle["objects"].([]any), extra)
+	input := exchangeWrite(t, bundle)
+	dst := exchangeDestination(t, src, "sha1")
+	before := dst.snapshot()
+	cmd := exec.Command(dst.binary, "artifact", "import", "--input", input, "--json")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironment(dst.home)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	raw, callErr := cmd.Output()
+	var response map[string]any
+	if e = json.Unmarshal(raw, &response); e != nil {
+		t.Fatal(e, string(raw))
+	}
+	if evidence := os.Getenv("HN_WP10_EVIDENCE_DIR"); evidence != "" {
+		v, _ := json.MarshalIndent(map[string]any{"before": before, "after": dst.snapshot(), "response": response, "stderr": stderr.String(), "extra_oid": oid}, "", "  ")
+		if e = os.WriteFile(filepath.Join(evidence, "unreachable-observation.json"), v, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if callErr != nil || response["ok"] != true {
+		dst.unchanged(before)
+		t.Fatalf("hash-valid unreachable public blob is not an implicit selected root or a refusal: %v %s", callErr, raw)
+	}
+	data := response["data"].(map[string]any)
+	if !reflect.DeepEqual(data["imported_ids"], []any{typ}) || len(data["opaque_ids"].([]any)) != 0 {
+		t.Fatal("unreachable object affected selected results", data)
+	}
+	absent := exec.Command("git", "cat-file", "-e", oid)
+	absent.Dir = dst.repo
+	absent.Env = operationalTestEnvironmentWith(dst.home, map[string]string{"GIT_NO_LAZY_FETCH": "1"})
+	if e = absent.Run(); e == nil {
+		t.Fatal("unreachable table body was copied to destination ODB")
+	}
+	if _, e = os.Stat(filepath.Join(dst.repo, ".git", "hn", "artifact-opaque", "public.json")); !os.IsNotExist(e) {
+		t.Fatal("normal accepted import implicitly preserved opaque data", e)
+	}
+	if !reflect.DeepEqual(closureItems(src, typ), closureItems(dst, typ)) {
+		t.Fatal("selected public history changed")
+	}
+	// ALL table hashes are mandatory, even when the object is not selected.
+	extra["data"] = base64.RawStdEncoding.EncodeToString([]byte("corrupt extra body"))
+	broken := exchangeWrite(t, bundle)
+	negative := exchangeDestination(t, src, "sha1")
+	snapshot := negative.snapshot()
+	v := negative.call("", "verification_failure", "artifact", "import", "--input", broken, "--json")
+	if !strings.Contains(v["error"].(map[string]any)["message"].(string), "hash") {
+		t.Fatal(v)
+	}
+	negative.unchanged(snapshot)
+}
+
+func TestArtifactExchangeOpaqueRawCommitsAreNotSignedRecordsCLI(t *testing.T) {
+	src := artifactCLI(t)
+	dst := exchangeDestination(t, src, "sha1")
+	objects := []artifactExchangeObject{}
+	for i := 0; i < 4096; i++ {
+		body := []byte(fmt.Sprintf("unverified public raw commit %d\n", i))
+		hash := sha1.Sum(append([]byte(fmt.Sprintf("commit %d\x00", len(body))), body...))
+		objects = append(objects, artifactExchangeObject{OID: hex.EncodeToString(hash[:]), Type: "commit", Data: base64.RawStdEncoding.EncodeToString(body), body: body})
+	}
+	input := exchangeWrite(t, exchangeBundle(objects...))
+	before := dst.snapshot()
+	cmd := exec.Command(dst.binary, "artifact", "import", "--input", input, "--preserve-opaque", "--json")
+	cmd.Dir = dst.repo
+	cmd.Env = operationalTestEnvironment(dst.home)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	raw, callErr := cmd.Output()
+	var response map[string]any
+	if e := json.Unmarshal(raw, &response); e != nil {
+		t.Fatal(e, string(raw))
+	}
+	if evidence := os.Getenv("HN_WP10_EVIDENCE_DIR"); evidence != "" {
+		v, _ := json.MarshalIndent(map[string]any{"before": before, "after": dst.snapshot(), "response": response, "stderr": stderr.String(), "raw_objects": 4096, "verified_signed_records": 0}, "", "  ")
+		if e := os.WriteFile(filepath.Join(evidence, "raw-commit-observation.json"), v, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if callErr != nil || response["ok"] != true {
+		dst.unchanged(before)
+		t.Fatalf("4096raw opaque commit objects are not2048verified signed records: %v %s", callErr, raw)
+	}
+	data := response["data"].(map[string]any)
+	if data["mode"] != "opaque" || len(data["opaque_ids"].([]any)) != 4096 || len(data["imported_ids"].([]any)) != 0 || len(data["accepted_refs"].([]any)) != 0 {
+		t.Fatal("raw opaque objects became accepted signed records", data)
+	}
+	id := artifactOpaqueID(objects[4095])
+	view := dst.call("", "", "artifact", "inspect", "--opaque", "--opaque-id", id, "--json")["data"].(map[string]any)
+	if view["id"] != nil || view["validation"] != "opaque" || view["raw"].(map[string]any)["data"] != objects[4095].Data {
+		t.Fatal(view)
+	}
+	output := filepath.Join(t.TempDir(), "opaque-public.json")
+	exported := dst.call("", "", "artifact", "export", "--opaque", "--opaque-id", id, "--output", output, "--json")["data"].(map[string]any)
+	if exported["records"] != float64(0) || exported["objects"] != float64(1) {
+		t.Fatal("opaque export claimed signed records", exported)
+	}
+	// Aggregate object/hash guards remain mandatory regardless of record validity.
+	before = dst.snapshot()
+	over := exchangeWrite(t, exchangeBundle(exchangeObject("blob", []byte("4097th raw object"))))
+	dst.call("", "resource_limit", "artifact", "import", "--input", over, "--preserve-opaque", "--json")
+	dst.unchanged(before)
+	bad := exchangeBundle(objects[0])
+	bad.Objects[0].Data = base64.RawStdEncoding.EncodeToString([]byte("changed body"))
+	negative := exchangeDestination(t, src, "sha1")
+	snapshot := negative.snapshot()
+	negative.call("", "verification_failure", "artifact", "import", "--input", exchangeWrite(t, bad), "--preserve-opaque", "--json")
+	negative.unchanged(snapshot)
+}
+
+// A symbolic accepted destination is a Git ref, not a filesystem symlink.
+// Publication must address that exact name even if another local writer makes
+// it symbolic immediately before the transaction. All fixture data is public.
+func TestArtifactExchangeNamedAcceptedRefIsolationCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			src := exchangeDestination(t, &artifactCLIFixture{binary: artifactStoreBinary(t)}, format)
+			first := artifactRawCommit(t, src, artifactVector, artifactVectorSignature, "", "hn artifact "+artifactVectorID, false)
+			local := artifactFrozenRef(t, src)
+			actor, _ := parseArtifactRef(local)
+			sourceRef := "refs/hn/remotes/public-source/artifacts/" + actor + "/" + strings.TrimPrefix(artifactStream(actor), "sha256:")
+			src.git("update-ref", sourceRef, first)
+			initial, _ := exchangeExport(src, artifactVectorID)
+			nextID := eventID([]byte(artifactSecondVector))
+			next := artifactRawCommit(t, src, artifactSecondVector, artifactSecondSignature, first, "hn artifact "+nextID, false)
+			src.git("update-ref", sourceRef, next)
+			incoming, _ := exchangeExport(src, nextID)
+			sourceBefore := src.snapshot()
+			for _, mode := range []string{"direct", "symbolic", "symbolic-at-transaction"} {
+				t.Run(mode, func(t *testing.T) {
+					dst := exchangeDestination(t, src, format)
+					dst.call("", "", "artifact", "import", "--input", initial, "--json")
+					accepted := "refs/hn/remotes/imported/artifacts/" + actor + "/" + strings.TrimPrefix(artifactStream(actor), "sha256:")
+					sentinel := "refs/public-sentinels/wp10-import"
+					dst.git("update-ref", sentinel, first)
+					readBody := func(ref string) []byte {
+						t.Helper()
+						cmd := exec.Command("git", "cat-file", "commit", ref)
+						cmd.Dir = dst.repo
+						cmd.Env = operationalTestEnvironment(dst.home)
+						body, e := cmd.Output()
+						if e != nil {
+							t.Fatal(e)
+						}
+						return body
+					}
+					oldBody := readBody(sentinel)
+					if mode == "symbolic" {
+						dst.git("symbolic-ref", accepted, sentinel)
+					}
+					overrides := map[string]string{}
+					marker := ""
+					if mode == "symbolic-at-transaction" {
+						actualGit, e := exec.LookPath("git")
+						if e != nil {
+							t.Fatal(e)
+						}
+						wrap := t.TempDir()
+						marker = filepath.Join(t.TempDir(), "alias-installed")
+						script := "#!/bin/sh\ntarget=0;update=0\nfor arg do\n [ \"$arg\" = \"--git-dir=$HN_WP10_NAMESPACE_DEST\" ] && target=1\n [ \"$arg\" = update-ref ] && update=1\ndone\nif [ \"$target$update\" = 11 ];then\n '" + actualGit + "' --git-dir=\"$HN_WP10_NAMESPACE_DEST\" symbolic-ref \"$HN_WP10_NAMESPACE_ACCEPTED\" \"$HN_WP10_NAMESPACE_SENTINEL\" || exit 89\n : > \"$HN_WP10_NAMESPACE_MARKER\"\nfi\nexec '" + actualGit + "' \"$@\"\n"
+						if e = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); e != nil {
+							t.Fatal(e)
+						}
+						overrides = map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_WP10_NAMESPACE_DEST": filepath.Join(dst.repo, ".git"), "HN_WP10_NAMESPACE_ACCEPTED": accepted, "HN_WP10_NAMESPACE_SENTINEL": sentinel, "HN_WP10_NAMESPACE_MARKER": marker}
+					}
+					before := dst.snapshot()
+					cmd := exec.Command(dst.binary, "artifact", "import", "--input", incoming, "--json")
+					cmd.Dir = dst.repo
+					cmd.Env = operationalTestEnvironmentWith(dst.home, overrides)
+					var stderr bytes.Buffer
+					cmd.Stderr = &stderr
+					raw, callErr := cmd.Output()
+					var result map[string]any
+					if e := json.Unmarshal(raw, &result); e != nil {
+						t.Fatal(e, string(raw))
+					}
+					sentinelAfter := dst.git("rev-parse", sentinel)
+					newBody := readBody(sentinel)
+					acceptedAfter := dst.git("rev-parse", accepted)
+					if marker != "" {
+						if _, e := os.Stat(marker); e != nil {
+							t.Fatal("transaction-time symbolic-ref control never ran", e)
+						}
+					}
+					if evidence := os.Getenv("HN_WP10_NAMESPACE_EVIDENCE_DIR"); evidence != "" {
+						name := strings.ReplaceAll(t.Name(), "/", "-")
+						v, _ := json.MarshalIndent(map[string]any{"before": before, "after": dst.snapshot(), "response": result, "stderr": stderr.String(), "mode": mode, "format": format, "sentinel_ref": sentinel, "old_oid": first, "sentinel_after": sentinelAfter, "old_body": string(oldBody), "sentinel_body_after": string(newBody), "accepted_ref": accepted, "accepted_after": acceptedAfter, "proposed_oid": next}, "", "  ")
+						if e := os.WriteFile(filepath.Join(evidence, name+".json"), v, 0600); e != nil {
+							t.Fatal(e)
+						}
+					}
+					if sentinelAfter != first || !bytes.Equal(oldBody, newBody) {
+						t.Fatalf("import escaped named accepted ref and changed unrelated public sentinel: old=%s actual=%s response=%s", first, sentinelAfter, raw)
+					}
+					if callErr != nil {
+						if mode == "direct" {
+							t.Fatalf("ordinary direct destination must import: %v %s", callErr, raw)
+						}
+						artifactErrorShape(t, result, "artifact", "concurrent_update", "retry_identical", nil)
+						if result["ok"] != false || result["data"] != nil || acceptedAfter != first {
+							t.Fatal("refusal changed accepted destination", result, acceptedAfter)
+						}
+					} else {
+						if result["ok"] != true || acceptedAfter != next {
+							t.Fatal("accepted destination did not receive exact proposed prefix", result, acceptedAfter)
+						}
+						sym := exec.Command("git", "symbolic-ref", "--quiet", accepted)
+						sym.Dir = dst.repo
+						sym.Env = operationalTestEnvironment(dst.home)
+						if e := sym.Run(); e == nil {
+							t.Fatal("successful update must replace only the named accepted ref directly")
+						}
+						data := result["data"].(map[string]any)
+						if !reflect.DeepEqual(data["accepted_refs"], []any{map[string]any{"ref": accepted, "oid": next}}) || data["source_cut"] == "" {
+							t.Fatal(data)
+						}
+						if !reflect.DeepEqual(closureItems(dst, nextID), closureItems(src, nextID)) {
+							t.Fatal("namespace-safe import changed public signed history")
+						}
+					}
+					for _, path := range []string{dst.home, filepath.Join(dst.repo, ".hn"), filepath.Join(dst.repo, ".git", "hn")} {
+						if _, e := os.Stat(path); !os.IsNotExist(e) {
+							t.Fatal("public import created private identity or extension state", path, e)
+						}
+					}
+					src.unchanged(sourceBefore)
+				})
+			}
+		})
+	}
+}
+
+// Individually valid signed views can disagree about an optional target's kind.
+// Import must admit the projected accepted view before changing the receiver.
+func exchangeImportUnionCLI(t *testing.T) {
+	t.Run("staging-paths", exchangeImportStagingCLI)
+	for _, format := range []string{"sha1", "sha256"} {
+		t.Run(format, func(t *testing.T) {
+			receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+			if receiver.actor == sender.actor {
+				t.Fatal("fixture actors are not independent")
+			}
+			x := revisionEvent(receiver.publish(artifactStoreType, "receiver-X", ""))
+			y := revisionEvent(sender.publish(artifactStoreType, "sender-Y", ""))
+			payload := revisionPayload(y, "optional wrong-kind target when combined")
+			payload["relationships"] = []any{map[string]any{"relation": "example.test/optional", "target": x, "target_mode": "revision", "required": false}}
+			r := revisionEvent(revisionCall(sender, "open", revisionInput(t, nil, []string{}, payload), "sender-R", ""))
+			path, exported := exchangeExport(sender, r)
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var wire map[string]any
+			if err = json.Unmarshal(raw, &wire); err != nil {
+				t.Fatal(err)
+			}
+			refs := wire["refs"].([]any)
+			if exported["records"] != float64(2) || len(refs) != 1 || refs[0].(map[string]any)["ref"] != artifactRef(sender.actor) || refs[0].(map[string]any)["oid"] != sender.git("rev-parse", artifactRef(sender.actor)) {
+				t.Fatal("export is not the complete disjoint sender prefix", exported, refs)
+			}
+			sender.call("", "not_found", "artifact", "type", "show", x, "--json")
+			t.Logf("signed fixture receiver_actor=%s sender_actor=%s X=%s Y=%s R=%s wire_digest=%s", receiver.actor, sender.actor, x, y, r, eventID(raw))
+			t.Run("missing-optional-same-wire", func(t *testing.T) {
+				missing := exchangeDestination(t, sender, format)
+				result := missing.call("", "", "artifact", "import", "--input", path, "--json")["data"].(map[string]any)
+				if !reflect.DeepEqual(revisionReadView(sender, r), revisionReadView(missing, r)) {
+					t.Fatal("import changed signed optional target or reconstructed view")
+				}
+				encoded, err := json.Marshal(result["diagnostics"])
+				if err != nil || !bytes.Contains(encoded, []byte(`"missing_optional"`)) {
+					t.Fatal("missing optional target was not reported", result, err)
+				}
+				shown := revisionReadView(missing, r)
+				relations := shown["state"].(map[string]any)["relationships"].([]any)
+				if len(relations) != 1 || relations[0].(map[string]any)["target"] != x || relations[0].(map[string]any)["required"] != false {
+					t.Fatal("signed optional target changed", shown)
+				}
+				t.Logf("same-wire accepted diagnostics=%s", encoded)
+			})
+			t.Run("present-wrong-kind-no-effects", func(t *testing.T) {
+				receiver := *receiver
+				receiver.t = t
+				var objectQueries strings.Builder
+				for _, object := range wire["objects"].([]any) {
+					fmt.Fprintln(&objectQueries, object.(map[string]any)["oid"])
+				}
+				inventory := receiver.gitInput(objectQueries.String(), "cat-file", "--batch-check=%(objectname) %(objecttype)")
+				for _, line := range strings.Split(inventory, "\n") {
+					if !strings.HasSuffix(line, " missing") {
+						t.Fatal("incoming object was preseeded in receiver", line)
+					}
+				}
+				t.Logf("receiver lacks all%d incoming table objects before import", len(wire["objects"].([]any)))
+				ordinary := receiver.call("", "", "artifact", "type", "show", x, "--json")
+				before := receiver.snapshot()
+				cmd := exec.Command(receiver.binary, "artifact", "import", "--input", path, "--json")
+				cmd.Dir, cmd.Env = receiver.repo, operationalTestEnvironment(receiver.home)
+				output, callErr := cmd.Output()
+				t.Logf("public import exit=%v output=%s protected_equal=%t", callErr, output, reflect.DeepEqual(before, receiver.snapshot()))
+				var result map[string]any
+				if err := json.Unmarshal(output, &result); err != nil {
+					t.Fatal(err)
+				}
+				failure, ok := result["error"].(map[string]any)
+				if callErr == nil || result["ok"] != false || result["data"] != nil || !ok || failure["code"] != "invalid_history" || len(failure) != 5 || failure["origin"] != "artifact" || failure["recovery"] != "do_not_retry" || failure["operation"] != nil || len(result) != 3 {
+					t.Errorf("want closed invalid_history before effects: %s", output)
+				}
+				read := exec.Command(receiver.binary, "artifact", "type", "show", x, "--json")
+				read.Dir, read.Env = receiver.repo, operationalTestEnvironment(receiver.home)
+				readOutput, readErr := read.Output()
+				var after map[string]any
+				if err := json.Unmarshal(readOutput, &after); err != nil {
+					t.Fatal(err)
+				}
+				t.Logf("ordinary receiver read exit=%v unchanged=%t output=%s", readErr, reflect.DeepEqual(ordinary, after), readOutput)
+				if readErr != nil || !reflect.DeepEqual(ordinary, after) {
+					t.Errorf("ordinary receiver read changed")
+				}
+				receiver.unchanged(before)
+			})
+			if after, err := os.ReadFile(path); err != nil || !bytes.Equal(raw, after) {
+				t.Fatal("input bundle changed", err)
+			}
+		})
+	}
+}
+
+// This peer observes real quarantine transactions; it never modifies Git output
+// or impersonates the destination. Error/stall cases stop only the projected
+// transaction, after the independent incoming verification has completed.
+func exchangeImportStagePeer(t *testing.T, f *artifactCLIFixture, mode, currentOID string) string {
+	t.Helper()
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	control, wrap := t.TempDir(), t.TempDir()
+	ledger := filepath.Join(control, "projection")
+	script := `#!/bin/sh
+where=; update=0
+for arg do
+ case "$arg" in --git-dir=*) where=${arg#--git-dir=} ;; update-ref) update=1 ;; esac
+done
+case "$where" in *hn-artifact-quarantine-*)
+ if [ "$update" = 1 ]; then
+  input=$(cat) || exit 91
+  case "$input" in *refs/hn/remotes/imported/artifacts/*)
+   [ "$GIT_NO_LAZY_FETCH" = 1 ] || exit 92
+   printf '%s\n' "$where" > "$HN_IU_LEDGER.stage" || exit 97
+   if [ -e "$where/objects/info/alternates" ]; then
+    cat "$where/objects/info/alternates" > "$HN_IU_LEDGER" || exit 93
+   else
+    printf 'inventory\n' > "$HN_IU_LEDGER" || exit 94
+   fi
+   "$HN_IU_GIT" --git-dir="$where" cat-file -e "$HN_IU_CURRENT" || exit 95
+   case "$HN_IU_MODE" in error) exit 96 ;; cancel) exec sleep 35 ;; esac
+  esac
+  printf '%s\n' "$input" | "$HN_IU_GIT" "$@"
+  exit $?
+ fi ;;
+esac
+exec "$HN_IU_GIT" "$@"
+`
+	if err = os.WriteFile(filepath.Join(wrap, "git"), []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	f.overrides = map[string]string{"PATH": wrap + string(os.PathListSeparator) + os.Getenv("PATH"), "HN_IU_GIT": git, "HN_IU_LEDGER": ledger, "HN_IU_MODE": mode, "HN_IU_CURRENT": currentOID}
+	return ledger
+}
+
+func exchangeImportStagingCLI(t *testing.T) {
+	t.Run("fallback-layouts", exchangeImportFallbackLayoutsCLI)
+	for _, format := range []string{"sha1", "sha256"} {
+		for _, mode := range []string{"healthy", "retained-promisor", "interior-cr", "interior-lf", "pack-symlink", "linked-worktree", "lexical-parent-alias", "self-import", "error", "cancel"} {
+			// One real30s cancellation is enough to exercise the same stage; both
+			// object formats retain all signed admission/borrowing controls.
+			if mode == "cancel" && format == "sha256" {
+				continue
+			}
+			t.Run(format+"/"+mode, func(t *testing.T) {
+				receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+				x := revisionEvent(receiver.publish(artifactStoreType, "current", ""))
+				y := revisionEvent(sender.publish(artifactStoreType, "incoming", ""))
+				path, _ := exchangeExport(sender, y)
+				common := filepath.Join(receiver.repo, ".git")
+				currentOID := receiver.git("rev-parse", artifactRef(receiver.actor))
+				original := receiver
+				physical := ""
+				if mode == "interior-cr" || mode == "interior-lf" || mode == "pack-symlink" {
+					physical = exchangeImportFallbackLayout(t, receiver, mode)
+					common = filepath.Join(receiver.repo, ".git")
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				}
+				if mode == "lexical-parent-alias" {
+					alias := filepath.Join(t.TempDir(), "parent-alias")
+					if err := os.Symlink(filepath.Dir(receiver.repo), alias); err != nil {
+						t.Fatal(err)
+					}
+					receiver.repo = filepath.Join(alias, filepath.Base(receiver.repo))
+					common = filepath.Join(receiver.repo, ".git")
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				}
+				if mode == "retained-promisor" {
+					receiver.git("repack", "-ad")
+					packs, err := filepath.Glob(filepath.Join(common, "objects", "pack", "*.pack"))
+					if err != nil || len(packs) != 1 {
+						t.Fatal("real fully materialized pack required", packs, err)
+					}
+					if err = os.WriteFile(strings.TrimSuffix(packs[0], ".pack")+".promisor", nil, 0600); err != nil {
+						t.Fatal(err)
+					}
+					// This layout is admitted before the import-local borrow check.
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				}
+				if mode == "linked-worktree" {
+					worktree := filepath.Join(t.TempDir(), "linked")
+					receiver.git("worktree", "add", "--quiet", "--detach", worktree, currentOID)
+					linked := *receiver
+					linked.repo = worktree
+					receiver = &linked
+				}
+				if mode == "self-import" {
+					path, _ = exchangeExport(receiver, x)
+					y = x
+				}
+				physicalCommon := receiver.git("rev-parse", "--path-format=absolute", "--git-common-dir")
+				physicalObjects, err := safepath.Canonical(filepath.Join(physicalCommon, "objects"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if mode == "lexical-parent-alias" {
+					if physicalObjects == filepath.Join(common, "objects") {
+						t.Fatal("parent alias control did not distinguish lexical/physical paths")
+					}
+					t.Logf("local parent-alias control lexical=%q physical=%q; fixture keeps lexical path", common, physicalObjects)
+				}
+				ledger := exchangeImportStagePeer(t, receiver, mode, currentOID)
+				var before, commonBefore map[string]string
+				if mode == "pack-symlink" {
+					before = exchangeImportLayoutSnapshot(t, receiver, physical)
+					commonBefore = exchangeImportLayoutSnapshot(t, original, physical)
+				} else {
+					before, commonBefore = receiver.snapshot(), original.snapshot()
+				}
+				code := ""
+				if mode == "error" {
+					code = "verification_failure"
+				}
+				if mode == "cancel" {
+					code = "cancelled"
+				}
+				start := time.Now()
+				result := receiver.call("", code, "artifact", "import", "--input", path, "--json")
+				elapsed := time.Since(start)
+				observed, err := os.ReadFile(ledger)
+				if err != nil {
+					t.Fatal("actual projected transaction was not reached", err)
+				}
+				stage, err := os.ReadFile(ledger + ".stage")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = os.Stat(strings.TrimSpace(string(stage))); !os.IsNotExist(err) {
+					t.Fatal("quarantine owner did not remove stage", err)
+				}
+				want := physicalObjects + "\n"
+				if mode == "retained-promisor" || mode == "interior-cr" || mode == "interior-lf" || mode == "pack-symlink" {
+					want = "inventory\n"
+				}
+				if string(observed) != want {
+					t.Fatal("wrong projection availability path", string(observed), want)
+				}
+				t.Logf("real projection mode=%s format=%s availability=%q elapsed=%s result=%v", mode, format, observed, elapsed, result)
+				if code != "" {
+					artifactErrorShape(t, result, "artifact", code, "do_not_retry", nil)
+					receiver.unchanged(before)
+					original.unchanged(commonBefore)
+				} else {
+					receiver.overrides = nil
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+					receiver.call("", "", "artifact", "type", "show", y, "--json")
+					// Repeated import uses non-absent destination and stage witnesses.
+					receiver.call("", "", "artifact", "import", "--input", path, "--json")
+				}
+				if mode == "cancel" && (elapsed < 29*time.Second || elapsed > 35*time.Second) {
+					t.Fatal("original30s validation stage was not retained", elapsed)
+				}
+			})
+		}
+	}
+	t.Run("unsafe-layouts", exchangeImportUnsafeCLI)
+}
+
+func exchangeImportUnsafeCLI(t *testing.T) {
+	sender := artifactCLI(t)
+	y := revisionEvent(sender.publish(artifactStoreType, "incoming", ""))
+	path, _ := exchangeExport(sender, y)
+	for _, mode := range []string{"shallow", "grafts", "alternates", "promisor-config", "objects-symlink"} {
+		t.Run(mode, func(t *testing.T) {
+			receiver := artifactCLI(t)
+			x := revisionEvent(receiver.publish(artifactStoreType, "current", ""))
+			receiver.call("", "", "artifact", "type", "show", x, "--json")
+			common := filepath.Join(receiver.repo, ".git")
+			physical := ""
+			write := func(path, body string) {
+				if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(path, []byte(body), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			switch mode {
+			case "shallow":
+				write(filepath.Join(common, "shallow"), receiver.git("rev-parse", artifactRef(receiver.actor))+"\n")
+			case "grafts":
+				write(filepath.Join(common, "info", "grafts"), "")
+			case "alternates":
+				write(filepath.Join(common, "objects", "info", "alternates"), filepath.Join(sender.repo, ".git", "objects")+"\n")
+			case "promisor-config":
+				receiver.git("config", "remote.retained.promisor", "true")
+			case "objects-symlink":
+				leaf := filepath.Join(common, "objects")
+				target := filepath.Join(t.TempDir(), "physical")
+				physical = target
+				if err := os.Rename(leaf, target); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(target, leaf); err != nil {
+					t.Fatal(err)
+				}
+			}
+			before := exchangeImportLayoutSnapshot(t, receiver, physical)
+			receiver.call("", "repository_error", "artifact", "import", "--input", path, "--json")
+			if !reflect.DeepEqual(before, exchangeImportLayoutSnapshot(t, receiver, physical)) {
+				t.Fatal("unsafe layout refusal changed receiver or physical object store")
+			}
+		})
+	}
+	// Context is not public CLI data. This source-assisted control proves the
+	// local metadata path honors an already cancelled caller before any I/O.
+	t.Run("caller-cancelled", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		borrowed, err := artifactImportBorrowObjects(ctx, filepath.Join(t.TempDir(), "absent"), t.TempDir())
+		if borrowed || err == nil || !strings.Contains(err.Error(), "cancelled") {
+			t.Fatal("cancelled caller became fallback or success", borrowed, err)
+		}
+	})
+}
+
+// Keep unsafe-layout symlinks observable without following them. Include the
+// controlled physical target separately so refusal cannot mutate it unseen.
+func exchangeImportLayoutSnapshot(t *testing.T, f *artifactCLIFixture, physical string) map[string]string {
+	t.Helper()
+	out := map[string]string{}
+	for _, root := range []string{f.repo, f.home, physical} {
+		if root == "" {
+			continue
+		}
+		if _, err := os.Lstat(root); os.IsNotExist(err) {
+			out[root] = "absent"
+			continue
+		} else if err != nil {
+			t.Fatal(err)
+		}
+		err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			value := info.Mode().String()
+			if info.Mode()&os.ModeSymlink != 0 {
+				target, err := os.Readlink(path)
+				if err != nil {
+					return err
+				}
+				value += ":" + target
+			} else if !info.IsDir() {
+				raw, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+				value += ":" + eventID(raw)
+			}
+			out[path] = value
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	return out
+}
+
+// These layouts pass the original physical common/objects admission. They must
+// use verified inventory when read-only borrowing cannot represent them safely.
+func exchangeImportFallbackLayout(t *testing.T, f *artifactCLIFixture, layout string) string {
+	t.Helper()
+	if layout == "interior-cr" || layout == "interior-lf" {
+		separator := "\r"
+		if layout == "interior-lf" {
+			separator = "\n"
+		}
+		parent := filepath.Join(t.TempDir(), "physical"+separator+"parent")
+		if err := os.Mkdir(parent, 0700); err != nil {
+			t.Fatal(err)
+		}
+		repo := filepath.Join(parent, "repo")
+		if err := os.Rename(f.repo, repo); err != nil {
+			t.Fatal(err)
+		}
+		f.repo = repo
+		return ""
+	}
+	if layout != "pack-symlink" {
+		t.Fatal("unknown admitted fallback layout", layout)
+	}
+	f.git("repack", "-ad")
+	pack := filepath.Join(f.repo, ".git", "objects", "pack")
+	physical := filepath.Join(t.TempDir(), "physical-pack")
+	if err := os.Rename(pack, physical); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(physical, pack); err != nil {
+		t.Fatal(err)
+	}
+	return physical
+}
+
+func exchangeImportFallbackLayoutsCLI(t *testing.T) {
+	for _, format := range []string{"sha1", "sha256"} {
+		for _, layout := range []string{"interior-cr", "interior-lf", "pack-symlink"} {
+			t.Run(format+"/"+layout, func(t *testing.T) {
+				t.Run("compatible-import", func(t *testing.T) {
+					receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+					x := revisionEvent(receiver.publish(artifactStoreType, "current", ""))
+					y := revisionEvent(sender.publish(artifactStoreType, "incoming", ""))
+					path, _ := exchangeExport(sender, y)
+					physical := exchangeImportFallbackLayout(t, receiver, layout)
+					// Successful ordinary read AFTER layout mutation establishes
+					// actual admission/verification, not a guessed unsafe label.
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+					before := exchangeImportLayoutSnapshot(t, receiver, physical)
+					cmd := exec.Command(receiver.binary, "artifact", "import", "--input", path, "--json")
+					cmd.Dir, cmd.Env = receiver.repo, operationalTestEnvironment(receiver.home)
+					output, err := cmd.Output()
+					t.Logf("signed admitted-layout=%s format=%s repo=%q X=%s Y=%s public-import exit=%v output=%s protected_equal=%t", layout, format, receiver.repo, x, y, err, output, reflect.DeepEqual(before, exchangeImportLayoutSnapshot(t, receiver, physical)))
+					var result map[string]any
+					if je := json.Unmarshal(output, &result); je != nil {
+						t.Fatal(je)
+					}
+					if err != nil || result["ok"] != true {
+						t.Errorf("otherwise admitted verified layout must import through inventory fallback")
+					} else {
+						receiver.call("", "", "artifact", "type", "show", y, "--json")
+					}
+					receiver.call("", "", "artifact", "type", "show", x, "--json")
+				})
+				t.Run("invalid-union", func(t *testing.T) {
+					receiver, sender := artifactCLIFormat(t, format), artifactCLIFormat(t, format)
+					x := revisionEvent(receiver.publish(artifactStoreType, "receiver-X", ""))
+					y := revisionEvent(sender.publish(artifactStoreType, "sender-Y", ""))
+					payload := revisionPayload(y, "fallback optional target")
+					payload["relationships"] = []any{map[string]any{"relation": "example.test/optional", "target": x, "target_mode": "revision", "required": false}}
+					r := revisionEvent(revisionCall(sender, "open", revisionInput(t, nil, []string{}, payload), "sender-R", ""))
+					path, _ := exchangeExport(sender, r)
+					raw, err := os.ReadFile(path)
+					if err != nil {
+						t.Fatal(err)
+					}
+					physical := exchangeImportFallbackLayout(t, receiver, layout)
+					ordinary := receiver.call("", "", "artifact", "type", "show", x, "--json")
+					before := exchangeImportLayoutSnapshot(t, receiver, physical)
+					result := receiver.call("", "invalid_history", "artifact", "import", "--input", path, "--json")
+					artifactErrorShape(t, result, "artifact", "invalid_history", "do_not_retry", nil)
+					if !reflect.DeepEqual(before, exchangeImportLayoutSnapshot(t, receiver, physical)) || !reflect.DeepEqual(ordinary, receiver.call("", "", "artifact", "type", "show", x, "--json")) {
+						t.Fatal("fallback invalid union changed protected bytes/modes/dirs or ordinary read")
+					}
+					missing := artifactCLIFormat(t, format)
+					exchangeImportFallbackLayout(t, missing, layout)
+					positive := missing.call("", "", "artifact", "import", "--input", path, "--json")
+					if !reflect.DeepEqual(revisionReadView(sender, r), revisionReadView(missing, r)) {
+						t.Fatal("fallback changed signed optional target")
+					}
+					diagnostics, err := json.Marshal(positive["data"].(map[string]any)["diagnostics"])
+					if err != nil || !bytes.Contains(diagnostics, []byte(`"missing_optional"`)) {
+						t.Fatal("fallback failed same-wire missing_optional positive", positive, err)
+					}
+					if after, err := os.ReadFile(path); err != nil || !bytes.Equal(raw, after) {
+						t.Fatal("fallback changed bundle bytes", err)
+					}
+					t.Logf("signed fallback union layout=%s format=%s wire_digest=%s invalid_history/no-effects/ordinary-read unchanged; identical-wire positive=%s", layout, format, eventID(raw), diagnostics)
+				})
+			})
+		}
+	}
+}

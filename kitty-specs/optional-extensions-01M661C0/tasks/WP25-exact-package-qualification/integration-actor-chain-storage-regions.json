@@ -1,0 +1,28 @@
+{
+  "baseline": "541772cf075334cf01056de3dd7a9962128dbd00",
+  "closed_inputs": "Same317keyset; only2Go bytes maydiffer, other315inputs byteexactH541. All earlierartifact/native production corrections/workflow/performance math/docs stayexact unless separatelyowned evidenceupdate.",
+  "production": [
+    {
+      "allowed": "Peractor immutableinputindex slices, same sort.Slice/sequence-only comparator, adjacent duplicate state; exact existingerror/controlflow order",
+      "imports": "none needed",
+      "old_function_sha256": "837c32f396dc90fda48a5d675198d4e512950ec8b694aca99e5f8faa98bf264b",
+      "path": "store.go",
+      "protected_prefix_sha256": "8fb69313ab032dcd63547926fc466d1cf27a29969d22b1e85146d71edd10b5f3",
+      "region": "Only complete validateActorChains function currentlyline634\u2013EOF",
+      "start_sentinel": "func validateActorChains(events []StoredEvent) error {"
+    }
+  ],
+  "status": "PROSPECTIVE_EXTERNAL_ONLY; normaladoption/analysis/reentry required after localfullsource fullreap",
+  "test": [
+    {
+      "old_file_sha256": "738ac0f67546ba66532af79321288ff4684ecb0827c267692ddf21397bc2bbff",
+      "path": "event_test.go",
+      "protected": "All old tests/helpers remainbyteexact except explicit importblock addition",
+      "region": "Append focusedactorchain semantic/error/nonmutation tests after existingEOF; necessary stdlib testimport(s) only",
+      "suggested_roots": [
+        "TestValidateActorChainsContract",
+        "TestValidateActorChainsDoesNotMutateInput"
+      ]
+    }
+  ]
+}

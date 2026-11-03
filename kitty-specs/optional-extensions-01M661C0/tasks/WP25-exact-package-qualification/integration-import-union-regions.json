@@ -1,0 +1,56 @@
+{
+  "schema": "wp25.import-union.regions.v1",
+  "status": "ROOT_PENDING_NOT_AUTHORITY",
+  "source_commit": "c84402877996015cf33784bebd826e5be4981a4a",
+  "source_tree": "e118ad7d65f594ca856cce43393488c067596978",
+  "allowed_source_paths": [
+    "artifact_exchange.go",
+    "artifact_exchange_commands_test.go"
+  ],
+  "unchanged_other_Go_module_inputs": 315,
+  "Go_module_keyset_count": 317,
+  "ownership_exception": {
+    "status": "ROOT PENDING",
+    "original_owner": "WP10",
+    "inactive_and_no_concurrent_writer_confirmation": "ROOT PENDING",
+    "preserve_historical_approval_and_ownership": true,
+    "prior_exceptions_cover_this": false
+  },
+  "regions": [
+    {
+      "path": "artifact_exchange.go",
+      "start_line": 738,
+      "end_line": 845,
+      "original_sha256": "313554937eede3770f4f6d5b40f148befa2dbf2a355f190d8dc6114741eab549",
+      "original_bytes": 3531,
+      "first_line": "func importArtifactExchange(ctx context.Context, b *artifactExchange) (map[string]any, error) {",
+      "last_line": "\t}",
+      "proposed_change": "Insertion only after promoted sort and before original copy-context creation; optional same-file import-only helper outside existing functions. Preserve original surrounding statements. No shared helper edits."
+    },
+    {
+      "path": "artifact_exchange_commands_test.go",
+      "start_line": 159,
+      "end_line": 225,
+      "original_sha256": "52315e8449370ea9bede0c00ad9b75b0595b90cb5ad53cca998b47c201537fbf",
+      "original_bytes": 3185,
+      "first_line": "func TestArtifactExchangeRefusalsCLI(t *testing.T) {",
+      "last_line": "}",
+      "proposed_change": "One named helper/subtest call immediately inside this existing selected root; preserve original body/assertions. Append private regression helper at EOF, minimal directly necessary standard-library imports only."
+    }
+  ],
+  "preserve_exact": [
+    "artifactMutationPolicy and validation/copy context ceilings",
+    "current/incoming actor-prefix checks; imported-ref rewind; original current source recheck",
+    "selectedOIDs-selectedObjects copy; atomic expected-old CAS/no-deref; lost ACK",
+    "postpromotion ordinary loader and Cut; opaque; all other existing bodies"
+  ],
+  "not_a_literal_line_replacement_authorization": true,
+  "design_binding_sha256": "94ab7373ef6e560c6b7d5824b917db08c321b2f8983a2fcca684112e8b81ee87",
+  "staging_followup_sha256": "a6ce8cc9c22f0f2fd4b2e0a2cc6194a4168e4e2a51c1973bc1c7ff0331897311",
+  "staging_mechanism_constraints": [
+    "Prefer import-local safe common-ODB read-only borrowing with existing safepath/admission facts and original validation context",
+    "Fallback exact sorted verified current.readObjects only otherwise already admitted/verified; never bypass unsafe-layout refusal or cancellation",
+    "Bounded stage-local batch witness transaction with actual stage-old map; no per-ref subprocess loop",
+    "No shared helper edit; no mandatory full-receiver copy or new numeric corpus"
+  ]
+}

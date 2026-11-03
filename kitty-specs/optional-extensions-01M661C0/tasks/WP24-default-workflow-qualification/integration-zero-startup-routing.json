@@ -1,0 +1,55 @@
+{
+  "baseline_native_keys_source_derived": {
+    "audit": "cmdAudit",
+    "contribution": "cmdContribution",
+    "migrate": "cmdMigrate",
+    "project": "resource_engine.init closure over project",
+    "project-item": "resource_engine.init closure over project-item",
+    "discussion": "resource_engine.init closure over discussion",
+    "discussion-reply": "resource_engine.init closure over discussion-reply",
+    "workflow": "resource_engine.init closure over workflow"
+  },
+  "baseline_native_key_count": 8,
+  "d0f4_native_key_count": 10,
+  "d0f4_only_added_keys": {
+    "artifact": "cmdArtifact",
+    "extension": "extensionHostCommand"
+  },
+  "proposed_native_map_keys": [
+    "audit",
+    "contribution",
+    "discussion",
+    "discussion-reply",
+    "migrate",
+    "project",
+    "project-item",
+    "workflow"
+  ],
+  "effective_optional_bindings_unchanged": {
+    "artifact": "cmdArtifact",
+    "extension": "extensionHostCommand"
+  },
+  "lookup_precedence": [
+    "if localCommands contains key, return its value and true INCLUDING nil value",
+    "otherwise artifact fallback cmdArtifact,true",
+    "otherwise extension fallback extensionHostCommand,true",
+    "otherwise nil,false"
+  ],
+  "nil_override_never_falls_through": true,
+  "help_names": "sorted union of keys actually present in localCommands and artifact/extension; each once; no table mutation or bootstrap",
+  "known_help_names_without_test_registration": [
+    "artifact",
+    "audit",
+    "contribution",
+    "discussion",
+    "discussion-reply",
+    "extension",
+    "migrate",
+    "project",
+    "project-item",
+    "workflow"
+  ],
+  "issue_case_precedes_default_lookup": true,
+  "existing_generic_registration_test_unchanged": "TestForgeStrictMappingsAndLocalExtensionDispatch github_import_test.go:500-524",
+  "required_original_representation_note": "Older nativeRouters binding JSON proves handler identities, not required map membership. New supplement must explicitly replace eager-key presence with effective lookup semantics and preserve help enumeration."
+}

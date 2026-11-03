@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -860,11 +859,15 @@ func contributionLocalSnapshot(ctx context.Context, gitdir string, descriptor co
 }
 
 func contributionFinishNative(stored *StoredEvent, plan *contributionLocalPlan) error {
+	return contributionFinishNativeContext(context.Background(), stored, plan)
+}
+
+func contributionFinishNativeContext(parent context.Context, stored *StoredEvent, plan *contributionLocalPlan) error {
 	if plan == nil {
 		return nil
 	}
 	a, x := plan.a, plan.x
-	ctx, cancel, e := contributionContext(context.Background(), a.Policy.Contributions.Limits)
+	ctx, cancel, e := contributionContext(parent, a.Policy.Contributions.Limits)
 	if e != nil {
 		return e
 	}
@@ -913,7 +916,7 @@ func contributionFinishNative(stored *StoredEvent, plan *contributionLocalPlan) 
 			complete = complete && write.Complete
 		}
 		if complete {
-			return contributionPinNativeObservation(plan, stored)
+			return contributionPinNativeObservationContext(ctx, plan, stored)
 		}
 	}
 	if !hasResult {
@@ -1159,13 +1162,13 @@ func contributionFinishNative(stored *StoredEvent, plan *contributionLocalPlan) 
 	if e = x.save(j); e != nil {
 		return e
 	}
-	return contributionPinNativeObservation(plan, stored)
+	return contributionPinNativeObservationContext(ctx, plan, stored)
 }
 
 // Retain the complete native actor observation made by this local transaction.
 // This is an observed prefix, not a rewritten/truncated history. Later native
 // governance appends cannot erase the exact previously received snapshot.
-func contributionPinNativeObservation(plan *contributionLocalPlan, stored *StoredEvent) error {
+func contributionPinNativeObservationContext(parent context.Context, plan *contributionLocalPlan, stored *StoredEvent) error {
 	remote := "contribution-local-" + plan.digest[7:]
 	destinations := []replicationPromotion{{Ref: acceptedActorRef(remote, stored.Event.Actor), NewOID: stored.Commit}}
 	if isProposalKind(stored.Event.Kind) {
@@ -1185,7 +1188,7 @@ func contributionPinNativeObservation(plan *contributionLocalPlan, stored *Store
 		}
 		pending = append(pending, p)
 	}
-	return contributionPromoteRawRefs(pending)
+	return contributionPromoteRawRefsContext(parent, pending)
 }
 
 func lenMustContributionDescriptor(descriptor contributionLocalDescriptor) int {
@@ -1227,6 +1230,13 @@ func contributionLoadLocalPlan(a *contributionAuthority, x *ContributionExchange
 	return nil, nil
 }
 func contributionRetryNative(stored *StoredEvent) error {
+	return contributionRetryNativeContext(context.Background(), stored)
+}
+
+func contributionRetryNativeContext(parent context.Context, stored *StoredEvent) error {
+	if err := parent.Err(); err != nil {
+		return err
+	}
 	a, e := loadContributionAuthority()
 	if e != nil {
 		return e
@@ -1256,7 +1266,7 @@ func contributionRetryNative(stored *StoredEvent) error {
 	} else if !os.IsNotExist(e) {
 		return e
 	}
-	return contributionFinishNative(stored, plan)
+	return contributionFinishNativeContext(parent, stored, plan)
 }
 
 // Contribution retention updates only accepted observation refs and suppresses
@@ -1507,32 +1517,9 @@ func contributionRegisterRetained(a *contributionAuthority, expected string, ext
 	if e != nil {
 		return e
 	}
-	objects, e := projectObjectIDs(ctx, gitdir, plan.Roots, limits)
+	material, e := contributionRawClosure(ctx, gitdir, plan.Roots, limits, cost.DecodedBytes, "retained")
 	if e != nil {
 		return e
-	}
-	var material bytes.Buffer
-	material.WriteString(projectGitSchema)
-	for _, oid := range objects {
-		meta, e := projectGit(ctx, gitdir, []byte(oid+"\n"), 256, "cat-file", "--batch-check=%(objecttype) %(objectsize)")
-		if e != nil {
-			return e
-		}
-		fields := strings.Fields(string(meta))
-		if len(fields) != 2 {
-			return fmt.Errorf("retained object unavailable")
-		}
-		size, e := strconv.ParseInt(fields[1], 10, 64)
-		if e != nil || size < 0 || size > cost.DecodedBytes-int64(material.Len())-256 {
-			return fmt.Errorf("retained snapshot byte bound")
-		}
-		raw, e := projectGit(ctx, gitdir, nil, size, "cat-file", fields[0], oid)
-		if e != nil {
-			return e
-		}
-		fmt.Fprintf(&material, "%s %s %d\n", oid, fields[0], len(raw))
-		material.Write(raw)
-		material.WriteByte('\n')
 	}
 	count, depth, e := contributionObjectPreflight(ctx, material.Bytes(), a.Policy.Contributions.Limits)
 	if e != nil {

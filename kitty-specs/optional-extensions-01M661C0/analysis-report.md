@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-extensions-01M661C0
 mission_id: 01M661C0T0E4DS0AXBCXG7WCAX
-generated_at: '2026-10-31T12:51:49.451402+00:00'
+generated_at: '2026-11-03T07:45:31.223644+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
@@ -12,114 +12,106 @@ input_artifacts:
     sha256: de1d9ef9995b6a84cabafdfa3c15371badb7ac6721fe389dbc20c1933c7c266f
   plan.md:
     path: kitty-specs/optional-extensions-01M661C0/plan.md
-    sha256: 2f2e6751b9f73bb4b83d884fed497b42fac3a53527dd3ab59917fa4537d8c2e9
+    sha256: 68b7f0c80feacc71ef2169924bc5e592776e0ea95a1039ed9db83f0928c20588
   tasks.md:
     path: kitty-specs/optional-extensions-01M661C0/tasks.md
-    sha256: 63363f642708ec889b04d144e080360065e95fd7ad8f23d77c07c9dc367f4217
+    sha256: 7696be21f4afa44001707449c031333af96c0c99c603a84243e2d9804dcc85b9
   charter:
     path: .kittify/charter/charter.yaml
     sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
 verdict: ready
 issue_counts:
-  medium: 0
+  low: 0
+  medium: 1
   high: 0
   critical: 0
-  low: 0
   info: 0
-findings: []
+findings:
+- id: EXP-OBS-01
+  severity: medium
+  category: acceptance-proof
+  summary: The current real-ten-minute expiry fixture still has no explicit postresponse-before-expiry observation-time assertion. Preserve this existing acceptance-proof concern for exact-source WP25 review; the current planning and CI scheduling decisions do not close it.
 ---
 
-## Specification Analysis Report
+# Current extension-mission planning consistency analysis
 
-Fresh nonremediating amendment analysis after independently approved WP02 contract c7cbb28b93f364970a0c349aa831b649d9f5dc34 and normal finalizer c9ada013e6b03a9e7ad418248bb36cae2f0acacc. Zero open planning findings; READY permits continued WP16 implementation, not code approval or mission acceptance.
+**Planning verdict: READY to continue normal WP25 implementation/evidence reconciliation and independent review; WP26 remains dependent on actual WP25 approval.** This is a fresh planning analysis, not a source-test pass, WP approval, platform certification, gate override or mission acceptance. No high/critical planning blocker was found.
 
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|---|---|---|---|---|---|
-| — | — | — | — | No open planning inconsistency or coverage gap | Continue owner implementation and independent review |
+## Analyst and scope
 
-### Amendment and scope
+Independent agent `/root/review_workflow_preservation`, using canonical `analyst-annie` profile resolved through `spec-kitty agent profile show analyst-annie`, with `spec-kitty charter context --action analyze --json`. Applied project HN-001..005 and analyze-scoped directives including documented decisions, specification fidelity, local changes, efficient tooling, meaningful tests, targeted staging and canonical workflow surfaces. No model recommendation or model identity was fabricated.
 
-Root2c726e81 and fresh contract review01M68ZGHY9BF3W2AN07CF6XWPQ explicitly adopt bounded response observation. The client still consumes/validates its complete correlated response. The host settles an immutable response prefix/bulk, separately attempts the final byte, preserves first host-observed prefix/phase/frontier across partial/queued events, and retains at most one unadmitted candidate in that observational tail interval. No candidate admission, grant/reservation/signer effect or next dispatch precedes a successfully joined writer. Definite recorded early frames and second candidates fail.
+Read current PRIMARY spec, plan, tasks outline, all26 WP frontmatter/dependency/subtask/ownership records, requirement coverage, current CI integration decision and WP25 continuation decision. Inspected relevant current default/host/artifact boundaries and the existing expiry finding's exact fixture. The present plan's six-line CI precedence note and the later explicit maintainer decisions are current authority; older prospective/ROOT PENDING appendices remain historical within that stated supersession scope.
 
-This is not perfect physical peer-consumption detection or a bounded-time tail promise. Controls and genuine errors remain live; original deadlines/operation identity, settled native-refusal priority and clean-tail EOF are pinned. Encoded buffer bounds are explicitly distinct from heap. No wire field, acknowledgement, method/error inventory, protocol version, numeric frame/deadline budget, authority or default dependency changes. All65 literal JSON bodies, artifact-v1 and default-workflow remain byte-identical. New procedural conformance cases require later runtime proof; contract review is not that proof.
+## Exact planning inputs inspected
 
-The change remains within existing WP02/WP16 ownership. Normal validate-only/finalization reports zero warnings and zero modified WP metadata. All26 lane records/membership/dependencies/depths are exactly unchanged, no collapse/relabel occurs, and107 unique T001–T107 subtasks retain unique ownership and an acyclic graph. All42 FR/NFR/C requirements and10 success criteria have accountable work. Planning advances normally from18f10ce2d6779509722021e84031db620b75c58e to approved ancestor-preserving c7cbb28b.
+| Input | SHA-256 |
+| --- | --- |
+| `spec.md` | `de1d9ef9995b6a84cabafdfa3c15371badb7ac6721fe389dbc20c1933c7c266f` |
+| `plan.md` | `68b7f0c80feacc71ef2169924bc5e592776e0ea95a1039ed9db83f0928c20588` |
+| `tasks.md` | `916577f9b1fa7a347578cca94380cf4566511af5b37b9880b260e47628844ce4` |
+| `ci-integration-decision.md` | `50cdbd58d465e27b58cea778a9d7689ba8fd5ebd786a6a1651f2605208901b8d` |
+| `wp25-review-continuation.md` | `02a71b1516976b36c9122d7471598af887dab03fc8c47840604e8bb5f57a2517` |
+| `coverage.md` | `80767341f0db191f9597c96c58adf20eb0ee2d8eee5dc47037eedf5ff6a1fbb3` |
+| `.kittify/charter/charter.yaml` | `404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9` |
 
-### Evidence and readiness limits
+The normal recorder must bind the actual current artifacts itself. If an input above changes before recording, refresh this analysis instead of substituting a hand-written stale hash.
 
-Canonical spec/plan/tasks/charter hashes match the previous ready analysis; task freshness uses the framework's own status-normalized hashing. Raw tasks bytes also match the earlier df061333 commit. Their unchanged coverage rationale is reused, while this amendment's contract coherence and graph/mappings were rechecked independently. Primary/planning has220 Go/module inputs exactly equal frozen eb3f4932, including105 non-test Go/module inputs equal qualified f8c68beb foundation. This is limited to primary/planning, not whole-mission code or author-work equality. No unapproved beta runtime code is imported.
+## Structural and traceability checks actually performed
 
-The source-assisted completion-publication RED proves a current WP16 defect; it does not establish the exact cause/outcome of WP21's auto-removed first fixture. That limitation remains explicit. WP16 is in progress, production unchanged at this analysis, with only prepared tests committed8f032682. Its historical source approvals remain historical. The owner must integrate this contract, implement and test the confirmed repair, preserve prior monitor shutdown/session-ID fixes and genuine cancellation/EOF/revocation/refusal/uncertainty, then obtain fresh independent review. Planning READY does not waive the defect.
+A read-only parse of current spec and WP YAML frontmatter established:
 
-WP20's connector-owned issue-ack/external-version regression has a focused correction but awaits final validation on the repaired host. WP21 is committed/checkpointed in progress with previous standard/combined/race evidence and an unapproved public corpus. WP22 remains unvalidated/checkpointed with no imported charter corpus. Their source-specific evidence cannot substitute for final affected validation and independent approvals.
+- **52 criteria:** 24 FRs, eight NFRs, ten constraints and ten success criteria. IDs remain unique and the spec's default/native/history, bounded-host, external-consumer and application-owned doctrine boundaries remain in force.
+- **26 WPs /107 unique subtasks**, exactly T001–T107, with no missing subtask IDs or unknown requirement references.
+- Every FR/NFR/constraint is referenced in WP frontmatter. The existing coverage map links all FRs to success criteria and IC concerns; WP26 T107 explicitly reconciles FR/NFR/constraint/success-criterion evidence. No requirement is removed by the CI decision.
+- All dependency names resolve and the graph is acyclic. WP01 is an ancestor of every later WP; WP25 depends on WP24, WP26 on WP25. No dependency was removed or bypassed.
+- No exact `owned_files` path overlaps across the26 WP records. The separately declared coordinator-owned CI maintenance overlay and approved distribution documentation are explicit root integration scope, not a new WP, reopened earlier package or overlapping active writer.
+- Planning base and final mission target remain `feature/optional-extensions`; there is no authorization for main/release publication.
 
-### Continuing hard gates
+The latest canonical task readback during this analysis reported **24 approved /WP25 blocked /WP26 planned**, consistent with the actual stale-analysis refusal. This report does not mutate those states or claim WP25 has already resumed. Existing24 approvals are preserved.
 
-Default Hubnot remains standalone Go/Git: no extra setup, registry parsing, module startup, provider request or extension-state write on native paths. hn/0 and hn-memory/0 signed history, native admission/moderation/authority, unsupported custom-policy combinations and inert-data boundaries remain fixed. Existing Context/lock and Cut decisions remain binding; no duplicated reader/writer or relaxed witness is authorized.
+## Requirement/plan/task consistency
 
-WP23 synchronizes public guides with real approved consumers and the observation contract. WP24 repeats actual configuration/no-effect/history and prospective comparable frozen/packaged performance checks8f3b8003, preserving thresholds and every sample. WP25 performs final uncached source checks and exact Go-only packages: all8 Linux/macOS architecture/variant rows require real supplied-binary execution and source/asset identity, with separate workflow/caller identity. The OS-config-path fixture hazard must be resolved before claiming affected Mac cases; no skipped or wrong-path detector qualifies. No main merge or release follows automatically.
+The plan preserves the additive typed-artifact model plus explicitly enabled external process host. Native commands remain the default; registry parsing, module starts, network providers and extension-local writes are prohibited on unrelated native paths. Custom document/list/ticket types remain inert namespaced data, independent of memory cognition and native built-in kinds. Signature/search matches do not activate policy or doctrine. The Spec Kitty-shaped sample remains an external data-model consumer, not a resolver, composition engine or runtime embedded in Hubnot.
 
-WP26 requires actual cold independent package-only native-user and extension-author trials plus complete readiness trace. Prospective rootbf242d87 permits honestly labelled independent agent participants; no human/customer usability or implementer/CI substitute claim. Beta acceptance, issue23 and the inherited ordinary-native malformed-head observation remain separate; none is waived or silently repaired. Final criterion evidence, all approvals, canonical accept before feature merge, post-merge review and retrospective remain necessary.
+The bounded stdio host, per-request repository/identity/grant checks, native adapters, exact actor/operation recovery, accepted-visible change capture, public/private separation, custom Git/file closure and unknown-type refusals remain mapped to dedicated WPs. The first capability set still excludes generic review/accept/merge, policy/identity lifecycle, runner/audit execution and implicit sync. Adding project-development CI pipelines does not grant those extension-host capabilities or change default application optionality.
 
-### Coverage Summary Table
+The current CI decision deliberately changes **where/how often** checks execute: native signed fast/integration/stress/soak requests, bounded hosted install/runtime plus five extension callbacks, with the full206 registry and original production/assertion limits retained. It expressly distinguishes smoke from exhaustive and source-assisted from exact-package evidence; historical cancelled/failed runs remain unchanged. Change-appropriate reuse must establish exact unchanged inputs and retain original source identities. It does not manufacture full new-source qualification from a smoke row. This coherently implements the maintainer's explicit CI/hardware-cost direction without weakening the product's bounds or default-path requirements.
 
-Rows show accountable work, not current runtime passes.
+Mac packages without Developer ID/notarization are now an explicit maintainer-approved beta distribution limitation. The actual browser-quarantine/Gatekeeper rejection stays in the record, and normal browser-download certification remains unclaimed. Signing is a separate follow-up, not a missing mandatory dependency for functional review. This decision grants no broad beta/issue23 acceptance or new runtime dependency.
 
-| Requirement Key | Has Task? | Work packages | Notes |
-|---|---|---|---|
-| C-001 | Yes | WP01, WP24, WP26 | Existing mapped scope retained |
-| C-002 | Yes | WP01, WP13, WP16, WP23, WP24, WP25 | Existing mapped scope retained |
-| C-003 | Yes | WP13, WP14, WP21 | Existing mapped scope retained |
-| C-004 | Yes | WP21, WP22, WP23, WP26 | Existing mapped scope retained |
-| C-005 | Yes | WP20, WP23, WP26 | Existing mapped scope retained |
-| C-006 | Yes | WP01, WP02, WP03, WP05, WP09, WP24 | Existing mapped scope retained |
-| C-007 | Yes | WP16, WP23, WP26 | Existing mapped scope retained |
-| C-008 | Yes | WP02, WP14, WP17, WP23, WP26 | Existing mapped scope retained |
-| C-009 | Yes | WP15, WP16, WP23 | Existing mapped scope retained |
-| C-010 | Yes | WP01, WP04, WP12, WP21, WP23, WP24 | Existing mapped scope retained |
-| FR-001 | Yes | WP01, WP24, WP26 | Existing mapped scope retained |
-| FR-002 | Yes | WP01, WP13, WP24 | Existing mapped scope retained |
-| FR-003 | Yes | WP13, WP14, WP16 | Existing mapped scope retained |
-| FR-004 | Yes | WP02, WP13, WP14, WP17, WP18, WP26 | Existing mapped scope retained |
-| FR-005 | Yes | WP02, WP14, WP15, WP16, WP17, WP18 | Existing mapped scope retained |
-| FR-006 | Yes | WP17 | Existing mapped scope retained |
-| FR-007 | Yes | WP02, WP07, WP11, WP17, WP18, WP20 | Existing mapped scope retained |
-| FR-008 | Yes | WP02, WP19, WP20 | Existing mapped scope retained |
-| FR-009 | Yes | WP02, WP03, WP04, WP11, WP18, WP22 | Existing mapped scope retained |
-| FR-010 | Yes | WP02, WP03, WP04, WP05, WP11, WP22 | Existing mapped scope retained |
-| FR-011 | Yes | WP02, WP05, WP06, WP07, WP11, WP18, WP22 | Existing mapped scope retained |
-| FR-012 | Yes | WP02, WP04, WP06, WP08, WP11, WP21, WP22 | Existing mapped scope retained |
-| FR-013 | Yes | WP11, WP12, WP18, WP22 | Existing mapped scope retained |
-| FR-014 | Yes | WP02, WP05, WP08, WP09, WP10, WP11, WP22, WP25 | Existing mapped scope retained |
-| FR-015 | Yes | WP02, WP03, WP04, WP05, WP06, WP08, WP09, WP10, WP11, WP12, WP18, WP24 | Existing mapped scope retained |
-| FR-016 | Yes | WP02, WP04, WP06, WP11, WP22 | Existing mapped scope retained |
-| FR-017 | Yes | WP01, WP05, WP09, WP14, WP17, WP18, WP19, WP24, WP26 | Existing mapped scope retained |
-| FR-018 | Yes | WP03, WP05, WP07, WP08, WP10, WP17, WP20 | Existing mapped scope retained |
-| FR-019 | Yes | WP02, WP15, WP16, WP25 | Existing mapped scope retained |
-| FR-020 | Yes | WP02, WP03, WP07, WP11, WP15, WP16, WP17, WP18, WP19 | Existing mapped scope retained |
-| FR-021 | Yes | WP20 | Existing mapped scope retained |
-| FR-022 | Yes | WP21 | Existing mapped scope retained |
-| FR-023 | Yes | WP22 | Existing mapped scope retained |
-| FR-024 | Yes | WP02, WP23, WP25, WP26 | Existing mapped scope retained |
-| NFR-001 | Yes | WP01, WP13, WP16, WP24, WP26 | Existing mapped scope retained |
-| NFR-002 | Yes | WP01, WP24 | Existing mapped scope retained |
-| NFR-003 | Yes | WP02, WP03, WP04, WP05, WP06, WP08, WP09, WP10, WP12, WP15, WP16, WP19, WP24, WP25 | Existing mapped scope retained |
-| NFR-004 | Yes | WP16, WP24, WP25 | Existing mapped scope retained |
-| NFR-005 | Yes | WP01, WP05, WP09, WP24 | Existing mapped scope retained |
-| NFR-006 | Yes | WP07, WP08, WP10, WP13, WP14, WP16, WP20, WP24, WP25, WP26 | Existing mapped scope retained |
-| NFR-007 | Yes | WP25, WP26 | Existing mapped scope retained |
-| NFR-008 | Yes | WP08, WP09, WP10, WP20, WP21, WP22, WP25 | Existing mapped scope retained |
-| SC-001 | Yes | WP01, WP24, WP26 | Actual acceptance observations required |
-| SC-002 | Yes | WP01, WP24 | Actual acceptance observations required |
-| SC-003 | Yes | WP17, WP19, WP20 | Actual acceptance observations required |
-| SC-004 | Yes | WP14, WP15, WP16, WP17, WP18 | Actual acceptance observations required |
-| SC-005 | Yes | WP03, WP04, WP06, WP11, WP18, WP22 | Actual acceptance observations required |
-| SC-006 | Yes | WP08, WP09, WP10, WP21, WP22 | Actual acceptance observations required |
-| SC-007 | Yes | WP21 | Actual acceptance observations required |
-| SC-008 | Yes | WP04, WP05, WP08, WP10, WP15, WP16, WP19, WP25 | Actual acceptance observations required |
-| SC-009 | Yes | WP25, WP26 | Actual acceptance observations required |
-| SC-010 | Yes | WP26 | Actual acceptance observations required |
+## Frozen candidate / continuation consistency
 
-### Verdict
+The original candidate remains exact `3dcbb96091c6191bc5d98cde9dbd1d2b98433f95`, tree `df57aeda7553e88ab1eb54ab2f0564a7844dee01`, now in the explicitly archived local execution worktree. Read-only HEAD/tree and Go/module working-tree comparison matched those identities. The root has separately recorded archival path/branch renaming and sparse metadata hydration; these do not authorize source or package alias rewrites.
 
-READY for continued authorized work, not mission acceptance or release. The physical-timing ambiguity is explicitly resolved and independently reviewed; known implementation/qualification obligations retain owners and blocking gates. No remediation was performed by this analysis.
+The allocator's refusal of explicit --base on a dependency lane is correctly retained as a real refusal. The supported continuation uses normal fresh allocation and records its actual moving coordination parent and immutable allocation commit truthfully. A real final WP25 manifest/checks deliverable commit must be made AFTER allocation on that lane, so normal ahead/readiness checks have actual implementation evidence. No empty commit, forged base provenance, force, skipped gate or manual status JSON edit is proposed.
+
+Review must additionally inspect approved WP24 `4bb26359dbdb2fbc149911dc99c3a5880a24c031` through the exact reviewed HEAD. A generated continuation-only diff is insufficient for original WP25 work. Normal subtask/gate/review-result operations and exact source-bound independent verdicts remain required.
+
+## Existing medium acceptance-proof observation
+
+**EXP-OBS-01 remains a medium acceptance-proof concern, not a new planning blocker.** In current coord `extension_changes_acceptance_test.go`, `TestExtensionChangesRealTenMinuteExpiry` begins at1775; callback1 parses the page, asserts `complete == true`, then sleeps until expiry+1. It does not explicitly assert the response was OBSERVED before the advertised expiry. The genuine600s fixture and all its existing assertions remain intact; current scoped CI decisions do not close or waive that temporal proof question. A previously passing/incomplete/failed run retains its exact meaning.
+
+The independent WP25 reviewer must inspect current exact-source evidence and explicitly disposition this concern before claiming the corresponding lifetime proof. This analysis does not assume the old failed H source is the current source, does not ascribe a cause to historical failures, and does not infer a current production defect solely from this missing observation assertion. No long suite, soak, hosted dispatch or fault injection was run in this analysis.
+
+## WP26 cold-trial readiness contract
+
+The plan's separate fresh public-docs-only AI-agent trials are coherent with SC-010 and WP26 T105/T106 when participants actually operate the exact supplied packages and report their observations/friction. They must be labelled AI-agent trials, not human-adopter research, CI replay or implementer self-validation. Separate contexts receive public guides and the necessary package/consumer assets, not implementation history or hidden acceptance scripts. Native trial stays extension-free; author trial exercises the published external-consumer guide. Prepared trial kits alone are not observations and neither trial can be claimed complete before execution. WP26's dependency and independent boundary review remain binding.
+
+## Required normal next steps
+
+1. Root records this actual report through the supported command below, letting the recorder generate source hashes/metadata.
+2. Retry normal allocation; author the genuine owned WP25 manifest/checks reconciliation on the new lane; complete truthful subtask/readiness and poll the pre-review gate.
+3. Perform independent full-scope WP25 review and capture the verdict canonically, including the existing temporal-proof disposition.
+4. Only after actual WP25 approval, claim WP26 and execute its two fresh public-guide trials plus independent boundary/readiness review. Missing observations stay pending.
+
+Supported recorder schema verified from installed CLI/source:
+
+```sh
+spec-kitty agent mission record-analysis \
+  --mission optional-extensions-01M661C0 \
+  --input-file /tmp/hubnot-current-plan-analysis.md \
+  --agent codex --json
+```
+
+The body begins with `schema: analysis-findings/v1`, a closed-severity findings list and matching counts. The installed recorder derives readiness from actual finding severities (high/critical block); it wraps its own `spec-kitty.analysis-report` frontmatter and current input digests. A bare prose READY or copied old rendered report would be inadequate. This child did not invoke the recorder or mutate project source/status/configuration.

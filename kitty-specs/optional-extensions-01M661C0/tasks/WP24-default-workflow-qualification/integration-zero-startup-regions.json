@@ -1,0 +1,99 @@
+{
+  "root_selected_date": "2026-10-31",
+  "supersession": "Prospectively replace only the earlier two eager router-key representation; preserve old authorization/review/binding/capture records as immutable history and all21/3/8/13/2 effective handler bindings plus help output.",
+  "approved_inactive_original_owners": ["WP10", "WP11", "WP13", "WP14", "WP15", "WP16", "WP19"],
+  "executor": "WP24 in_progress, sole executor; pause affected paths if an owner reopens",
+  "complete_dynamic_optional_startup_units": {"fixed_set_map_literals": 7, "mutable_capture_map_literal": 1, "optional_router_key_registration_init": 1},
+  "main_other_body_tokens_unchanged": true,
+  "existing_path_exceptions": [
+    {
+      "path": "internal/extension/manifest.go",
+      "original_owner": "WP13",
+      "allowed_region": "replace methods declaration by canonical local value vocabulary + pure membership; validateStructure lookup only"
+    },
+    {
+      "path": "internal/extension/grants.go",
+      "original_owner": "WP14",
+      "allowed_region": "replace nativeFamilies/grantActions declarations by canonical local value vocabularies + pure membership; only lookups in validSelector, ValidateGrants, NativeAction, Authorize"
+    },
+    {
+      "path": "internal/extension/process.go",
+      "original_owner": "WP16",
+      "allowed_region": "replace ownerStates declaration by canonical local value vocabulary + pure membership; readOwner lookup only"
+    },
+    {
+      "path": "internal/extension/protocol.go",
+      "original_owner": "WP15",
+      "allowed_region": "InspectMessage two method membership lookups; methodNames sorted fresh-copy implementation only"
+    },
+    {
+      "path": "internal/extension/grants_test.go",
+      "original_owner": "WP14",
+      "allowed_region": "TestGrantClosedContractSets fixture representation only; preserve complete independent expected sets/assertions"
+    },
+    {
+      "path": "internal/extension/process_test.go",
+      "original_owner": "WP16",
+      "allowed_region": "TestSessionCleanupFailureCannotBecomeManagementSuccess fixture representation only; preserve exact three-state expected set and following behavior"
+    },
+    {
+      "path": "internal/extension/protocol_test.go",
+      "original_owner": "WP15",
+      "allowed_region": "comment-only correction in runtimeProtocolInventories: method map becomes method vocabulary; no assertion/body changes"
+    },
+    {
+      "path": "artifact_exchange.go",
+      "original_owner": "WP10",
+      "allowed_region": "replace exactly2 fixed-map declarations and4 membership expressions; canonical local values/predicates only"
+    },
+    {
+      "path": "artifact_query_commands.go",
+      "original_owner": "WP11",
+      "allowed_region": "replace artifactListShapes declaration and cmdArtifactList --shape membership expression only"
+    },
+    {
+      "path": "artifact_exchange_test.go",
+      "original_owner": "WP10",
+      "allowed_region": "TestArtifactExchangeContractMirror actual-value extraction only; exact independent expected sets/fields remain"
+    },
+    {
+      "path": "artifact_commands_test.go",
+      "original_owner": "WP11",
+      "allowed_region": "TestArtifactListFrozenShapeInventory actual-value extraction only; exact independent expected set remains"
+    },
+    {
+      "path": "main.go",
+      "original_owner": "WP16",
+      "allowed_region": "run default map lookup becomes lookupLocalCommand; printUsage names-construction region becomes pure names helper; all cases, lock classification, sorted output/errors unchanged"
+    },
+    {
+      "path": "extension_changes.go",
+      "original_owner": "WP19",
+      "allowed_region": "extensionChanges global becomes zero value; under existing extensionChangesRetain mutex make captures only immediately before sole assignment; no other body/lock/effect change"
+    }
+  ],
+  "new_WP24_owned_create_intent_paths": [
+    "internal/extension/vocabulary_test.go"
+  ],
+  "new_production_files": [],
+  "all_other_paths_excluded": true,
+  "existing_WP24_owned_source_changes": [
+    {
+      "path": "optional_bootstrap.go",
+      "region": "remove sole init; add native-first pure lookup helper and help-name helper; leave ensureOptionalBootstrap tables/Once intact"
+    },
+    {
+      "path": "optional_bootstrap_test.go",
+      "region": "adapt2router assertions and cold tests to lookup/no-mapgrowth/help preservation; add3main-set and nil-capture first-use tests"
+    },
+    {
+      "path": "extension_default_performance_test.go",
+      "region": "source input union at:260 adds only internal/extension/vocabulary_test.go; keep311dependency count/hash equality/budgets exactly"
+    }
+  ],
+  "unchanged_existing_tests": [
+    "extension_changes_test.go: current locked explicit-map eviction fixture remains valid; no adaptation needed",
+    "github_import_test.go: original example-local test remains exact"
+  ],
+  "prospective_source_guard": "316 =311 root-attested dependency inputs +5 existing/new WP24 source inputs"
+}

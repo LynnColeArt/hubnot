@@ -23,6 +23,31 @@ const artifactVector = `{"actor":"81ebe0bf3a2be9358144a0cabbea22d5b79c008514c612
 const artifactVectorSignature = "ufmWhDOKJg58F7xjCVWERo8JSeVktgBB9HY6aD26X6NUfq82KL4Jd15rd1hu6jiIIauXIkUIVyUZ2OfcC+NTBw"
 const artifactVectorID = "sha256:c37a9d97a7347301bf621cadc26c7b2b709556be792f19bc058e493569757ee3"
 
+// wp25FixtureConfig selects the same OS config directory as the child CLI.
+// Every caller also pins that path in its own child environment; t.Setenv alone
+// cannot isolate two fixtures created in one test.
+func wp25FixtureConfig(t *testing.T, home string) string {
+	t.Helper()
+	return extensionTestConfigDir(t, home)
+}
+
+// The explicit management command must reject the malformed sentinel. Merely
+// preserving an arbitrary file would not prove it is the selected registry.
+func wp25MalformedRegistryReadControl(t *testing.T, binary, repo, home, config string) {
+	t.Helper()
+	cmd := exec.Command(binary, "extension", "inspect", "--json")
+	cmd.Dir = repo
+	cmd.Env = operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
+	out, err := cmd.Output()
+	var result extensionCLIResult
+	var envelope struct {
+		Error map[string]json.RawMessage `json:"error"`
+	}
+	if json.Unmarshal(out, &result) != nil || json.Unmarshal(out, &envelope) != nil || err == nil || result.OK || result.Data != nil || result.Error.Origin != "host" || result.Error.Code != "invalid_input" || result.Error.Recovery != "do_not_retry" || len(envelope.Error) != 5 || string(envelope.Error["operation"]) != "null" {
+		t.Fatalf("actual malformed-registry read control: %v %s", err, out)
+	}
+}
+
 func TestArtifactEnvelopeCLI(t *testing.T) {
 	binary := buildOperationalBinary(t)
 	cmd := exec.Command(binary, "artifact", "envelope", "validate", "--input", "-", "--signature", artifactVectorSignature, "--json")
@@ -39,6 +64,8 @@ func TestArtifactEnvelopeCLIRefusalsAndBounds(t *testing.T) {
 	root := t.TempDir()
 	repo := filepath.Join(root, "repository")
 	home := filepath.Join(root, "home")
+	config := wp25FixtureConfig(t, home)
+	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
 	if e := os.MkdirAll(repo, 0700); e != nil {
 		t.Fatal(e)
 	}
@@ -46,7 +73,7 @@ func TestArtifactEnvelopeCLIRefusalsAndBounds(t *testing.T) {
 	if out, e := init.CombinedOutput(); e != nil {
 		t.Fatalf("init: %v %s", e, out)
 	}
-	sentinels := map[string]string{filepath.Join(repo, ".hn", "extensions.json"): "INVALID DECLARATION PRIVATE_SENTINEL", filepath.Join(home, ".config", "hubnot", "extensions", "registry.json"): "INVALID REGISTRY PRIVATE_SENTINEL", filepath.Join(repo, ".git", "hn", "extensions", "enabled.json"): "INVALID ENABLEMENT PRIVATE_SENTINEL", filepath.Join(repo, ".git", "hn", "artifacts", "intents", "private.json"): "PRIVATE_SENTINEL"}
+	sentinels := map[string]string{filepath.Join(repo, ".hn", "extensions.json"): "INVALID DECLARATION PRIVATE_SENTINEL", filepath.Join(config, "hubnot", "extensions", "registry.json"): "INVALID REGISTRY PRIVATE_SENTINEL", filepath.Join(home, ".config", "hubnot", "extensions", "registry.json"): "ARBITRARY OLD-PATH PRIVATE_SENTINEL", filepath.Join(repo, ".git", "hn", "extensions", "enabled.json"): "INVALID ENABLEMENT PRIVATE_SENTINEL", filepath.Join(repo, ".git", "hn", "artifacts", "intents", "private.json"): "PRIVATE_SENTINEL"}
 	for p, s := range sentinels {
 		if e := os.MkdirAll(filepath.Dir(p), 0700); e != nil {
 			t.Fatal(e)
@@ -84,6 +111,7 @@ func TestArtifactEnvelopeCLIRefusalsAndBounds(t *testing.T) {
 	if e := os.WriteFile(wrongPreviousPath, []byte(artifactSecondVector), 0600); e != nil {
 		t.Fatal(e)
 	}
+	wp25MalformedRegistryReadControl(t, binary, repo, home, config)
 	before := snapshot()
 	call := func(input, sig, action, code string, extra ...string) map[string]any {
 		t.Helper()
@@ -91,7 +119,7 @@ func TestArtifactEnvelopeCLIRefusalsAndBounds(t *testing.T) {
 		args = append(args, extra...)
 		cmd := exec.Command(binary, args...)
 		cmd.Dir = repo
-		cmd.Env = operationalTestEnvironment(home)
+		cmd.Env = env
 		cmd.Stdin = strings.NewReader(input)
 		out, e := cmd.Output()
 		var result map[string]any
@@ -417,6 +445,8 @@ func TestArtifactEnvelopeCLIPredecessorStdin(t *testing.T) {
 	root := t.TempDir()
 	repo := filepath.Join(root, "repo")
 	home := filepath.Join(root, "home")
+	config := wp25FixtureConfig(t, home)
+	env := operationalTestEnvironmentWith(home, map[string]string{"XDG_CONFIG_HOME": config})
 	if e := os.MkdirAll(repo, 0700); e != nil {
 		t.Fatal(e)
 	}
@@ -432,7 +462,7 @@ func TestArtifactEnvelopeCLIPredecessorStdin(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
-	for _, p := range []string{filepath.Join(repo, ".hn", "extensions.json"), filepath.Join(repo, ".git", "hn", "extensions", "enabled.json"), filepath.Join(home, ".config", "hubnot", "extensions", "registry.json"), filepath.Join(repo, ".git", "hn", "artifacts", "intents", "marker.json")} {
+	for _, p := range []string{filepath.Join(repo, ".hn", "extensions.json"), filepath.Join(repo, ".git", "hn", "extensions", "enabled.json"), filepath.Join(config, "hubnot", "extensions", "registry.json"), filepath.Join(home, ".config", "hubnot", "extensions", "registry.json"), filepath.Join(repo, ".git", "hn", "artifacts", "intents", "marker.json")} {
 		if e := os.MkdirAll(filepath.Dir(p), 0700); e != nil {
 			t.Fatal(e)
 		}
@@ -461,6 +491,7 @@ func TestArtifactEnvelopeCLIPredecessorStdin(t *testing.T) {
 		}
 		return inventory
 	}
+	wp25MalformedRegistryReadControl(t, binary, repo, home, config)
 	before := snapshot()
 	call := func(action, input, previous, stdin, code, message string, blocked bool, predecessorSignatures ...string) {
 		t.Helper()
@@ -472,7 +503,7 @@ func TestArtifactEnvelopeCLIPredecessorStdin(t *testing.T) {
 		}
 		cmd := exec.CommandContext(ctx, binary, "artifact", "envelope", action, "--input", input, "--signature", artifactSecondSignature, "--previous-input", previous, "--previous-signature", previousSignature, "--json")
 		cmd.Dir = repo
-		cmd.Env = operationalTestEnvironment(home)
+		cmd.Env = env
 		if blocked {
 			read, write, e := os.Pipe()
 			if e != nil {
