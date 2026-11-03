@@ -579,6 +579,7 @@ promise global erasure from every replica.
 - [Governance and policy amendments](docs/governance-v0.md)
 - [Selected replication and shallow recovery](docs/replication-v0.md)
 - [CI and runner threat model](docs/ci-v0.md)
+- [Hubnot's own CI: fast feedback and native stress runs](docs/project-ci.md)
 - [Hosted Git compatibility](docs/host-compatibility.md)
 - [Operational self-hosting proof](docs/self-hosting-alpha.md)
 

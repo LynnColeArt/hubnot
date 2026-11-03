@@ -476,8 +476,23 @@ func wp25HeavyQualificationRoot(name string) bool {
 	return false
 }
 
+// Hosted checks exercise representative product journeys. Capacity/soak tests
+// retain their full sizes in the explicit native Hubnot stress pipelines.
+func wp25SmokeQualificationRoot(name string) bool {
+	switch name {
+	case "native-public-journey", "TestExtensionRegistrationCLI", "TestExtensionEnablementCLI",
+		"TestExtensionRunCLI", "TestExtensionRunNoImplicitLaunchCLI", "TestExtensionNativeSixFamiliesCLI",
+		"TestExtensionArtifactTypeReadRawCLI", "TestArtifactFullPublicJourneyCLI",
+		"TestExtensionChangesRawEmptyCapture", "TestExtensionArtifactInterruptedRecoveryRawCLI",
+		"TestExtensionFakeTrackerStandaloneRecovery", "TestExtensionCharterStandaloneJourney",
+		"TestInventoryStandalonePublicJourney":
+		return true
+	}
+	return false
+}
+
 func wp25SelectQualificationJourneys(registry []wp25Journey, group string) ([]wp25Journey, []string, []string, error) {
-	if group != "all" && group != "heavy" && group != "remaining" {
+	if group != "all" && group != "heavy" && group != "remaining" && group != "smoke" {
 		return nil, nil, nil, fmt.Errorf("unknown qualification group %q", group)
 	}
 	names := []string{}
@@ -501,7 +516,9 @@ func wp25SelectQualificationJourneys(registry []wp25Journey, group string) ([]wp
 	expected := []string{}
 	complement := []string{}
 	for _, j := range registry {
-		if group == "all" || (group == "heavy") == wp25HeavyQualificationRoot(j.name) {
+		include := group == "all" || group == "smoke" && wp25SmokeQualificationRoot(j.name) ||
+			group == "heavy" && wp25HeavyQualificationRoot(j.name) || group == "remaining" && !wp25HeavyQualificationRoot(j.name)
+		if include {
 			selected = append(selected, j)
 			expected = append(expected, j.name)
 		} else {
@@ -513,7 +530,7 @@ func wp25SelectQualificationJourneys(registry []wp25Journey, group string) ([]wp
 
 func TestWP25QualificationGroups(t *testing.T) {
 	registry := wp25QualificationJourneys("", nil)
-	for group, count := range map[string]int{"all": 206, "heavy": 4, "remaining": 202} {
+	for group, count := range map[string]int{"all": 206, "heavy": 4, "remaining": 202, "smoke": 13} {
 		selected, names, excluded, err := wp25SelectQualificationJourneys(registry, group)
 		if err != nil || len(selected) != count || len(names) != count || len(excluded) != 206-count {
 			t.Fatal(group, len(selected), err)

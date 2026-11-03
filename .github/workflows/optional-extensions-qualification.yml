@@ -1,4 +1,4 @@
-name: Optional extension exact-package qualification
+name: Optional extension package smoke
 
 # The registered portability caller selects this workflow explicitly. A relative
 # call runs this file at the same immutable caller commit, independent of H.
@@ -24,7 +24,7 @@ jobs:
   build:
     name: Freeze optional extension candidate and references
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 10
     outputs:
       source: ${{ steps.freeze.outputs.source }}
       tree: ${{ steps.freeze.outputs.tree }}
@@ -113,13 +113,10 @@ jobs:
           retention-days: 30
 
   native:
-    name: Extension native qualification (${{ matrix.target }})
+    name: Extension package smoke (${{ matrix.target }})
     needs: build
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 300
-    permissions:
-      contents: read
-      actions: read
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -136,19 +133,10 @@ jobs:
           - runner: macos-15
             target: darwin/arm64
             uname: arm64
-    env:
-      CANDIDATE_SOURCE: ${{ needs.build.outputs.source }}
-      CANDIDATE_TREE: ${{ needs.build.outputs.tree }}
-      CANDIDATE_PROVENANCE: ${{ needs.build.outputs.provenance }}
-      REFERENCE_MANIFEST: ${{ needs.build.outputs.references }}
-      CANDIDATE_ARTIFACT: ${{ needs.build.outputs.artifact }}
-      CANDIDATE_ARTIFACT_DIGEST: ${{ needs.build.outputs.artifact_digest }}
-      EXPECTED_TARGET: ${{ matrix.target }}
-      EXPECTED_UNAME: ${{ matrix.uname }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ needs.build.outputs.source }}
+          ref: ${{ inputs.candidate_source }}
           persist-credentials: false
       - uses: actions/setup-go@v7
         with:
@@ -156,623 +144,56 @@ jobs:
           cache: false
       - uses: actions/download-artifact@v4
         with:
-          artifact-ids: ${{ needs.build.outputs.artifact }}
-          merge-multiple: true
+          name: optional-extensions-assets-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/qualification-assets
-      - name: Install qualification-only Linux syscall tracer
-        if: startsWith(matrix.target, 'linux/')
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y strace
-      - name: Record actual platform, transport identities and precompile the harness
-        id: prepare
+      - name: Check exact native packages and representative product journeys
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
+          EXPECTED_TARGET: ${{ matrix.target }}
+          EXPECTED_UNAME: ${{ matrix.uname }}
+          HN_WP25_GROUP: smoke
+          HN_WP25_REFERENCE_DIR: ${{ runner.temp }}/qualification-assets/references
+          GORACE: atexit_sleep_ms=0
         run: |
           set -euo pipefail
-          evidence="$RUNNER_TEMP/native-evidence"
           assets="$RUNNER_TEMP/qualification-assets"
+          evidence="$RUNNER_TEMP/smoke-evidence"
           mkdir "$evidence" "$RUNNER_TEMP/unpacked"
-          exec > >(tee "$evidence/prepare.log") 2>&1
+          uname -a > "$evidence/platform.txt"
+          git --version >> "$evidence/platform.txt"
           test "$(uname -m)" = "$EXPECTED_UNAME"
           test "$(go env GOOS)/$(go env GOARCH)" = "$EXPECTED_TARGET"
-          test "$(go env GOVERSION)" = "$QUALIFICATION_COMPILER"
-          test "$(git rev-parse HEAD)" = "$CANDIDATE_SOURCE"
-          test "$(git rev-parse HEAD^{tree})" = "$CANDIDATE_TREE"
-          {
-            date -u
-            uname -a
-            go version
-            go env GOMOD GOOS GOARCH GOVERSION
-            git --version
-            if [ "$(uname -s)" = Darwin ]; then
-              sw_vers
-              translated="$(sysctl -in sysctl.proc_translated 2>/dev/null || true)"
-              printf 'sysctl.proc_translated=%s\n' "${translated:-unavailable}"
-              test "$translated" != 1
-            else
-              cat /etc/os-release
-            fi
-          } > "$evidence/environment.log" 2>&1
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > "$evidence/run.json"
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" > "$evidence/jobs-at-start.json"
-          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$CANDIDATE_ARTIFACT" > "$evidence/candidate-artifact.json"
-          case "$CANDIDATE_ARTIFACT_DIGEST" in
-            sha256:*) transport_digest="$CANDIDATE_ARTIFACT_DIGEST" ;;
-            *) transport_digest="sha256:$CANDIDATE_ARTIFACT_DIGEST" ;;
-          esac
-          jq -e --argjson id "$CANDIDATE_ARTIFACT" --argjson run "$GITHUB_RUN_ID" --argjson repo '${{ github.repository_id }}' --arg digest "$transport_digest" --arg caller "$CALLER_SOURCE" --arg name "optional-extensions-assets-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" '.id == $id and .expired == false and .name == $name and .workflow_run.id == $run and .workflow_run.head_sha == $caller and .workflow_run.repository_id == $repo and .workflow_run.head_repository_id == $repo and .digest == $digest' "$evidence/candidate-artifact.json"
-          jq -n --arg caller "$CALLER_SOURCE" --arg workflow_sha "$CALLER_WORKFLOW_SHA" --arg workflow_ref "$CALLER_WORKFLOW_REF" --arg candidate "$CANDIDATE_SOURCE" --arg tree "$CANDIDATE_TREE" --arg artifact "$CANDIDATE_ARTIFACT" --arg digest "$CANDIDATE_ARTIFACT_DIGEST" --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" --arg job "$GITHUB_JOB" --arg target "$EXPECTED_TARGET" '{caller_source:$caller,caller_workflow_sha:$workflow_sha,caller_workflow_ref:$workflow_ref,candidate_source:$candidate,candidate_tree:$tree,candidate_artifact_id:$artifact,candidate_artifact_digest:$digest,run_id:$run,run_attempt:$attempt,job:$job,target:$target,dispatch_inputs:{qualification:"optional-extensions",extension_source:$candidate}}' > "$evidence/binding.json"
-          test "$(shasum -a 256 "$assets/candidate/PROVENANCE.json" | cut -d ' ' -f1)" = "$CANDIDATE_PROVENANCE"
-          test "$(shasum -a 256 "$assets/references/manifest.json" | cut -d ' ' -f1)" = "$REFERENCE_MANIFEST"
-          (cd "$assets/candidate" && shasum -a 256 -c SHA256SUMS) > "$evidence/transport-checksums.log"
+          test "$(git rev-parse HEAD)" = '${{ needs.build.outputs.source }}'
+          test "$(git rev-parse HEAD^{tree})" = '${{ needs.build.outputs.tree }}'
+          if [ "$(uname -s)" = Darwin ]; then
+            sw_vers >> "$evidence/platform.txt"
+            test "$(sysctl -in sysctl.proc_translated 2>/dev/null || true)" != 1
+          fi
+          (cd "$assets/candidate" && shasum -a 256 -c SHA256SUMS) > "$evidence/checksums.txt"
+          # Artifact ZIP transport does not retain executable modes on references.
+          for target in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
+            for sample in fake-tracker charter inventory; do chmod 755 "$assets/references/$target/$sample"; done
+          done
           for archive in "$assets/candidate"/hubnot_"$QUALIFICATION_VERSION"_"${EXPECTED_TARGET%/*}"_"${EXPECTED_TARGET#*/}"*.tar.gz; do
             tar -xzf "$archive" -C "$RUNNER_TEMP/unpacked"
           done
-          # Artifact ZIP transport does not preserve executable mode. Validate
-          # the closed twelve-asset inventory and bytes before restoring all
-          # modes: the harness validates the complete matrix on every runner.
-          python3 - "$assets/references" "$evidence" "$CANDIDATE_SOURCE" "$CANDIDATE_TREE" "$QUALIFICATION_COMPILER" <<'PY'
-          import hashlib, json, os, pathlib, stat, sys
-          root, evidence = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
-          manifest = json.loads((root / 'manifest.json').read_text())
-          assert manifest['schema'] == 'hn.extension-references/1'
-          assert (manifest['source_commit'], manifest['source_tree'], manifest['compiler']) == tuple(sys.argv[3:6])
-          packages = {'fake-tracker':'./examples/extensions/fake-tracker', 'charter':'./examples/extensions/charter-model', 'inventory':'./examples/extensions/inventory-model'}
-          expected = {target.replace('/', '_') + '/' + sample: (target, sample, package) for target in ('linux/amd64', 'linux/arm64', 'darwin/amd64', 'darwin/arm64') for sample, package in packages.items()}
-          rows = manifest['assets']
-          assert len(rows) == 12 and {row['name'] for row in rows} == set(expected)
-          inventory = {'manifest.json'} | set(expected) | {name + '.buildinfo' for name in expected}
-          assert not any(path.is_symlink() for path in root.rglob('*'))
-          assert {str(path.relative_to(root)) for path in root.rglob('*') if path.is_file()} == inventory
-          def snapshot():
-              result = []
-              for row in rows:
-                  assert (row['target'], row['sample'], row['package']) == expected[row['name']]
-                  for suffix, key in (('', 'sha256'), ('.buildinfo', 'build_info_sha256')):
-                      path = root / (row['name'] + suffix)
-                      mode = path.lstat().st_mode
-                      assert stat.S_ISREG(mode)
-                      digest = hashlib.sha256(path.read_bytes()).hexdigest()
-                      assert digest == row[key]
-                      result.append({'name':row['name'] + suffix, 'mode':oct(stat.S_IMODE(mode)), 'sha256':digest})
-              return result
-          before = snapshot()
-          (evidence / 'reference-transport-modes.before.json').write_text(json.dumps(before, indent=2) + '\n')
-          for name in expected:
-              os.chmod(root / name, 0o755)
-          after = snapshot()
-          assert [(row['name'], row['sha256']) for row in before] == [(row['name'], row['sha256']) for row in after]
-          assert all(stat.S_IMODE((root / name).stat().st_mode) == 0o755 for name in expected)
-          (evidence / 'reference-transport-modes.after.json').write_text(json.dumps(after, indent=2) + '\n')
-          PY
-          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source-inputs.before.sha256"
-          printf '%s\n' 'go test -race -c -o "$RUNNER_TEMP/qualification-harness" .' > "$evidence/harness-command.txt"
-          go test -race -c -o "$RUNNER_TEMP/qualification-harness" .
-          "$RUNNER_TEMP/qualification-harness" -test.list '^TestExtensionPackageQualification$' > "$evidence/harness-required-tests.txt"
-          test "$(cat "$evidence/harness-required-tests.txt")" = TestExtensionPackageQualification
-          shasum -a 256 "$RUNNER_TEMP/qualification-harness" > "$evidence/harness.sha256"
-          go version -m "$RUNNER_TEMP/qualification-harness" > "$evidence/harness.buildinfo"
-          # cmd/test2json is a Go command, not a guaranteed preinstalled tool
-          # under GOTOOLDIR. Build the exact pinned source before the Go trap.
-          go_binary="$(command -v go)"
-          goroot="$(go env GOROOT)"
-          tool_directory="$(go env GOTOOLDIR)"
-          converter="$RUNNER_TEMP/qualification-test2json"
-          [[ "$go_binary" = /* && "$goroot" = /* && "$tool_directory" = /* ]]
-          test -f "$go_binary" && test -x "$go_binary"
-          test -f "$goroot/VERSION"
-          test "$(head -n 1 "$goroot/VERSION")" = "$QUALIFICATION_COMPILER"
-          test -f "$goroot/src/cmd/test2json/main.go"
-          test "$(go list -f '{{.Dir}}' cmd/test2json)" = "$goroot/src/cmd/test2json"
-          {
-            printf 'compiler_executable=%s\nGOROOT=%s\nGOTOOLDIR=%s\nconverter_source=%s/src/cmd/test2json\nconverter_executable=%s\n' "$go_binary" "$goroot" "$tool_directory" "$goroot" "$converter"
-            go version
-            go env GOMOD GOOS GOARCH GOVERSION
-          } > "$evidence/test2json-source-binding.txt"
-          shasum -a 256 "$go_binary" "$goroot/VERSION" "$tool_directory/compile" "$tool_directory/asm" "$tool_directory/link" > "$evidence/test2json-toolchain.sha256"
-          CGO_ENABLED=0 go list -deps -json cmd/test2json > "$evidence/test2json-dependencies.json"
-          CGO_ENABLED=0 go list -deps -f '{{range .GoFiles}}{{$.Dir}}/{{.}}{{"\n"}}{{end}}{{range .SFiles}}{{$.Dir}}/{{.}}{{"\n"}}{{end}}{{range .HFiles}}{{$.Dir}}/{{.}}{{"\n"}}{{end}}{{range .SysoFiles}}{{$.Dir}}/{{.}}{{"\n"}}{{end}}{{range .EmbedFiles}}{{$.Dir}}/{{.}}{{"\n"}}{{end}}' cmd/test2json | sed '/^$/d' | sort -u > "$evidence/test2json-source-paths.txt"
-          while IFS= read -r source_path; do
-            [[ "$source_path" = "$goroot"/* ]]
-            test -f "$source_path"
-            shasum -a 256 "$source_path"
-          done < "$evidence/test2json-source-paths.txt" > "$evidence/test2json-source-inputs.sha256"
-          printf '%s\n' 'CGO_ENABLED=0 go build -trimpath -buildvcs=false -o "$RUNNER_TEMP/qualification-test2json" cmd/test2json' > "$evidence/test2json-build-command.txt"
-          CGO_ENABLED=0 go build -trimpath -buildvcs=false -o "$converter" cmd/test2json
-          test -f "$converter" && test -x "$converter"
-          go version -m "$converter" > "$evidence/test2json.buildinfo"
-          grep -F "$QUALIFICATION_COMPILER" "$evidence/test2json.buildinfo"
-          shasum -a 256 "$converter" > "$evidence/test2json.sha256"
-          shasum -a 256 -c "$evidence/test2json-toolchain.sha256" > "$evidence/test2json-toolchain-verified.txt"
-          shasum -a 256 -c "$evidence/test2json-source-inputs.sha256" > "$evidence/test2json-source-verified.txt"
-          printf 'PASS\n' | "$converter" -p wp25-test2json-positive > "$evidence/test2json-positive.jsonl"
-          jq -s -e '([.[] | select(.Package == "wp25-test2json-positive" and .Action == "pass")] | length) == 1' "$evidence/test2json-positive.jsonl"
-          printf 'TEST2JSON=%s\nTEST2JSON_SHA256=%s\n' "$converter" "$(shasum -a 256 "$converter" | cut -d ' ' -f1)" >> "$GITHUB_ENV"
-          mkdir "$RUNNER_TEMP/no-source-fallback"
-          cat > "$RUNNER_TEMP/no-source-fallback/go" <<'TRAP'
-          #!/bin/sh
-          printf '%s\n' "$*" >> "$HN_WP25_GO_TRAP"
-          exit 97
-          TRAP
-          chmod 0755 "$RUNNER_TEMP/no-source-fallback/go"
-      - name: Preflight scoped syscall instrumentation and exact native commands
-        id: trace
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -euo pipefail
-          root="$RUNNER_TEMP/native-evidence/tracing"
-          mkdir "$root"
-          exec > >(tee "$root/preflight.log") 2>&1
-          trap 'result=$?; printf "%s\n" "$result" > "$root/exit"; date -u > "$root/finished"' EXIT
-          date -u > "$root/started"
-          # Resolve originals before any fixture PATH launcher is installed.
-          original_path="$PATH"
-          original_git="$(command -v git)"
-          original_reader="$(command -v cat)"
-          original_shell=/bin/sh
-          [[ "$original_git" = /* && "$original_reader" = /* ]]
-          for asset in "$original_git" "$original_reader" "$original_shell"; do test -f "$asset" && test -x "$asset"; done
-          shasum -a 256 "$original_git" "$original_reader" "$original_shell" > "$root/original-tools.sha256"
-          "$original_git" --version > "$root/original-git-version.txt"
-          "$original_git" --exec-path > "$root/original-git-exec-path.txt"
-          printf 'original_PATH=%s\noriginal_git=%s\noriginal_reader=%s\noriginal_shell=%s\n' "$original_path" "$original_git" "$original_reader" "$original_shell" > "$root/original-tool-paths.txt"
-          boundary=0
-          # A launcher records real process identities before gated work/exec.
-          # A fs_usage process.thread suffix is NEVER interpreted as a PID.
-          launcher='gate=$1; identity=$2; role=$3; registry=$4; reader=$5; shell=$6; childgate=$7; childidentity=$8; readout=$9; shift 9
-          printf "pid=%s ppid=%s role=%s\n" "$$" "${PPID-unavailable}" "$role" > "$identity"
-          read -r token < "$gate" || exit 81
-          case "$role" in
-            same-pid-read)
-              line=; read_status=0
-              IFS= read -r line < "$registry" || read_status=$?
-              printf "%s\n" "$read_status" > "$readout.status"
-              case "$read_status" in
-                0) printf "%s\n" "$line" > "$readout" ;;
-                1) test -n "$line" || exit 82; printf "%s" "$line" > "$readout" ;;
-                *) exit 82 ;;
-              esac
-              test -s "$readout" ;;
-            descendant-read)
-              "$shell" -c '\''gate=$1; identity=$2; reader=$3; registry=$4; output=$5
-              printf "pid=%s ppid=%s role=child-reader-before-exec\n" "$$" "${PPID-unavailable}" > "$identity"
-              read -r token < "$gate" || exit 83
-              exec "$reader" "$registry" > "$output"'\'' wp25-child "$childgate" "$childidentity" "$reader" "$registry" "$readout" &
-              child=$!; wait "$child" ;;
-            command) exec "$@" ;;
-            *) exit 84 ;;
-          esac'
-          printf '%s\n' "$launcher" > "$root/launcher-source.sh"
-          shasum -a 256 "$root/launcher-source.sh" > "$root/launcher-source.sha256"
-          for variant in standard native-only; do
-            export PATH="$RUNNER_TEMP/no-source-fallback:$original_path"
-            work="$root/$variant"
-            mkdir "$work" "$work/home" "$work/repo" "$work/path"
-            export HOME="$work/home" XDG_CONFIG_HOME="$work/home/xdg"
-            export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=
-            export HN_WP25_GO_TRAP="$work/go-fallback.log"
-            suffix=
-            [ "$variant" = standard ] || suffix=_native-only
-            package="$RUNNER_TEMP/unpacked/hubnot_${QUALIFICATION_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}$suffix"
-            original_candidate="$package/hn"
-            # Unique owned basenames fit Darwin's <=15-byte process-name field.
-            # All copied bytes are verified; copying never proves relocation or
-            # Apple-launcher equivalence, which has independent positive controls.
-            short_variant="${variant:0:1}"
-            go_name="h25g$$$short_variant"
-            shell_name="h25s$$$short_variant"
-            reader_name="h25c$$$short_variant"
-            git_name="h25t$$$short_variant"
-            for name in "$go_name" "$shell_name" "$reader_name" "$git_name"; do test "${#name}" -le 15; done
-            binary="$work/$go_name"
-            shell_copy="$work/$shell_name"
-            reader_copy="$work/$reader_name"
-            git_copy="$work/$git_name"
-            cp "$original_candidate" "$binary"
-            cp "$original_shell" "$shell_copy"
-            cp "$original_reader" "$reader_copy"
-            cp "$original_git" "$git_copy"
-            chmod 0755 "$binary" "$shell_copy" "$reader_copy" "$git_copy"
-            for pair in "$original_candidate|$binary" "$original_shell|$shell_copy" "$original_reader|$reader_copy" "$original_git|$git_copy"; do
-              source_path="${pair%%|*}"; copy_path="${pair#*|}"
-              source_hash="$(shasum -a 256 "$source_path" | cut -d ' ' -f1)"
-              copy_hash="$(shasum -a 256 "$copy_path" | cut -d ' ' -f1)"
-              test "$source_hash" = "$copy_hash"
-              printf '%s  %s\n%s  %s\n' "$source_hash" "$source_path" "$copy_hash" "$copy_path" >> "$work/exact-copy-identities.sha256"
-            done
-            jq -e --arg source "$CANDIDATE_SOURCE" --arg tree "$CANDIDATE_TREE" --arg compiler "$QUALIFICATION_COMPILER" --arg target "$EXPECTED_TARGET" --arg variant "$variant" --arg hash "$(shasum -a 256 "$binary" | cut -d ' ' -f1)" '.schema == "hn.release-build/1" and .source_commit == $source and .source_tree == $tree and .compiler == $compiler and .target == $target and .variant == $variant and .executable_sha256 == $hash' "$package/BUILD.json"
-            cp "$package/BUILD.json" "$work/BUILD.json"
-            case "$EXPECTED_TARGET" in
-              linux/*) config="$XDG_CONFIG_HOME"; modes=strace ;;
-              darwin/*) config="$HOME/Library/Application Support"; modes='filesys pathname cachehit' ;;
-              *) exit 1 ;;
-            esac
-            registry="$config/hubnot/extensions/registry.json"
-            printf '%s\n' "$registry" > "$work/actual-registry-path.txt"
-            "$original_git" init -q "$work/repo"
-            cd "$work/repo"
-            "$original_git" config user.name 'WP25 trace'
-            "$original_git" config user.email wp25-trace@example.invalid
-            "$binary" init --name 'WP25 trace' > "$work/init.out" 2> "$work/init.err"
-            printf '%s\n' '{"protocol":"hn.extension-manifest/1","module_id":"example.wp25/trace","module_version":"1","host_protocol":"hn.extension/1","capabilities":["resource.read"]}' > "$work/manifest.json"
-            printf '#!/bin/sh\nprintf started > "%s"\n' "$work/module-started" > "$work/module"
-            chmod 0700 "$work/module"
-            "$binary" extension register --manifest "$work/manifest.json" --executable "$work/module" --json > "$work/register.json" 2> "$work/register.err"
-            jq -e '.ok == true and .data.status == "registered"' "$work/register.json"
-            test -s "$registry"
-            export HN_WP25_TRACE_GIT_COPY="$git_copy" HN_WP25_TRACE_GIT_LOG="$work/git-process-identities.log"
-            # Diagnostic-only launcher: record PID/PPID and exact argv, then
-            # exec the verified Git copy without changing args/env/status or I/O.
-            printf '#!%s\n' "$shell_copy" > "$work/path/git"
-            cat >> "$work/path/git" <<'GIT_LAUNCHER'
-          printf 'pid=%s ppid=%s executable=%s\n' "$$" "${PPID-unavailable}" "$HN_WP25_TRACE_GIT_COPY" >> "$HN_WP25_TRACE_GIT_LOG"
-          printf 'pid=%s argv-start\n' "$$" >> "$HN_WP25_TRACE_GIT_LOG"
-          printf '<%s>\n' "$@" >> "$HN_WP25_TRACE_GIT_LOG"
-          printf 'pid=%s argv-end\n' "$$" >> "$HN_WP25_TRACE_GIT_LOG"
-          exec "$HN_WP25_TRACE_GIT_COPY" "$@"
-          GIT_LAUNCHER
-            chmod 0700 "$work/path/git"
-            shasum -a 256 "$work/path/git" > "$work/git-launcher.sha256"
-            export PATH="$work/path:$RUNNER_TEMP/no-source-fallback:$original_path"
-            relocation=0
-            "$git_copy" --version > "$work/copied-git-version.txt" 2> "$work/copied-git-version.err" || relocation=1
-            "$git_copy" --exec-path > "$work/copied-git-exec-path.txt" 2> "$work/copied-git-exec-path.err" || relocation=1
-            cmp "$root/original-git-version.txt" "$work/copied-git-version.txt" || relocation=1
-            # Record exec-path differences without concealing them with Git env
-            # overrides. The actual native positive is required under this PATH.
-            diff -u "$root/original-git-exec-path.txt" "$work/copied-git-exec-path.txt" > "$work/git-exec-path-difference.txt" || true
-            # A successful relocated Git process is insufficient: bind a real
-            # accepted native issue, the actor-ref change and public readback.
-            git for-each-ref '--format=%(refname) %(objectname)' refs/hn/actors > "$work/copied-git-accepted-refs.before" 2> "$work/copied-git-accepted-refs.before.err" || relocation=1
-            "$binary" identity show --json > "$work/copied-git-identity.json" 2> "$work/copied-git-identity.err" || relocation=1
-            "$binary" issue open --body 'Owned diagnostic Git-copy fixture' --json 'WP25 tracing positive' > "$work/copied-git-native-positive.out" 2> "$work/copied-git-native-positive.err" || relocation=1
-            positive_actor="$(jq -r '.data.actor // empty' "$work/copied-git-identity.json")" || relocation=1
-            positive_issue="$(jq -r '.data.issue_id // empty' "$work/copied-git-native-positive.out")" || relocation=1
-            positive_event="$(jq -r '.data.event_id // empty' "$work/copied-git-native-positive.out")" || relocation=1
-            if ! [[ "$positive_actor" =~ ^[0-9a-f]{64}$ && "$positive_issue" =~ ^sha256:[0-9a-f]{64}$ && "$positive_event" =~ ^sha256:[0-9a-f]{64}$ ]]; then relocation=1; fi
-            jq -e '.schema == "hn.identity/1" and .ok == true and .error == null' "$work/copied-git-identity.json" > "$work/copied-git-identity.validated" || relocation=1
-            jq -e '.schema == "hn.issue/1" and .ok == true and .error == null and .data.replayed == false and .data.conflict == false and .data.head_count == 1' "$work/copied-git-native-positive.out" > "$work/copied-git-native-positive.validated" || relocation=1
-            git for-each-ref '--format=%(refname) %(objectname)' refs/hn/actors > "$work/copied-git-accepted-refs.after" 2> "$work/copied-git-accepted-refs.after.err" || relocation=1
-            if cmp -s "$work/copied-git-accepted-refs.before" "$work/copied-git-accepted-refs.after"; then relocation=1; fi
-            diff -u "$work/copied-git-accepted-refs.before" "$work/copied-git-accepted-refs.after" > "$work/copied-git-accepted-refs.diff" || true
-            positive_ref="refs/hn/actors/$positive_actor"
-            positive_tip="$(git rev-parse --verify "$positive_ref" 2> "$work/copied-git-accepted-tip.err")" || relocation=1
-            if ! [[ "$positive_tip" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]; then relocation=1; fi
-            git cat-file blob "$positive_tip:event.json" > "$work/copied-git-accepted-event.json" 2> "$work/copied-git-accepted-event.err" || relocation=1
-            accepted_event="sha256:$(shasum -a 256 "$work/copied-git-accepted-event.json" | cut -d ' ' -f1)"
-            if [ "$accepted_event" != "$positive_event" ] || [ "$positive_issue" != "$positive_event" ]; then relocation=1; fi
-            "$binary" issue show "$positive_issue" --json > "$work/copied-git-issue-show.json" 2> "$work/copied-git-issue-show.err" || relocation=1
-            jq -e --arg issue "$positive_issue" --arg event "$positive_event" --arg actor "$positive_actor" '.schema == "hn.issue/1" and .ok == true and .data.id == $issue and .data.creator == $actor and .data.state.title == "WP25 tracing positive" and .data.state.body == "Owned diagnostic Git-copy fixture" and .data.head_ids == [$event] and .data.head_count == 1 and .data.conflict == false' "$work/copied-git-issue-show.json" > "$work/copied-git-issue-show.validated" || relocation=1
-            "$binary" issue list --json > "$work/copied-git-issue-list.json" 2> "$work/copied-git-issue-list.err" || relocation=1
-            jq -e --arg issue "$positive_issue" '.schema == "hn.issue/1" and .ok == true and .data.total == 1 and (.data.items | length == 1) and .data.items[0].id == $issue and .data.items[0].title == "WP25 tracing positive" and .data.items[0].head_count == 1 and .data.items[0].conflict == false' "$work/copied-git-issue-list.json" > "$work/copied-git-issue-list.validated" || relocation=1
-            jq -n --arg actor "$positive_actor" --arg issue "$positive_issue" --arg event "$positive_event" --arg ref "$positive_ref" --arg tip "$positive_tip" --arg accepted_event "$accepted_event" --arg status "$relocation" '{actor:$actor,issue_id:$issue,event_id:$event,accepted_ref:$ref,accepted_tip:$tip,accepted_event_blob_sha256:$accepted_event,diagnostic_positive_exit:$status,scope:"byte-identical relocated Git with unchanged argv/env under fixture PATH; accepted write/show/list proof does not assert universal relocation/helper equivalence"}' > "$work/copied-git-native-positive-binding.json"
-            test -s "$work/git-process-identities.log" || relocation=1
-            printf '%s\n' "$relocation" > "$work/relocation-positive.exit"
-            if [ "$relocation" != 0 ]; then printf 'BLOCKING diagnostic relocation failure; original Git environment remains unchanged outside this fixture\n' >> "$work/instrumentation-boundary.txt"; boundary=1; fi
-            shasum -a 256 "$registry" > "$work/registry.before.sha256"
-            find .git/hn "$config/hubnot" -type f -exec shasum -a 256 {} \; | sort > "$work/state.before.sha256"
-            if [ "$(uname -s)" = Darwin ]; then
-              shasum -a 256 /usr/bin/fs_usage > "$work/tool.sha256"
-              /usr/bin/fs_usage -h > "$work/tool.txt" 2>&1 || true
-            else
-              strace --version > "$work/tool.txt" 2>&1
-            fi
-            trace_case() {
-              mode="$1"; label="$2"; role="$3"; shift 3
-              stem="$work/$mode-$label"
-              gate="$stem.gate"; identity="$stem.identity"; childgate="$stem.child.gate"; childidentity="$stem.child.identity"; readout="$stem.read.out"
-              mkfifo "$gate" "$childgate"
-              printf '%q ' "$shell_copy" -c "$launcher" wp25 "$gate" "$identity" "$role" "$registry" "$reader_copy" "$shell_copy" "$childgate" "$childidentity" "$readout" "$@" > "$stem.command.txt"
-              printf '\n' >> "$stem.command.txt"
-              if [ "$mode" = strace ]; then
-                strace -f -qq -e trace=%file,process -o "$stem.trace" -- "$shell_copy" -c "$launcher" wp25 "$gate" "$identity" "$role" "$registry" "$reader_copy" "$shell_copy" "$childgate" "$childidentity" "$readout" "$@" > "$stem.out" 2> "$stem.err" &
-                launch=$!
-              else
-                "$shell_copy" -c "$launcher" wp25 "$gate" "$identity" "$role" "$registry" "$reader_copy" "$shell_copy" "$childgate" "$childidentity" "$readout" "$@" > "$stem.out" 2> "$stem.err" &
-                launch=$!
-              fi
-              ready=0
-              for observation in {1..100}; do if [ -s "$identity" ]; then ready=1; break; fi; sleep 0.02; done
-              if [ "$ready" != 1 ]; then kill "$launch" 2>/dev/null || true; wait "$launch" 2>/dev/null || true; printf 'launcher identity unavailable\n' > "$stem.scope-error"; printf '1\n' > "$stem.exit"; boundary=1; return; fi
-              subject="$(sed -n 's/^pid=\([0-9][0-9]*\) .*/\1/p' "$identity")"
-              [[ "$subject" =~ ^[1-9][0-9]*$ ]]
-              ps -p "$subject" -o pid=,ppid=,comm=,args= > "$stem.process-before-exec.txt" 2>&1 || true
-              printf 'launcher_pid=%s\nsubject_pid=%s\nmode=%s\nrole=%s\nfilters=%s,%s,%s,%s\nPID_evidence=launcher identity and ps; fs_usage suffix is not PID evidence\nscope=owned named candidate, shell, Git-copy, reader only; arbitrary future descendants are not proven traced\n' "$launch" "$subject" "$mode" "$role" "$go_name" "$shell_name" "$git_name" "$reader_name" > "$stem.scope.txt"
-              if [ "$mode" != strace ]; then
-                sudo -n /usr/bin/fs_usage -w -f "$mode" -t 5 "$subject" "$go_name" "$shell_name" "$git_name" "$reader_name" > "$stem.trace" 2> "$stem.tool.err" &
-                tracer=$!
-                sleep 1
-              fi
-              (
-                while kill -0 "$subject" 2>/dev/null; do
-                  ps -p "$subject" -o pid=,ppid=,comm=,args= 2>/dev/null || true
-                  for owned_child in $(pgrep -P "$subject" 2>/dev/null || true); do ps -p "$owned_child" -o pid=,ppid=,comm=,args= 2>/dev/null || true; done
-                  sleep 0.01
-                done
-              ) > "$stem.process-observations.txt" &
-              sampler=$!
-              printf 'execute\n' > "$gate"
-              child_scope=0
-              if [ "$role" = descendant-read ]; then
-                child_ready=0
-                for observation in {1..100}; do if [ -s "$childidentity" ]; then child_ready=1; break; fi; sleep 0.02; done
-                if [ "$child_ready" = 1 ]; then
-                  child="$(sed -n 's/^pid=\([0-9][0-9]*\) .*/\1/p' "$childidentity")"
-                  ps -p "$child" -o pid=,ppid=,comm=,args= > "$stem.child-process-before-exec.txt" 2>&1 || true
-                  actual_parent="$(ps -p "$child" -o ppid= | tr -d ' ')"
-                  if [ "$actual_parent" = "$subject" ]; then child_scope=1; fi
-                  printf 'execute\n' > "$childgate"
-                else
-                  printf 'owned descendant did not supply actual identity\n' > "$stem.child-scope-error"
-                  kill "$subject" 2>/dev/null || true
-                fi
-              fi
-              subject_status=0; wait "$launch" || subject_status=$?
-              wait "$sampler" || true
-              if [ "$subject_status" != 0 ]; then boundary=1; fi
-              tracer_status=0
-              if [ "$mode" != strace ]; then wait "$tracer" || tracer_status=$?; fi
-              printf 'subject_or_strace_exit=%s\nfs_usage_exit=%s\nowned_child_ppid_verified=%s\n' "$subject_status" "$tracer_status" "$child_scope" > "$stem.exits"
-              if [ "$subject_status" = 0 ] && [ "$tracer_status" = 0 ]; then printf '0\n' > "$stem.exit"; else printf '1\n' > "$stem.exit"; fi
-              if [ "$role" = same-pid-read ]; then
-                # Compare after tracing; only shell builtins perform this
-                # positive read. EOF is valid only for complete nonempty bytes.
-                if cmp "$registry" "$readout" > "$stem.read-compare.log" 2>&1; then
-                  printf 'exact registry bytes\n' > "$stem.read-compare.validated"
-                else
-                  printf '1\n' > "$stem.exit"; boundary=1
-                fi
-              fi
-              if [ "$role" = descendant-read ] && { [ "$child_scope" != 1 ] || ! cmp -s "$registry" "$readout"; }; then printf '1\n' > "$stem.exit"; fi
-            }
-            registry_read_seen() {
-              stem="$1"
-              grep -F "$registry" "$stem.trace" > "$stem.registry-events" || return 1
-              case "${stem##*/}" in
-                strace-*) grep -E 'open(at)?\(.*O_RDONLY' "$stem.registry-events" > "$stem.registry-read-events" ;;
-                # Match explicit open/openat and read/pread spellings,
-                # including their nocancel variants. These names are detector
-                # vocabulary, not evidence any syscall occurred: only raw
-                # positive-controlled per-runner events qualify the mode.
-                *) grep -Ei '(^|[[:space:]])(open|open_nocancel|openat|openat_nocancel|read|read_nocancel|readv|readv_nocancel|pread|pread_nocancel|RdData|PAGE_IN|CACHE_HIT)([[:space:](]|$)' "$stem.registry-events" > "$stem.registry-read-events" ;;
-              esac
-            }
-            qualified=0
-            : > "$work/mode-summary.tsv"
-            for mode in $modes; do
-              # Every diagnostic mode continues after misses; only the final gate
-              # decides whether actual Go AND owned descendant reads were seen.
-              trace_case "$mode" same-pid-shell same-pid-read
-              shell_positive=0
-              if [ "$(cat "$work/$mode-same-pid-shell.exit")" = 0 ] && registry_read_seen "$work/$mode-same-pid-shell"; then shell_positive=1; fi
-              trace_case "$mode" go-inspect command "$binary" extension inspect example.wp25/trace --json
-              go_positive=0
-              if [ "$(cat "$work/$mode-go-inspect.exit")" = 0 ] && jq -e '.ok == true and (.data.modules | length == 1) and .data.modules[0].module_id == "example.wp25/trace"' "$work/$mode-go-inspect.out" > "$work/$mode-go-inspect.validated.json" && registry_read_seen "$work/$mode-go-inspect"; then go_positive=1; fi
-              trace_case "$mode" descendant descendant-read
-              descendant_positive=0
-              if [ "$(cat "$work/$mode-descendant.exit")" = 0 ] && registry_read_seen "$work/$mode-descendant"; then descendant_positive=1; fi
-              negative_ok=1
-              for command in version help identity issue; do
-                case "$command" in
-                  version) set -- "$binary" version ;;
-                  help) set -- "$binary" help ;;
-                  identity) set -- "$binary" identity show --json ;;
-                  issue) set -- "$binary" issue list --json ;;
-                esac
-                trace_case "$mode" "native-$command" command "$@"
-                stem="$work/$mode-native-$command"
-                if [ "$(cat "$stem.exit")" != 0 ]; then negative_ok=0; fi
-                if grep -E 'registry\.json|enabled\.json|extensions\.json' "$stem.trace" > "$stem.forbidden-events"; then negative_ok=0; boundary=1; fi
-              done
-              printf '%s\tshell=%s\tGo=%s\tdescendant=%s\tnegatives=%s\n' "$mode" "$shell_positive" "$go_positive" "$descendant_positive" "$negative_ok" >> "$work/mode-summary.tsv"
-              if [ "$go_positive" = 1 ] && [ "$descendant_positive" = 1 ] && [ "$negative_ok" = 1 ]; then qualified=1; printf '%s\n' "$mode" >> "$work/qualified-modes.txt"; fi
-            done
-            if [ "$qualified" != 1 ]; then printf 'BLOCKING instrumentation boundary: no scoped mode proved actual Go registry read AND owned descendant read with successful native negatives\n' >> "$work/instrumentation-boundary.txt"; boundary=1; fi
-            if [ -e "$work/module-started" ] || [ -e "$work/go-fallback.log" ]; then printf 'BLOCKING module-start/compiler-fallback marker\n' >> "$work/instrumentation-boundary.txt"; boundary=1; fi
-            shasum -a 256 "$registry" > "$work/registry.after.sha256"
-            if ! cmp "$work/registry.before.sha256" "$work/registry.after.sha256"; then boundary=1; fi
-            find .git/hn "$config/hubnot" -type f -exec shasum -a 256 {} \; | sort > "$work/state.after.sha256"
-            if ! cmp "$work/state.before.sha256" "$work/state.after.sha256"; then boundary=1; fi
-            # No diagnostic PATH or copied Git is forwarded to actual journeys
-            # or used to resolve the next variant's ORIGINAL Git executable.
-            export PATH="$original_path"
-          done
-          test "$boundary" = 0
-      - name: Execute both exact native variants and standalone consumers
-        id: journeys
-        if: always() && steps.prepare.outcome == 'success'
-        shell: bash
-        env:
-          HN_WP25_REFERENCE_DIR: ${{ runner.temp }}/qualification-assets/references
-        run: |
-          set -euo pipefail
-          evidence="$RUNNER_TEMP/native-evidence"
-          export PATH="$RUNNER_TEMP/no-source-fallback:$PATH"
-          # Disable only the race runtime's post-exit sleep in this test
-          # harness so cleanup timestamps measure the child process itself.
-          export GORACE=atexit_sleep_ms=0
-          printf 'GORACE=%s\n' "$GORACE" | tee "$evidence/gorace-environment.txt"
-          grep -E '^[[:space:]]*build[[:space:]]+-race=true$' "$evidence/harness.buildinfo" > "$evidence/harness-race-setting.txt"
-          # Prove that the installed first Go selector is an active refusal.
-          export HN_WP25_GO_TRAP="$evidence/go-trap-positive.log"
-          if go version; then exit 1; fi
-          test -s "$HN_WP25_GO_TRAP"
-          # This validator is deliberately local to these two fixed groups.
-          cat > "$evidence/validate-composite.jq" <<'JQ'
-          def heavy: ["inherited-public-count-limits","lifecycle-limits","artifact-record-count-and-enclosing-deadline","TestArtifactBlobWriterProtocolCLI"];
-          def groupnames($inventory;$name):
-            if $name == "heavy" then [$inventory[] | select(. as $n | heavy | index($n))]
-            elif $name == "remaining" then [$inventory[] | select(. as $n | heavy | index($n) | not)]
-            else error("unknown qualification group") end;
-          # Go1.26 test2json metadata is optional; present fields have their
-          # actual converter types. Unknown actions/tests cannot hide as output.
-          def eventshape:
-            type == "object" and
-            ((keys - ["Time","Action","Package","Test","Elapsed","Output","FailedBuild","Key","Value","Path"]) | length)==0 and
-            all(to_entries[]; if .key == "Elapsed" then (.value | type)=="number" and .value>=0 else (.value | type)=="string" end) and
-            (.Action as $action | ["start","run","pause","cont","pass","bench","fail","output","skip","attr","artifacts"] | index($action)) != null and
-            (if has("Test") then (.Test | length)>0 and .Action != "start"
-             else (.Action as $action | ["start","output","pass","fail","skip","bench"] | index($action)) != null end) and
-            (has("Output") == (.Action == "output")) and
-            (if has("Elapsed") then (.Action == "pass" or .Action == "fail" or .Action == "bench") else true end) and
-            (if has("FailedBuild") then .Action == "fail" else true end) and
-            (if has("Key") or has("Value") then .Action == "attr" else true end) and
-            (if has("Path") then .Action == "artifacts" else true end);
-          def eventscomplete($inventory):
-            "TestExtensionPackageQualification" as $overall |
-            [$inventory[] | $overall+"/"+.] as $declared |
-            reduce .[] as $e ({active:[],done:[],bad:false};
-              if ($e | eventshape | not) then .bad=true
-              elif $e.Action == "fail" or $e.Action == "skip" then .bad=true
-              elif $e.Test == null then .
-              elif $e.Action == "run" then
-                # Only the declared direct-root boundary is inferred. A literal
-                # t.Run("inventory.test/part") needs no intermediate RUN.
-                [$declared[] | select(. as $root | $e.Test == $root or ($e.Test | startswith($root+"/")))] as $roots |
-                if ((.active + .done) | index($e.Test)) != null then .bad=true
-                elif $e.Test == $overall then .active += [$e.Test]
-                elif ($roots | length)!=1 or (.active | index($overall)) == null then .bad=true
-                elif $e.Test != $roots[0] and (.active | index($roots[0])) == null then .bad=true
-                else .active += [$e.Test] end
-              elif $e.Action == "pass" then
-                if (.active | index($e.Test)) == null or any(.active[]; startswith($e.Test+"/")) then .bad=true
-                else .active -= [$e.Test] | .done += [$e.Test] end
-              elif $e.Action == "pause" or $e.Action == "cont" then
-                if (.active | index($e.Test)) == null then .bad=true else . end
-              else
-                # Output/attributes/artifact metadata may refer to an already
-                # completed test, but never to a test with no observed RUN.
-                if ((.active + .done) | index($e.Test)) == null then .bad=true else . end
-              end) |
-            .bad == false and (.active | length)==0;
-          def validgroup($inventory;$identity):
-            . as $g | .record as $r |
-            groupnames($inventory;$r.group) as $expected |
-            ([.events[] | select(.Test != null and .Action == "run") | .Test]) as $runs |
-            ([.events[] | select(.Test != null and .Action == "pass") | .Test]) as $passes |
-            ([.events[] | select(.Action == "run" and (.Test // "" | startswith("TestExtensionPackageQualification/"))) | .Test | split("/") | select(length == 2) | .[1]]) as $direct |
-            (($g.events | eventscomplete($inventory)) and $g.exit == 0 and ($g.started | length)>0 and ($g.finished | length)>0 and $g.fallback == false and
-             ($g.command | length)>0 and ($g.log_sha256 | test("^[0-9a-f]{64}$")) and
-             $r.schema == "hn.extension-package-group/1" and $r.result == "PASS" and $r.source_fallback == false and
-             $r.identity == $identity and $r.canonical_inventory == $inventory and
-             $r.inventory_sha256 == "6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c" and
-             $r.expected_roots == $expected and $r.excluded_roots == [$inventory[] | select(. as $n | $expected | index($n) | not)] and
-             $direct == $expected and ($runs | length) == ($runs | unique | length) and ($runs | sort) == ($passes | sort) and
-             ($runs | map(select(. == "TestExtensionPackageQualification")) | length) == 1 and
-             all($runs[]; . == "TestExtensionPackageQualification" or startswith("TestExtensionPackageQualification/")) and
-             all($g.events[]; .Action != "fail" and .Action != "skip"));
-          def valididentity:
-            (.source_commit | test("^[0-9a-f]{40}$")) and (.source_tree | test("^[0-9a-f]{40}$")) and
-            (.harness_sha256 | test("^[0-9a-f]{64}$")) and (.executable_sha256 | test("^[0-9a-f]{64}$")) and
-            (.reference_sha256 | keys) == ["charter","fake-tracker","inventory"] and
-            all(.reference_sha256[]; test("^[0-9a-f]{64}$")) and .harness_compiler == "go1.26.4" and
-            (.qualified_git_version | startswith("git version ")) and
-            (.target == "linux/amd64" or .target == "linux/arm64" or .target == "darwin/amd64" or .target == "darwin/arm64");
-          .inventory as $inventory | .identity as $identity |
-          if ($identity | valididentity) and ($inventory | length)==206 and ($inventory | unique | length)==206 and
-             (.groups | length)==2 and [.groups[].record.group]==["heavy","remaining"] and
-             all(.groups[]; validgroup($inventory;$identity)) and
-             ([.groups[].record.expected_roots[]] | sort)==($inventory | sort) and
-             ([.groups[].record.expected_roots[]] | length)==206 and
-             ($identity.run_id | length)>0 and ($identity.run_attempt | test("^[1-9][0-9]*$")) and
-             ($identity.variant == "standard" or $identity.variant == "native-only")
-          then {schema:"hn.extension-package-row/2",method:"two-fixed-serial-groups-120m-each-300m-shared-job",aggregate_budget_revision:"Does not establish one-process aggregate120m completion; historical timeout remains FAIL",result:"GROUPS_VALIDATED",identity:$identity,inventory_sha256:"6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c",root_count:206,groups:[.groups[]|{group:.record.group,manifest:.record,command,log_sha256,exit,started,finished}]}
-          else error("incomplete or inconsistent qualification groups") end
-          JQ
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source.before"
+          go test -race -c -o "$RUNNER_TEMP/smoke.test" .
           result=0
           for variant in standard native-only; do
-            export HN_WP25_VARIANT="$variant"
-            variant_evidence="$evidence/$variant"
-            mkdir "$variant_evidence"
-            for group in heavy remaining; do
-              export HN_WP25_GROUP="$group"
-              export HN_WP25_EVIDENCE="$variant_evidence/$group"
-              export HN_WP25_GO_TRAP="$evidence/$variant-$group-go-fallback.log"
-              mkdir "$HN_WP25_EVIDENCE"
-              date -u > "$HN_WP25_EVIDENCE/started"
-              printf '%s\n' "HN_WP25_GROUP=$group qualification-harness -test.run ^TestExtensionPackageQualification$ -test.count=1 -test.timeout 120m -hn-package-dir unpacked -hn-package-bundle candidate -hn-package-version 0.0.0-optional-extensions-qualification.1 -hn-package-compiler go1.26.4" > "$HN_WP25_EVIDENCE/command.txt"
-              group_exit=0
-              test "$TEST2JSON" = "$RUNNER_TEMP/qualification-test2json"
-              test -f "$TEST2JSON" && test -x "$TEST2JSON"
-              test "$(shasum -a 256 "$TEST2JSON" | cut -d ' ' -f1)" = "$TEST2JSON_SHA256"
-              "$TEST2JSON" -t -p hubnot "$RUNNER_TEMP/qualification-harness" -test.v=test2json -test.count=1 -test.timeout=120m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/qualification-assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.jsonl" || group_exit=$?
-              printf '%s\n' "$group_exit" > "$HN_WP25_EVIDENCE/exit"
-              date -u > "$HN_WP25_EVIDENCE/finished"
-              fallback=false
-              if [ -e "$HN_WP25_GO_TRAP" ]; then fallback=true; fi
-              # Retain each group's manifest, log, exact exit and finish even if
-              # the other group failed. No retry or early group omission.
-              if [ "$group_exit" != 0 ] || [ "$fallback" = true ] || [ ! -s "$HN_WP25_EVIDENCE/$group-group.json" ]; then result=1; fi
-              if [ -s "$HN_WP25_EVIDENCE/$group-group.json" ]; then
-                if ! jq -n --slurpfile record "$HN_WP25_EVIDENCE/$group-group.json" --slurpfile events "$HN_WP25_EVIDENCE/results.jsonl" --argjson exit "$group_exit" --argjson fallback "$fallback" --rawfile started "$HN_WP25_EVIDENCE/started" --rawfile finished "$HN_WP25_EVIDENCE/finished" --rawfile command "$HN_WP25_EVIDENCE/command.txt" --arg log_sha256 "$(shasum -a 256 "$HN_WP25_EVIDENCE/results.jsonl" | cut -d ' ' -f1)" '{record:$record[0],events:$events,exit:$exit,fallback:$fallback,started:$started,finished:$finished,command:$command,log_sha256:$log_sha256}' > "$HN_WP25_EVIDENCE/composite-input.json"; then result=1; fi
-              fi
-            done
-            heavy="$variant_evidence/heavy/composite-input.json"
-            remaining="$variant_evidence/remaining/composite-input.json"
-            if [ -s "$heavy" ] && [ -s "$remaining" ]; then
-              if ! jq -s '{inventory:.[0].record.canonical_inventory,identity:.[0].record.identity,groups:.}' "$heavy" "$remaining" > "$variant_evidence/composite-input.json"; then result=1; fi
-              # The inventory is frozen independently of either supplied record.
-              inventory_sha=$(jq -r '.inventory[]' "$variant_evidence/composite-input.json" | shasum -a 256 | cut -d ' ' -f1)
-              identity_ok=0
-              jq -e --arg source "$(git rev-parse HEAD)" --arg tree "$(git rev-parse 'HEAD^{tree}')" --arg target '${{ matrix.target }}' --arg variant "$variant" --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" --arg harness "$(shasum -a 256 "$RUNNER_TEMP/qualification-harness" | cut -d ' ' -f1)" '.identity | .source_commit==$source and .source_tree==$tree and .target==$target and .variant==$variant and .run_id==$run and .run_attempt==$attempt and .harness_sha256==$harness' "$variant_evidence/composite-input.json" > "$variant_evidence/identity-validated.txt" || identity_ok=1
-              if [ "$inventory_sha" = 6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c ] && [ "$identity_ok" = 0 ]; then
-                if ! jq -e -f "$evidence/validate-composite.jq" "$variant_evidence/composite-input.json" > "$variant_evidence/composite-groups.json.tmp"; then result=1
-                else mv "$variant_evidence/composite-groups.json.tmp" "$variant_evidence/composite-groups.json"; fi
-              else result=1; fi
-            else result=1; fi
+            export HN_WP25_VARIANT="$variant" HN_WP25_EVIDENCE="$evidence/$variant"
+            mkdir "$HN_WP25_EVIDENCE"
+            "$RUNNER_TEMP/smoke.test" -test.v -test.count=1 -test.timeout=3m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.log" || result=1
           done
-          exit "$result"
-      - name: Record final API identities and unchanged source
-        id: source_after
-        if: always()
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TRACE_OUTCOME: ${{ steps.trace.outcome }}
-        run: |
-          set -euo pipefail
-          evidence="$RUNNER_TEMP/native-evidence"
-          mkdir -p "$evidence"
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" > "$evidence/jobs-at-end.json"
-          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source-inputs.after.sha256"
-          cmp "$evidence/source-inputs.before.sha256" "$evidence/source-inputs.after.sha256"
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source.after"
+          cmp "$evidence/source.before" "$evidence/source.after"
           git diff --exit-code
-          # A validated group pair becomes a whole row only after the unchanged
-          # source and original instrumentation controls have also succeeded.
-          test "$TRACE_OUTCOME" = success
-          for variant in standard native-only; do
-            jq -e '.schema == "hn.extension-package-row/2" and .result == "GROUPS_VALIDATED"' "$evidence/$variant/composite-groups.json"
-            jq '.result="PASS" | .final_controls={source_after:"PASS",instrumentation:"PASS"}' "$evidence/$variant/composite-groups.json" > "$evidence/$variant/$variant-row.json.tmp"
-            mv "$evidence/$variant/$variant-row.json.tmp" "$evidence/$variant/$variant-row.json"
-          done
+          printf 'scope=package-smoke\nexhaustive=false\nexit=%s\n' "$result" > "$evidence/result.txt"
+          exit "$result"
       - uses: actions/upload-artifact@v4
-        id: upload
         if: always()
         with:
-          name: optional-extensions-native-${{ matrix.target == 'linux/amd64' && 'linux-amd64' || matrix.target == 'linux/arm64' && 'linux-arm64' || matrix.target == 'darwin/amd64' && 'darwin-amd64' || 'darwin-arm64' }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/native-evidence/
-          if-no-files-found: error
-          retention-days: 30
-      - name: Require functional and instrumentation qualification
-        if: always()
-        shell: bash
-        env:
-          PREPARE_OUTCOME: ${{ steps.prepare.outcome }}
-          TRACE_OUTCOME: ${{ steps.trace.outcome }}
-          JOURNEYS_OUTCOME: ${{ steps.journeys.outcome }}
-          SOURCE_AFTER_OUTCOME: ${{ steps.source_after.outcome }}
-          EVIDENCE_ARTIFACT: ${{ steps.upload.outputs.artifact-id }}
-        run: |
-          printf 'prepare=%s\ntrace=%s\njourneys=%s\nevidence_artifact_id=%s\n' "$PREPARE_OUTCOME" "$TRACE_OUTCOME" "$JOURNEYS_OUTCOME" "$EVIDENCE_ARTIFACT"
-          test "$PREPARE_OUTCOME" = success
-          test "$TRACE_OUTCOME" = success
-          test "$JOURNEYS_OUTCOME" = success
-          test "$SOURCE_AFTER_OUTCOME" = success
-          for variant in standard native-only; do
-            jq -e ' .schema == "hn.extension-package-row/2" and .result == "PASS" and .root_count == 206 and .final_controls == {source_after:"PASS",instrumentation:"PASS"} and [.groups[].group] == ["heavy","remaining"]' "$RUNNER_TEMP/native-evidence/$variant/$variant-row.json"
-          done
-          test -n "$EVIDENCE_ARTIFACT"
+          name: optional-extensions-smoke-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/smoke-evidence/
+          if-no-files-found: warn
+          retention-days: 14

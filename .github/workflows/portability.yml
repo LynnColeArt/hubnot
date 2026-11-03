@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       qualification:
-        description: Explicit qualification surface (beta remains the default)
+        description: Explicit package smoke surface (deep tests use native Hubnot CI)
         type: choice
         options: [beta, optional-extensions]
         default: beta
@@ -52,7 +52,7 @@ jobs:
     name: Portability (${{ matrix.os }})
     if: github.event_name != 'workflow_dispatch'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -63,7 +63,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.x'
+          go-version: '1.26.4'
           cache: false
       - name: Record native platform and normal temporary environment
         shell: bash
@@ -72,11 +72,11 @@ jobs:
           go version
           git --version
           printf 'TMPDIR=%s\n' "${TMPDIR-<unset>}"
-      - name: Filesystem and Go-only packager regressions
-        run: go test -race -count=1 -timeout 10m ./internal/safepath ./internal/release ./cmd/hn-release
+      - name: Fast native CI regressions
+        run: ./.hn/actions/ci fast
       - name: Migration boundary regressions
         # Deliberately do not physicalize paths or forward TMPDIR to children.
-        run: go test -race -count=1 -timeout 10m -run '^(TestMigration.*|TestProjectSnapshot.*|TestPortableCollaborationAzure.*)$' .
+        run: go test -race -count=1 -timeout 2m -run '^(TestMigration.*|TestProjectSnapshot.*|TestPortableCollaborationAzure.*)$' .
       - name: Package the exact candidate for the native runner
         shell: bash
         run: |
@@ -87,7 +87,7 @@ jobs:
             tar -xzf "$archive" -C "$RUNNER_TEMP/portability-unpacked"
           done
       - name: Actual standard and native-only package public journeys
-        run: go test -race -count=1 -timeout 10m -v -run '^TestPortableCollaborationIntegratedPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/portability-unpacked"
+        run: go test -race -count=1 -timeout 3m -v -run '^TestPortableCollaborationIntegratedPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/portability-unpacked"
       - name: Static checks
         run: go vet ./...
 
@@ -134,7 +134,7 @@ jobs:
     needs: candidate-request
     if: github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions' && needs.candidate-request.outputs.mode == 'build'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 10
     outputs:
       source: ${{ steps.freeze.outputs.source }}
       tree: ${{ steps.freeze.outputs.tree }}
@@ -264,7 +264,7 @@ jobs:
     if: always() && github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions' && needs.candidate-request.result == 'success' && ((needs.candidate-build.result == 'success' && needs.candidate-reuse.result == 'skipped') || (needs.candidate-reuse.result == 'success' && needs.candidate-build.result == 'skipped'))
     needs: [candidate-request, candidate-build, candidate-reuse]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    timeout-minutes: 15
     permissions:
       contents: read
       actions: read
@@ -349,64 +349,14 @@ jobs:
           trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/bundle.exit"; date -u > "$RUNNER_TEMP/native-evidence/bundle.finished"' EXIT
           date -u > "$RUNNER_TEMP/native-evidence/bundle.started"
           go test -race -count=1 -timeout=5m -v -run '^(TestBetaPlatformCandidateBundle|TestBetaPlatformPackageInstallAndRuntime)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$RUNNER_TEMP/candidate" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/bundle.log"
-      - name: Repeat released-writer refusals on the observed Linux Git hosts
-        if: steps.package-preflight.outcome == 'success' && startsWith(matrix.target, 'linux/')
+      - name: Bounded exact-package collaboration and recovery smoke
+        if: steps.package-preflight.outcome == 'success'
         shell: bash
         env:
           HN_PORTABLE_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
         run: |
           set -euo pipefail
-          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/compatibility-repeat.exit"; date -u > "$RUNNER_TEMP/native-evidence/compatibility-repeat.finished"' EXIT
-          date -u > "$RUNNER_TEMP/native-evidence/compatibility-repeat.started"
-          go test -race -count=3 -timeout=10m -v -run '^TestBetaReleasedWriterCompatibility$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/compatibility-repeat.log"
-      - name: Actual package WP13 contribution and moderation public journeys
-        if: always() && steps.package-preflight.outcome == 'success'
-        shell: bash
-        env:
-          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
-        run: |
-          set -euo pipefail
-          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp13.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp13.finished"' EXIT
-          date -u > "$RUNNER_TEMP/native-evidence/wp13.started"
-          go test -race -count=1 -timeout=45m -v -run '^TestBetaContributionPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp13.log"
-      - name: Actual package integrated collaboration, upgrade, recovery and migration journeys
-        if: always() && steps.package-preflight.outcome == 'success'
-        shell: bash
-        env:
-          HN_MIGRATION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
-          HN_PORTABLE_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
-          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
-        run: |
-          set -euo pipefail
-          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/journeys.exit"; date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"' EXIT
-          date -u > "$RUNNER_TEMP/native-evidence/journeys.started"
-          go test -race -count=1 -timeout=30m -v -run '^(TestPortableCollaborationIntegratedPublicVariants|TestBetaReleasedWriterCompatibility|TestBetaRecoveryJourneys|TestBetaRotationJournalRefusalPreservesRecovery|TestBetaMigrationFutureSessionRefusesWithoutReset|TestMigrationCLINativeOfflineBuildVariants|TestMigrationCLIGitLabToGitHubGuidedResumeAndOffline|TestMigrationCLIPublicRefusalsPreserveRemoteState)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/journeys.log"
-          date -u > "$RUNNER_TEMP/native-evidence/journeys.finished"
-      - name: WP12 recovery and contribution runtime against standard package
-        if: always() && steps.package-preflight.outcome == 'success'
-        shell: bash
-        env:
-          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
-        run: |
-          set -euo pipefail
-          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp12-standard.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp12-standard.finished"' EXIT
-          date -u > "$RUNNER_TEMP/native-evidence/wp12-standard.started"
-          export HN_CONTRIBUTION_TEST_BINARY="$RUNNER_TEMP/unpacked/hubnot_${CANDIDATE_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}/hn"
-          export HN_CONTRIBUTION_TEST_BINARY_SHA256="sha256:$(shasum -a 256 "$HN_CONTRIBUTION_TEST_BINARY" | cut -d ' ' -f1)"
-          go test -race -count=1 -timeout=20m -v -run '^TestContributionCLI' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-standard.log"
-      - name: WP12 recovery and contribution runtime against native-only package
-        if: always() && steps.package-preflight.outcome == 'success'
-        shell: bash
-        env:
-          HN_CONTRIBUTION_TEST_TRANSCRIPTS: ${{ runner.temp }}/native-evidence/processes
-        run: |
-          set -euo pipefail
-          trap 'result=$?; printf "exit=%s\n" "$result" > "$RUNNER_TEMP/native-evidence/wp12-native-only.exit"; date -u > "$RUNNER_TEMP/native-evidence/wp12-native-only.finished"' EXIT
-          date -u > "$RUNNER_TEMP/native-evidence/wp12-native-only.started"
-          export HN_CONTRIBUTION_TEST_BINARY="$RUNNER_TEMP/unpacked/hubnot_${CANDIDATE_VERSION}_${EXPECTED_TARGET%/*}_${EXPECTED_TARGET#*/}_native-only/hn"
-          export HN_CONTRIBUTION_TEST_BINARY_SHA256="sha256:$(shasum -a 256 "$HN_CONTRIBUTION_TEST_BINARY" | cut -d ' ' -f1)"
-          # The hidden-workflow publication witness deliberately uses standard.
-          go test -race -count=1 -timeout=20m -v -run '^TestContributionCLI(AutomaticAndScopedModeration|BaselineGrowthRequiresLocalReservation|LocalCapacityBeforeNativeWritesAndRawCannotSelectTrust|GovernedSpecializedResourcesAndHiddenDependencies|DisabledPreservesNativeBehavior|WorktreesShareAccountingAndLockKeepLocalAuthority|ConflictsRevocationAndManufacturedHistoricalDecisions|RawRecoveryChargesLocalRetentionAndGuardsNewRefs|DurableArtifactRetryRecovery)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/wp12-native-only.log"
+          go test -race -count=1 -timeout=3m -v -run '^(TestPortableCollaborationIntegratedPublicVariants|TestBetaReleasedWriterCompatibility|TestBetaRecoveryJourneys)$' . -args -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$CANDIDATE_VERSION" -hn-package-compiler go1.26.4 2>&1 | tee "$RUNNER_TEMP/native-evidence/smoke.log"
       - name: Verify immutable source and preserve evidence
         if: always()
         shell: bash
@@ -423,7 +373,7 @@ jobs:
           retention-days: 30
 
   optional-extensions:
-    name: Optional extension exact-package qualification
+    name: Optional extension package smoke
     permissions:
       contents: read
       actions: read
