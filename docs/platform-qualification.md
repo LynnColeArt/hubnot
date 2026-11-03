@@ -348,6 +348,19 @@ of this correction.
 
 ## Download experience and signing decision
 
+**Current extension-beta decision, 2026-11-03:** the maintainer explicitly
+accepts Mac beta packages without Developer ID signing or notarization, with
+the Gatekeeper limitation documented. Functional qualification and independent
+review can proceed; signing/notarization is separate distribution follow-up.
+This resolves the distribution choice discussed below without changing any
+recorded observation. The extension candidate's actual browser-download launch
+failure is retained in
+[issue #24](https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846).
+Normal browser-download installation remains uncertified. See the current
+[beta support contract](beta-support.md).
+
+The earlier candidate-specific evidence and recommendation follow.
+
 CI artifact extraction and native execution do not exercise browser quarantine,
 Finder launch, Gatekeeper prompts or an independent user's download/install
 journey. The candidate has no Apple Developer ID signing or notarization.

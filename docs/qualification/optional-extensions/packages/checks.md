@@ -20,11 +20,14 @@ The matrix records these job observations separately from final row acceptance.
 
 Independent Pink Menace testing of the exact Apple Silicon packages passed the
 installation/runtime check, but browser-downloaded quarantined copies failed
-Gatekeeper and direct launch. This is a **distribution-launch blocker**, not a
-reason to repeat the large edge-case fixtures. See
+Gatekeeper and direct launch. This is a **known distribution-launch limitation**,
+accepted by the maintainer for the unsigned Mac beta on 2026-11-03. It does not
+block functional qualification or independent review. See
 [issue #24](https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846).
 Signing/notarization and the resulting exact packages require native Mac retest.
 The maintainer confirmed on 2026-11-03 that no Developer ID setup is available yet.
+Signing is a separate distribution follow-up; normal browser-download installation
+remains uncertified. Release notes must disclose this accepted beta limitation.
 No candidate bytes have been replaced to incorporate the CI changes.
 
 The first post-integration smoke run `41589853578`, at source

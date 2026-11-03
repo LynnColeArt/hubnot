@@ -259,8 +259,10 @@
       },
       "instrumentation_evidence": null,
       "remaining_acceptance": [
-        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope",
-        "Normal browser-download launch/signing/notarization; Developer ID setup unavailable"
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
       ]
     },
     {
@@ -312,8 +314,10 @@
       },
       "instrumentation_evidence": null,
       "remaining_acceptance": [
-        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope",
-        "Normal browser-download launch/signing/notarization; Developer ID setup unavailable"
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
       ]
     },
     {
@@ -365,8 +369,10 @@
       },
       "instrumentation_evidence": null,
       "remaining_acceptance": [
-        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope",
-        "Normal browser-download launch/signing/notarization; Developer ID setup unavailable"
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
       ]
     },
     {
@@ -418,8 +424,10 @@
       },
       "instrumentation_evidence": null,
       "remaining_acceptance": [
-        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope",
-        "Normal browser-download launch/signing/notarization; Developer ID setup unavailable"
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
       ]
     }
   ],
@@ -492,12 +500,12 @@
       "gatekeeper_exit": 3,
       "direct_launch_exit": 137,
       "url": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846",
-      "developer_id_setup": "not_available; maintainer confirmed 2026-11-03"
+      "developer_id_setup": "not_available; maintainer confirmed 2026-11-03",
+      "beta_disposition": "Accepted unsigned-beta limitation; actual Gatekeeper rejection and direct-launch failure retained"
     },
     "acceptance": "PENDING",
     "row_statuses_unchanged": true,
     "next": [
-      "Mac distribution signing/notarization setup and exact downloaded signed-package retest",
       "Independent WP25 evidence review; then WP26 boundary and adopter observations"
     ],
     "native_fast_verification": {
@@ -541,6 +549,20 @@
       "created_to_last_completed_job_seconds": 321,
       "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505"
     },
-    "row_status_note": "Acceptance remains PENDING; eight native smoke observations now recorded. Smoke is not exhaustive or browser-launch certification."
+    "row_status_note": "Acceptance remains PENDING; eight native smoke observations now recorded. Smoke is not exhaustive or browser-launch certification.",
+    "accepted_beta_limitations": [
+      {
+        "area": "macOS public distribution",
+        "decision": "Mac beta may ship without Developer ID signing or notarization; maintainer approved 2026-11-03",
+        "blocks_functional_qualification": false,
+        "blocks_independent_review": false,
+        "normal_browser_download_installation": "uncertified; actual Gatekeeper rejection retained",
+        "required_release_disclosure": true,
+        "evidence": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846"
+      }
+    ],
+    "deferred_distribution_work": [
+      "Developer ID signing/notarization setup when available; new signed-package digests/provenance and exact native browser-download retest"
+    ]
   }
 }

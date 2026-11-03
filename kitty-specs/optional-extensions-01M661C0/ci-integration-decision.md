@@ -107,11 +107,12 @@ corrected-source verification recorded below):
 1. Verify the integrated native fast pipeline and source/preservation attestations.
 2. Reconcile WP25's package evidence into distinct functional/platform, deep
    stress and distribution-launch outcomes. Keep unobserved rows pending.
-3. Resolve the actual browser-download Mac launch blocker reported in
+3. Track the actual browser-download Mac launch limitation reported in
    [issue #24](https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846):
-   quarantined ad-hoc-signed binaries fail Gatekeeper. The normal distribution
-   path needs a signing/notarization decision and exact signed-package retest;
-   removing quarantine is not evidence that the original download works.
+   quarantined ad-hoc-signed binaries fail Gatekeeper. The maintainer accepts
+   this as a disclosed unsigned-beta limitation (decision below); signing and
+   exact signed-package retest remain separate distribution work. Removing
+   quarantine is not evidence that the original download works.
 4. Complete normal independent WP25 review, then WP26's boundary review and
    independent native-user/extension-author trials. Missing external observations
    cannot be replaced by implementer replay. Acceptance remains pending.
@@ -154,15 +155,21 @@ actual native smoke observations while preserving pending acceptance and the
 distinct Mac browser-launch blocker. Later evidence-only edits change no tested
 Go, action or pipeline input.
 
-## Mac distribution prerequisite confirmed by the maintainer
+## Accepted unsigned Mac beta limitation
 
 On 2026-11-03 the maintainer confirmed that no Developer ID setup is available
-yet. Normal browser-download certification therefore remains blocked separately
-from CLI functional/platform testing. The next distribution work needs Developer
-ID signing and notarization setup, followed by validation of the resulting exact
-downloaded packages with quarantine retained. See Apple's
+and explicitly accepted Mac beta packages without Developer ID signing or
+notarization as a documented limitation. Signing is not a prerequisite for
+functional qualification, independent WP25 review or WP26 trials. The known
+Gatekeeper/browser-download launch failure stays in the evidence; that install
+path remains uncertified and release notes must disclose it. This choice neither
+qualifies the whole beta nor changes any historical failure into a pass.
+
+Separate distribution follow-up can add Developer ID signing/notarization and
+retest the resulting exact downloads with quarantine retained. See Apple's
 [custom notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow).
-Account enrollment and signing identity availability are external prerequisites;
+Account enrollment and signing identity availability are prerequisites for that
+future signing work, rather than beta mission gates;
 this integration does not create an account, purchase a membership or claim a
 signing result. Signing will change executable/archive digests, so future signed
 assets need new provenance, checksums and native runtime/launch observations.
