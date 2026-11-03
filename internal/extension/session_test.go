@@ -724,6 +724,12 @@ func TestSessionActiveRecheckIO(t *testing.T) {
 			cfg.Recheck = func(ctx context.Context, binding Binding) (Registration, EnablementEntry, error) {
 				start := time.Now()
 				out, err := exec.CommandContext(ctx, "git", "-C", cfg.Directory, "rev-parse", "--absolute-git-dir").Output()
+				// CommandContext may report a killed process as exec.ExitError.
+				// Match the CLI callback's typed cancellation before returning it
+				// to the monitor; genuine live-context Git failures remain errors.
+				if ctx.Err() != nil {
+					return Registration{}, EnablementEntry{}, failure("cancelled", "host validation cancelled")
+				}
 				if err != nil {
 					return Registration{}, EnablementEntry{}, err
 				}
@@ -739,6 +745,12 @@ func TestSessionActiveRecheckIO(t *testing.T) {
 				}
 				return original(ctx, binding)
 			}
+			// The injected I/O callback must honor the same typed cancellation
+			// contract as the CLI recheck, including cancellation before Git starts.
+			cancelled, cancelRecheck := context.WithCancel(context.Background())
+			cancelRecheck()
+			_, _, err := cfg.Recheck(cancelled, Binding{})
+			expectGrantError(t, err, "cancelled")
 			ctx, cancel := context.WithCancel(context.Background())
 			done := make(chan error, count)
 			pending := 0
