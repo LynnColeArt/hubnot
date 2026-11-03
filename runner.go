@@ -119,6 +119,10 @@ func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error)
 		if request.Event.Kind != "run.request" || request.Event.Pipeline != options.Pipeline || request.Event.Actor != options.AcceptedActor {
 			continue
 		}
+		if withdrawal := findRunWithdrawal(events, request.ID); withdrawal != nil {
+			runnerLog("Runner skipped %s: withdrawn by requester (%s)", shortID(request.ID), shortID(withdrawal.ID))
+			continue
+		}
 		alreadyRan := false
 		for _, result := range currentRunResults(events, request.ID) {
 			if result.Event.Actor == identity.Actor {

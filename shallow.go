@@ -1123,7 +1123,7 @@ func guardShallowEventClosure(operation string) error {
 			if err := missing(event.Subject, shallowCandidateEvent, replicationProposal, event.Subject); err != nil {
 				return err
 			}
-		case "run.result":
+		case "run.result", "run.withdraw":
 			if err := missing(event.Subject, shallowRunRequest, "", ""); err != nil {
 				return err
 			}
