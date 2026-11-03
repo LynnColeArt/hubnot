@@ -101,7 +101,8 @@ The CI delta changes no production Go or module input relative to the frozen
 candidate. This permits scoped reuse of unchanged-code evidence with explicit
 identities; it does not make commit/tree or package provenance interchangeable.
 
-Next work, in order:
+Follow-through identified at initial integration (items 1–2 are completed by the
+corrected-source verification recorded below):
 
 1. Verify the integrated native fast pipeline and source/preservation attestations.
 2. Reconcile WP25's package evidence into distinct functional/platform, deep
@@ -136,6 +137,22 @@ explicit native integration action, alongside the six-family, artifact recovery
 and three reference-consumer journeys. The action builds and pins source-assisted
 executables; it does not claim to certify a downloaded archive. This adds no
 production feature, relaxed public timeout or changed stress assertion.
+
+The corrected source `d5aee5d0226c2e86615c1a0910d3cc8b9592cce7` passed both
+native sandbox pipelines: fast `test` in 101161 ms (result
+`sha256:caa7e14d31f88704726e3f2d17e8dce54f072909bf16c4b4cc62a717a1f8d689`)
+and `integration` in 116154 ms (result
+`sha256:5c36d45af197dc1020dbfddcdec155aac8f69b3cddd87c06b86525b60c23378d`).
+Both remain verification-clone results with no project trust-role change.
+Hosted run [41591987505](https://github.com/LynnColeArt/hubnot/actions/runs/41591987505)
+passed all eight native package-smoke rows and both install/runtime variants on
+each platform. Build plus the complete matrix took 321 seconds. All eight
+artifact groups were independently reconciled against source/tree/compiler,
+package/reference hashes, five selected roots, 201 exclusions, no source fallback,
+and the expected failing missing-reference probe. The package matrix now records
+actual native smoke observations while preserving pending acceptance and the
+distinct Mac browser-launch blocker. Later evidence-only edits change no tested
+Go, action or pipeline input.
 
 ## Mac distribution prerequisite confirmed by the maintainer
 

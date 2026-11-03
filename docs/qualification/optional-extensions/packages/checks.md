@@ -37,6 +37,25 @@ callbacks; broad cross-feature, recovery and consumer journeys execute through
 the explicit native `integration` pipeline. This changes scheduling, not the
 full registry, public limits or assertions. Historical timeout evidence is kept.
 
+The corrected run
+[41591987505](https://github.com/LynnColeArt/hubnot/actions/runs/41591987505),
+at `d5aee5d0226c2e86615c1a0910d3cc8b9592cce7`, **passed all eight native smoke
+rows** (both variants on Linux/Mac Intel/ARM). Build plus the complete matrix
+took 321 seconds from run creation to the last completed job. Retained artifacts
+were checked independently: exact source/tree/compiler and package/reference
+hashes, all five selected roots, all 201 exclusions, no source fallback, unchanged
+source, both install/runtime variants, and the expected missing-reference
+negative control. Smoke invocations took 9.71–23.28 seconds each; Mac install/
+runtime took 5.46 seconds on ARM and 8.99 seconds on Intel. These are functional
+package observations, not notarized browser-download or exhaustive passes.
+
+At that same corrected source, Hubnot's native Linux sandbox published passing
+signed `test` and `integration` results in 101161 ms and 116154 ms respectively.
+The integration run exercises broad native collaboration, artifact recovery,
+six native families and all three reference consumers using explicit source-
+assisted executables. Exact signed IDs and smoke evidence hashes are recorded
+in `platform-matrix.json`. Qualification and beta acceptance remain pending.
+
 The integrated coordination head `f5ea2531cf0a547a19578662589924d97ca36bdf`
 passed the native `test` pipeline in the default Linux Bubblewrap sandbox. Its
 signed source-bound result is recorded in `platform-matrix.json`. Execution used
