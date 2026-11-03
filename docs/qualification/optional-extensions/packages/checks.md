@@ -1,6 +1,6 @@
 # Optional-extension package qualification
 
-Qualification is **PENDING**. This report does not publish a release or claim beta,
+Qualification is **PENDING_REVIEW**. This report does not publish a release or claim beta,
 issue23, main, adopter-trial or mission acceptance.
 
 ## Current qualification scope — 2026-11-03
@@ -66,7 +66,99 @@ an isolated clone and a verification actor; project trusted-runner roles remain
 unchanged. Subsequent evidence-only documentation does not change the tested
 action, pipeline, Go inputs or frozen package candidate.
 
+## Reconciled review package
+
+`manifest.json` now records the actual candidate source/tree, eight native smoke
+assets, all nine distributed archive hashes, all twelve reference executable and
+build-info hashes, seven frozen-source checks, and two current native CI results.
+Every archive/reference hash was read back from the transported assets. It also
+retains the original 69-entry limit-classification inventory unchanged. The older
+inventory's read-only `NOT_EXECUTED_BY_THIS_READ_ONLY_AUDIT` and then-pending
+markers describe that earlier audit, not the current execution ledger.
+
+The frozen source `3dcbb96091c6191bc5d98cde9dbd1d2b98433f95` has completed all
+seven recorded source checks with exit 0. Its uncached race run took 4317.30
+seconds and contains 3968 named passes, no named failures, and 18 package passes.
+Six explicitly conditional helper/capture tests skipped in that invocation;
+their names are preserved in the manifest. They are not hidden as zero skips.
+The separate six-root default run has 149 named passes, no failures and no skips.
+The actual CSV contains 4320 observations / 2160 pairs / 72 groups; independent
+recomputation passed all 144 elapsed/RSS criteria under unchanged budgets.
+
+The current qualified package source is
+`d5aee5d0226c2e86615c1a0910d3cc8b9592cce7`, tree
+`52ae0a18359665b0697a24ba917d33f480f52775`. The 317 Go/module input keys and
+modes match the frozen source; only `extension_package_acceptance_test.go`
+differs. All 150 production/module inputs are unchanged. More strongly, the
+eight shipped application executable hashes and all twelve reference executable
+hashes are identical between the old and current candidates. This supports
+scoped reuse of product/default behavior evidence. Archive contents, documentation,
+provenance, commit/tree and harness identities remain distinct; no old source
+check is relabeled as a full-suite run at the current head.
+
+Three direct historical native job logs independently establish six complete
+206-journey rows at the frozen source: Linux AMD64/ARM64 and Mac ARM64, both
+variants. Each platform log contains 412 root passes (each canonical name twice),
+four whole-group passes, no fail/skip events, and successful final source and
+instrumentation assertions. The original Intel job remains cancelled and does
+not become an exhaustive pass. Current Intel and other native-platform smoke
+observations retain their narrower five-root plus install/runtime scope.
+
+The remaining WP25 gate is formal independent review of this evidence, the
+source-equivalence reuse and the CI/harness delta. WP26's independent boundary,
+native-user and extension-author observations remain separate downstream work.
+No implementation replay or automated package run is an adopter observation.
+Unsigned Mac distribution remains the maintainer's accepted, disclosed beta
+limitation; signing/notarization is follow-up work rather than a functional
+qualification blocker.
+
+## Disposition of the eleven recorded remaining-gap entries
+
+The original 69-entry inventory is retained verbatim. Its eleven `remaining_gaps`
+entries are not all equivalent: some record gates that later ran, while others
+limit the strength of the evidence. This table supplements that historical
+inventory without changing a classification or inventing a missing observation.
+Formal WP25 review still has to assess these dispositions.
+
+| ID | Current disposition |
+| --- | --- |
+| A02 | **Retained limitation.** Post-publication oversize remains a separate uncertainty case. The published 100000 recovery-enumeration cap has no current public directory-enumeration loader; existing evidence does not create one. |
+| A08 | **Runtime-pending clause superseded within recorded scope.** The frozen `3dc` source suite and six historical exhaustive native rows supply the later host-mutation observations; current `d5` smoke/integration and exact executable equivalence are recorded separately. Earlier ordinary-CLI uncertainty remains that earlier result, not a relabeled host-mutation pass. |
+| T06 | **Mixed.** The later source-bound suite/native observations supersede the generic runtime-pending statement for the tests they actually ran. No successful equality-at-the-deadline scheduling guarantee is claimed. |
+| R02 | **Recorded gates now available for review.** The corrected-source review/root binding, seven frozen source checks, fresh 4320-observation capture and eight current native smoke rows are present. The current 150 production/module inputs and all eight application plus twelve reference executables are unchanged. This is scoped evidence reuse under the CI decision, not eight new exhaustive runs or formal WP25 approval. |
+| H09 | **Mixed.** Later source-bound runtime evidence replaces the generic pending statement within its actual parent/control scope. A 1ms value remains typed admission/utility duration, not a promise that a real operation finishes in 1ms; no unobserved exact-deadline equality is inferred. |
+| H12 | **Retained limitation.** No new exact shipped-binary fault-injection proof of every tail race is claimed. The recorded source suite remains the narrower race evidence. |
+| H14 | **Mixed.** The recorded source/native cleanup and revocation observations supersede the generic runtime-pending clause for those exercised controls. The 2ms observer poll and 20ms lower-grace measurement tolerance remain measurement details, never shorter production clocks. |
+| D01 | **Pending clause superseded by actual observations.** The separate six-root default run has 149 passes with no failures/skips; the actual 4320 observations / 2160 pairs / 72 groups passed all 144 unchanged elapsed/RSS criteria. Attribution remains to `3dc`; current-source reuse rests on the recorded input/executable equivalence, not a new current-head capture. |
+| D02 | **Mixed, source/platform scoped.** All eight current native smoke rows are observed. Actual historical Linux and Mac ARM instrumentation/final-control evidence is retained separately; no completed original Intel exhaustive or trace row is invented. A cross-build or workflow definition alone still supplies no native runtime proof. |
+| I03 | **Retained limitation.** There is no literal 116384/116385 live numeric pair. Existing governor/source tests keep their narrower labels. |
+| E04 | **Mixed.** Later actual caller/consumer results replace the generic caller-runtime-pending statement within their recorded scope. An active call can complete at the report cap while its deferred final status update exceeds 16MiB and preserves the prior exact-cap file. This does not prove that the final status was persisted. |
+
+### EXP-OBS-01: host-generation validity and receipt-time limits
+
+The earlier root decision `root-expiry-validity-proof-boundary-decision.json`
+(SHA256 `3b8c045d57d2bae1c7cdd9731be18c00618f1b54ee51b2b5c8e20a8296644ec1`)
+interprets capture expiry as host-side validity through completed page/checkpoint
+work at the final validity check. It does not promise peer receipt before expiry.
+The existing unchanged real-expiry test passed in 602.55 seconds at `3dc`, using
+an application executable whose hash matches the current package. Its retained
+successful page and precise expired-replay refusal support that narrower,
+source-backed host-generation interpretation.
+
+No retained response-read/publication/parent-observation timestamp proves that
+response 1 was received before expiry. The advertised `expires_at` truncates
+subsecond precision, and the final transcript mtime is archival session time.
+The mechanically missing receipt-time assertion is not retrospectively treated
+as implemented or passed. Stronger receipt-before-expiry correctness remains
+unproven. Formal review must disposition **EXP-OBS-01** against the documented
+host-generation boundary; this paragraph records the prior decision and evidence
+limit, not a formal verdict or a new deadline guarantee.
+
 ## Earlier evidence and implementation history
+
+The preparation narrative below is retained as history. Its old pending markers
+are superseded only by the source/platform/scope-specific observations above;
+historical failed, cancelled and incomplete attempts retain their outcomes.
 
 The candidate uses Go1.26.4 and the existing Go-only `cmd/hn-release` with internal
 version `0.0.0-optional-extensions-qualification.1`. Eight independent packages

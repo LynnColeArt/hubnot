@@ -1,31 +1,858 @@
 {
   "schema": "hn.optional-extension-package-qualification/1",
-  "status": "PENDING",
+  "status": "PENDING_REVIEW",
   "version": "0.0.0-optional-extensions-qualification.1",
   "compiler": "go1.26.4",
-  "candidate_source": null,
-  "candidate_tree": null,
-  "workflow_source": null,
+  "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+  "candidate_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+  "workflow_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
   "exact_packages": 8,
   "separate_reference_executables": 12,
   "evidence_classification": {
-    "source_suite": "PENDING frozen uncached race execution",
-    "exact_package_rows": "PENDING actual native executions; cross-builds do not qualify rows",
+    "source_suite": "PASS at frozen3dc: seven source checks including full uncached race. Currentd5 test/CI delta separately passed bounded native fast/integration; old full-suite result is not relabeled as an exact-current-head run.",
+    "exact_package_rows": "Eight actual native package-smoke rows PASS atd5, five selected extension roots plus both install/runtime variants. Scope is non-exhaustive; six historical206 rows at3dc remain separate.",
     "legacy_selected_callers": "assertion-backed public caller evidence; successful stdout not retained unless a named evidence helper emits it",
     "new_numeric_controls": "raw output and state/ID assertions retained in new-controls.jsonl",
-    "standalone_references": "independently supplied target/source/compiler/hash-bound assets; raw results retained",
+    "standalone_references": "Twelve supplied target/source/compiler/hash-bound references verified in current bundle. Native integration executes all three source-assisted consumers on Linux; six historical206 rows execute supplied references on LinuxAMD/ARM and MacARM.",
     "fixture_construction": "source-assisted signed public graphs and hostile peers are not shipped binary admission evidence"
   },
   "performance_reuse": {
-    "status": "INVALIDATED by authorized artifact_read.go production correction; historical source-specific result retained",
-    "approved_source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1",
+    "status": "PASS_FROZEN_SOURCE_WITH_SCOPED_PRODUCT_EQUIVALENCE_REUSE",
+    "measurement_source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+    "measurement_tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+    "current_candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
     "observations": 4320,
+    "pairs": 2160,
+    "groups": 72,
+    "elapsed_RSS_budget_criteria_pass": 144,
     "budgets_changed": false,
     "fresh_required_observations": 4320,
-    "historical_reports_unchanged": true
+    "fresh_observations_completed_at_measurement_source": 4320,
+    "independently_recomputed": true,
+    "default_controls": {
+      "roots": 6,
+      "named_passes": 149,
+      "named_failures": 0,
+      "named_skips": 0,
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/default-3dcbb960/default-controls.stdout",
+        "sha256": "ac6bccbef8ce0c0406d01bf9ec60881e283ee42deed1635b0b09158a1fda2436",
+        "bytes": 283301
+      }
+    },
+    "report": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/capture-3dcbb960/report.json",
+      "sha256": "52b363088048ea5ef9794be25deac62225c10ef881ba1e940f15ae7824bffb63",
+      "bytes": 39959
+    },
+    "metrics": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/capture-3dcbb960/metrics.csv",
+      "sha256": "1e64684f418328553b378629ce41d0519d47962d32b2da21542bfad9d53b5b8c",
+      "bytes": 1015681
+    },
+    "source_check_results": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/default-3dcbb960/results.json",
+      "sha256": "d1d28825c31dff21ce2f11ef8ea30bb4056cb632b0de18c2ffd1e758b112ff87",
+      "bytes": 7823
+    },
+    "root_recomputation": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/root-3dcbb960-complete-performance-recomputation.json",
+      "sha256": "3d2edd16dcdc9278bb9d219eb8e4d80cae36f3698274a66fd8a7ef00d308eb0b",
+      "bytes": 1265
+    },
+    "independent_default_audit": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/default-3dcbb960-independent-audit/REPORT.md",
+      "sha256": "6ade937d46f5281701cfd68686dabbcd2fc526d5c6b01347d11f14b065251c2a",
+      "bytes": 7416
+    },
+    "independent_binding_supplement": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/default-3dcbb960-audit-binding-supplement/REPORT.md",
+      "sha256": "67dd394618bb22d956e96bc59faa0fbe1cfe45293b5276c9eda356cc741d1b3c",
+      "bytes": 2813
+    },
+    "historical_reports_unchanged": true,
+    "reuse_scope": "Measurements remain attributed to3dc on the recorded Linux host/corpora/CGO/flags. All150 production/module inputs are unchanged throughd5; this is scoped reuse, not a new current-head performance capture. Current CI/test harness has separate validation.",
+    "superseded_manifest_record": {
+      "status": "INVALIDATED by authorized artifact_read.go production correction; historical source-specific result retained",
+      "approved_source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1",
+      "observations": 4320,
+      "budgets_changed": false,
+      "fresh_required_observations": 4320,
+      "historical_reports_unchanged": true
+    }
   },
-  "assets": [],
-  "source_checks": [],
+  "assets": [
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_linux_amd64.tar.gz",
+      "target": "linux/amd64",
+      "variant": "standard",
+      "tags": "",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "eb20950180fa2bc9cd1f453f813b2436dd1f8827796fd269a3442f8b9e18e973",
+      "executable_sha256": "0af01c366e4a85639f0c90970d14003ae2693db574448c0ba51281ba75fee99a",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "fdb38de71975436c7464549b8d3f8dfc5f6e62841324b2cd5c95aa2d093cc353"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "0679744dcc0faddc4a77c6774b64b4559e9b6370442e8e65e88dc5241b9a50f1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "fbb7839728de0115c6ace816d6ea456808f31c1f7433f3cc0360fc327309e073"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771209976,
+      "artifact_id": 13210134457,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "6814fce1c2be2cf4452d4b23652b20329809249e99565b6639e3691f0454d280",
+      "log_sha256": "1128f67338bbac6f1b98b7d12a5fc4472d3c691401d593da79829a051ed6e675",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771209976",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "linux/amd64",
+        "variant": "standard",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=amd64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=linux",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "0af01c366e4a85639f0c90970d14003ae2693db574448c0ba51281ba75fee99a"
+      }
+    },
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_linux_amd64_native-only.tar.gz",
+      "target": "linux/amd64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "ad7ba2a52b54ce8f786c816e58c86cbb5b178f8c259bafb4d1724349855e8555",
+      "executable_sha256": "34dbc10634573938d1873eab70513965829bd98d84ee8526a8744e17e391720c",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "fdb38de71975436c7464549b8d3f8dfc5f6e62841324b2cd5c95aa2d093cc353"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "0679744dcc0faddc4a77c6774b64b4559e9b6370442e8e65e88dc5241b9a50f1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "fbb7839728de0115c6ace816d6ea456808f31c1f7433f3cc0360fc327309e073"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771209976,
+      "artifact_id": 13210134457,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "2802a61c7a94debcc8a7be161a217956d87fb6bf333868218cc9066aadef9252",
+      "log_sha256": "1d720354e906379d15a8f6030326bcb7ba3a0a1a6de66c7eea4203a4b42aea3b",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771209976",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "linux/amd64",
+        "variant": "native-only",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+          "-tags=nogithub,noforge"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=amd64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=linux",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "34dbc10634573938d1873eab70513965829bd98d84ee8526a8744e17e391720c"
+      }
+    },
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_linux_arm64.tar.gz",
+      "target": "linux/arm64",
+      "variant": "standard",
+      "tags": "",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "791c6ca1dfa6269ca4fb70e704c9d6441ad606d3e99cecc28ba765a6ba4fce4c",
+      "executable_sha256": "e3a4101a1ed2cd1073c2fdc761754268ca579454fcf230f8e5a822269d0435cc",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "5b72ed640f49f83f77df1ea2540871d8146c55af9dffdf55460cf9be106a9971"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "efedd735d940300a19fa9ef83a7ea59725bf00bdfabffaf24e65cf9b545b93ee"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "f20f61c0283fd926a255a6ac6e77512e3b9b3cc2a657a5bcf857c8efaf8bc897"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210049,
+      "artifact_id": 13210487264,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "5d07b94659bee51271e505d03908aeaf8ded9ccb7a84e77a92bcff7599af6f62",
+      "log_sha256": "312362195c0e87ef4518dfb3daebbb91183214b37dfe8ae3b4aa246663ceecfd",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210049",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "linux/arm64",
+        "variant": "standard",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=arm64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=linux",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "e3a4101a1ed2cd1073c2fdc761754268ca579454fcf230f8e5a822269d0435cc"
+      }
+    },
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_linux_arm64_native-only.tar.gz",
+      "target": "linux/arm64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "d142b20c4ecc36a6d4e51081336072a3e6b4ee1143b78434aaa2ea01275ba66f",
+      "executable_sha256": "521d08add949a3bd26465042f8352546b212d9af9d37433fc6da0195c186bdc0",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "5b72ed640f49f83f77df1ea2540871d8146c55af9dffdf55460cf9be106a9971"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "efedd735d940300a19fa9ef83a7ea59725bf00bdfabffaf24e65cf9b545b93ee"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "f20f61c0283fd926a255a6ac6e77512e3b9b3cc2a657a5bcf857c8efaf8bc897"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210049,
+      "artifact_id": 13210487264,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "2844c22e121f1f36db255c82523415e5e645ab246cb9fe31ed28b959fbc9956b",
+      "log_sha256": "86caecde06f88fdd035ad0d1831f9da9c819bce5c6dc0986165f8865c7fe99a8",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210049",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "linux/arm64",
+        "variant": "native-only",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+          "-tags=nogithub,noforge"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=arm64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=linux",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "521d08add949a3bd26465042f8352546b212d9af9d37433fc6da0195c186bdc0"
+      }
+    },
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_darwin_amd64.tar.gz",
+      "target": "darwin/amd64",
+      "variant": "standard",
+      "tags": "",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "205f503e85cce1daf16caaa81b5674c069e9fe4b4faaa07abda4749af3cd5df1",
+      "executable_sha256": "891d350c506e18ba81128185a4b0bc22f34660e934564cb8b985d4d0aea82521",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "6549215696d4422c3533af22349a2dbc59b5711d2afaf0ea7f60375e3db521c4"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "1312b5bb4a44205817937ff2bc6cf52ea8a7e2187aaa107479ea51c435dfbd2a"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "817cad36872feea7ea7ff56b381ccf7f9ef1ebb3fd96aeaf031faec1ebe9002f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210081,
+      "artifact_id": 13211245466,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "b2ce14d98e38660289dcd72d1985a71e45c347e8b44b9d05acbc4d0504badd5f",
+      "log_sha256": "6ce277c377148a2e0caf494c4976328584967b3b2a76bc1b57861c8876c95428",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210081",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "darwin/amd64",
+        "variant": "standard",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=amd64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=darwin",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "891d350c506e18ba81128185a4b0bc22f34660e934564cb8b985d4d0aea82521"
+      }
+    },
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_darwin_amd64_native-only.tar.gz",
+      "target": "darwin/amd64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "3bff806949b294ccb835cced04f3638dc4afb5e07709d32b86127142b218e3d5",
+      "executable_sha256": "38f872f19d11a69817aa877c5eba5f61045a1d968dd8e5c86062253afe59923e",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "6549215696d4422c3533af22349a2dbc59b5711d2afaf0ea7f60375e3db521c4"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "1312b5bb4a44205817937ff2bc6cf52ea8a7e2187aaa107479ea51c435dfbd2a"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "817cad36872feea7ea7ff56b381ccf7f9ef1ebb3fd96aeaf031faec1ebe9002f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210081,
+      "artifact_id": 13211245466,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "d948338aaea01cdbc47e85af2ff4c6c30b7af9c5ad4642a2b2f716c842cbc1ce",
+      "log_sha256": "da99cd49db0352182aec53e86dc940d81a98a49f7f43721ae8a692e222aebe1e",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210081",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "darwin/amd64",
+        "variant": "native-only",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+          "-tags=nogithub,noforge"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=amd64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=darwin",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "38f872f19d11a69817aa877c5eba5f61045a1d968dd8e5c86062253afe59923e"
+      }
+    },
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_darwin_arm64.tar.gz",
+      "target": "darwin/arm64",
+      "variant": "standard",
+      "tags": "",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "89a9cda02a4f40c0470db0fef5ae7d7e722569776e9b13b939e931f1d682cb2f",
+      "executable_sha256": "3ec77aa798ac4238493925b9175fe24194df5bc20f25d56aa46bc2fc048b00cb",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "7c7d5191983db754de70aba0a04c811675da3be7b4f746e6f102e2b80b4edd90"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "077352d26bf6c290a4d3e3281b4c4ed3b3a8bb607c281bdf23f643f7a24003c1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "e2edc95a7e1f18cd32a8b7071a81536dfe8a7423985b74603ce14d450d7dc69f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210177,
+      "artifact_id": 13210796846,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "d75f5153dccf9e46782e8c4196c218807b1cc55f4fe57a6acea7b4eaae85fae6",
+      "log_sha256": "64e11b44c56940f3c6dc71be358d398a16f5ae8ec98f27294cbe7288e45c961e",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210177",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "darwin/arm64",
+        "variant": "standard",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=arm64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=darwin",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "3ec77aa798ac4238493925b9175fe24194df5bc20f25d56aa46bc2fc048b00cb"
+      }
+    },
+    {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_darwin_arm64_native-only.tar.gz",
+      "target": "darwin/arm64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "compiler": "go1.26.4",
+      "archive_sha256": "d2fbb32aa4d6d8e8e4e8a3099d2f484bc22027c82c27b8a90da2ca3c98d7c6b9",
+      "executable_sha256": "14cdfbee724fe4c321c1800210322059aa0a87c50a94e11c394b7369d67ffb1e",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "7c7d5191983db754de70aba0a04c811675da3be7b4f746e6f102e2b80b4edd90"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "077352d26bf6c290a4d3e3281b4c4ed3b3a8bb607c281bdf23f643f7a24003c1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "e2edc95a7e1f18cd32a8b7071a81536dfe8a7423985b74603ce14d450d7dc69f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210177,
+      "artifact_id": 13210796846,
+      "evidence_scope": "package-smoke",
+      "exhaustive": false,
+      "result": "PASS",
+      "group_sha256": "c5a0d77f3a79654de6f5d6dd55b29e73735b0b038eeeccd50b5a850699276010",
+      "log_sha256": "583ef5d205db4f753861573f742ece40eb7dfe8fc134890b5f08e12078a78500",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210177",
+      "build": {
+        "schema": "hn.release-build/1",
+        "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "source_timestamp": 1793688338,
+        "compiler": "go1.26.4",
+        "version": "0.0.0-optional-extensions-qualification.1",
+        "target": "darwin/arm64",
+        "variant": "native-only",
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+          "-tags=nogithub,noforge"
+        ],
+        "environment": [
+          "CGO_ENABLED=0",
+          "GOAMD64=v1",
+          "GOARCH=arm64",
+          "GOARM64=v8.0",
+          "GOENV=off",
+          "GOEXPERIMENT=",
+          "GOFLAGS=",
+          "GONOPROXY=none",
+          "GOOS=darwin",
+          "GOPRIVATE=none",
+          "GOPROXY=off",
+          "GOSUMDB=off",
+          "GOTOOLCHAIN=local",
+          "GOWORK=off"
+        ],
+        "executable_sha256": "14cdfbee724fe4c321c1800210322059aa0a87c50a94e11c394b7369d67ffb1e"
+      }
+    }
+  ],
+  "source_checks": [
+    {
+      "name": "full-uncached-race",
+      "scope": "frozen-full-source",
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+      "exit_code": 0,
+      "elapsed_seconds": 4317.303558418993,
+      "started_at": "2026-11-02T14:48:15.248207+00:00",
+      "finished_at": "2026-11-02T16:00:12.551877+00:00",
+      "command_record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/full-uncached-race-command.json",
+        "sha256": "da88eac40d0532274977bb20ea86c993731647dc0cd61671f6e6a8f235bd6a8c",
+        "bytes": 1401
+      },
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/full-uncached-race.stdout",
+        "sha256": "81541cffa8aff3b9fcf426fe64b91180f375f597e322958034b26df0fa972303",
+        "bytes": 4350528
+      },
+      "stderr": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/full-uncached-race.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "current_source_reuse": "unchanged150 production/module inputs; current qualification-harness/CI delta has separate bounded evidence; not an exactd5 full-suite run"
+    },
+    {
+      "name": "vet-standard",
+      "scope": "frozen-full-source",
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+      "exit_code": 0,
+      "elapsed_seconds": 0.20664896396920085,
+      "started_at": "2026-11-02T16:00:12.552125+00:00",
+      "finished_at": "2026-11-02T16:00:12.758894+00:00",
+      "command_record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/vet-standard-command.json",
+        "sha256": "be901171065e9ecb3db3add543dae7da1e40a9ac47af3e2c0dfe9c54c5baa1c3",
+        "bytes": 1331
+      },
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/vet-standard.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/vet-standard.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "current_source_reuse": "unchanged150 production/module inputs; current qualification-harness/CI delta has separate bounded evidence; not an exactd5 full-suite run"
+    },
+    {
+      "name": "vet-native",
+      "scope": "frozen-full-source",
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+      "exit_code": 0,
+      "elapsed_seconds": 1.179812717018649,
+      "started_at": "2026-11-02T16:00:12.759254+00:00",
+      "finished_at": "2026-11-02T16:00:13.939191+00:00",
+      "command_record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/vet-native-command.json",
+        "sha256": "44e7e86e3b402f99ca06b209e247ddc1cdf016df7db9c6194b0d746f879f4178",
+        "bytes": 1359
+      },
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/vet-native.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/vet-native.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "current_source_reuse": "unchanged150 production/module inputs; current qualification-harness/CI delta has separate bounded evidence; not an exactd5 full-suite run"
+    },
+    {
+      "name": "build-standard",
+      "scope": "frozen-full-source",
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+      "exit_code": 0,
+      "elapsed_seconds": 0.5813693109666929,
+      "started_at": "2026-11-02T16:00:13.939491+00:00",
+      "finished_at": "2026-11-02T16:00:14.520975+00:00",
+      "command_record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/build-standard-command.json",
+        "sha256": "3b65adc3e43806a1e20437705919bbabed07c438aa7ba7ab479882236eefc519",
+        "bytes": 1335
+      },
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/build-standard.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/build-standard.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "current_source_reuse": "unchanged150 production/module inputs; current qualification-harness/CI delta has separate bounded evidence; not an exactd5 full-suite run"
+    },
+    {
+      "name": "build-native",
+      "scope": "frozen-full-source",
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+      "exit_code": 0,
+      "elapsed_seconds": 0.627964465005789,
+      "started_at": "2026-11-02T16:00:14.521289+00:00",
+      "finished_at": "2026-11-02T16:00:15.149357+00:00",
+      "command_record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/build-native-command.json",
+        "sha256": "1769c270e3555937c40114b5b6bb8554c03aaf85a641d11fd1ef8b4aa43e14f2",
+        "bytes": 1363
+      },
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/build-native.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/build-native.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "current_source_reuse": "unchanged150 production/module inputs; current qualification-harness/CI delta has separate bounded evidence; not an exactd5 full-suite run"
+    },
+    {
+      "name": "gofmt",
+      "scope": "frozen-full-source",
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+      "exit_code": 0,
+      "elapsed_seconds": 0.12184021004941314,
+      "started_at": "2026-11-02T16:00:15.149719+00:00",
+      "finished_at": "2026-11-02T16:00:15.271709+00:00",
+      "command_record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/gofmt-command.json",
+        "sha256": "ccdf00d574fe80840c6f0d5f4277682a9ccece50f70344bc751ccdb647e76eb0",
+        "bytes": 11913
+      },
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/gofmt.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/gofmt.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "current_source_reuse": "unchanged150 production/module inputs; current qualification-harness/CI delta has separate bounded evidence; not an exactd5 full-suite run"
+    },
+    {
+      "name": "diff-check",
+      "scope": "frozen-full-source",
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "tree": "df57aeda7553e88ab1eb54ab2f0564a7844dee01",
+      "exit_code": 0,
+      "elapsed_seconds": 0.0033267660182900727,
+      "started_at": "2026-11-02T16:00:15.272353+00:00",
+      "finished_at": "2026-11-02T16:00:15.275822+00:00",
+      "command_record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/diff-check-command.json",
+        "sha256": "d4cbd2ca843d33c1dbb21e86a26ab85d129413e562fcb76e420d274a06efc202",
+        "bytes": 1333
+      },
+      "stdout": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "current_source_reuse": "unchanged150 production/module inputs; current qualification-harness/CI delta has separate bounded evidence; not an exactd5 full-suite run"
+    },
+    {
+      "name": "native-test",
+      "scope": "bounded-native-source-snapshot",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "outcome": "passed",
+      "duration_ms": 101161,
+      "backend": "sandbox",
+      "platform": "linux/amd64",
+      "request": "sha256:bce828a55e3e9d72d6c79fec8f271f3496400a4f48c4a49365b873a4f43152c0",
+      "result": "sha256:caa7e14d31f88704726e3f2d17e8dce54f072909bf16c4b4cc62a717a1f8d689",
+      "definition": "sha256:4d89a7127e0644496f8e640b1f41f4f3c3ba1a1ca0d199a0b0e662592faa622d",
+      "record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/hubnot-ci-integration-20261103/r2-native-results.json",
+        "sha256": "4a66d0b48d8d2679d2d3e3502c75da9901e4ed2de97efa4cb8051b92482b3ec4",
+        "bytes": 2828
+      },
+      "trust_scope": "fresh verification actor in isolated clone; project trusted-runner roles unchanged"
+    },
+    {
+      "name": "native-integration",
+      "scope": "bounded-native-source-snapshot",
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+      "outcome": "passed",
+      "duration_ms": 116154,
+      "backend": "sandbox",
+      "platform": "linux/amd64",
+      "request": "sha256:a135781ae05d755974c3e2939d48d85b1e3ee574dba5c22ec8d417ba44e89dc2",
+      "result": "sha256:5c36d45af197dc1020dbfddcdec155aac8f69b3cddd87c06b86525b60c23378d",
+      "definition": "sha256:cf1d5fb9162831d43a060d10e78f227f8e635912239c89216833121b8382da41",
+      "record": {
+        "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/hubnot-ci-integration-20261103/r2-native-results.json",
+        "sha256": "4a66d0b48d8d2679d2d3e3502c75da9901e4ed2de97efa4cb8051b92482b3ec4",
+        "bytes": 2828
+      },
+      "trust_scope": "fresh verification actor in isolated clone; project trusted-runner roles unchanged"
+    }
+  ],
   "limits_reconciliation": [
     {
       "id": "A01",
@@ -3110,9 +3937,7 @@
     }
   ],
   "blockers": [
-    "Independent bounded-count correction review and new317-input/311-inherited root attestation are pending.",
-    "Frozen full source checks, fresh default/performance capture and eight actual native platform/variant rows are pending.",
-    "Native syscall instrumentation and all required actual Go/descendant positive controls are pending."
+    "Independent formal WP25 review remains required before approval; source-equivalence and current CI overlay evidence must be assessed in that review."
   ],
   "closed_inventories": {
     "classification": "independent literal mirrors and current caller controls; runtime results pending",
@@ -4834,5 +5659,480 @@
       "uncached full-source race/static/build/format",
       "eight actual native package roots and twelve supplied references"
     ]
+  },
+  "source_equivalence": {
+    "frozen_source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+    "current_candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+    "frozen_go_module_inputs": 317,
+    "current_go_module_inputs": 317,
+    "input_keysets_identical": true,
+    "unchanged_go_module_inputs": 316,
+    "changed_go_module_inputs": [
+      {
+        "path": "extension_package_acceptance_test.go",
+        "before": {
+          "mode": "100644",
+          "git_blob": "e15a069fc592aaa105c72976694e1b7f53acb256"
+        },
+        "after": {
+          "mode": "100644",
+          "git_blob": "bd5166076346ddb484d1548225206b5b40ed14ae"
+        }
+      }
+    ],
+    "production_module_inputs": 150,
+    "production_module_input_differences": [],
+    "production_module_git_manifest_sha256": "e537b61341db5bc2c934d87de5aaa065526143285f34e5f5bdb8728c7beedc9e",
+    "frozen_go_module_git_manifest_sha256": "aa3db7e22de95d62d01102167d39a03ceaecefa4a0b26bd3121bc65da2df7153",
+    "current_go_module_git_manifest_sha256": "17d04a61b09a0a38f07119d8cf124760f80bee63dfb20565a9daa493333e0162",
+    "mode_differences": [],
+    "frozen_source_binding": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/root-approved-3dcbb960-source.json",
+      "sha256": "30cb23bcd34a42a927352682b47e58782c753bfbe0e9426d4ddb64a984be6e5c",
+      "bytes": 2996
+    },
+    "all317_binding": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/frozen-3dcbb960-source/all317.json",
+      "sha256": "5d7e4960424e118f0731328e0aeb916f46c9b9ec18c90a922f692d3a6ad04a4a",
+      "bytes": 32301
+    },
+    "approved311_binding": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/frozen-3dcbb960-source/approved311.json",
+      "sha256": "9857afb26c9d26df225ded49522a35f06ae6aaefd76768223b79515069f2f729",
+      "bytes": 31652
+    },
+    "source_delta_review": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/expiry-diagnostic-parser-correction-independent-review/review.md",
+      "sha256": "4e4878a1f925d876143cb3ffc16e5d8ccb572c5f2b325348c211d1d7807694f3",
+      "bytes": 6390
+    },
+    "independent_readback": {
+      "all317_bind_git_H": true,
+      "changed_go_module_inputs": [
+        "extension_package_acceptance_test.go"
+      ],
+      "production_or_module_differences": [],
+      "current_head": "063ee3f31a7ff0d63392f6af691477b7c6c561c2"
+    },
+    "qualification_harness_delta": "Only smoke selection and explicit native CI public-journey wrapper; full206 inventory and bound assertions retained. CI/workflow/action/docs changes are outside production binary inputs."
+  },
+  "executable_equivalence": {
+    "old_source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+    "current_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+    "old_job": 125344478073,
+    "old_log_sha256": "5a4770cb156c3f63891ac0cf85a8c83c5948a4977fbb40abd1035582041d441f",
+    "all8_product_executables_identical": true,
+    "executable_comparisons": [
+      {
+        "target": "linux/amd64",
+        "variant": "standard",
+        "sha256": "0af01c366e4a85639f0c90970d14003ae2693db574448c0ba51281ba75fee99a",
+        "identical": true
+      },
+      {
+        "target": "linux/amd64",
+        "variant": "native-only",
+        "sha256": "34dbc10634573938d1873eab70513965829bd98d84ee8526a8744e17e391720c",
+        "identical": true
+      },
+      {
+        "target": "linux/arm64",
+        "variant": "standard",
+        "sha256": "e3a4101a1ed2cd1073c2fdc761754268ca579454fcf230f8e5a822269d0435cc",
+        "identical": true
+      },
+      {
+        "target": "linux/arm64",
+        "variant": "native-only",
+        "sha256": "521d08add949a3bd26465042f8352546b212d9af9d37433fc6da0195c186bdc0",
+        "identical": true
+      },
+      {
+        "target": "darwin/amd64",
+        "variant": "standard",
+        "sha256": "891d350c506e18ba81128185a4b0bc22f34660e934564cb8b985d4d0aea82521",
+        "identical": true
+      },
+      {
+        "target": "darwin/amd64",
+        "variant": "native-only",
+        "sha256": "38f872f19d11a69817aa877c5eba5f61045a1d968dd8e5c86062253afe59923e",
+        "identical": true
+      },
+      {
+        "target": "darwin/arm64",
+        "variant": "standard",
+        "sha256": "3ec77aa798ac4238493925b9175fe24194df5bc20f25d56aa46bc2fc048b00cb",
+        "identical": true
+      },
+      {
+        "target": "darwin/arm64",
+        "variant": "native-only",
+        "sha256": "14cdfbee724fe4c321c1800210322059aa0a87c50a94e11c394b7369d67ffb1e",
+        "identical": true
+      }
+    ],
+    "all12_reference_executables_identical": true,
+    "reference_comparisons": {
+      "linux_amd64/charter": "fdb38de71975436c7464549b8d3f8dfc5f6e62841324b2cd5c95aa2d093cc353",
+      "linux_amd64/fake-tracker": "0679744dcc0faddc4a77c6774b64b4559e9b6370442e8e65e88dc5241b9a50f1",
+      "linux_amd64/inventory": "fbb7839728de0115c6ace816d6ea456808f31c1f7433f3cc0360fc327309e073",
+      "linux_arm64/charter": "5b72ed640f49f83f77df1ea2540871d8146c55af9dffdf55460cf9be106a9971",
+      "linux_arm64/fake-tracker": "efedd735d940300a19fa9ef83a7ea59725bf00bdfabffaf24e65cf9b545b93ee",
+      "linux_arm64/inventory": "f20f61c0283fd926a255a6ac6e77512e3b9b3cc2a657a5bcf857c8efaf8bc897",
+      "darwin_amd64/charter": "6549215696d4422c3533af22349a2dbc59b5711d2afaf0ea7f60375e3db521c4",
+      "darwin_amd64/fake-tracker": "1312b5bb4a44205817937ff2bc6cf52ea8a7e2187aaa107479ea51c435dfbd2a",
+      "darwin_amd64/inventory": "817cad36872feea7ea7ff56b381ccf7f9ef1ebb3fd96aeaf031faec1ebe9002f",
+      "darwin_arm64/charter": "7c7d5191983db754de70aba0a04c811675da3be7b4f746e6f102e2b80b4edd90",
+      "darwin_arm64/fake-tracker": "077352d26bf6c290a4d3e3281b4c4ed3b3a8bb607c281bdf23f643f7a24003c1",
+      "darwin_arm64/inventory": "e2edc95a7e1f18cd32a8b7071a81536dfe8a7423985b74603ce14d450d7dc69f"
+    },
+    "scope": "Exact executable bytes only; archive/docs/provenance/commit/tree/harness identities differ and are not interchangeable."
+  },
+  "frozen_full_suite_summary": {
+    "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+    "results_sha256": "ce521807180f5cfd4aa8e6906c80b27a26693aa805f8d0324e275ee614cb8064",
+    "race_stdout_sha256": "81541cffa8aff3b9fcf426fe64b91180f375f597e322958034b26df0fa972303",
+    "race_named_passes": 3968,
+    "race_named_failures": 0,
+    "race_named_skips": [
+      "TestNativeContributionClosurePeer",
+      "TestBetaScaleScenarios",
+      "TestExtensionDefaultPrepareCorpus",
+      "TestExtensionDefaultVerifyDonor",
+      "TestExtensionDefaultDetectors",
+      "TestExtensionDefaultPerformanceCapture"
+    ],
+    "package_passes": 18,
+    "seven_command_exits": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "race_seconds": 4317.303558418993,
+    "317_before_after_identical": true,
+    "results": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/results.json",
+      "sha256": "ce521807180f5cfd4aa8e6906c80b27a26693aa805f8d0324e275ee614cb8064",
+      "bytes": 21949
+    },
+    "before_inputs": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/inputs.before.json",
+      "sha256": "5d7e4960424e118f0731328e0aeb916f46c9b9ec18c90a922f692d3a6ad04a4a",
+      "bytes": 32301
+    },
+    "after_inputs": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/full-source-3dcbb960/inputs.after.json",
+      "sha256": "5d7e4960424e118f0731328e0aeb916f46c9b9ec18c90a922f692d3a6ad04a4a",
+      "bytes": 32301
+    },
+    "classification": "Source-assisted fixed-source validation; no exact-package/human-adopter observation inferred."
+  },
+  "historical_native206_evidence": {
+    "scope": "Original exact-H source-bound job logs, six historical variant rows; does not fabricate cancelledIntel or relabel current smoke as exhaustive",
+    "rows": [
+      {
+        "target": "darwin-arm64",
+        "job_id": 125344478073,
+        "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+        "run_id": 41465035433,
+        "log_bytes": 4335064,
+        "log_sha256": "5a4770cb156c3f63891ac0cf85a8c83c5948a4977fbb40abd1035582041d441f",
+        "root_pass_events": 412,
+        "distinct_root_names": 206,
+        "each_root_multiplicity": 2,
+        "canonical_root_names_match_current_206": true,
+        "whole_groups": 4,
+        "whole_group_seconds": [
+          2345.17,
+          3091.35,
+          2286.25,
+          3248.01
+        ],
+        "fail_events": 0,
+        "skip_events": 0,
+        "final_row_schema_root_and_control_assertions": "two final jq true outputs; qualification job success metadata"
+      },
+      {
+        "target": "linux-amd64",
+        "job_id": 125344477749,
+        "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+        "run_id": 41465035433,
+        "log_bytes": 4307029,
+        "log_sha256": "814fa3c321756bcaf0dfeed89d9c5b8272e468d030cbfe9c6f1d2551d7cc8a44",
+        "root_pass_events": 412,
+        "distinct_root_names": 206,
+        "each_root_multiplicity": 2,
+        "canonical_root_names_match_current_206": true,
+        "whole_groups": 4,
+        "whole_group_seconds": [
+          1168.74,
+          1892.26,
+          1171.22,
+          1875.66
+        ],
+        "fail_events": 0,
+        "skip_events": 0,
+        "final_row_schema_root_and_control_assertions": "two final jq true outputs; qualification job success metadata"
+      },
+      {
+        "target": "linux-arm64",
+        "job_id": 125344477753,
+        "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+        "run_id": 41465035433,
+        "log_bytes": 4306604,
+        "log_sha256": "dab423061ba980bc68c47e5800323c439565c2ce1fd3b464c0e0e24c7c2eb31a",
+        "root_pass_events": 412,
+        "distinct_root_names": 206,
+        "each_root_multiplicity": 2,
+        "canonical_root_names_match_current_206": true,
+        "whole_groups": 4,
+        "whole_group_seconds": [
+          1264.13,
+          1770.38,
+          1268.94,
+          1825.21
+        ],
+        "fail_events": 0,
+        "skip_events": 0,
+        "final_row_schema_root_and_control_assertions": "two final jq true outputs; qualification job success metadata"
+      }
+    ]
+  },
+  "current_smoke_evidence": {
+    "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+    "tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+    "rows": 8,
+    "selected_roots_per_variant": 5,
+    "excluded_roots_per_variant": 201,
+    "full_registry_roots": 206,
+    "result": "PASS",
+    "exhaustive": false,
+    "run_id": 41591987505,
+    "run_attempt": 1,
+    "elapsed_build_and_matrix_seconds": 321,
+    "matrix": "platform-matrix.json",
+    "bundle_artifact": {
+      "id": 13210139387,
+      "name": "optional-extensions-assets-41591987505-1",
+      "size_in_bytes": 82122991,
+      "digest_from_api": "sha256:4376c671462644ee6af7495c7631c06487ba03d0beff50d46699ed9e1ee9c376"
+    },
+    "artifact_readback": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/hubnot-ci-integration-20261103/r2-hosted-smoke-validation.json",
+      "sha256": "779ec52bd6f902cf3de7a6e4a534f414532748b1f9220c9734f5106053f70be4",
+      "bytes": 14360
+    },
+    "artifact_inventory": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/hubnot-ci-integration-20261103/r2-hosted-artifacts.json",
+      "sha256": "748f064256e15ac38724dcab8539bf0a92a536857e5d7ef3fd85f4d737899b86",
+      "bytes": 4544
+    },
+    "source_fallback": false,
+    "not_claimed": [
+      "206-journey pass on currentd5 per platform",
+      "native Intel exhaustive completion of original cancelled run",
+      "Mac notarized/browser-download approval",
+      "independent user/author acceptance"
+    ]
+  },
+  "limits_reconciliation_evidence": {
+    "records": 69,
+    "inventory_sha256": "65a369f7a13c6ac57a3cd604e9f0b3459d67be6359216ad5cea1250330592489",
+    "classification_inventory_preserved": true,
+    "scope": "The69 entries retain the original read-only audit classifications, test mappings and then-pending markers verbatim. Current observed execution is recorded in the source checks, six historical206 rows and eight current non-exhaustive smoke rows. No synthetic equality, helper-only check, dormant/private/enclosing cap or current smoke exclusion is promoted to a live all-platform numeric admission result."
+  },
+  "accepted_beta_limitations": [
+    {
+      "area": "macOS public distribution",
+      "decision": "Mac beta may ship without Developer ID signing or notarization; maintainer approved 2026-11-03",
+      "blocks_functional_qualification": false,
+      "blocks_independent_review": false,
+      "normal_browser_download_installation": "uncertified; actual Gatekeeper rejection retained",
+      "required_release_disclosure": true,
+      "evidence": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846"
+    }
+  ],
+  "deferred_distribution_work": [
+    "Developer ID signing/notarization setup when available; new signed-package digests/provenance and exact native browser-download retest"
+  ],
+  "downstream_pending": [
+    "WP26 independent boundary review, public-docs-only native-user and extension-author observations, and final requirement/readiness reconciliation remain pending."
+  ],
+  "superseded_pending_markers": {
+    "classification": "Historical pending statements remain verbatim in the older per-limit read-only inventory and transport history; current evidence above supersedes those statements only within its stated source/platform/scope. Historical failures/cancellations remain failures/cancellations.",
+    "paths": [
+      "limits_reconciliation[*].current_status",
+      "limits_reconciliation[*].current_tests[*].observed_result",
+      "private_count_transport.status",
+      "native_retention_transport.status",
+      "native_retention_transport.required_fresh_gates"
+    ],
+    "original_manifest_status": "PENDING",
+    "original_blockers": [
+      "Independent bounded-count correction review and new317-input/311-inherited root attestation are pending.",
+      "Frozen full source checks, fresh default/performance capture and eight actual native platform/variant rows are pending.",
+      "Native syscall instrumentation and all required actual Go/descendant positive controls are pending."
+    ],
+    "original_evidence_classification": {
+      "source_suite": "PENDING frozen uncached race execution",
+      "exact_package_rows": "PENDING actual native executions; cross-builds do not qualify rows",
+      "legacy_selected_callers": "assertion-backed public caller evidence; successful stdout not retained unless a named evidence helper emits it",
+      "new_numeric_controls": "raw output and state/ID assertions retained in new-controls.jsonl",
+      "standalone_references": "independently supplied target/source/compiler/hash-bound assets; raw results retained",
+      "fixture_construction": "source-assisted signed public graphs and hostile peers are not shipped binary admission evidence"
+    }
+  },
+  "distribution_provenance": {
+    "record": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/hubnot-ci-integration-20261103/acceptance-assets/candidate/PROVENANCE.json",
+      "sha256": "2bccb53c2f0730e1731d3532c81bb6ba4d77d52c229b6b4e60d0562077d1459d",
+      "bytes": 10907
+    },
+    "checksums": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/hubnot-ci-integration-20261103/acceptance-assets/candidate/SHA256SUMS",
+      "sha256": "9bbf5953354dcfcda0fb5e274171ef300d58c63f2a05144566caa0776db5716c",
+      "bytes": 1335
+    },
+    "all9_archive_hashes_read_back": true,
+    "source_archive": {
+      "name": "hubnot_0.0.0-optional-extensions-qualification.1_source.tar.gz",
+      "sha256": "54080db94cce3d5e8cd5d3656234197a06a082a601f2b928441b113c99c7a0eb"
+    },
+    "source_archive_is_runtime_evidence": false
+  },
+  "reference_provenance": {
+    "manifest": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/hubnot-ci-integration-20261103/acceptance-assets/references/manifest.json",
+      "sha256": "51be5bd9d07e504bcd801e919d8ffb8e71863459bf657e3bd42fc707c04208fa",
+      "bytes": 4445
+    },
+    "source_commit": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+    "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+    "compiler": "go1.26.4",
+    "flags": [
+      "-buildvcs=false",
+      "-trimpath"
+    ],
+    "assets": [
+      {
+        "name": "linux_amd64/fake-tracker",
+        "target": "linux/amd64",
+        "sample": "fake-tracker",
+        "package": "./examples/extensions/fake-tracker",
+        "sha256": "0679744dcc0faddc4a77c6774b64b4559e9b6370442e8e65e88dc5241b9a50f1",
+        "build_info_sha256": "6533691585843a41ffe4ca05fa2db2875a269a28091f93d26320d25b9312ac66"
+      },
+      {
+        "name": "linux_amd64/charter",
+        "target": "linux/amd64",
+        "sample": "charter",
+        "package": "./examples/extensions/charter-model",
+        "sha256": "fdb38de71975436c7464549b8d3f8dfc5f6e62841324b2cd5c95aa2d093cc353",
+        "build_info_sha256": "3bfc0c14f57f197386cf7cede153ec95030a38b5d9fa8f63f3c7f54ab81d58b1"
+      },
+      {
+        "name": "linux_amd64/inventory",
+        "target": "linux/amd64",
+        "sample": "inventory",
+        "package": "./examples/extensions/inventory-model",
+        "sha256": "fbb7839728de0115c6ace816d6ea456808f31c1f7433f3cc0360fc327309e073",
+        "build_info_sha256": "00a0be89a8437c3f4c54732cd255076fc40a9431cd9a119b556fe6bba2e6da1a"
+      },
+      {
+        "name": "linux_arm64/fake-tracker",
+        "target": "linux/arm64",
+        "sample": "fake-tracker",
+        "package": "./examples/extensions/fake-tracker",
+        "sha256": "efedd735d940300a19fa9ef83a7ea59725bf00bdfabffaf24e65cf9b545b93ee",
+        "build_info_sha256": "96be044acb5e656789edf1cddddefe60ca6f812fec60c8ddd31f9eb190f8a18e"
+      },
+      {
+        "name": "linux_arm64/charter",
+        "target": "linux/arm64",
+        "sample": "charter",
+        "package": "./examples/extensions/charter-model",
+        "sha256": "5b72ed640f49f83f77df1ea2540871d8146c55af9dffdf55460cf9be106a9971",
+        "build_info_sha256": "8623579333e5069fa03e4670f2bdae7081986b7940a429f8725b71bbb852a4f4"
+      },
+      {
+        "name": "linux_arm64/inventory",
+        "target": "linux/arm64",
+        "sample": "inventory",
+        "package": "./examples/extensions/inventory-model",
+        "sha256": "f20f61c0283fd926a255a6ac6e77512e3b9b3cc2a657a5bcf857c8efaf8bc897",
+        "build_info_sha256": "07d3ab96b9630c2ffde91286c4f1f83b727b5653eb0e65ceab289ac9561cf0e4"
+      },
+      {
+        "name": "darwin_amd64/fake-tracker",
+        "target": "darwin/amd64",
+        "sample": "fake-tracker",
+        "package": "./examples/extensions/fake-tracker",
+        "sha256": "1312b5bb4a44205817937ff2bc6cf52ea8a7e2187aaa107479ea51c435dfbd2a",
+        "build_info_sha256": "009b664a2b84f7f708c6e71cc4cc6e908a9758e448b16669383ef874cbc513a0"
+      },
+      {
+        "name": "darwin_amd64/charter",
+        "target": "darwin/amd64",
+        "sample": "charter",
+        "package": "./examples/extensions/charter-model",
+        "sha256": "6549215696d4422c3533af22349a2dbc59b5711d2afaf0ea7f60375e3db521c4",
+        "build_info_sha256": "30082b130082300274f3d0ffa7cc2f2a6aebbed0cbd86c51973f8df509ce3bc9"
+      },
+      {
+        "name": "darwin_amd64/inventory",
+        "target": "darwin/amd64",
+        "sample": "inventory",
+        "package": "./examples/extensions/inventory-model",
+        "sha256": "817cad36872feea7ea7ff56b381ccf7f9ef1ebb3fd96aeaf031faec1ebe9002f",
+        "build_info_sha256": "995db70fc2d06ef729a8563677eb0155981c34bf8400b7a29c8dcbe3dd1cc54f"
+      },
+      {
+        "name": "darwin_arm64/fake-tracker",
+        "target": "darwin/arm64",
+        "sample": "fake-tracker",
+        "package": "./examples/extensions/fake-tracker",
+        "sha256": "077352d26bf6c290a4d3e3281b4c4ed3b3a8bb607c281bdf23f643f7a24003c1",
+        "build_info_sha256": "733e147de0faa95bd9a1763fd5ffff46767a8aebd9dd0195bfe352773fef8c3e"
+      },
+      {
+        "name": "darwin_arm64/charter",
+        "target": "darwin/arm64",
+        "sample": "charter",
+        "package": "./examples/extensions/charter-model",
+        "sha256": "7c7d5191983db754de70aba0a04c811675da3be7b4f746e6f102e2b80b4edd90",
+        "build_info_sha256": "ffc4d7313ab29eb46a7a855a8bcabe5587315a46c48e1bae40eba472a78dcfc4"
+      },
+      {
+        "name": "darwin_arm64/inventory",
+        "target": "darwin/arm64",
+        "sample": "inventory",
+        "package": "./examples/extensions/inventory-model",
+        "sha256": "e2edc95a7e1f18cd32a8b7071a81536dfe8a7423985b74603ce14d450d7dc69f",
+        "build_info_sha256": "39e56e73ba04a0ffba7fd5df608da9c6bdac02315cc6b5152404144e0263371a"
+      }
+    ],
+    "all12_executable_and_build_info_hashes_read_back": true
+  },
+  "historical_intel_partial_evidence": {
+    "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+    "run_id": 41465035433,
+    "job_id": 125344477764,
+    "log_sha256": "4440f5e8072563a1dc9b0e8b3e697181d03ae8271b9e5b012c6dae4fc5e67637",
+    "observed_named_root_passes": 388,
+    "observed_distinct_root_names": 206,
+    "observed_assertion_failures": 0,
+    "standalone_standard_consumer_leaf_passes": {
+      "fake-tracker": 17.49,
+      "charter": 110.65,
+      "inventory": 218.25
+    },
+    "result": "CANCELLED_INCOMPLETE",
+    "whole_row_pass": false,
+    "scope": "Partial observations only. Final second-variant group/source-after controls did not complete. No Intel exhaustive row or second-variant consumer completion is inferred; currentd5 native Intel smoke is a separate completed observation."
   }
 }
