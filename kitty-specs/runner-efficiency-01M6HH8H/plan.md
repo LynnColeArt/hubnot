@@ -127,7 +127,8 @@ with the aggregate timer exhausted. The artifact transport subcase had run one
 second when its parent package exhausted twenty minutes. Regression attribution
 is unknown; retain the actual exit and traceback without claiming a pass.
 
-Inventory identified 984 root tests plus one example, including unconditional
+The captured inventory at f60d4046 identified 988 root tests plus one example,
+including unconditional
 100,000-item stress cases with forty-five-minute inner watchdogs. Complete
 partitions were considered, but would still rerun unrelated expensive corpora
 at every helper change. The versioned governance.enforcement policy in
