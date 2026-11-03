@@ -20,12 +20,18 @@ Mac package assets, aliases, workflow run41465035433 and artifact13149409710
 are untouched. This is an explicit local path/branch-name change, not a source
 rewrite or a new package certification.
 
-The fresh canonical lane-x is allocated by Spec Kitty with immutable approved
-WP24 base `4bb26359dbdb2fbc149911dc99c3a5880a24c031`, then receives the actual
-integrated coordination source and reconciled WP25 evidence. This preserves the
-full original WP25 review diff, including real implementation commits after
-WP24. It does not use an empty ahead commit, force/skip option, manual event edit
-or a base limited to the later CI-only delta.
+The allocator refused an explicit `--base` on this dependency-lane route before
+creating a workspace. The supported fresh canonical allocation therefore uses
+the actual coordination tip and records that branch and immutable allocation
+commit truthfully. Final manifest/checks reconciliation is a substantive WP25
+deliverable committed on the fresh lane, rather than folded into its allocation
+base. No empty ahead commit, force/skip option or manual state edit is used.
+
+Independent review must separately inspect the full historical scope from
+approved WP24 `4bb26359dbdb2fbc149911dc99c3a5880a24c031` through the exact
+reviewed HEAD. The generated continuation-only diff is insufficient to review
+the original WP25 implementation. Its allocation base is not misrepresented as
+the historical WP25 scope, and old exact-source results retain their identities.
 
 Normal subtask/readiness, for_review regression gate, independent review and
 canonical review_result recording remain required. A verdict must bind the exact
