@@ -123,6 +123,16 @@ honor requests from that actor.
 watch` repeats this process, waits when no work is available, survives transient
 sync errors, and cancels active execution on SIGINT or SIGTERM.
 
+Runner-owned status/error messages include UTC RFC3339 timestamps. Each sync
+prints a start message before its potentially slow work, then completion or
+failure with elapsed time. These are human diagnostics, not a stable JSON API.
+
+`hn run request` records locally and prints a publication reminder. It does not
+sync implicitly: run `hn sync REMOTE` explicitly before expecting a remote
+runner to see the request. Current workers still skip only their own completed
+requests; obsolete-request withdrawal and multi-runner leases/load-balancing
+remain separate follow-up work.
+
 ## Attestation limits
 
 A valid signature proves attribution and integrity. It does not prove that the

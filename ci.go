@@ -245,6 +245,7 @@ func cmdRunRequest(args []string) error {
 	}
 	fmt.Printf("Requested pipeline %s as run %s\n", oneLine(event.Pipeline), shortID(stored.ID))
 	fmt.Printf("Commit: %s  Definition: %s\n", shortOID(event.Commit), shortID(event.Definition))
+	fmt.Println("Recorded locally; run 'hn sync REMOTE' to publish this request so remote runners can see it.")
 	return nil
 }
 

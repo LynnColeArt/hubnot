@@ -97,8 +97,18 @@ func TestDistributedPipelineRun(t *testing.T) {
 	if err := createProposalRef(storedProposal.ID, head); err != nil {
 		t.Fatal(err)
 	}
-	if err := cmdRunRequest([]string{storedProposal.ID, "check"}); err != nil {
+	beforePublication := mustGitText(t, "ls-remote", remote, "refs/hn/*")
+	requestOutput, err := captureTestOutput(t, func() error {
+		return cmdRunRequest([]string{storedProposal.ID, "check"})
+	})
+	if err != nil {
 		t.Fatal(err)
+	}
+	if !strings.Contains(requestOutput, "Recorded locally; run 'hn sync REMOTE' to publish this request") {
+		t.Fatal("run request omitted its unpublished state", requestOutput)
+	}
+	if afterPublication := mustGitText(t, "ls-remote", remote, "refs/hn/*"); afterPublication != beforePublication {
+		t.Fatal("request creation unexpectedly published facts")
 	}
 	aliceEvents, err := collectEvents()
 	if err != nil {
