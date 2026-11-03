@@ -22,7 +22,8 @@ func main() {
 }
 
 func run(args []string) error {
-	if !(len(args) >= 2 && args[0] == "extension" && args[1] == "run") && len(args) > 0 && args[0] != "help" && args[0] != "--help" && args[0] != "-h" && args[0] != "version" && args[0] != "--version" {
+	staticRun := len(args) > 0 && args[0] == "run" && isStaticRunDiscovery(args[1:])
+	if !staticRun && !(len(args) >= 2 && args[0] == "extension" && args[1] == "run") && len(args) > 0 && args[0] != "help" && args[0] != "--help" && args[0] != "-h" && args[0] != "version" && args[0] != "--version" {
 		unlock, err := contributionCommandLock(args)
 		if err != nil {
 			return err
@@ -129,13 +130,17 @@ Usage:
   hn policy show [REV]
   hn policy check --base REV <--head REV|--file PATH>
   hn review PROPOSAL <--approve|--request-changes> [--body TEXT]
+  hn run help
+  hn run capabilities --json
   hn run request PROPOSAL PIPELINE
   hn run list
   hn run show REQUEST
   hn run execute REQUEST [--backend sandbox|host]
   hn run logs RESULT
+  hn run withdraw FULL_REQUEST --reason TEXT [--json]
   hn runner once --accept-pipeline NAME --accept-actor ACTOR
   hn runner watch --accept-pipeline NAME --accept-actor ACTOR
+  Runner once/watch optionally accept --skip-stale-base --target refs/heads/NAME.
   hn decide PROPOSAL <--accept|--reject> [--body TEXT]
   hn merge PROPOSAL
   hn automerge PROPOSAL --rule NAME [--execute]

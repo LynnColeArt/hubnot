@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -292,6 +293,125 @@ func TestPolicyEvidenceDecisionAndMerge(t *testing.T) {
 	if !evaluation.Merged || proposalStatus(evaluation) != "merged" {
 		t.Fatal("valid merge evidence did not produce merged status")
 	}
+}
+
+// Exercise the existing proposal-evaluation contract with real Git commits and
+// signed requests/results. The shared evaluator's shape is deliberately absent
+// from this test so extraction cannot make its own implementation the oracle.
+func TestPolicyPipelineEvidenceAcrossRequests(t *testing.T) {
+	root := inReplicationTestRepository(t)
+	maintainer := testIdentity(t, "Maintainer")
+	requester := testIdentity(t, "Requester")
+	outsider := testIdentity(t, "Outsider")
+	runnerA := testIdentity(t, "Runner A")
+	runnerB := testIdentity(t, "Runner B")
+	stranger := testIdentity(t, "Untrusted runner")
+	writeTestPolicy(t, root, PolicyDocument{
+		Version: policyVersion, Maintainers: []string{maintainer.Actor},
+		Proposals: ProposalPolicy{RequiredAccepts: 1},
+		Pipelines: map[string]PipelinePolicy{
+			"test": {RequiredResults: 2, TrustedRunners: []string{runnerA.Actor, runnerB.Actor}, Requesters: []string{requester.Actor}},
+		},
+	})
+	writeTestPipeline(t, root)
+	mustGit(t, "add", ".hn")
+	mustGit(t, "commit", "-qm", "Base policy and pipeline")
+	base := mustGitText(t, "rev-parse", "HEAD")
+	mustGit(t, "commit", "--allow-empty", "-qm", "Feature")
+	head := mustGitText(t, "rev-parse", "HEAD")
+	proposal := appendPolicyTestProposal(t, maintainer, base, head, "Evaluate pipeline evidence")
+	otherProposal := appendPolicyTestProposal(t, maintainer, base, head, "Independent candidate")
+	_, _, definition, err := loadPipeline(head, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(actor *Identity, candidate *StoredEvent, pipeline, digest string) *StoredEvent {
+		t.Helper()
+		event, err := nextEvent(actor, "run.request")
+		if err != nil {
+			t.Fatal(err)
+		}
+		event.Subject, event.Pipeline, event.Definition, event.Commit = candidate.ID, pipeline, digest, head
+		stored, err := appendEvent(event, actor)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return stored
+	}
+	result := func(actor *Identity, request *StoredEvent, outcome string) *StoredEvent {
+		t.Helper()
+		event, err := nextEvent(actor, "run.result")
+		if err != nil {
+			t.Fatal(err)
+		}
+		log := []byte(outcome + "\n")
+		event.Subject, event.Pipeline, event.Definition, event.Commit = request.ID, request.Event.Pipeline, request.Event.Definition, head
+		event.Outcome, event.Log, event.Backend, event.Platform, event.Runner = outcome, eventID(log), "sandbox", "test/test", "hn/test"
+		if outcome == "failed" {
+			event.ExitCode = 1
+		}
+		stored, err := appendEventWithAttachments(event, actor, map[string][]byte{"log.txt": log})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return stored
+	}
+	check := func(ready bool, passed, failed []*StoredEvent) {
+		t.Helper()
+		events, err := collectEvents()
+		if err != nil {
+			t.Fatal(err)
+		}
+		evaluation, err := evaluateProposal(proposal, events)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(evaluation.Pipelines) != 1 {
+			t.Fatalf("required pipelines = %d, want 1", len(evaluation.Pipelines))
+		}
+		pipeline := evaluation.Pipelines[0]
+		if evaluation.Ready != ready || pipeline.Name != "test" || pipeline.Required != 2 || len(pipeline.Passed) != len(passed) || len(pipeline.Failed) != len(failed) {
+			t.Fatalf("ready=%t pipeline=%+v; want ready=%t, %d passes and %d failures", evaluation.Ready, pipeline, ready, len(passed), len(failed))
+		}
+		for _, pair := range []struct {
+			actual []StoredEvent
+			want   []*StoredEvent
+		}{{pipeline.Passed, passed}, {pipeline.Failed, failed}} {
+			for i, want := range pair.want {
+				if pair.actual[i].ID != want.ID {
+					t.Fatalf("pipeline result %d = %s, want %s", i, pair.actual[i].ID, want.ID)
+				}
+			}
+		}
+		if len(evaluation.Evidence) != len(passed) {
+			t.Fatalf("qualifying evidence = %v, want exactly the passing results", evaluation.Evidence)
+		}
+		for _, want := range passed {
+			if !slices.Contains(evaluation.Evidence, want.ID) {
+				t.Fatalf("qualifying evidence omitted passing result %s", want.ID)
+			}
+		}
+	}
+
+	first := request(maintainer, proposal, "test", definition)
+	second := request(requester, proposal, "test", definition)
+	result(runnerA, first, "passed")
+	latestA := result(runnerA, second, "passed")
+	check(false, []*StoredEvent{latestA}, nil) // Two requests do not make one runner count twice.
+	passedB := result(runnerB, second, "passed")
+	check(true, []*StoredEvent{latestA, passedB}, nil)
+
+	result(stranger, first, "passed")
+	result(runnerB, request(outsider, proposal, "test", definition), "failed")
+	result(runnerB, request(maintainer, proposal, "test", eventID([]byte("other definition"))), "failed")
+	result(runnerB, request(maintainer, proposal, "other", definition), "failed")
+	result(runnerB, request(maintainer, otherProposal, "test", definition), "failed")
+	check(true, []*StoredEvent{latestA, passedB}, nil) // Later ineligible claims do not replace qualifying evidence.
+
+	failedA := result(runnerA, first, "failed")
+	check(false, []*StoredEvent{passedB}, []*StoredEvent{failedA})
+	passedA := result(runnerA, second, "passed")
+	check(true, []*StoredEvent{passedB, passedA}, nil)
 }
 
 func writeTestPolicy(t *testing.T, root string, policy PolicyDocument) {

@@ -438,6 +438,9 @@ func contributionRequireProposal(id string) error {
 // runner side effect. The daemon runner is deliberately unsupported while this
 // first contribution profile is selected; no implicit worker is introduced.
 func contributionRunBoundary(family string, args []string) error {
+	if family == "run" && isStaticRunDiscovery(args) {
+		return nil
+	}
 	a, e := loadContributionAuthority()
 	if e != nil {
 		return e
@@ -451,6 +454,15 @@ func contributionRunBoundary(family string, args []string) error {
 	if len(args) < 1 {
 		return nil
 	}
+	if args[0] == "withdraw" {
+		// Cancellation belongs solely to the original requester, independently of
+		// execution/moderation roles. The writer validates complete signed history
+		// and that exact signer; this path grants no execution or intake authority.
+		if a.ReadOnly {
+			return fmt.Errorf("read-only contribution authority cannot withdraw requests")
+		}
+		return nil
+	}
 	if args[0] == "list" {
 		return fmt.Errorf("run list is raw history; use explicit contribution inspect --raw or hn log under enabled policy")
 	}
@@ -458,6 +470,7 @@ func contributionRunBoundary(family string, args []string) error {
 		return nil
 	}
 	subject := args[1]
+	executionRequestID := ""
 	events, e := collectEvents()
 	if e != nil {
 		return e
@@ -468,6 +481,9 @@ func contributionRunBoundary(family string, args []string) error {
 			return e
 		}
 		subject = row.Event.Subject
+		if args[0] == "execute" {
+			executionRequestID = row.ID
+		}
 		if args[0] == "logs" {
 			request, e := resolveEvent(events, subject)
 			if e != nil {
@@ -478,6 +494,14 @@ func contributionRunBoundary(family string, args []string) error {
 	}
 	if e = contributionRequireProposal(subject); e != nil {
 		return e
+	}
+	// Preserve admission first, but refuse observed withdrawn execution before
+	// the ordinary signer loader can migrate a legacy keyring. Eligible requests
+	// continue through the existing identity and native-execution permission gate.
+	if executionRequestID != "" {
+		if e = guardRunNotWithdrawn(events, executionRequestID); e != nil {
+			return e
+		}
 	}
 	identity, e := loadIdentity()
 	if e != nil {

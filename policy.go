@@ -308,6 +308,43 @@ func actorListed(actor string, actors []string) bool {
 	return false
 }
 
+// evaluatePipelineResults projects existing verified evidence against the exact
+// candidate and pipeline definition. The bool distinguishes a required policy
+// pipeline from an ungoverned explicit run; absence must not suppress execution.
+func evaluatePipelineResults(proposalID, name, expectedDefinition string, events []StoredEvent, policy PolicyDocument) (PipelineEvaluation, bool) {
+	pipelinePolicy, required := policy.Pipelines[name]
+	pipelineEvaluation := PipelineEvaluation{Name: name, Required: pipelinePolicy.RequiredResults}
+	if !required {
+		return pipelineEvaluation, false
+	}
+	latestByRunner := make(map[string]StoredEvent)
+	for _, request := range events {
+		if request.Event.Kind != "run.request" || request.Event.Subject != proposalID || request.Event.Pipeline != name ||
+			request.Event.Definition != expectedDefinition || !mayRequestRun(policy, name, request.Event.Actor) {
+			continue
+		}
+		for _, result := range currentRunResults(events, request.ID) {
+			if !actorListed(result.Event.Actor, pipelinePolicy.TrustedRunners) {
+				continue
+			}
+			previous, found := latestByRunner[result.Event.Actor]
+			if !found || result.Event.Sequence > previous.Event.Sequence {
+				latestByRunner[result.Event.Actor] = result
+			}
+		}
+	}
+	for _, result := range latestByRunner {
+		if result.Event.Outcome == "passed" {
+			pipelineEvaluation.Passed = append(pipelineEvaluation.Passed, result)
+		} else {
+			pipelineEvaluation.Failed = append(pipelineEvaluation.Failed, result)
+		}
+	}
+	sortStoredEvents(pipelineEvaluation.Passed)
+	sortStoredEvents(pipelineEvaluation.Failed)
+	return pipelineEvaluation, true
+}
+
 func evaluateProposal(proposal *StoredEvent, events []StoredEvent) (*ProposalEvaluation, error) {
 	view, _, err := contributionView(events)
 	if err != nil {
@@ -366,7 +403,6 @@ func evaluateProposal(proposal *StoredEvent, events []StoredEvent) (*ProposalEva
 	}
 	sort.Strings(pipelineNames)
 	for _, name := range pipelineNames {
-		pipelinePolicy := policy.Pipelines[name]
 		expectedDefinition := ""
 		if evaluation.CodeMatches {
 			_, _, definition, err := loadPipeline(proposal.Event.Head, name)
@@ -375,32 +411,7 @@ func evaluateProposal(proposal *StoredEvent, events []StoredEvent) (*ProposalEva
 			}
 			expectedDefinition = definition
 		}
-		latestByRunner := make(map[string]StoredEvent)
-		for _, request := range events {
-			if request.Event.Kind != "run.request" || request.Event.Subject != proposal.ID || request.Event.Pipeline != name ||
-				request.Event.Definition != expectedDefinition || !mayRequestRun(policy, name, request.Event.Actor) {
-				continue
-			}
-			for _, result := range currentRunResults(events, request.ID) {
-				if !actorListed(result.Event.Actor, pipelinePolicy.TrustedRunners) {
-					continue
-				}
-				previous, found := latestByRunner[result.Event.Actor]
-				if !found || result.Event.Sequence > previous.Event.Sequence {
-					latestByRunner[result.Event.Actor] = result
-				}
-			}
-		}
-		pipelineEvaluation := PipelineEvaluation{Name: name, Required: pipelinePolicy.RequiredResults}
-		for _, result := range latestByRunner {
-			if result.Event.Outcome == "passed" {
-				pipelineEvaluation.Passed = append(pipelineEvaluation.Passed, result)
-			} else {
-				pipelineEvaluation.Failed = append(pipelineEvaluation.Failed, result)
-			}
-		}
-		sortStoredEvents(pipelineEvaluation.Passed)
-		sortStoredEvents(pipelineEvaluation.Failed)
+		pipelineEvaluation, _ := evaluatePipelineResults(proposal.ID, name, expectedDefinition, events, policy)
 		evaluation.Pipelines = append(evaluation.Pipelines, pipelineEvaluation)
 	}
 
