@@ -55,6 +55,11 @@ host backend requires both flags on the invocation:
 hn run execute FULL_REQUEST_ID --backend host --allow-unsafe-host-execution
 ```
 
+CI workers need Go and Git installed. The project action recognizes the official
+read-only `/usr/local/go/bin` location when it is absent from the sandbox's fixed
+PATH. This is CI setup, not an application runtime requirement; no host PATH,
+private Git directory or signing key is mounted into the sandbox.
+
 An operator can explicitly run `hn runner once|watch --accept-pipeline NAME
 --accept-actor FULL_FINGERPRINT` to discover signed requests. Nothing starts
 automatically and there is no GitHub account, webhook, service or database

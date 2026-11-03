@@ -4,6 +4,15 @@ set -eu
 cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
 export GOENV=off GOTOOLCHAIN=local GOWORK=off GOPROXY=off GOSUMDB=off
 export GORACE=atexit_sleep_ms=0
+# The sandbox exposes /usr read-only but deliberately omits ambient PATH.
+# The official Go installation is an explicit project toolchain location.
+if ! command -v go >/dev/null 2>&1 && [ -x /usr/local/go/bin/go ]; then
+  PATH="/usr/local/go/bin:$PATH"
+  export PATH
+fi
+command -v go >/dev/null 2>&1 || { echo 'Project CI requires an installed Go toolchain' >&2; exit 127; }
+go version
+git --version
 
 case "${1-}" in
   fast)
