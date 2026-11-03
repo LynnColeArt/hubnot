@@ -396,14 +396,18 @@ func wp25References(t *testing.T, root string) map[string]string {
 	}
 	head := strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD"))
 	tree := strings.TrimSpace(runOperationalGit(t, ".", "rev-parse", "HEAD^{tree}"))
-	if m.Schema != "hn.extension-references/1" || m.SourceCommit != head || m.SourceTree != tree || m.Compiler != "go1.26.4" || len(m.Assets) != 12 {
+	targets, err := betaPackageTargetSet(*betaPackageTargets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Schema != "hn.extension-references/1" || m.SourceCommit != head || m.SourceTree != tree || m.Compiler != "go1.26.4" || len(m.Assets) != 3*len(targets) {
 		t.Fatal("reference manifest source/tree/compiler/full matrix mismatch")
 	}
 	seen := map[string]bool{}
 	selected := map[string]string{}
 	for _, a := range m.Assets {
 		samplePath := map[string]string{"fake-tracker": "./examples/extensions/fake-tracker", "charter": "./examples/extensions/charter-model", "inventory": "./examples/extensions/inventory-model"}[a.Sample]
-		validTarget := a.Target == "linux/amd64" || a.Target == "linux/arm64" || a.Target == "darwin/amd64" || a.Target == "darwin/arm64"
+		validTarget := targets[a.Target]
 		if !validTarget || samplePath == "" || a.Package != samplePath || a.Name != strings.ReplaceAll(a.Target, "/", "_")+"/"+a.Sample || seen[a.Name] {
 			t.Fatal("reference asset inventory mismatch", a.Name)
 		}
@@ -447,7 +451,7 @@ func wp25MissingReferenceControl(t *testing.T) {
 	if e = os.WriteFile(filepath.Join(root, "manifest.json"), raw, 0600); e != nil {
 		t.Fatal(e)
 	}
-	cmd := exec.Command(wp25Self(t), "-test.run=^TestExtensionPackageMissingReferenceProbe$", "-test.v")
+	cmd := exec.Command(wp25Self(t), "-test.run=^TestExtensionPackageMissingReferenceProbe$", "-test.v", "-hn-package-targets="+*betaPackageTargets)
 	cmd.Env = append(os.Environ(), "HN_WP25_MISSING_REFERENCE_CONTROL=1", "HN_WP25_REFERENCE_DIR="+root)
 	out, e := cmd.CombinedOutput()
 	t.Logf("missing-asset negative control: %v\n%s", e, out)
