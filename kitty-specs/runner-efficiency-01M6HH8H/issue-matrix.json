@@ -11,6 +11,18 @@
       "title": null,
       "verdict": "in-mission",
       "wp": "WP05"
+    },
+    "#30": {
+      "evidence_ref": "WP01 preserves canonical trusted-result semantics; WP02 suppresses automatic starts after qualifying requiredResults; WP05 independently validates and records the concurrent-start coordination follow-up before reviewed source closure.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "in-mission",
+      "wp": "WP05"
     }
   },
   "schema_version": 1
