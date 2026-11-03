@@ -123,6 +123,9 @@
       "last_event_id": "01M6HTN0J4QEY53R8XZVNG0R80",
       "last_transition_at": "2026-11-03T23:07:03.108260+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "WP04 ready364939d0: original-requester idempotent withdrawal CLI, full request IDs before writing, static keyless discovery, status and future-start controls preserve moderation/history/in-flight/default workflows. Standard+native actual CLI, native source race, metadata-free source discovery, native fast/default, static and DarwinARM64 cross-build gates PASS with source/input/binary hash bindings. Evidence /home/lynn/Documents/Codex/2026-11-03/hubnot-runner-efficiency/WP04/IMPLEMENTATION.md. Original full20m timeout/deep release qualification remain incomplete; framework pytest baseline unsupported. Normal gate; no overrides, release or self-approval."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 18947,
