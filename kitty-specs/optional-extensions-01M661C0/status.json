@@ -1,7 +1,7 @@
 {
-  "event_count": 336,
-  "last_event_id": "01M6G6TMP2H6DX2EEZMAMN065G",
-  "materialized_at": "2026-11-03T08:01:21.602632+00:00",
+  "event_count": 337,
+  "last_event_id": "01M6G729BMKWB3WY5F9PX315HX",
+  "materialized_at": "2026-11-03T08:05:32.148631+00:00",
   "mission_number": "",
   "mission_slug": "optional-extensions-01M661C0",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 1
   },
   "work_packages": {
@@ -887,12 +887,12 @@
     "WP25": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M6G6TMP2H6DX2EEZMAMN065G",
-      "last_transition_at": "2026-11-03T08:01:21.602632+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M6G729BMKWB3WY5F9PX315HX",
+      "last_transition_at": "2026-11-03T08:05:32.148631+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Administrative recovery: normal allocation failed on the printed planning2f1a6566 merge. Exact seven task conflicts archived and proved; ordinary merge92e5b167 is clean, all220 initial foundation inputs exact. Reenter normal implementation to consume approved WP24 dependency closure; no implementation or qualification pass claimed.",
@@ -900,9 +900,9 @@
         "Reconciled real WP25 evidence9dc1914e; exact gate-prescribed framework profile annotation cleanup committed. Full historical4bb-to-head independent review required, frozen Mac archived unchanged, all69limits and exact20binaryequivalence retained; current8native smoke and2signed native runs pass. No force or skipped gate."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 3054596,
-      "shell_pid_created_at": "1793692402.91",
+      "role": "reviewer",
+      "shell_pid": 3242631,
+      "shell_pid_created_at": "1793693127.36",
       "subtasks": {
         "T100": "done",
         "T101": "done",
