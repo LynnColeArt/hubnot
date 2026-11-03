@@ -53,7 +53,17 @@ func ValidModuleID(id string) bool {
 	return modulePattern.MatchString(id) && !strings.HasPrefix(id, "hn/") && !strings.HasPrefix(id, "hubnot/")
 }
 
-var methods = map[string]bool{"capabilities.list": true, "identity.public": true, "resource.read": true, "resource.mutate": true, "resource.operation": true, "artifact.read": true, "artifact.mutate": true, "artifact.operation": true, "artifact.search": true, "artifact.type.read": true, "artifact.type.publish": true, "changes.capture": true, "changes.page": true, "changes.since": true}
+func methodVocabulary() [14]string {
+	return [14]string{"capabilities.list", "identity.public", "resource.read", "resource.mutate", "resource.operation", "artifact.read", "artifact.mutate", "artifact.operation", "artifact.search", "artifact.type.read", "artifact.type.publish", "changes.capture", "changes.page", "changes.since"}
+}
+func validMethod(value string) bool {
+	for _, candidate := range methodVocabulary() {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
+}
 
 func ParseManifest(data []byte) (Manifest, error) {
 	return parseManifest(data, true)
@@ -120,7 +130,7 @@ func (m Manifest) validateStructure() error {
 	}
 	seen := map[string]bool{}
 	for _, method := range m.Capabilities {
-		if !methods[method] || seen[method] {
+		if !validMethod(method) || seen[method] {
 			return failure("invalid_input", "unknown or duplicate capability")
 		}
 		seen[method] = true

@@ -1,0 +1,204 @@
+{
+  "schema": "hn.prospective-b-stage-fixtures-regions/1",
+  "date": "2026-11-02",
+  "status": "ROOT PENDING EXTERNAL DRAFT; no source permission",
+  "planning_primary": "215d4311664710a420e96991eaf7258442823091",
+  "source_anchor": "adc88255dbf0c9c8c43ccaaa9561a82b7f4d57f8",
+  "go_input_map": {
+    "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/source-inputs-final.json",
+    "sha256": "6a7b5abbc24b66b4828788c6dd0b33278dcc019b07f87a5685a38f966c2e892c",
+    "inputs": 317,
+    "all_match_at_draft": true,
+    "inherited_qualification_inputs": 311,
+    "existing_delta_paths_vs_DD": 4,
+    "protected_DD_complement": 313,
+    "metadata_changes_inputs": 0
+  },
+  "prospective_source_allowlist": [
+    {
+      "path": "extension_artifact_acceptance_test.go",
+      "owner": "WP18 approved/inactive",
+      "anchor_sha256": "34d1e3ad54e62e2a338913de85785991a64bf6a3332f1f34ddcdbe4c793ef219",
+      "anchor_git_blob": "b134c7f473b4ab2a5b656a4f2a78cba236fcc479",
+      "git_mode": "100644",
+      "regions_at_source_anchor": [
+        {
+          "lines": [
+            3,
+            19
+          ],
+          "purpose": "Necessary fixture imports only"
+        },
+        {
+          "lines": [
+            24,
+            81
+          ],
+          "symbol": "TestExtensionArtifactChild",
+          "purpose": "Raw interrupted peer and compiled-self narrow helper modes only"
+        },
+        {
+          "lines": [
+            571,
+            690
+          ],
+          "symbol": "TestExtensionArtifactInterruptedRecoveryRawCLI",
+          "purpose": "Existing prepared/lost-ack plus nested literal2000ms reader leaf; all original assertions retained"
+        },
+        {
+          "lines": [
+            694,
+            733
+          ],
+          "symbol": "extensionArtifactRecoveryObservation",
+          "purpose": "Bounded evidence and tightly adjacent small exact-selector/atomic-request/witness/one-shot-delegate/clock/error controls"
+        }
+      ],
+      "line_numbers_are_anchor_only": true,
+      "whole_file_transfer": false,
+      "new_top_level_parent": false
+    }
+  ],
+  "read_only_proof_anchors": [
+    "git.go:115 requireGitRepository",
+    "extension_host_command.go:60-98 rechecks",
+    "extension_artifact_adapter.go:129-179 history before writer",
+    "artifact_read.go:292-348 discovery/admission;383-390 preflight;571-627 reader/context;745-782 Wait",
+    "artifact_store.go:784-799 intent;840-859 host candidate/update-ref;1062-1116 absence",
+    "artifact_operation.go:13-25 exact12 fields",
+    "internal/extension/session.go:184-202 first byte;248-256 deadline;498-529 monitor;659-698 context/dispatch;718-745 cancel/joins",
+    "internal/extension/process.go:265-295 TERM/grace/exit/Wait",
+    "project_snapshot.go:397-419 projectGit filter/I/O",
+    "extension_package_acceptance_test.go H09 checked peer/TERM observations: reference only"
+  ],
+  "fixed_fixture_parameters_ms": {
+    "deadline_request": 2000,
+    "stage_request": 20000,
+    "stage_arrival_from_host_launch_max": 10000,
+    "stage_launch_to_Wait_strictly_below": 20000,
+    "helper_and_enclosing_safety": 30000,
+    "original_stall": 30000
+  },
+  "safety_action_qualifies": false,
+  "reader_gate_argv": [
+    "--git-dir=<actual physical private dir>",
+    "cat-file",
+    "--batch-command"
+  ],
+  "reader_expected_error": {
+    "origin": "host",
+    "code": "uncertain_operation",
+    "recovery": "inspect_operation",
+    "operation": {
+      "protocol": "hn-artifact/1",
+      "actor": "<original>",
+      "operation": "<original>"
+    }
+  },
+  "lost_ack_actual_argv": [
+    "--git-dir=<actual physical private dir>",
+    "update-ref",
+    "-m",
+    "hn: append record.revise",
+    "<original actor ref>",
+    "<actual host candidate OID>",
+    "<seeded expected old OID>"
+  ],
+  "lost_ack_owner": "Parent: exactly one real source-issued Git Start/Wait; wrapper/helpers have no descendants; all observers joined on returned paths; publication races inspected, no rollback/retry",
+  "frozen_host_environment_filter": {
+    "remove_all_keys_with_prefix": "GIT_",
+    "append": [
+      "GIT_NO_REPLACE_OBJECTS=1",
+      "GIT_CONFIG_NOSYSTEM=1",
+      "GIT_CONFIG_GLOBAL=os.DevNull",
+      "GIT_TERMINAL_PROMPT=0",
+      "GIT_NO_LAZY_FETCH=1"
+    ],
+    "same_cwd": true,
+    "absolute_real_git_before_wrapper": true,
+    "stdin_bytes": 0,
+    "stdout_max_bytes": 4096,
+    "stderr": "discard",
+    "record_environment": false
+  },
+  "evidence_limits": {
+    "total_leaf_including_metadata_bytes": 16384,
+    "selected_argv_bytes": 4096,
+    "fixed_files_and_counts": true,
+    "atomic_temp_permission": "0600",
+    "overflow": "FAIL",
+    "sensitive_payloads": false
+  },
+  "evidence_inputs": {
+    "root-B-fixture-design-maintainer-decision.json": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/root-B-fixture-design-maintainer-decision.json",
+      "sha256": "93d2c1c1a87cfbf41b195776531ad4cccfbb24d0f6ec7f07d0668e54db83f702",
+      "bytes": 4496
+    },
+    "dd-b-stage-followup-design/proposal.md": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-b-stage-followup-design/proposal.md",
+      "sha256": "026c73d8636dd9ba11d65610de877bba0d1e48a740eb9aa72f607921688a6189",
+      "bytes": 12466
+    },
+    "dd-b-stage-followup-design/parent-owned-delegation-addendum.md": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-b-stage-followup-design/parent-owned-delegation-addendum.md",
+      "sha256": "d468410eaa92337b012639c634fd620e90a2763671d4b939499d880a36f76422",
+      "bytes": 7621
+    },
+    "b-fixture-targeted-independent-review/review.md": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/b-fixture-targeted-independent-review/review.md",
+      "sha256": "39ae7c6a4ec0c5331a23383bc23139f65bdf15412abdf84bd674421b63a57aaf",
+      "bytes": 16483
+    },
+    "b-fixture-targeted-independent-review/verdict.json": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/b-fixture-targeted-independent-review/verdict.json",
+      "sha256": "f903ff83c43ecae468b169c1767b900d2d9d56ef6b1676557d91c38ef87fdfb7",
+      "bytes": 1031
+    },
+    "dd-intel-correction-producer/WP18-contract-lens-readback.md": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/WP18-contract-lens-readback.md",
+      "sha256": "393e1f0b59d2455264326ee4e3f75544364a2397e5f56b7f8d9a784f7abd9e22",
+      "bytes": 7061
+    },
+    "dd-intel-correction-producer/B-normal-source-final/new-controls.jsonl": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/B-normal-source-final/new-controls.jsonl",
+      "sha256": "fc8f53c160ef0305625389ec17c3c0fdaf6b2e706a49fefe42d7f50cf9ec4077",
+      "bytes": 3211
+    },
+    "dd-intel-correction-producer/B-delay-source-final/new-controls.jsonl": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/B-delay-source-final/new-controls.jsonl",
+      "sha256": "4cf974fb26c92be5528d8a95ed14af756d538275fdb213996ef6353ecb1271ad",
+      "bytes": 1392
+    },
+    "dd-intel-correction-producer/B-normal-source-final.log": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/B-normal-source-final.log",
+      "sha256": "9f733ab5e8050147d6131adca1e0791f85e8f1651192a29157ea7dc17cbf0133",
+      "bytes": 3986
+    },
+    "dd-intel-correction-producer/B-delay-source-final.log": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/B-delay-source-final.log",
+      "sha256": "5c8dd562d3c55eac9a7de640e9104f79a4a0c673ab46d56be7f1a409af931fe4",
+      "bytes": 2042
+    },
+    "dd-intel-correction-producer/B-diagnostic-packet.json": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/B-diagnostic-packet.json",
+      "sha256": "12c6db6711e15436d8ad6c91c5bf3658d0d2ab7ffc699ee2edb71c70dceb3529",
+      "bytes": 5603
+    },
+    "dd-intel-correction-producer/source-inputs-final.json": {
+      "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/dd-intel-correction-producer/source-inputs-final.json",
+      "sha256": "6a7b5abbc24b66b4828788c6dd0b33278dcc019b07f87a5685a38f966c2e892c",
+      "bytes": 76732
+    }
+  },
+  "supersession_condition": "Only after exact metadata review/root adoption/normal finalizer/fresh ACTUAL analysis/record-analysis/normal reentry AND separate exact-region source permission: supersede ONLY prior B diagnostics-only/later source-activation HOLD for execution of this exact design. Design acceptance permits metadata/analysis activation while source stays held. Shared-recheck/pre-dispatch cancelled gate rejected; parent-owned Git replaces unowned child pre-Wait paragraph.",
+  "unchanged": [
+    "A/C semantics and separate C-F1 validator fix",
+    "26 WPs/107 subtasks/52 requirements/24 historical reviews",
+    "WP25 14 owned/13 create_intent; frontmatter/dependencies/lanes/groups/authoritative surfaces/feature target",
+    "206 parents/69 limits/all public clocks/corpora/default/full/native/final mission gates",
+    "original78 files/all19 stashes"
+  ],
+  "source_permission_granted": false,
+  "runtime_F1": "OPEN_UNTIL_ACTUAL_FOCUSED_EVIDENCE"
+}

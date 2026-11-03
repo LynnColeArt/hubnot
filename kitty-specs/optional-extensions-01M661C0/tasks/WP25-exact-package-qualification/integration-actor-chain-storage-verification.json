@@ -1,0 +1,70 @@
+{
+  "status": "PROSPECTIVE; noexecutionauthority",
+  "source_baseline": "541772cf075334cf01056de3dd7a9962128dbd00",
+  "rows": [
+    {
+      "id": "AC01",
+      "case": "Empty and one valid event",
+      "expected": "accept; empty input unchanged"
+    },
+    {
+      "id": "AC02",
+      "case": "Shuffled/interleaved valid actors with contiguous sequence/links",
+      "expected": "accept; input ordering and every field unchanged"
+    },
+    {
+      "id": "AC03",
+      "case": "Same sequence different IDs",
+      "expected": "original conflicting sequence before expected-index gap"
+    },
+    {
+      "id": "AC04",
+      "case": "Same ID repeated at same sequence",
+      "expected": "original invalid sequence; neverdedup"
+    },
+    {
+      "id": "AC05",
+      "case": "Zero, first gap, later gap, UINT64_MAX",
+      "expected": "exact original decimal invalid-sequence diagnostics"
+    },
+    {
+      "id": "AC06",
+      "case": "Wrong initial Previous and later broken Previous",
+      "expected": "original broken-chain diagnostics"
+    },
+    {
+      "id": "AC07",
+      "case": "Earlier gap or broken-link with a later duplicate",
+      "expected": "earlier error retained; noprescanpriority"
+    },
+    {
+      "id": "AC08",
+      "case": "Two invalid actors",
+      "expected": "only exact existing per-actor error set; no invented deterministic actor priority"
+    },
+    {
+      "id": "AC09",
+      "case": "Equal-sequence permutations",
+      "expected": "same sequence-only sort/tie semantics; no ID sort"
+    },
+    {
+      "id": "AC10",
+      "case": "Read-only input after both success and failure",
+      "expected": "deep before/after equality including payload/signature/attachments and event fields"
+    },
+    {
+      "id": "AC11",
+      "case": "Unchanged public8-event issue caller and existing100000-event native caller",
+      "expected": "actual supplied new candidate result/IDs/refusal/no-effect semantics; notunitselectionpass"
+    },
+    {
+      "id": "AC12",
+      "case": "Fresh reviewed frozen source qualification",
+      "expected": "complete unchangeddefault/4320/fullsource/static/build/native8; original541FAIL retained"
+    }
+  ],
+  "new_gate_or_threshold": false,
+  "semantic_old_source_behavior": "Expected to pass; optimization not a repaired authority/validation defect",
+  "storage_measurement": "Optional only under separate fixed authorization; neverthresholdreplacement",
+  "barrier": "Localfrozenfullsuite14372 naturalfullreap before normaladoption/reentry and Go edits; remotearchived541 continuesuntouched"
+}

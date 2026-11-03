@@ -1,0 +1,4203 @@
+{
+  "approved_dependency_proof_sha256": "d18878dc053bf490f3274c41314bf29a69993411712a32b81f0e5ecaac3602c9",
+  "benchmark_metadata": {
+    "frozen_cgo1_version": "0.0.0-optional-baseline",
+    "inittrace": "Finite startup-construction diagnostics only; no timing/RSS acceptance inferred",
+    "normal_vcs_comparison": "Candidate exact frozen source/clean stamp; baseline exact accepted binaries; revision/time differ, all other emitted settings match",
+    "packager_cgo0_version": "0.0.0-optional-extensions-qualification.1",
+    "packager_vcs": "disabled; empty buildid; frozen baseline source rebuilt with matching candidate settings",
+    "public_release_or_tag": false
+  },
+  "binaries": {
+    "frozen-cgo1/baseline/native-only": {
+      "build": {
+        "build_argv": [
+          "go",
+          "build",
+          "-trimpath",
+          "-ldflags",
+          "-s -w -X main.version=0.0.0-optional-baseline",
+          "-o",
+          "$EXTERNAL/hn-native-only",
+          "-tags",
+          "nogithub,noforge",
+          "."
+        ],
+        "build_environment": "GIT_DIR and GIT_WORK_TREE explicitly select assigned lane for Go VCS stamping",
+        "buildinfo": "$EXTERNAL/hn-native-only: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\tv0.0.3-dev.0.20261030101048-eb3f4932c265\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=nogithub,noforge\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=eb3f4932c265c0cf1b1f5c19939f212cded40e2c\n\tbuild\tvcs.time=2026-10-30T10:10:48Z\n\tbuild\tvcs.modified=false",
+        "executable_sha256": "2fcae86be7aebe34bc57a59b85626528a6003a46dc730149af47e316f7383542",
+        "tags": "nogithub,noforge"
+      },
+      "buildinfo": "$EVIDENCE/WP01/hn-native-only: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\tv0.0.3-dev.0.20261030101048-eb3f4932c265\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=nogithub,noforge\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=eb3f4932c265c0cf1b1f5c19939f212cded40e2c\n\tbuild\tvcs.time=2026-10-30T10:10:48Z\n\tbuild\tvcs.modified=false\n",
+      "sha256": "2fcae86be7aebe34bc57a59b85626528a6003a46dc730149af47e316f7383542",
+      "source": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c"
+    },
+    "frozen-cgo1/baseline/standard": {
+      "build": {
+        "build_argv": [
+          "go",
+          "build",
+          "-trimpath",
+          "-ldflags",
+          "-s -w -X main.version=0.0.0-optional-baseline",
+          "-o",
+          "$EXTERNAL/hn-standard",
+          "."
+        ],
+        "build_environment": "GIT_DIR and GIT_WORK_TREE explicitly select assigned lane for Go VCS stamping",
+        "buildinfo": "$EXTERNAL/hn-standard: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\tv0.0.3-dev.0.20261030101048-eb3f4932c265\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=eb3f4932c265c0cf1b1f5c19939f212cded40e2c\n\tbuild\tvcs.time=2026-10-30T10:10:48Z\n\tbuild\tvcs.modified=false",
+        "executable_sha256": "4594590270657b1ce3274964a6d6e822ede58c02c570eb902ac1192e2344ef81",
+        "tags": ""
+      },
+      "buildinfo": "$EVIDENCE/WP01/hn-standard: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\tv0.0.3-dev.0.20261030101048-eb3f4932c265\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=eb3f4932c265c0cf1b1f5c19939f212cded40e2c\n\tbuild\tvcs.time=2026-10-30T10:10:48Z\n\tbuild\tvcs.modified=false\n",
+      "sha256": "4594590270657b1ce3274964a6d6e822ede58c02c570eb902ac1192e2344ef81",
+      "source": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c"
+    },
+    "frozen-cgo1/candidate/native-only": {
+      "build": {
+        "CGO_ENABLED": "1",
+        "GIT_DIR": "build-only assigned lane",
+        "GIT_WORK_TREE": "build-only assigned lane",
+        "flags": [
+          "-trimpath",
+          "-ldflags",
+          "-s -w -X main.version=0.0.0-optional-baseline",
+          "-tags",
+          "nogithub,noforge"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/frozen-candidate/native-only: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\tv0.0.3-dev.0.20261031215648-6b75d9fe6a1a\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=nogithub,noforge\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1\n\tbuild\tvcs.time=2026-10-31T21:56:48Z\n\tbuild\tvcs.modified=false\n",
+      "sha256": "6c68a2ec846a018a662d3e500761d81ec51b50017154efb89f532c41685a3c41",
+      "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1"
+    },
+    "frozen-cgo1/candidate/standard": {
+      "build": {
+        "CGO_ENABLED": "1",
+        "GIT_DIR": "build-only assigned lane",
+        "GIT_WORK_TREE": "build-only assigned lane",
+        "flags": [
+          "-trimpath",
+          "-ldflags",
+          "-s -w -X main.version=0.0.0-optional-baseline"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/frozen-candidate/standard: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\tv0.0.3-dev.0.20261031215648-6b75d9fe6a1a\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1\n\tbuild\tvcs.time=2026-10-31T21:56:48Z\n\tbuild\tvcs.modified=false\n",
+      "sha256": "2b5d31823bd708245ad5dbce75e93ba6dcd097d74e77e9652bb8d447b54ef30c",
+      "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1"
+    },
+    "packager-cgo0/baseline/native-only": {
+      "build": {
+        "CGO_ENABLED": "0",
+        "env": {
+          "GOAMD64": "v1",
+          "GOARCH": "amd64",
+          "GOARM64": "v8.0",
+          "GOENV": "off",
+          "GOEXPERIMENT": "",
+          "GOFLAGS": "",
+          "GONOPROXY": "none",
+          "GOOS": "linux",
+          "GOPRIVATE": "none",
+          "GOPROXY": "off",
+          "GOSUMDB": "off",
+          "GOTOOLCHAIN": "local",
+          "GOWORK": "off"
+        },
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+          "-tags=nogithub,noforge"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/packager-baseline/native-only: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=nogithub,noforge\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+      "sha256": "4f3150634587e58d614a00ded7c6f67fc30b59c147f6fa698871166ec8d1394d",
+      "source": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c"
+    },
+    "packager-cgo0/baseline/standard": {
+      "build": {
+        "CGO_ENABLED": "0",
+        "env": {
+          "GOAMD64": "v1",
+          "GOARCH": "amd64",
+          "GOARM64": "v8.0",
+          "GOENV": "off",
+          "GOEXPERIMENT": "",
+          "GOFLAGS": "",
+          "GONOPROXY": "none",
+          "GOOS": "linux",
+          "GOPRIVATE": "none",
+          "GOPROXY": "off",
+          "GOSUMDB": "off",
+          "GOTOOLCHAIN": "local",
+          "GOWORK": "off"
+        },
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/packager-baseline/standard: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+      "sha256": "8c6881acb37aefba65755fbb6ecbb01a7c22e655d533834e4340625bb4c117b4",
+      "source": "eb3f4932c265c0cf1b1f5c19939f212cded40e2c"
+    },
+    "packager-cgo0/candidate/native-only": {
+      "build": {
+        "CGO_ENABLED": "0",
+        "env": {
+          "GOAMD64": "v1",
+          "GOARCH": "amd64",
+          "GOARM64": "v8.0",
+          "GOENV": "off",
+          "GOEXPERIMENT": "",
+          "GOFLAGS": "",
+          "GONOPROXY": "none",
+          "GOOS": "linux",
+          "GOPRIVATE": "none",
+          "GOPROXY": "off",
+          "GOSUMDB": "off",
+          "GOTOOLCHAIN": "local",
+          "GOWORK": "off"
+        },
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+          "-tags=nogithub,noforge"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/packager-candidate/native-only: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=nogithub,noforge\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+      "sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1"
+    },
+    "packager-cgo0/candidate/standard": {
+      "build": {
+        "CGO_ENABLED": "0",
+        "env": {
+          "GOAMD64": "v1",
+          "GOARCH": "amd64",
+          "GOARM64": "v8.0",
+          "GOENV": "off",
+          "GOEXPERIMENT": "",
+          "GOFLAGS": "",
+          "GONOPROXY": "none",
+          "GOOS": "linux",
+          "GOPRIVATE": "none",
+          "GOPROXY": "off",
+          "GOSUMDB": "off",
+          "GOTOOLCHAIN": "local",
+          "GOWORK": "off"
+        },
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/packager-candidate/standard: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+      "sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1"
+    }
+  },
+  "binary_manifest_sha256": "f8b86a1b66648d59c64e9bec42f19a7997bdec027d8f87df342148bb9c40cc23",
+  "budgets": {
+    "RSS": "candidate median - baseline median <= max(10% baseline median, 1024KiB)",
+    "elapsed": "candidate median - baseline median <= max(10% baseline median, 5000000ns)"
+  },
+  "checks": [
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-run=^$",
+        "."
+      ],
+      "command_sha256": "c7de027d5efcfeb807e619e1650cca2ba204f61ac63da6f6077144b84f3be5cc",
+      "evidence": "final-6b75-compile-standard",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484240727126141,
+      "log_sha256": "7e364dd21217d4cbd0a989bd9fdce97c29467eb8ee897a2bb029928a6f02b154",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484240284628021
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "command_sha256": "1136b763baf0c76a70c8df30d68f34e15609056dd2dd4c5df377a7892ddc862b",
+      "evidence": "final-6b75-vet-standard",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484240907411336,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484240738578863
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "command_sha256": "36f21bf63b74d17b14e8370155488fa2c318572abfd7cef14732e4934df95500",
+      "evidence": "final-6b75-build-standard",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484244106816030,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484240919277247
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-tags=nogithub,noforge",
+        "-run=^$",
+        "."
+      ],
+      "command_sha256": "8c87d5d2878253963c6b07d05bbe6fa4bab4dd762740a53fe6aa5476a2ae14a1",
+      "evidence": "final-6b75-compile-native",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484244502322947,
+      "log_sha256": "7e364dd21217d4cbd0a989bd9fdce97c29467eb8ee897a2bb029928a6f02b154",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484244118070142
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "vet",
+        "-tags=nogithub,noforge",
+        "./..."
+      ],
+      "command_sha256": "09ee247b2b942c8f42549e0af3db55fc544c0d5868c85bb4951481b9340bbcc5",
+      "evidence": "final-6b75-vet-native",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484244669156644,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484244514136338
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "build",
+        "-tags=nogithub,noforge",
+        "./..."
+      ],
+      "command_sha256": "763c18a29d5c48b92d37686d2507a2070a923e09a48922e6ac56af13731ce431",
+      "evidence": "final-6b75-build-native",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484246992528190,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484244680370397
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-timeout=15m",
+        "-json",
+        "-run",
+        "^TestExtensionDefault(NativeMatrix|HistoricalMatrix|FailureConfigurations|Detectors|PerformanceBudgets)$",
+        ".",
+        "-args",
+        "-hn-default-binaries=$EVIDENCE/WP24/capture-6b75/packager-candidate",
+        "-hn-default-binary-proof=$EVIDENCE/WP24/capture-6b75/binaries.json",
+        "-hn-baseline-trace=/usr/bin/strace",
+        "-hn-default-evidence=$EVIDENCE/WP24/final-6b75-transcripts"
+      ],
+      "command_sha256": "97a9d6432f724939451212d3d458d05684fbace777294f76a8e760271c7cee77",
+      "evidence": "final-6b75-default",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484755540298996,
+      "log_sha256": "2597388486ef6fad0f346c8fd1170b05ff6c0b49b0b473a3ef2635b15e8ddeea",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484247003778663
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-parallel=1",
+        "-timeout=15m",
+        "-json",
+        "-run",
+        "^(TestOperationalRichIssues|TestOperationalRichIssueReplication|TestBetaScaleSmoke|TestWorkflowPublicCLIWithoutProvider|TestOperationalAgentMemory|TestOperationalSelfHostingAlpha|TestPortableCollaborationIntegratedPublicVariants|TestBetaContributionPublicVariants|TestBetaRecoveryJourneys|TestBetaReleasedWriterCompatibility|TestExtensionDefaultBaselineHistorical|TestExtensionDefaultBaselineForbiddenEffects|TestGitObjectsPresentCorruptObjectFailsClosed|TestGitStoredObjectsPresentHealthyInventory|TestGitObjectsPresentMissingPromisedBlobDoesNotLazyFetch|TestExtensionDefaultFailureConfigurations|TestExtensionDefaultDetectors|TestExtensionDefaultPerformanceBudgets|TestArtifactOperationValidatorLazyStartup|TestArtifactListLiveCLI|TestArtifactSearchPublicCLI|TestExtensionChangesRegisteredMethodSet)$",
+        ".",
+        "-args",
+        "-hn-default-binaries=$EVIDENCE/WP24/capture-6b75/packager-candidate",
+        "-hn-default-binary-proof=$EVIDENCE/WP24/capture-6b75/binaries.json",
+        "-hn-baseline-trace=/usr/bin/strace"
+      ],
+      "command_sha256": "a24a4cc6f5124e8cceed2db6ed2614ca5f3232ca09c2a48aa79263998ea2da08",
+      "evidence": "final-6b75-main-race",
+      "expected_exit": 0,
+      "fail_events": 0,
+      "finished_unix_ns": 1793485155746893545,
+      "log_sha256": "fad6e946526eec6944ad17286df4c69220385933c85b3c133c5515848e62c56f",
+      "meaning": "actual checks passed",
+      "pass_events": 180,
+      "passed_top_level_tests": [
+        "TestArtifactListLiveCLI",
+        "TestArtifactOperationValidatorLazyStartup",
+        "TestArtifactSearchPublicCLI",
+        "TestBetaContributionPublicVariants",
+        "TestBetaRecoveryJourneys",
+        "TestBetaReleasedWriterCompatibility",
+        "TestBetaScaleSmoke",
+        "TestExtensionChangesRegisteredMethodSet",
+        "TestExtensionDefaultBaselineForbiddenEffects",
+        "TestExtensionDefaultBaselineHistorical",
+        "TestExtensionDefaultDetectors",
+        "TestExtensionDefaultFailureConfigurations",
+        "TestExtensionDefaultPerformanceBudgets",
+        "TestGitObjectsPresentCorruptObjectFailsClosed",
+        "TestGitObjectsPresentMissingPromisedBlobDoesNotLazyFetch",
+        "TestGitStoredObjectsPresentHealthyInventory",
+        "TestOperationalAgentMemory",
+        "TestOperationalRichIssueReplication",
+        "TestOperationalRichIssues",
+        "TestOperationalSelfHostingAlpha",
+        "TestPortableCollaborationIntegratedPublicVariants",
+        "TestWorkflowPublicCLIWithoutProvider"
+      ],
+      "skip_events": 0,
+      "started_unix_ns": 1793484755552506987
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-timeout=5m",
+        "-json",
+        "-run",
+        "^Test(ModulePatternLazyConcurrentFirstUse|ProtocolUnusedConstruction|ProtocolPatternsConcurrentFirstUse|ProtocolPatternCompilationIsDeferred)$",
+        "./internal/extension"
+      ],
+      "command_sha256": "7a3c6123daaf81c5f44afbed9aa615ed07652ff99f2baf08d98e85a5b0a6b80c",
+      "evidence": "final-6b75-lazy-extension-race",
+      "expected_exit": 0,
+      "fail_events": 0,
+      "finished_unix_ns": 1793485159186718676,
+      "log_sha256": "13f4b796ac4fa9a408ff9f451b0976bbb678012cff7498021242d6832ad7b8dd",
+      "meaning": "actual checks passed",
+      "pass_events": 5,
+      "passed_top_level_tests": [
+        "TestModulePatternLazyConcurrentFirstUse",
+        "TestProtocolPatternCompilationIsDeferred",
+        "TestProtocolPatternsConcurrentFirstUse",
+        "TestProtocolUnusedConstruction"
+      ],
+      "skip_events": 0,
+      "started_unix_ns": 1793485155765353127
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-timeout=5m",
+        "-json",
+        "-run",
+        "^TestEnvelopeConcurrentFirstUse$",
+        "./internal/artifact"
+      ],
+      "command_sha256": "43c0f3a9bca565f990ee85c5ad95aba9a96438ff98477e5a4d2a28b35897ca84",
+      "evidence": "final-6b75-lazy-artifact-race",
+      "expected_exit": 0,
+      "fail_events": 0,
+      "finished_unix_ns": 1793485162121581231,
+      "log_sha256": "c36e6c4f5cc24cd4752d0420a0c291c234ed49b0352f29f24640c0530c2dacae",
+      "meaning": "actual checks passed",
+      "pass_events": 2,
+      "passed_top_level_tests": [
+        "TestEnvelopeConcurrentFirstUse"
+      ],
+      "skip_events": 0,
+      "started_unix_ns": 1793485159200132134
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-timeout=5m",
+        "-json",
+        "-run",
+        "^TestSession(ReaderDeadlineAndEOF|SynchronousCancellationAndUncertainty|InFlightRecheckAtShutdown|SequentialResponses|PrematureSecondHasOnlyOneWriter|BlockedResponseControls|MutationLossAndSettledRefusal)$",
+        "./internal/extension"
+      ],
+      "command_sha256": "a8ec72043e7789859046f4eabc1bd71f95440aea93b694d6087edda05c74cc7b",
+      "evidence": "final-6b75-session-race",
+      "expected_exit": 0,
+      "fail_events": 0,
+      "finished_unix_ns": 1793485176141901569,
+      "log_sha256": "3cf3e0070d46997686499f238ad300d230022c395892d75a9bf4596be9868fe8",
+      "meaning": "actual checks passed",
+      "pass_events": 38,
+      "passed_top_level_tests": [
+        "TestSessionBlockedResponseControls",
+        "TestSessionInFlightRecheckAtShutdown",
+        "TestSessionMutationLossAndSettledRefusal",
+        "TestSessionPrematureSecondHasOnlyOneWriter",
+        "TestSessionReaderDeadlineAndEOF",
+        "TestSessionSequentialResponses",
+        "TestSessionSynchronousCancellationAndUncertainty"
+      ],
+      "skip_events": 0,
+      "started_unix_ns": 1793485162136273402
+    },
+    {
+      "actual_exit": 1,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-json",
+        "-run",
+        "^TestExtensionDefaultPerformanceBudgets$",
+        ".",
+        "-args",
+        "-hn-default-budget-mutant"
+      ],
+      "command_sha256": "635a78e194b76f9fa913471ecc31e98cc9a6c0073e26704f77d30adcd362d304",
+      "evidence": "final-6b75-budget-mutant",
+      "expected_exit": 1,
+      "finished_unix_ns": 1793485176739182196,
+      "log_sha256": "78ba378d14d9cee95dd2228b446bfb269af0e3bc628d964733d99ff8e3b21ab3",
+      "meaning": "intentional mutant rejected",
+      "started_unix_ns": 1793485176154048794
+    },
+    {
+      "actual_exit": 1,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-json",
+        "-run",
+        "^TestExtensionDefaultDetectors$/^module-start-",
+        ".",
+        "-args",
+        "-hn-default-binaries=$EVIDENCE/WP24/capture-6b75/packager-candidate",
+        "-hn-default-binary-proof=$EVIDENCE/WP24/capture-6b75/binaries.json",
+        "-hn-baseline-trace=/usr/bin/strace",
+        "-hn-default-detector-mutant=module-start",
+        "-hn-default-evidence=$EVIDENCE/WP24/final-6b75-mutant-transcripts"
+      ],
+      "command_sha256": "3c6045eb3191f242df1087464e1ff6b5e28e999c5980e755a428e147022b05ca",
+      "evidence": "final-6b75-start-detector-mutant",
+      "expected_exit": 1,
+      "finished_unix_ns": 1793485177405789970,
+      "log_sha256": "f3c9166802d5bbcac9a92d1f0a26ee8f745d455c0afbbfb9c4a910a808a1e506",
+      "meaning": "intentional mutant rejected",
+      "started_unix_ns": 1793485176751118862
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-timeout=40m",
+        "-json",
+        "-run",
+        "^TestExtensionDefaultPerformanceCapture$",
+        ".",
+        "-args",
+        "-hn-default-baseline-assets=$EVIDENCE/WP01",
+        "-hn-default-performance-output=$EVIDENCE/WP24/capture-6b75",
+        "-hn-default-donor=$EVIDENCE/WP24/final-2d92-large-public.bundle",
+        "-hn-default-approved-inputs=$EVIDENCE/optional-extensions-planning-20261030/zero-startup-integration/approved-wp24-zero-startup-inputs.json"
+      ],
+      "command_sha256": "3f0c5aca2a9af1672264a3d627df1e9b27dd4334b81d5499f9571ea2f60938ac",
+      "evidence": "final-6b75-capture",
+      "expected_exit": 0,
+      "finished_unix_ns": 1793484236453788920,
+      "log_sha256": "d128ec6b877924772136c88fcbe2d9784230c37713a9979ce867abd932ccd5bf",
+      "meaning": "actual checks passed",
+      "started_unix_ns": 1793484083458557552
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "build",
+        "-mod=readonly",
+        "-trimpath",
+        "-buildvcs=false",
+        "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+        "-tags=nogithub,noforge",
+        "-o",
+        "$EVIDENCE/WP24/zero-startup-correction/binaries/native-only",
+        "."
+      ],
+      "command_sha256": "a3f30b6747f372e5767df67cc3faa6397a7fbf6bd400bb1b2cd68b6981b9374b",
+      "evidence": "zero-startup-correction/build-native-only",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": []
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-parallel=1",
+        "-timeout=5m",
+        "-json",
+        "-run",
+        "^TestOptionalBootstrap(ColdNative|Readers|ConcurrentFirstUse|FinalBindings|ZeroStartup|LookupAndHelp|MainVocabularies|CaptureFirstUse)$",
+        "."
+      ],
+      "command_sha256": "67483f0db35f7b463125977a0328d7cd6fbe75ca47c8af4ddf764b8e19b4d810",
+      "evidence": "zero-startup-correction/race-standard",
+      "log_sha256": "a3f4356d98cbad3f2feb0ae3ad72f3fdf70b0409dba1fec1ade1f04ffe254e21",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": [
+        "TestOptionalBootstrapCaptureFirstUse",
+        "TestOptionalBootstrapColdNative",
+        "TestOptionalBootstrapConcurrentFirstUse",
+        "TestOptionalBootstrapFinalBindings",
+        "TestOptionalBootstrapLookupAndHelp",
+        "TestOptionalBootstrapMainVocabularies",
+        "TestOptionalBootstrapReaders",
+        "TestOptionalBootstrapZeroStartup"
+      ]
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-tags=nogithub,noforge",
+        "-count=1",
+        "-parallel=1",
+        "-timeout=10m",
+        "-json",
+        "-run",
+        "^(TestOptionalBootstrapColdNative|TestOptionalBootstrapReaders|TestOptionalBootstrapConcurrentFirstUse|TestOptionalBootstrapFinalBindings|TestExtensionChangesRegisteredMethodSet|TestArtifactGitIndependentClonesCLI|TestArtifactRevisionLiveCLI|TestArtifactRevisionIndependentActorsCLI|TestArtifactLocalHelpAndHumanListCLI|TestArtifactSearchHelpAndPublicOnlyReaderCLI|TestExtensionEnablementCLI|TestExtensionRunCLI|TestExtensionRunDisableAndSlotsCLI|TestExtensionRunRemoveAcrossRepositoriesCLI|TestExtensionFrameInspectCLI|TestExtensionNativeSixFamiliesCLI|TestExtensionArtifactTypeReadRawCLI|TestExtensionArtifactModelsRawCLI|TestExtensionChangesPagingAndDurableNativeAppend|TestExtensionNativeRepositoryAndPredispatchCancellation|TestOptionalBootstrapZeroStartup|TestOptionalBootstrapLookupAndHelp|TestOptionalBootstrapMainVocabularies|TestOptionalBootstrapCaptureFirstUse|TestForgeStrictMappingsAndLocalExtensionDispatch|TestArtifactExchangeContractMirror|TestArtifactListFrozenShapeInventory|TestExtensionChangesPrivateProofAccountingAndEviction)$",
+        "."
+      ],
+      "command_sha256": "a862e68457e36f337f1125d8a8af50512663fcb66b576c65d9148f689a1e6bd5",
+      "evidence": "zero-startup-correction/focused-native-only",
+      "log_sha256": "34086377850318a90772b0bd28ac18092a09c6be934486ffc05a68bcbca5721c",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": [
+        "TestArtifactExchangeContractMirror",
+        "TestArtifactGitIndependentClonesCLI",
+        "TestArtifactListFrozenShapeInventory",
+        "TestArtifactLocalHelpAndHumanListCLI",
+        "TestArtifactRevisionIndependentActorsCLI",
+        "TestArtifactRevisionLiveCLI",
+        "TestArtifactSearchHelpAndPublicOnlyReaderCLI",
+        "TestExtensionArtifactModelsRawCLI",
+        "TestExtensionArtifactTypeReadRawCLI",
+        "TestExtensionChangesPagingAndDurableNativeAppend",
+        "TestExtensionChangesPrivateProofAccountingAndEviction",
+        "TestExtensionChangesRegisteredMethodSet",
+        "TestExtensionEnablementCLI",
+        "TestExtensionFrameInspectCLI",
+        "TestExtensionNativeRepositoryAndPredispatchCancellation",
+        "TestExtensionNativeSixFamiliesCLI",
+        "TestExtensionRunCLI",
+        "TestExtensionRunDisableAndSlotsCLI",
+        "TestExtensionRunRemoveAcrossRepositoriesCLI",
+        "TestOptionalBootstrapCaptureFirstUse",
+        "TestOptionalBootstrapColdNative",
+        "TestOptionalBootstrapConcurrentFirstUse",
+        "TestOptionalBootstrapFinalBindings",
+        "TestOptionalBootstrapLookupAndHelp",
+        "TestOptionalBootstrapMainVocabularies",
+        "TestOptionalBootstrapReaders",
+        "TestOptionalBootstrapZeroStartup"
+      ]
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "build",
+        "-mod=readonly",
+        "-trimpath",
+        "-buildvcs=false",
+        "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+        "-o",
+        "$EVIDENCE/WP24/zero-startup-correction/binaries/standard",
+        "."
+      ],
+      "command_sha256": "074ed63aad6899ed56a4757983f3978304e9bd106ad11f508855a12805429715",
+      "evidence": "zero-startup-correction/build-standard",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": []
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-parallel=1",
+        "-timeout=5m",
+        "-json",
+        "-run",
+        "^(TestFixedVocabularies|TestVocabulary.*|TestManifestStrictPublicContract|TestGrantClosedContractSets|TestArtifactReadSelectorActionContract|TestGrantMethodSelectorActionMatrix|TestGrantClosedScopesAndRawAuthorization|TestProtocolAllTypedMethods|TestProtocolStrictJSONAndCorrelation|TestProtocolClosedInventories|TestSessionCleanupFailureCannotBecomeManagementSuccess|TestSessionSlotsAndRevocationWait|TestProtocolUnusedConstruction|TestProtocolCachesMixedFirstUse)$",
+        "./internal/extension"
+      ],
+      "command_sha256": "5a3a03b19a5fd4257e20756bf05d1fa3ba9116258dc3481d63241a2618e76626",
+      "evidence": "zero-startup-correction/extension-focused",
+      "log_sha256": "155a93892632a00c9da409ddc7386ac49e51049fe10feea5b5a03e3c9b5cfa03",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": [
+        "TestArtifactReadSelectorActionContract",
+        "TestFixedVocabularies",
+        "TestGrantClosedContractSets",
+        "TestGrantClosedScopesAndRawAuthorization",
+        "TestGrantMethodSelectorActionMatrix",
+        "TestManifestStrictPublicContract",
+        "TestProtocolAllTypedMethods",
+        "TestProtocolCachesMixedFirstUse",
+        "TestProtocolClosedInventories",
+        "TestProtocolStrictJSONAndCorrelation",
+        "TestProtocolUnusedConstruction",
+        "TestSessionCleanupFailureCannotBecomeManagementSuccess",
+        "TestSessionSlotsAndRevocationWait",
+        "TestVocabularyActualCallers",
+        "TestVocabularyConcurrentValues",
+        "TestVocabularyStartupUnconstructed"
+      ]
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-tags=nogithub,noforge",
+        "-race",
+        "-count=1",
+        "-parallel=1",
+        "-timeout=5m",
+        "-json",
+        "-run",
+        "^TestOptionalBootstrap(ColdNative|Readers|ConcurrentFirstUse|FinalBindings|ZeroStartup|LookupAndHelp|MainVocabularies|CaptureFirstUse)$",
+        "."
+      ],
+      "command_sha256": "3fb27093579cf1d3ecca7a733fdf066fd523000d941d448b921687700c30d5df",
+      "evidence": "zero-startup-correction/race-native-only",
+      "log_sha256": "0c211d9560df5dfb46eaf2b9d13d8d9a2392556552d15e1747b6fc84770937fd",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": [
+        "TestOptionalBootstrapCaptureFirstUse",
+        "TestOptionalBootstrapColdNative",
+        "TestOptionalBootstrapConcurrentFirstUse",
+        "TestOptionalBootstrapFinalBindings",
+        "TestOptionalBootstrapLookupAndHelp",
+        "TestOptionalBootstrapMainVocabularies",
+        "TestOptionalBootstrapReaders",
+        "TestOptionalBootstrapZeroStartup"
+      ]
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "vet",
+        "-tags=nogithub,noforge",
+        "./..."
+      ],
+      "command_sha256": "481a61c5c03e9668f3dc666a29f339f9e040f132cc60e30d36c7cf301846abbd",
+      "evidence": "zero-startup-correction/vet-native-only",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": []
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "command_sha256": "3d4924beb290b704d47530df609a444e6560e84bc8f3cffe295f288e16364379",
+      "evidence": "zero-startup-correction/vet-standard",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": []
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-parallel=1",
+        "-timeout=10m",
+        "-json",
+        "-run",
+        "^(TestOptionalBootstrapColdNative|TestOptionalBootstrapReaders|TestOptionalBootstrapConcurrentFirstUse|TestOptionalBootstrapFinalBindings|TestExtensionChangesRegisteredMethodSet|TestArtifactGitIndependentClonesCLI|TestArtifactRevisionLiveCLI|TestArtifactRevisionIndependentActorsCLI|TestArtifactLocalHelpAndHumanListCLI|TestArtifactSearchHelpAndPublicOnlyReaderCLI|TestExtensionEnablementCLI|TestExtensionRunCLI|TestExtensionRunDisableAndSlotsCLI|TestExtensionRunRemoveAcrossRepositoriesCLI|TestExtensionFrameInspectCLI|TestExtensionNativeSixFamiliesCLI|TestExtensionArtifactTypeReadRawCLI|TestExtensionArtifactModelsRawCLI|TestExtensionChangesPagingAndDurableNativeAppend|TestExtensionNativeRepositoryAndPredispatchCancellation|TestOptionalBootstrapZeroStartup|TestOptionalBootstrapLookupAndHelp|TestOptionalBootstrapMainVocabularies|TestOptionalBootstrapCaptureFirstUse|TestForgeStrictMappingsAndLocalExtensionDispatch|TestArtifactExchangeContractMirror|TestArtifactListFrozenShapeInventory|TestExtensionChangesPrivateProofAccountingAndEviction)$",
+        "."
+      ],
+      "command_sha256": "1fbfa3b6a8566c227dce655d53dbd78425db7a15e1a420274cf3072267b742fb",
+      "evidence": "zero-startup-correction/focused-standard",
+      "log_sha256": "3d8e90c3709f3aa8c8a9a83963e2a7327915ff073f5f3112a48c3c85cc111b52",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": [
+        "TestArtifactExchangeContractMirror",
+        "TestArtifactGitIndependentClonesCLI",
+        "TestArtifactListFrozenShapeInventory",
+        "TestArtifactLocalHelpAndHumanListCLI",
+        "TestArtifactRevisionIndependentActorsCLI",
+        "TestArtifactRevisionLiveCLI",
+        "TestArtifactSearchHelpAndPublicOnlyReaderCLI",
+        "TestExtensionArtifactModelsRawCLI",
+        "TestExtensionArtifactTypeReadRawCLI",
+        "TestExtensionChangesPagingAndDurableNativeAppend",
+        "TestExtensionChangesPrivateProofAccountingAndEviction",
+        "TestExtensionChangesRegisteredMethodSet",
+        "TestExtensionEnablementCLI",
+        "TestExtensionFrameInspectCLI",
+        "TestExtensionNativeRepositoryAndPredispatchCancellation",
+        "TestExtensionNativeSixFamiliesCLI",
+        "TestExtensionRunCLI",
+        "TestExtensionRunDisableAndSlotsCLI",
+        "TestExtensionRunRemoveAcrossRepositoriesCLI",
+        "TestForgeStrictMappingsAndLocalExtensionDispatch",
+        "TestOptionalBootstrapCaptureFirstUse",
+        "TestOptionalBootstrapColdNative",
+        "TestOptionalBootstrapConcurrentFirstUse",
+        "TestOptionalBootstrapFinalBindings",
+        "TestOptionalBootstrapLookupAndHelp",
+        "TestOptionalBootstrapMainVocabularies",
+        "TestOptionalBootstrapReaders",
+        "TestOptionalBootstrapZeroStartup"
+      ]
+    },
+    {
+      "actual_exit": 0,
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-parallel=1",
+        "-timeout=5m",
+        "-json",
+        "-run",
+        "^(TestFixedVocabularies|TestVocabulary.*|TestGrantMethodSelectorActionMatrix|TestProtocolCachesMixedFirstUse|TestSessionCleanupFailureCannotBecomeManagementSuccess)$",
+        "./internal/extension"
+      ],
+      "command_sha256": "2100b21e2c3a58bc2f3d16b516fa975cdd1578d14db7928c1101efaf9c6979f1",
+      "evidence": "zero-startup-correction/extension-race",
+      "log_sha256": "b5ea9b911ed273da25a2d105103ef1991c97881feb4da59a7ffb831cb308763d",
+      "meaning": "Focused source-correction checks on byte-exact316 inputs before normal commit; committed-inputs.json proves equivalence",
+      "passed_top_level_tests": [
+        "TestFixedVocabularies",
+        "TestGrantMethodSelectorActionMatrix",
+        "TestProtocolCachesMixedFirstUse",
+        "TestSessionCleanupFailureCannotBecomeManagementSuccess",
+        "TestVocabularyActualCallers",
+        "TestVocabularyConcurrentValues",
+        "TestVocabularyStartupUnconstructed"
+      ]
+    }
+  ],
+  "compiler": "go version go1.26.4 linux/amd64",
+  "controls": {
+    "all_observations": 36,
+    "medians": {
+      "frozen-issue-read": {
+        "0": 12852,
+        "128": 13108,
+        "64": 13044
+      },
+      "native-child-64mib": {
+        "0": 66792,
+        "128": 66792,
+        "64": 66812
+      },
+      "native-waited-descendant-64mib": {
+        "0": 65924,
+        "128": 65924,
+        "64": 65924
+      },
+      "native-zero": {
+        "0": 1384,
+        "128": 1384,
+        "64": 1384
+      }
+    },
+    "protocol": "3 repetitions x parent0/64/128MiB x zero/direct64MiB/waited-descendant64MiB/frozen issue; parent floor excluded; all original causal assertions unchanged",
+    "raw_controls_sha256": "c85b93082fa9476cd4eec430f79b546a9c7f7399b265daca3acfb97ae732ed5e",
+    "status": "pass"
+  },
+  "controls_sha256": "c85b93082fa9476cd4eec430f79b546a9c7f7399b265daca3acfb97ae732ed5e",
+  "corpora_sha256": "c505a3f8574a5b92151bbb322e843231880526d7942c628eea51bb4b11aef89f",
+  "csv_sha256": {
+    "frozen-cgo1": "ee3fdc058da72ab3297d9c6863894b64f5fb8860af4d73861dbdd7846949aac8",
+    "packager-cgo0": "3e1d4bfb9503df34c1bd3a9fb1059f4ce1af67c26e251d35b95e665275506f81"
+  },
+  "delivery_policy": "Later evidence-only delivery commit is separate from measured source. All316 Go/module inputs must remain exact. WP25 must prove exact-package runtime equivalence or requalify affected evidence.",
+  "driver_sha256": "9f2f35e8311859b2d690812ede1c2e208c24099502f6ff9736f89bb5e11eb3e1",
+  "earlier_exploratory_findings": [
+    {
+      "classification": "Real silent startup deadline misclassified unavailable_module; WP16 independently approved correction integrated before qualification",
+      "failing_assets_manifest_sha256": "32b2ffe32ac988d1ac84b9143ae9dccd97a5f4b7c4b1b543aedd81484aeb8c60",
+      "original_log_sha256": "ae2d2f2cc1c25006472de2630059ae528db70d123f575f5683fa6b3a228e5e53",
+      "status": "original failure retained"
+    },
+    {
+      "classification": "Initial detector classified inert public declaration metadata as content parsing; bounded refinement preserved exact-path content-read and absolute/relative registry negative controls, no contract or production relaxation",
+      "ledger_sha256": "0171d1d5c3f22174a9d704c28aa24e01b98a1f85a5df7543d1520680a66a1583",
+      "status": "original detector failure retained"
+    }
+  ],
+  "failed_history": [
+    {
+      "failure_count": 18,
+      "failures": [
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14612071.0,
+              "bound": 5000000,
+              "candidate_median": 15524670.0,
+              "delta": 912599.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7174.0,
+              "bound": 1024,
+              "candidate_median": 8934.0,
+              "delta": 1760.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project",
+            "elapsed_ns": {
+              "baseline_median": 14928313.5,
+              "bound": 5000000,
+              "candidate_median": 15822667.0,
+              "delta": 894353.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7590.0,
+              "bound": 1024,
+              "candidate_median": 8978.0,
+              "delta": 1388.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project-item",
+            "elapsed_ns": {
+              "baseline_median": 14892929.0,
+              "bound": 5000000,
+              "candidate_median": 15749138.0,
+              "delta": 856209.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7488.0,
+              "bound": 1024,
+              "candidate_median": 8980.0,
+              "delta": 1492.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion",
+            "elapsed_ns": {
+              "baseline_median": 14970283.5,
+              "bound": 5000000,
+              "candidate_median": 15898632.5,
+              "delta": 928349.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7432.0,
+              "bound": 1024,
+              "candidate_median": 9102.0,
+              "delta": 1670.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion-reply",
+            "elapsed_ns": {
+              "baseline_median": 14648935.5,
+              "bound": 5000000,
+              "candidate_median": 15834413.0,
+              "delta": 1185477.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7552.0,
+              "bound": 1024,
+              "candidate_median": 8980.0,
+              "delta": 1428.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "workflow",
+            "elapsed_ns": {
+              "baseline_median": 14859723.0,
+              "bound": 5000000,
+              "candidate_median": 15892187.5,
+              "delta": 1032464.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7560.0,
+              "bound": 1024,
+              "candidate_median": 8996.0,
+              "delta": 1436.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "memory",
+            "elapsed_ns": {
+              "baseline_median": 68673538.5,
+              "bound": 6867353.850000001,
+              "candidate_median": 69259715.0,
+              "delta": 586176.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7940.0,
+              "bound": 1024,
+              "candidate_median": 9620.0,
+              "delta": 1680.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "recall",
+            "elapsed_ns": {
+              "baseline_median": 54628674.0,
+              "bound": 5462867.4,
+              "candidate_median": 55107375.5,
+              "delta": 478701.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8072.0,
+              "bound": 1024,
+              "candidate_median": 9620.0,
+              "delta": 1548.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "grep",
+            "elapsed_ns": {
+              "baseline_median": 54548184.0,
+              "bound": 5454818.4,
+              "candidate_median": 55570638.0,
+              "delta": 1022454.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8192.0,
+              "bound": 1024,
+              "candidate_median": 9748.0,
+              "delta": 1556.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14757799.5,
+              "bound": 5000000,
+              "candidate_median": 15931352.0,
+              "delta": 1173552.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7206.0,
+              "bound": 1024,
+              "candidate_median": 8980.0,
+              "delta": 1774.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project",
+            "elapsed_ns": {
+              "baseline_median": 15185477.0,
+              "bound": 5000000,
+              "candidate_median": 16040026.0,
+              "delta": 854549.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7560.0,
+              "bound": 1024,
+              "candidate_median": 9010.0,
+              "delta": 1450.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project-item",
+            "elapsed_ns": {
+              "baseline_median": 15108968.0,
+              "bound": 5000000,
+              "candidate_median": 15874977.5,
+              "delta": 766009.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7556.0,
+              "bound": 1024,
+              "candidate_median": 8944.0,
+              "delta": 1388.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion",
+            "elapsed_ns": {
+              "baseline_median": 15057637.5,
+              "bound": 5000000,
+              "candidate_median": 15803893.0,
+              "delta": 746255.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7432.0,
+              "bound": 1024,
+              "candidate_median": 8980.0,
+              "delta": 1548.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion-reply",
+            "elapsed_ns": {
+              "baseline_median": 15056462.5,
+              "bound": 5000000,
+              "candidate_median": 15836013.0,
+              "delta": 779550.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7654.0,
+              "bound": 1024,
+              "candidate_median": 8980.0,
+              "delta": 1326.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "workflow",
+            "elapsed_ns": {
+              "baseline_median": 14796555.0,
+              "bound": 5000000,
+              "candidate_median": 15900663.0,
+              "delta": 1104108.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7560.0,
+              "bound": 1024,
+              "candidate_median": 8980.0,
+              "delta": 1420.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "memory",
+            "elapsed_ns": {
+              "baseline_median": 69884562.5,
+              "bound": 6988456.25,
+              "candidate_median": 70539375.0,
+              "delta": 654812.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8028.0,
+              "bound": 1024,
+              "candidate_median": 9620.0,
+              "delta": 1592.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "recall",
+            "elapsed_ns": {
+              "baseline_median": 54869437.5,
+              "bound": 5486943.75,
+              "candidate_median": 55785212.5,
+              "delta": 915775.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8128.0,
+              "bound": 1024,
+              "candidate_median": 9588.0,
+              "delta": 1460.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "grep",
+            "elapsed_ns": {
+              "baseline_median": 55199569.5,
+              "bound": 5519956.95,
+              "candidate_median": 56069839.5,
+              "delta": 870270.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8064.0,
+              "bound": 1024,
+              "candidate_median": 9558.0,
+              "delta": 1494.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        }
+      ],
+      "followup": "Four original owners corrected eager optional validator compilation",
+      "metrics_sha256": "386b6559c5f47c370d073c0d2e9c8c0428a4da73e45e389b3b0a788459fd94e4",
+      "observations": 4320,
+      "pairs_per_setting": 1080,
+      "preservation": "Original source, binaries, raw commands, outputs and all samples remain immutable; genuine reviewed source corrections preceded each new complete gate. No sample deletion, retry-to-green or budget change.",
+      "report_sha256": "d5e8e6c53b5b57cc32e8f0aa48ba25a3be5023b6a73546ef0df88d6937d1c303",
+      "source": "2d92ff4525fbafccf79ea83391e1dcfc147b19a5",
+      "status": "fail"
+    },
+    {
+      "failure_count": 29,
+      "failures": [
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 15396470.0,
+              "bound": 5000000,
+              "candidate_median": 15591667.5,
+              "delta": 195197.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13010.0,
+              "bound": 1301.0,
+              "candidate_median": 14350.0,
+              "delta": 1340.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "absent",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project-item",
+            "elapsed_ns": {
+              "baseline_median": 15693922.5,
+              "bound": 5000000,
+              "candidate_median": 15784212.0,
+              "delta": 90289.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13262.0,
+              "bound": 1326.2,
+              "candidate_median": 14736.0,
+              "delta": 1474.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "absent",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion-reply",
+            "elapsed_ns": {
+              "baseline_median": 15797792.0,
+              "bound": 5000000,
+              "candidate_median": 15721181.5,
+              "delta": -76610.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13236.0,
+              "bound": 1323.6000000000001,
+              "candidate_median": 14668.0,
+              "delta": 1432.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "absent",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "workflow",
+            "elapsed_ns": {
+              "baseline_median": 15681433.5,
+              "bound": 5000000,
+              "candidate_median": 15737091.5,
+              "delta": 55658.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13268.0,
+              "bound": 1326.8000000000002,
+              "candidate_median": 14640.0,
+              "delta": 1372.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "absent",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "memory",
+            "elapsed_ns": {
+              "baseline_median": 70426403.0,
+              "bound": 7042640.300000001,
+              "candidate_median": 71602270.0,
+              "delta": 1175867.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13620.0,
+              "bound": 1362.0,
+              "candidate_median": 15108.0,
+              "delta": 1488.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "absent",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 15524504.0,
+              "bound": 5000000,
+              "candidate_median": 15606653.5,
+              "delta": 82149.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13014.0,
+              "bound": 1301.4,
+              "candidate_median": 14412.0,
+              "delta": 1398.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "large-unrelated",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project-item",
+            "elapsed_ns": {
+              "baseline_median": 15787390.5,
+              "bound": 5000000,
+              "candidate_median": 15867891.0,
+              "delta": 80500.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13300.0,
+              "bound": 1330.0,
+              "candidate_median": 14666.0,
+              "delta": 1366.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "large-unrelated",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion",
+            "elapsed_ns": {
+              "baseline_median": 15931706.0,
+              "bound": 5000000,
+              "candidate_median": 16492005.0,
+              "delta": 560299.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13236.0,
+              "bound": 1323.6000000000001,
+              "candidate_median": 14604.0,
+              "delta": 1368.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "large-unrelated",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "workflow",
+            "elapsed_ns": {
+              "baseline_median": 15845181.5,
+              "bound": 5000000,
+              "candidate_median": 15976186.0,
+              "delta": 131004.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13364.0,
+              "bound": 1336.4,
+              "candidate_median": 14732.0,
+              "delta": 1368.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "large-unrelated",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "memory",
+            "elapsed_ns": {
+              "baseline_median": 71206478.5,
+              "bound": 7120647.850000001,
+              "candidate_median": 71768349.0,
+              "delta": 561870.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13678.0,
+              "bound": 1367.8000000000002,
+              "candidate_median": 15056.0,
+              "delta": 1378.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "large-unrelated",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "recall",
+            "elapsed_ns": {
+              "baseline_median": 56549527.5,
+              "bound": 5654952.75,
+              "candidate_median": 56544585.0,
+              "delta": -4942.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 13782.0,
+              "bound": 1378.2,
+              "candidate_median": 15180.0,
+              "delta": 1398.0,
+              "pass": false
+            },
+            "setting": "frozen-cgo1",
+            "state": "large-unrelated",
+            "variant": "standard"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14597829.5,
+              "bound": 5000000,
+              "candidate_median": 14790077.0,
+              "delta": 192247.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7232.0,
+              "bound": 1024,
+              "candidate_median": 8504.0,
+              "delta": 1272.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project",
+            "elapsed_ns": {
+              "baseline_median": 14941072.0,
+              "bound": 5000000,
+              "candidate_median": 14814477.5,
+              "delta": -126594.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7496.0,
+              "bound": 1024,
+              "candidate_median": 8800.0,
+              "delta": 1304.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project-item",
+            "elapsed_ns": {
+              "baseline_median": 15058395.5,
+              "bound": 5000000,
+              "candidate_median": 14931515.5,
+              "delta": -126880.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7524.0,
+              "bound": 1024,
+              "candidate_median": 8832.0,
+              "delta": 1308.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion",
+            "elapsed_ns": {
+              "baseline_median": 14873006.5,
+              "bound": 5000000,
+              "candidate_median": 15006236.0,
+              "delta": 133229.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7494.0,
+              "bound": 1024,
+              "candidate_median": 8708.0,
+              "delta": 1214.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion-reply",
+            "elapsed_ns": {
+              "baseline_median": 14830026.5,
+              "bound": 5000000,
+              "candidate_median": 15232054.5,
+              "delta": 402028.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7488.0,
+              "bound": 1024,
+              "candidate_median": 8800.0,
+              "delta": 1312.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "workflow",
+            "elapsed_ns": {
+              "baseline_median": 15093365.0,
+              "bound": 5000000,
+              "candidate_median": 15175919.5,
+              "delta": 82554.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7496.0,
+              "bound": 1024,
+              "candidate_median": 8726.0,
+              "delta": 1230.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "memory",
+            "elapsed_ns": {
+              "baseline_median": 69076884.5,
+              "bound": 6907688.45,
+              "candidate_median": 69081451.5,
+              "delta": 4567.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8008.0,
+              "bound": 1024,
+              "candidate_median": 9292.0,
+              "delta": 1284.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "recall",
+            "elapsed_ns": {
+              "baseline_median": 54568184.0,
+              "bound": 5456818.4,
+              "candidate_median": 54619846.5,
+              "delta": 51662.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8128.0,
+              "bound": 1024,
+              "candidate_median": 9430.0,
+              "delta": 1302.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "grep",
+            "elapsed_ns": {
+              "baseline_median": 54108453.5,
+              "bound": 5410845.350000001,
+              "candidate_median": 54337945.5,
+              "delta": 229492.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8132.0,
+              "bound": 1024,
+              "candidate_median": 9312.0,
+              "delta": 1180.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14694443.5,
+              "bound": 5000000,
+              "candidate_median": 14571304.0,
+              "delta": -123139.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7204.0,
+              "bound": 1024,
+              "candidate_median": 8504.0,
+              "delta": 1300.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project",
+            "elapsed_ns": {
+              "baseline_median": 14833892.0,
+              "bound": 5000000,
+              "candidate_median": 14906032.0,
+              "delta": 72140.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7492.0,
+              "bound": 1024,
+              "candidate_median": 8864.0,
+              "delta": 1372.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "project-item",
+            "elapsed_ns": {
+              "baseline_median": 15073299.5,
+              "bound": 5000000,
+              "candidate_median": 14887531.0,
+              "delta": -185768.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7496.0,
+              "bound": 1024,
+              "candidate_median": 8790.0,
+              "delta": 1294.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion",
+            "elapsed_ns": {
+              "baseline_median": 15196329.0,
+              "bound": 5000000,
+              "candidate_median": 15098285.5,
+              "delta": -98043.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7488.0,
+              "bound": 1024,
+              "candidate_median": 8672.0,
+              "delta": 1184.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "discussion-reply",
+            "elapsed_ns": {
+              "baseline_median": 14892662.0,
+              "bound": 5000000,
+              "candidate_median": 15151395.0,
+              "delta": 258733.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7488.0,
+              "bound": 1024,
+              "candidate_median": 8670.0,
+              "delta": 1182.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "workflow",
+            "elapsed_ns": {
+              "baseline_median": 14974886.0,
+              "bound": 5000000,
+              "candidate_median": 14916341.0,
+              "delta": -58545.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7460.0,
+              "bound": 1024,
+              "candidate_median": 8672.0,
+              "delta": 1212.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "memory",
+            "elapsed_ns": {
+              "baseline_median": 69605435.5,
+              "bound": 6960543.550000001,
+              "candidate_median": 69669194.5,
+              "delta": 63759.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8000.0,
+              "bound": 1024,
+              "candidate_median": 9164.0,
+              "delta": 1164.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "recall",
+            "elapsed_ns": {
+              "baseline_median": 55472802.5,
+              "bound": 5547280.25,
+              "candidate_median": 54988085.0,
+              "delta": -484717.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8068.0,
+              "bound": 1024,
+              "candidate_median": 9388.0,
+              "delta": 1320.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "grep",
+            "elapsed_ns": {
+              "baseline_median": 55311747.0,
+              "bound": 5531174.7,
+              "candidate_median": 54782236.5,
+              "delta": -529510.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 8100.0,
+              "bound": 1024,
+              "candidate_median": 9386.0,
+              "delta": 1286.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        }
+      ],
+      "followup": "Reviewed zero-state pattern caches and deferred protocol construction",
+      "metrics_sha256": "90acdf9539b76dd2df48f0cb295389db06cdc7c8d60d235696614af95ec8e22c",
+      "observations": 4320,
+      "pairs_per_setting": 1080,
+      "preservation": "Original source, binaries, raw commands, outputs and all samples remain immutable; genuine reviewed source corrections preceded each new complete gate. No sample deletion, retry-to-green or budget change.",
+      "report_sha256": "82baa01d170803c30a0760c45243d07a4ec7da6e1fb46e5224104567f2e5ee1d",
+      "source": "76cd3d23e50d086ef3a7187462b7ceb9cd9f1edf",
+      "status": "fail"
+    },
+    {
+      "failure_count": 2,
+      "failures": [
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14643705.0,
+              "bound": 5000000,
+              "candidate_median": 14570525.5,
+              "delta": -73179.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7236.0,
+              "bound": 1024,
+              "candidate_median": 8396.0,
+              "delta": 1160.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14854800.0,
+              "bound": 5000000,
+              "candidate_median": 14613921.0,
+              "delta": -240879.0,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7176.0,
+              "bound": 1024,
+              "candidate_median": 8332.0,
+              "delta": 1156.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        }
+      ],
+      "followup": "Reviewed single optional command bootstrap; native RSS remained above budget",
+      "metrics_sha256": "f5a1cfe50eea39b067c5ac42b7042f83915ffef0c4b3d8ab12df783c2b92ec3e",
+      "observations": 4320,
+      "pairs_per_setting": 1080,
+      "preservation": "Original source, binaries, raw commands, outputs and all samples remain immutable; genuine reviewed source corrections preceded each new complete gate. No sample deletion, retry-to-green or budget change.",
+      "report_sha256": "e35ec702cbd7f13651679c25bee2efedb979e927d2f4a542dcc3380ebf33193b",
+      "source": "414d9603d002f7b8d577af265bf6eab668c78620",
+      "status": "fail"
+    },
+    {
+      "failure_count": 2,
+      "failures": [
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14459932.0,
+              "bound": 5000000,
+              "candidate_median": 14594340.5,
+              "delta": 134408.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7172.0,
+              "bound": 1024,
+              "candidate_median": 8204.0,
+              "delta": 1032.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "absent",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        },
+        {
+          "budget": {
+            "case": "issue",
+            "elapsed_ns": {
+              "baseline_median": 14680464.0,
+              "bound": 5000000,
+              "candidate_median": 14563645.5,
+              "delta": -116818.5,
+              "pass": true
+            },
+            "pairs": 30,
+            "peak_rss_kib": {
+              "baseline_median": 7176.0,
+              "bound": 1024,
+              "candidate_median": 8268.0,
+              "delta": 1092.0,
+              "pass": false
+            },
+            "setting": "packager-cgo0",
+            "state": "large-unrelated",
+            "variant": "native-only"
+          },
+          "metric": "peak_rss_kib"
+        }
+      ],
+      "followup": "Reviewed complete zero-startup construction correction at current source; fresh full qualification, unchanged budget",
+      "metrics_sha256": "7082d185bcbacbe4da81d8a8847ef96a2329a82c22325cdef87b3683731fad26",
+      "observations": 4320,
+      "pairs_per_setting": 1080,
+      "preservation": "Original source, binaries, raw commands, outputs and all samples remain immutable; genuine reviewed source corrections preceded each new complete gate. No sample deletion, retry-to-green or budget change.",
+      "report_sha256": "187f2b43fbdcf483b0c6c8777e5ccdaedbbaeeb51d5f0010f2e3a3dde97d50d3",
+      "source": "d0f40fc96560f6d58f5b63a0eefe71d6635d2523",
+      "status": "fail"
+    }
+  ],
+  "failures": [],
+  "fixture_transport": "Git-only public-object container; no bounded artifact file-exchange admission claimed",
+  "frozen_source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1",
+  "frozen_tree": "a6ea525ac0b8ee460feffcca9df1f2ff80a26ba1",
+  "full_chain": {
+    "actor": "56a0a8dede0b0bbef5fad4d80dbb0f1dc8b751c8606dc380dcd183c209a5819f",
+    "all_refs_sha256": "b42a62c80f8802bce2995770a0ac0e9d46c5dceff9da415a5f220bdfda84dc77",
+    "artifact_object_count": 40004,
+    "bundle_sha256": "7f2e8fb9eaee34634830f005204867d3a695f7a955ec1820ab6ad00c41da625f",
+    "complete_full_chain_proof_sha256": "7cd31e3fea4399530d10cfb65432ae60349951f22cf4e0acc489f425162ccf78",
+    "head": "b7b6af4946659102df4ae9079bfc8629031e98d9",
+    "original_public_inventory": {
+      "all_repository_objects": {
+        "canonical_json_sha256": "f011076e27676bed06c0254e60bd060a82a6086f8e7ae1cf15c0497e0040caef",
+        "count": 40047
+      },
+      "entries": {
+        "canonical_json_sha256": "ab3d1f9a279a77d577b5af1e8f34aab58e26a73a8dd6e33056a8cf9e021ed33c",
+        "count": 10001
+      },
+      "record_ids": {
+        "canonical_json_sha256": "64891ecc030df76f6967b853f527072aff046d4b5233d101e3be12cb9bc0b6dc",
+        "count": 10000
+      }
+    },
+    "prefix_head": "c8e879f9b6672f79cf1be12410083cfb12055aaf",
+    "prefix_record_ids": [
+      "sha256:4f0f040823dd4a3bfa71f4708c1e995ad41a9e43fa2f9cbb386da07b6855a16a",
+      "sha256:5868ea7538966c7f72e62c5f0e72c6cf8fd983908efd529ab9eb45f68856b3f5"
+    ],
+    "public_envelope_repository_id": "absent by frozen protocol; portable original bytes retained",
+    "record_count": 10000,
+    "ref": "refs/hn/artifacts/56a0a8dede0b0bbef5fad4d80dbb0f1dc8b751c8606dc380dcd183c209a5819f/55a7e3ef1a89e9501f231dd44872c49a167e8fd3c415fe8d35790463211c5aed",
+    "repository_id": "sha256:df9483ca82b205154f87345edb3fd8a3cc576cbf95b8f66f0702fde3369350d8",
+    "schema_id": "sha256:1701b7d675e565935872dc5774f754d74a76f3c9f927bd5b8820c6e37a9ffa89",
+    "scope": "source-assisted full original chain, signatures/canonical IDs/actor continuity/schema/model validation; separate live two-record prefix, no full query or bounded file-exchange admission claim",
+    "source_cut": "sha256:bba70b1033af7def969b8d71f165b9d4c7db16bb9289811f78308a2d5ff41de0",
+    "status": "valid_source_assisted_fixture",
+    "transport": "Git-only public-object container; no bounded artifact file-exchange admission claimed",
+    "type_count": 1
+  },
+  "functional_binaries": {
+    "native-only": {
+      "build": {
+        "CGO_ENABLED": "0",
+        "env": {
+          "GOAMD64": "v1",
+          "GOARCH": "amd64",
+          "GOARM64": "v8.0",
+          "GOENV": "off",
+          "GOEXPERIMENT": "",
+          "GOFLAGS": "",
+          "GONOPROXY": "none",
+          "GOOS": "linux",
+          "GOPRIVATE": "none",
+          "GOPROXY": "off",
+          "GOSUMDB": "off",
+          "GOTOOLCHAIN": "local",
+          "GOWORK": "off"
+        },
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1",
+          "-tags=nogithub,noforge"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/packager-candidate/native-only: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=nogithub,noforge\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+      "sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1"
+    },
+    "standard": {
+      "build": {
+        "CGO_ENABLED": "0",
+        "env": {
+          "GOAMD64": "v1",
+          "GOARCH": "amd64",
+          "GOARM64": "v8.0",
+          "GOENV": "off",
+          "GOEXPERIMENT": "",
+          "GOFLAGS": "",
+          "GONOPROXY": "none",
+          "GOOS": "linux",
+          "GOPRIVATE": "none",
+          "GOPROXY": "off",
+          "GOSUMDB": "off",
+          "GOTOOLCHAIN": "local",
+          "GOWORK": "off"
+        },
+        "flags": [
+          "-mod=readonly",
+          "-trimpath",
+          "-buildvcs=false",
+          "-ldflags=-s -w -buildid= -X main.version=0.0.0-optional-extensions-qualification.1"
+        ]
+      },
+      "buildinfo": "$EVIDENCE/WP24/capture-6b75/packager-candidate/standard: go1.26.4\n\tpath\thubnot\n\tmod\thubnot\t(devel)\t\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n",
+      "sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1"
+    }
+  },
+  "functional_binary_provenance": {
+    "binary_manifest_sha256": "f8b86a1b66648d59c64e9bec42f19a7997bdec027d8f87df342148bb9c40cc23",
+    "closed_316_input_map_sha256": "d88bf45830f8259456110b8b4bcbbe4c27e06ebd588f7c5082e61209f5b5c9e7",
+    "default_harness_uses_primary_VCS_stamp": false,
+    "legacy_helpers": "Additional legacy main-race checks are source-assisted, not exact-package execution. Actual retained binary hashes/buildinfo, observed lane-w GOMOD/compilation directory and closed316 input map bind source; embedded primary0ca93f97/modified=true metadata is not frozen6b75. These helpers are neither captured performance binaries nor credit for WP25 exact-package/native rows.",
+    "legacy_retained_binary_provenance_sha256": "019818b78850b0886d1be4f4d371d00e96bea649c916e3030a9a5909545cb8b4",
+    "selection": "Explicit captured packager-CGO0 candidate binaries; each native/history/fault test validates unique collector path/hash/source identity",
+    "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1"
+  },
+  "go_module_inputs": {
+    "artifact_acceptance_test.go": "cdd955c740007bf4080a5b3d9d684c959488e1c5cb471ec3b30705bba676b34c",
+    "artifact_catalog.go": "22e281d6a13f38147f81912315bf10c43c10ca56a4b1e0a77cb12f3b00464ee7",
+    "artifact_catalog_test.go": "037fec50a8eb283a0164f21f4f0039d2720476ad59bae0f2f430d1467c1d45c0",
+    "artifact_closure.go": "0abc70562a62d77ba75518c6355f8c16219a4e9d2f5901ddca58e6c13aa88625",
+    "artifact_closure_commands.go": "143ecfe4509db32d01e43e5ef3d37c843e6f1bd35039941b0b57964521746bfb",
+    "artifact_closure_commands_test.go": "0ce05f5bd22acaaedd4795c1bce2923763d0bd16f8dcc37a7337100fda072b08",
+    "artifact_closure_test.go": "d61398835a425d59e8ddf56fdf8c2fd506de39093277306c9fa14c05e6423a62",
+    "artifact_commands.go": "8506e64d5db0b6cfea1ec8d0f549d3140ddaa1aac2ece43c6dead1d6f5642d2a",
+    "artifact_commands_test.go": "febd63369c36aba9d0652272a33782c0e1c72b68d4e8c8b5bab49a86a9dffa31",
+    "artifact_envelope_commands.go": "285634260b087788e895331479164cdcb9911f39667dd9ec15782f8bb811e5cb",
+    "artifact_envelope_commands_test.go": "e397d7b78a7aef5988f5ae5d7a848815a68917aa769375d2c4a746e1d09c5643",
+    "artifact_exchange.go": "ad4f7f0bbf6b2b33b2fc01dab0d879a26af736d71ab3ed29130bfd2997dc6ecc",
+    "artifact_exchange_commands.go": "826ee9d1ad6e5e7bb4bb94e3f0ee1209b3366b891625b835f20ecb5132f50b7a",
+    "artifact_exchange_commands_test.go": "9e495fde00d12d068e87069da2096d92c5d39cd3c3c35e01de07b8fd0257fd54",
+    "artifact_exchange_test.go": "818881e5a2fab4d628324bc5c7c6504dfd30a2de43617f3422b7cc29cadbdefa",
+    "artifact_operation.go": "12a220085781287e09754c9ce54f21195d51aa52f359f0444b9fc9f3a555bf35",
+    "artifact_operation_commands.go": "5421bc8ebb9b09bdd93ddcbf481d01bd77297febd5a9c12bb758d3d419cf9732",
+    "artifact_operation_commands_test.go": "b4f940a2947efad90b4ed39a8058da8673425c631ba7a464b2652aaed7559619",
+    "artifact_operation_test.go": "2ead55122a0e66da4e190bcd662be6885e3354fa6ef479c9745a8045dcc062c8",
+    "artifact_query_commands.go": "7fbb13370afb38e251342e3c29fe9b88df1a638a8c016d0dfe1b9b29a66a5d04",
+    "artifact_read.go": "8a03e22a20fd59b2064a4b48f01fdfa35380a89dae36a3835e344839638331f6",
+    "artifact_read_test.go": "d4d9faa1e8cff23e5224eab89db639039c3a7a63e7076f9d4ce91a37f09a962a",
+    "artifact_replication.go": "945b3b30b7620d663cb44a647b768d73d06dd20a9a663a9eb45c71f8810a5fee",
+    "artifact_replication_test.go": "0e069533f6aac03a78ca550a6969ebc6d0b800f94027703b316d57e7922b1e0e",
+    "artifact_revision.go": "aaefd253ec38ae53be152636f81e2f17d166420b02bda55740a3a9a27acc2bd6",
+    "artifact_revision_commands.go": "8cc881d738448cfdda590b25656ae062b0cbb3e571f11e39ec6bdef13fadeb2e",
+    "artifact_revision_commands_test.go": "097adaae98f82dee9c3eb300651fba8fde7c069b2b8cde08916a02bd498b6889",
+    "artifact_revision_test.go": "7c171a2cb4bec32d0529df5c2100a479e5015f71f7b935c7e778430daf310c2c",
+    "artifact_schema_commands.go": "61d08a48a31107d0ca1d21800a8894b0a29ab590b4d09ce96abd247196dd2fc2",
+    "artifact_schema_commands_test.go": "31b3afa0ad8617183e96064d06445eeb7cc7f8493b16dd431c3cb1deb4f82d22",
+    "artifact_search.go": "cbe0aacd0e902526389b7ae94f6a474a799e7ac2827aaecbd3253bbd9f6d3e3a",
+    "artifact_search_acceptance_test.go": "dc923653419791c1515905203703fe4169c06ad40019a1c2bf32a0c90d2992a4",
+    "artifact_search_test.go": "1af77a88e60e77d26ff9050b2f338eca8b0d704fc732976ffdb1185fab403ed5",
+    "artifact_store.go": "db43962944ca6272546e005fe6905618b6705d5f35e5edca7ed6e06d02d04d9e",
+    "artifact_store_commands.go": "37ca3df05a84560f0093e196a961f457ebb0c91182b73417be2f855e877a44a3",
+    "artifact_store_commands_test.go": "66515cc889ba34212b1dfb59f22467dd0f0b6d0ce86c672432253b7cf1880631",
+    "artifact_store_test.go": "2cd2a78f78f7acf135ef738af908cab52325bbbea4f9f6a8fe5cf1f221c27b52",
+    "audit_authority.go": "e32f0a1e72a475d5cc69bfd8527079acd87945b4462e5467602897091e2c5d50",
+    "audit_authority_test.go": "fabe0165a642e39314acdf8006d8928a1e21cc79a2a3a0ea6428101a10385ec6",
+    "audit_commands.go": "400fac7333a9f6514b739cb6d1301664f6ed2caa101f2608ec7df3a15e98f3ee",
+    "audit_commands_test.go": "0cbe8960a5b023daab09a1d752a0f90fdc3acdc7d2ae62e9d8a64eccf1153dd1",
+    "audit_execution.go": "c891b9ba800e4832f72e3341ef26d4aa47cf92326913f6c0306b6270324014e3",
+    "audit_execution_test.go": "60a138b64653719c2c66a0b9dbafb193979cfe6f8814693af57c03c07b12ead5",
+    "audit_followup.go": "404d63cc36aea3730937315ab9b2a2efe62a6a161cc72bfcd63f3b6f2e408868",
+    "audit_followup_test.go": "f2fe6f0e427c55f222c24581cc69fc208c238b82ad4f941f8ebb6fafc328640c",
+    "audit_protocol.go": "aef4cb10118e3d3a7570138feb9599c648c00c5cfe4935ff7cafdd1124ef23ac",
+    "audit_protocol_test.go": "0e44f6ed35f888628bbae2371818e1b607bc2968a4497b269f946b4494f6bfa7",
+    "automation_public_test.go": "fb4572ca92aaab4bbbf8bccef27d706eecfa264c0821d442bf1f2fc6fe6fcc5a",
+    "automerge.go": "b88d6a93100c213152503e61f5425930d48f1dd4afbca3df718fc42e2b2c8c78",
+    "automerge_test.go": "e6e0f4c03c683cf99fe19160979b80d68e2035b9fd9bd68439a838886ad9e397",
+    "backend.go": "472a2bb10189643e89de223b631716607c82b67f136d1ef9167f3ee6f1912650",
+    "beta_compatibility_test.go": "fa47966baf95980c66650119e886a70c8d1cedde5de247e203fe73644774a9ac",
+    "beta_contribution_acceptance_test.go": "23d552723175c64efd97ac2f3b78002b33b9b8730f92b6a6eb717ae62d4861f9",
+    "beta_journal_recovery_test.go": "6225f77a8562db071b63525f276fb8d9c9393cb3c6f6c9597ed29586def49bfa",
+    "beta_platform_package_test.go": "e83a2f2a41380b0189ef5f19d96cca93d5d6232805f4fffbe6bdbfa7d22d7a2b",
+    "beta_recovery_test.go": "9105912b855c78f797ac33ea858cf2ffa4ea1739c64ca35e1f71e00135915bf0",
+    "beta_scale_test.go": "60cd60b0321b837adbab9959cf6b3e082ccd02647b738d0eacf5ea5b13b29f33",
+    "ci.go": "f85c522fcda83fae65979efc520dbc95a7d93d6769fe0472eabf3522808ba9cb",
+    "ci_test.go": "e5d68bbce2be9b9162e92dff98949a9b9f1dfc3fafa12306a8be11202f005c15",
+    "cmd/hn-release/main.go": "0d1b6be33f4b258697eda4f2fbcf9878ca4d6a2ee50fe779c5904403e88082b0",
+    "cmd/hn-release/main_test.go": "dff2a3f5c94aef3cc9cb8a26bf2060562eb418b5b56b183f8c9d334088bd8d5a",
+    "commands.go": "ced9361ed8d45e049b66010ad1b5fb57f69346e8a7a83e615e0c6c3274c25540",
+    "contribution_commands.go": "08d610c82176f606317bac2ad93af68d2c084710a761298e43c95aa2a467df1a",
+    "contribution_deadline_test.go": "b0a8715794824d57ab3c573424ebfc50fff6006127115f8d669fb2ab869c0eae",
+    "contribution_exchange.go": "72b49b40f72eb2ca2632bb73075a318cdafb032bf1324a6e2afa3bc1a21b628e",
+    "contribution_exchange_test.go": "bb1a2ffa610c179c79b52d43af6fe9732d58bbed2ce1e8c06919f60a3edc2771",
+    "contribution_integration_test.go": "f5a228a6803e8689abf928680cfff5f08090798fe1e013374f3b174b8a55893e",
+    "contribution_moderation.go": "a75448cb1309382dbaeed52b84861d8523f8af1749da647814742f3d7a1b838f",
+    "contribution_records.go": "783347b26815b3de87321104b939589cfac92e8605568a7fb7017036327ffeef",
+    "discussion_commands.go": "907b63246dd5a59dd9b3ef3971ad933019ab671cfd605daf44e89d96e12b9342",
+    "discussion_commands_test.go": "489879675a858fb4c4b349c5134074f9cab5f837e62fa799037c961be7c2767b",
+    "event.go": "37c566ccde90fd813c5cbff34ed69648bf00fc186080e12ed82fc33ec3e39519",
+    "event_test.go": "738ac0f67546ba66532af79321288ff4684ecb0827c267692ddf21397bc2bbff",
+    "examples/extensions/charter-model/main.go": "6e14e31642bf4424f21fac6e8cfcea00eb59b3a3480651601b20e77f8ee0a9b7",
+    "examples/extensions/charter-model/main_test.go": "1bbb4b41cd026cfd0997b252b6838e1668a9f2e8d4a085440604339f2e7b90de",
+    "examples/extensions/charter-model/model.go": "39e76df1114ba3a707f49eb96b4d5a23d7a155acbde1a74c6822a2b0fe506c30",
+    "examples/extensions/fake-tracker/journal.go": "b751536ccfb26e98b5e661ddfbef3fc7f6af906fc13c4c2fae9849717588e4bf",
+    "examples/extensions/fake-tracker/main.go": "5a704361f9bfc39962ae338d1e7c40544cfe14b3fc61f3ee5778f2629318ae6e",
+    "examples/extensions/fake-tracker/main_test.go": "ceac60b3a6257a8a353e12b327e0c06f8ba9ad4ff3b740e34fc8b1fb7dafdfde",
+    "examples/extensions/inventory-model/main.go": "def9c794277c4ea40704830a0b47ca7c61dbf6bd25676c999533c7662afc6994",
+    "examples/extensions/inventory-model/main_test.go": "ba11f2a20e1869237e9f90af6fd2376dc95233d83b6576f3aa49f458e5873cea",
+    "examples/extensions/inventory-model/model.go": "c7d4b3ebcd2066929b1c826e1bd6aef0516cb6c241cfaf52c68b7a5e7d7ef1c5",
+    "examples/issue-consumer/main.go": "14e4b7256a223b6c7213c9c354df7cea29ca7d271c80fe75a533f42f04473df5",
+    "extension_artifact_acceptance_test.go": "313e9ca372a0edd1bd69f13b47dd971b4f0497b10d8e2363b85c5ef83f4d15bb",
+    "extension_artifact_adapter.go": "a38b34c12b2df6d1295f4d79351dc8c62e2ae2d310158adc9d8fce6c3a7453b4",
+    "extension_artifact_adapter_test.go": "40e2d25304292fa441acb6886f04c42907e5fb9efe34479945bd2cb08dffd760",
+    "extension_changes.go": "a9f057252c69840216d98e982290d1e5e4caa05b49a3fcf53edcdd83495bcf0e",
+    "extension_changes_acceptance_test.go": "c1427ba793a1a7d4a1e7222167ae7ca6e9f2ef03ea275738f7839c6fdfba7fa2",
+    "extension_changes_test.go": "8dc027b9b4a63a24195ba046eb8c6d5a2d73bc9154c2209e80ad3cb77ffd0255",
+    "extension_charter_acceptance_test.go": "f46265e82db3b93f117f4eeb1d051d83e8536edcfde8fe25595e3ef9da0c7a05",
+    "extension_commands.go": "f2e37d114c3e4bb0d9b44ee726782094043a2dcc79dc495d9dd517418419caae",
+    "extension_default_acceptance_test.go": "f49579362a84d7c9532a0b3432c33bda3ef52d4715ab4ca2b338f18f6c6cc1a9",
+    "extension_default_baseline_test.go": "0c3445d1c1809f0910e5fae402630c669cdf3930e4964e682ac8ca1bf901a902",
+    "extension_default_performance_test.go": "1eb3e86657b1fce0c9beb7801e4970634c193ef280aecb6c607d409fa44b3349",
+    "extension_enablement.go": "70d8a6d297c3ef1c28609a3bece499e28dfc51159f7c69fbd200bca991117c4d",
+    "extension_enablement_test.go": "67c55cdef675587ee792d7c095a76936967f157222bcbe849db2a369664498e1",
+    "extension_fake_tracker_acceptance_test.go": "57a51130057fa7fc6fa2b2cc8f2bcc7d44566637036416391d8d4be405ad65a2",
+    "extension_host_command.go": "d8416a0a33696ff8539f385956c01aadead14cb2849f8c187507e9801fdcdb1c",
+    "extension_host_lifecycle_test.go": "df3556f288785c5c0982c5e5cc968e4af1a588acce052ba7e3fcea6e96942308",
+    "extension_inventory_acceptance_test.go": "47a8ca246ad8792f73168d159f768b21499216f9f108e0594d7424ea01886bf7",
+    "extension_native_acceptance_test.go": "d83fafaf9189c9ca4e3df75caa97f5f433742d54e60f908e51be8262e9429699",
+    "extension_native_adapter.go": "e63fd7d98dd73777e5389522d9f68d81ead945d8191ce5276d4877b7e3e466d7",
+    "extension_native_adapter_test.go": "c833790123f0c7bf57aba4740d0e8565051d8e21ad86f03e00811a0cd5223a02",
+    "extension_protocol_commands.go": "32dc003890324fe27c0869cc74de242d2cfeda7896ad117f58d24b98839445b9",
+    "extension_protocol_commands_test.go": "b5a49427707e921f040ba145dbf2ebe02615ed75fd2c7db9d8443b7636a918a6",
+    "extension_registration_test.go": "725e78df841a969d266f7c9f0ef3e0abadc9695aeed5a2cbaf127854ed39ac86",
+    "forge_azure.go": "b4801eb33aa53d560f109a8e65c1aed270006aa8088f87655f80422600fc8ec8",
+    "forge_azure_test.go": "4abf1dd1699321e81d89c1c56e815165c048693bc288cccf59fd5753efc203b8",
+    "forge_forgejo.go": "ffae9fee5b5e07dedf6adc7238e8ddddaca51f89fd43a601cdb4d0eb2005eda6",
+    "forge_forgejo_test.go": "f956f587138802cb5afcf1f12ac1f9fb9d71068d33660874308817a2c4f6b2a1",
+    "forge_gitea.go": "8e88408b7f48c258d51f4bf58064418cf9cbe61f2d39b5728ac6fdc682bc2626",
+    "forge_gitea_test.go": "c6239439b8a80b3155757098191b47db7caf2135c1164813e0948bc3b57394b7",
+    "forge_github.go": "3def4ebe7c674cc23f3ff28b9570c27fef4968466b6a33bd377faa5eaf1352bb",
+    "forge_gitlab.go": "56a492a85ab7ec04dbc0bc4a1f41ac606fa35bcdd678cf0a2ce6be93c4bf7616",
+    "forge_gitlab_test.go": "f2adeb6e081fed8690a942cf9bf3ee189949a7e5bba09f63adfbd23e5215307e",
+    "gh_compat.go": "8d1cddb2bc630b8c0d6e877a6d6e10957674c8a128bbf0391ab5a8b28a8817f5",
+    "gh_compat_test.go": "774bb846e09fb617a69348d088a594b2357c8bd089aa1e597937c4bc4a6182c6",
+    "git.go": "e41d52cf2a65c221bf2d0caee42bdb3f4d030157d4a1c6e83e4452e10548088d",
+    "github_acceptance_test.go": "08b9b819b187db2644548e1a4638fe79fd5e3aa79029094149de5df6df1da43d",
+    "github_commands.go": "8117ae2c8b765358c0fc77e1150a7649edd7fb6c0dc549ab5fd7ed5a4c9e1f73",
+    "github_disabled.go": "2fe6f798e1c7d714faadb07efa185eb1219321115c85d74c5643ca07c1db496e",
+    "github_discussions.go": "471ce1305fb3d6a0dafbedff9d5d5c2807852485bc6b44a6c61a55e637bef93e",
+    "github_discussions_test.go": "acb0465bd286c83bd8c8fe6a8d5a3cf59c245372e9aa43ad3bd84ef6677e1c6a",
+    "github_export.go": "a49d23e996de8f0906b6bdd05cab43db621e354f8d64b7727bd7f34c8ef9ae08",
+    "github_export_test.go": "cb820d464d5a89c4742109874148e66684f9c200c819b008156813ba1cdcd839",
+    "github_import.go": "970501f1b9b2753e9142765a33fc9560a5cbb3d1a7e113891ef598ae76cad931",
+    "github_import_test.go": "06b55519090a2298d1149471c95ffde6f105cc4c62e3e34030455411a6c59146",
+    "github_projects.go": "c00373e17575eb6068550824428b87c5e49f9c564647db2262ba8dc2bd15c73c",
+    "github_projects_test.go": "4d6d453d11873935e1516d94b70875142b36b7288d126154855d494d58b21520",
+    "github_workflows.go": "eba1bf5eb70a6bd5b46b1ce7a4193ac90dbc06e6fcaad6efc852d359ca27b38d",
+    "github_workflows_test.go": "62c8f0544f6cc384e6b2313c5f4af358f767bf648358352f3f1cdfb913d4b2ca",
+    "go.mod": "b4f32c4338e0ef0ba875ba9d0075fa0a052addb1e0a2669ebc573a05a01d6766",
+    "governance.go": "31950ecae65a3c717fbb81b8e57fb158a04d863016f2ca23fc50b306f17e62d9",
+    "governance_revision_test.go": "ca01ace926a3d4995e0c4b2c8ead6ee915e7b9e7c89bfdc75d13e1ed62af9a8e",
+    "identity.go": "bab8e65ea879bd33217570d2a1c4b1c9eea58c5989a9c299c1d1bf52f66e111d",
+    "identity_continuity.go": "f7c6670edc020b0ac7311e4c54daa4d3e28a7a619c357710f30c6750073be9fe",
+    "identity_continuity_test.go": "106df45f9c3669bd88d44f156c0221091f06a9d5fa1dc9af5c2584e2f28eb4ae",
+    "identity_keyring.go": "ad568f7945f111d8f512cf40c8000bb897cf79ed57560f08fe9a1448b91f650b",
+    "identity_keyring_test.go": "67d62fc22cafe114d2c3f4011000a9cdcd4dde9dc84acfe69fc8ca53210d4c2d",
+    "internal/artifact/canonical.go": "994755e2f97e33d69ddd5ffe6bcc4d9108d245f26822f2f0d6cf83769458f308",
+    "internal/artifact/canonical_export.go": "a57ecd683e8f9cb6de94932a118df34c142adc558866c3799d78c3a124a95987",
+    "internal/artifact/canonical_test.go": "f68a496c913cfd8d12d9732c53487a202930ee33b48734acb2178b8c20774202",
+    "internal/artifact/content.go": "33bcd42c9b473bced2ed04358900b11e53a91365ce87486c75ae81b9a82fd32f",
+    "internal/artifact/content_test.go": "3ab1bd79feb47900670a7a4fee3d370a41c43ccff5f1282a99ecc46a47d2dc31",
+    "internal/artifact/envelope.go": "97a69408967390f3b10ff53fb42ac731d35e9c89bd8691050d1c93f79baa6c48",
+    "internal/artifact/envelope_test.go": "39c97c7c1256ede331f5c62f6b5a0ca8aaabdcdf5f2277d96ef732f558fea6d4",
+    "internal/artifact/revision_export.go": "c6a6c3bbd1e445d7bbf8e7ee7d9bca111a8c1625f4de1b59b0601e738d146570",
+    "internal/artifact/revision_export_test.go": "adbc465f2065ecebcbfcc7c68c88834408b2ce1cdc1dd6561810e4c978d6ed0b",
+    "internal/artifact/schema.go": "57a5a7bb51113c44ee65d2e4c9d0f98ada7b07738d573624b1f376ccc026e8ad",
+    "internal/artifact/schema_test.go": "e52dcac93a65465e3630e4a91652f70b1518d3bb59d316b7a83ed3c7e58453ba",
+    "internal/azureapi/client.go": "d8091af9ede2722b7cc14458dccf5c5e6776c5efc7a49ef991a6ede2ad264c26",
+    "internal/azureapi/client_test.go": "3c698fa91f3293a589c6d6a105c1a29f900f941781aa0c970026bcfeb0a2dcca",
+    "internal/azureapi/migration.go": "74b8a326e783947bd843385d83da03d345d6de18000886e39ce969c927693190",
+    "internal/azureapi/migration_test.go": "65317f05fe5aeac6c4bfcfdbfc3b05525d81b070924954ced7a128d6f5805b7c",
+    "internal/bitbucketapi/client.go": "c96ad58bc44f89961352c1f01e6f74bb8251737b0e690d234de7ee93f9fa7eb2",
+    "internal/bitbucketapi/client_test.go": "0b44efdce5bb89784a5d732aebee61cdad0273d12a39b1aaebf8de40a4d99a26",
+    "internal/bitbucketapi/migration.go": "62ba93d1bb89a40a4e9a0f3e54eb925fc36d5ce53a436c3588199e0b829b6766",
+    "internal/bitbucketapi/migration_test.go": "4aab0e8db7e611db7a6331a1e04eb066b76d28c963f96d94915eec098383bfa5",
+    "internal/contribution/model.go": "737c4524124bc372b6b61fc51e5cd3b1a8b8096904e45682dad82481b75c9a2f",
+    "internal/contribution/model_test.go": "bdd39b5b2bd3e140cd6909c512d58a757ff4233c97340a9c034a400b3aa6d7cd",
+    "internal/contribution/policy.go": "492108c0d54350a4b0891ac12a7ed6b4106d071e1acad6b3754addbbb0db7596",
+    "internal/contribution/policy_test.go": "69d39e010118c3783888b009ee98fe8a6fb66d99494deec3e388c5426d3c748a",
+    "internal/contribution/record.go": "07de06d31f2c94c18e2a0916c7aa81272f4f262a31512425ebf905333aee9b01",
+    "internal/contribution/record_test.go": "611c66a4387c7656c885297802722739790da0e8654dea84305aa2b40b9e40fa",
+    "internal/extension/frame.go": "191bd18a54f976d1d2e951e551cd32bed45bdba1a39426c3ac864061e8b7be31",
+    "internal/extension/frame_test.go": "a618effb964f14a8f94e5215e8363aa3f7cfe50b8f0e4760df38dfbd6d94e1af",
+    "internal/extension/grants.go": "3d62ac552d6332a3c5164952553a39793ee9b71886c2f0269a40945ab05e7261",
+    "internal/extension/grants_test.go": "51229f942e51e40307e49888d33fd8d84f9d524edb2bb4314e4e3a35b1368560",
+    "internal/extension/manifest.go": "2816654e2de7aa0a706e8c5fc894d2f600046a6fa329e5a7540ee45df6027b23",
+    "internal/extension/manifest_test.go": "36a552741fe038b510e5db64d1873aa8045b94302c08d736cada2da582641602",
+    "internal/extension/process.go": "7d3270f1b3f42759a1e1e800c4e0167e50617135cedc938b2883e619438495df",
+    "internal/extension/process_test.go": "0c799387eff5a524e1aafb80e5ec57b2b760814f5e27fb355bd53d8a39f8e9c8",
+    "internal/extension/protocol.go": "26eb4f2448a6c5e723aebdc07c73ff03004103358f17b954eee1b842866d68e5",
+    "internal/extension/protocol_test.go": "d243768622c235e9ad0f4eab7ab0c9fec8e546a8ea72d2cceae4c65cdc599674",
+    "internal/extension/registration.go": "e4f7c36cf0324d6a7a7906e050d2dd2f7a6cf081496b795966b6c9556712b1b0",
+    "internal/extension/registration_test.go": "70bc3f16fea7afe7ca32a3c0a1461dbab24dcc4e8ee0128a471cec795f8084c2",
+    "internal/extension/session.go": "5e98513e58076e4dd5925be558ffd3553bf5844f79839e54039469fd5b17ed61",
+    "internal/extension/session_test.go": "e0fea37c5f86e85190131baf35e3759d99ecf8d2abf9f41548b2bc10a68c853b",
+    "internal/extension/vocabulary_test.go": "7e06edbb7f2df9523854a82cc0cebdaef2c7a678685e3fa32d6132814d351b31",
+    "internal/forge/provider.go": "4ff6e2bb5d78c08ec358073d52b1c86c76b5e43d82cc484e093e6a4ede4f7ba7",
+    "internal/forge/provider_test.go": "f2a09de6a1d964f731dcc0d2d74a657d21788b8cf1e73b51941051e4ad669ef8",
+    "internal/forge/resources.go": "1fdbdaedee0e9e9259c045e7e49d9558501d3c2c909120b29b1f9bd135d54990",
+    "internal/forge/resources_test.go": "b2e5823efe59eb66a1aee478270da285ec8f319880fbf3f7217a63b8c98445aa",
+    "internal/forgejoapi/client.go": "33c4458707af74b6c1859d05b998fda38822545502d6bc681a393b1ec6b6f5a5",
+    "internal/forgejoapi/client_test.go": "3f43c9125d9f5e867ab84851a136aa72fe4d557a544809f00b63ec3d698893ff",
+    "internal/giteaapi/client.go": "61dc22316f24e08891f4e7e83fb666951445d28fb81dced593dfecfb7a46d23e",
+    "internal/giteaapi/client_test.go": "e6ed3a06149979abd9f1886b404e9091509f3ee470f123b066ca15a8ec3351e8",
+    "internal/githubapi/client.go": "f50f738500cee1d9a09b6dad745d5a020881bfbb0030fc95a42a7f89160fda10",
+    "internal/githubapi/client_test.go": "f165b8145c663770887ddb910c2d436fab770990cf0fa8fd7ba4f3faa83c81e1",
+    "internal/githubapi/discussions.go": "32a88608fe39b49492c3e2c01bfdb1bc3c1faeee90cc42aae19d6c1859097d2f",
+    "internal/githubapi/discussions_test.go": "59cacec97f4a36b5807095501e24dabd4fc6591f15f1c826cb6b06a8dd6165c4",
+    "internal/githubapi/graphql.go": "4253114f392c6b7ac91b34731c09f9fb6a166dbdfd6b46867bc80f0e906b5354",
+    "internal/githubapi/graphql_test.go": "433a931000285b1aaaf91e08a7eda7dea885f40b1d6473fe867f0265c17b5743",
+    "internal/githubapi/migration.go": "fc6cfdc2aac1c836f45f700c99c6331cfec93001514bedfe1f5d84e009bc5cb6",
+    "internal/githubapi/migration_test.go": "c3b9e65395027aaad32602e1c2ae3cc3ba30a985564be01ae97af0ea00227d65",
+    "internal/githubapi/projects.go": "90a7997348454dafb1bab3e642537e003942de6f7a6a8c45dc19a5e6408fd568",
+    "internal/githubapi/projects_test.go": "4bdede3278becdcedd35762570462eefe73593e13891a3685598fb77b82250f0",
+    "internal/githubapi/workflows.go": "858b0597172c572fdc4aab29be8400beec17a7664eef5bc90c8d9c95ee69a8a1",
+    "internal/githubapi/workflows_test.go": "7d7a36ac168c40b514670f54e05b0b1ba674bd961056342d468d1eb09dd21be3",
+    "internal/gitlabapi/client.go": "8c268094c1d0a2bf9fe29d9913b3644625227db135427438e8f350d3bcb2ffb4",
+    "internal/gitlabapi/client_test.go": "f0a5e4fa9d4745dd7a025f0e37e42ff3e998af5c54a8b5dfabad7d06072f9c57",
+    "internal/gitlabapi/migration.go": "7b0c40f38cc4d2404b9e3484aa1a8087f1dd278aeecf136a1d2c12e78c2db48e",
+    "internal/gitlabapi/migration_test.go": "1e90eae2bfa03297f235d3844c60fde2efdac28f068aa24c29be8e19446113b3",
+    "internal/migration/archive.go": "e1987e389d9a70449967c122f53b4f8c2c7582a95d611887ec66a8fb119662a3",
+    "internal/migration/archive_test.go": "999a5f9abd6c6b559b39d42a2be7bc85ab2f14e68df5f8162f31b920bfaa3f6f",
+    "internal/migration/conformance_test.go": "6d400d98eae98af285cad6f786d7cfe1e7357ec33c186530b969830a3532bf10",
+    "internal/migration/plan.go": "3039c9a56e8fb3288263630365d39b47219802db5943b1a5344dccb4f6a762a7",
+    "internal/migration/plan_test.go": "382fb5a62afd990648a017c7e62fd0b712a77e8021237a410c8181949c3ecd5b",
+    "internal/migration/progress.go": "7cf2a6c4a116fd6aa691ced4829bee0f305b16e6095a4a52c58f5c60ed847fd9",
+    "internal/migration/progress_test.go": "ff0a2bd36f7af5736111826a4cb5df61163515ba305e0f923054a9997bafa8b7",
+    "internal/migration/provider.go": "14163e1767fc611f4cc4ad485e352b423de535fe6b81a33b65baf5a0b360e796",
+    "internal/migration/provider_test.go": "b3d694439ead801b6907256f121196967d28522ec030ddf822eb5f40772cc745",
+    "internal/migration/snapshot.go": "864fffb9f3002ff01d009326e3c435572b3e2c51226c502de75346127a756d8c",
+    "internal/release/package.go": "50753c630d04d49863d7cd64015fcbf1900433fdd416d8d31f0d9d388f0471e4",
+    "internal/release/package_test.go": "3e3edc594e3553c999327d3cd61982f98cf7372c1857c796da153c4c1559c6a6",
+    "internal/safepath/aliases_darwin.go": "ba3691c0c01c8c3c0ae0bdb1839a1685434b8c1818abca3f0577a25e1630ce14",
+    "internal/safepath/aliases_other.go": "6436a462e0c58277ed75e2e8c9178afc82fa66491f4bffc5c5c6c98fd9b2d661",
+    "internal/safepath/path.go": "22f2adbb1912dc08fad2eac8d770b3b618f4ab647c63ffdcedfb0235d36e4d25",
+    "internal/safepath/path_test.go": "33af9521cfde155e07bfd73b397cd32caed04a5051f1a4e7ab39e8a1aa32f04a",
+    "issue_acceptance_test.go": "5d74505c04a737b787a89a4f6c955b16da2932ee09fcc07cf21a58dcbc824967",
+    "issue_commands.go": "9525b88a57bcb02368b7bfc98c9c2c30b8cb2cf252320b64a1cfe5679c98b7cc",
+    "issue_commands_test.go": "5e7939ee4e813295d6d5b553515bf3c3a30cea021da7a9504465d22a539c84c6",
+    "issue_model.go": "32ebb1913f36ed163d77c47b82ff87543254ceba9fa9f36ed5efa0a6e4940dd5",
+    "issue_model_test.go": "1708dd9b6e9114dc17277ddba8b1ccdcd44b3cbce7e1f5d9d5fb4b37497b3921",
+    "issue_projection.go": "abe85f0b5f51b3e4411ed3995b8ba2003a07b15e1ed2e666dc1f8104dea109ef",
+    "issue_projection_test.go": "bd9be4f8d0113a68b65346cc1dfd0b712b0d95ce3ed6254c17a9b48da3fc1d18",
+    "issue_read.go": "37114ce4c65363639b88d25c97682ee7f6715fdc00a372bdfc2915f151d5d2dd",
+    "issue_read_test.go": "27eec960877c6fd39fff797f45bc2c3f741f7b8e4f24f085679306449c13ad2e",
+    "issue_replication_test.go": "27e8355a3d18bbadc12c905c88ce28a586db44032f987c715a7b8b4b86e6f572",
+    "lineage.go": "0ce209236a77afe8fc074543cf5347f0bfc22bbdd7b8028725fa7677552448a6",
+    "lineage_test.go": "817376563c54106f5861c2b9f606a5e5ab22898b7687f9db2eda645d96380cce",
+    "main.go": "89f9cc2026f9201e7be47e62934f4c49c7a18fc14b3880f1ac0a9dea8a0f1c96",
+    "memory_acceptance_test.go": "1248b77052b3cc8f65c5265bf24b22ba7ad5b17fcf0ca3901dfd6e12dfdb6d39",
+    "memory_commands.go": "89428fc3796e95e012ec71b8b04c53732ba0a02f41b9d8e23b6c17650a5916ff",
+    "memory_commands_test.go": "5c71b3575936761bb3a94569aca66c126ae8e11e991101fc6a622b3be5c7125c",
+    "memory_event.go": "0328f5a8fb7b757bf4ae0dce2ee9a5a828dd8566c349fa5d2a1b4ba545d090b5",
+    "memory_event_test.go": "9b5e7878f653278937534d7bdea26ffae566f544c4b1dc0129aca84d2165c0fc",
+    "memory_grep.go": "b2978420c74df535e9dda75dbf9b4915bbf085bbff5d6524c56062be7745cac2",
+    "memory_grep_test.go": "23190014c20b1fd7bf6ed7d2260d62bdedb081d9e465b2ff9ab5868c6d5e9ca3",
+    "memory_index.go": "15958d13b1ee4274bb73091226507663edfb294ba9c256e0bd5795fb4e1ff397",
+    "memory_index_test.go": "246ba446a51b4f725ca3ee56a08afe474b892120220ee879144c697b65ca4ce4",
+    "memory_projection.go": "54acb29e147ae4541aae76526c6a8ce88f6340e23af6542865fd832c126637f8",
+    "memory_projection_test.go": "422a4ec81f2cc4ff31e4f8d8ec231c079d6ee1ca89dcd3819158946e3904f857",
+    "memory_replication_test.go": "8366b6eb8c5f66dc18c5e34afb38e1f5a158746978eb99d3e4bc612a2b0705a3",
+    "memory_store.go": "22dc44302c6a2ef0453016459637aaebb4cd85bf05d0f746e43be0f24ddb0fd2",
+    "memory_store_test.go": "ca0c716743ed35625177404cbaca9c4b13d1ec4377bd4852f8aea6163a973433",
+    "migration_acceptance_test.go": "5e8980af1feac5d829d10fc972b75069099e5f9b8f5bd65110a2f76af24ee38d",
+    "migration_azure.go": "209332d2fb06995934109bad50d87a1739ceada73bdf5c0c839616cde578d4b1",
+    "migration_azure_test.go": "b2992fc3c52e0cab6ff09d3a4dca01e953d872789b1126a079fcf942b85925d7",
+    "migration_bitbucket.go": "84f91b09a88ac1daa434de998ebbfafc91997e8a4752721732c234d406c2f09c",
+    "migration_bitbucket_test.go": "d9da4a946ba386f9554091b05cf34d08d058b7d1c0d0f1be6230de4792fbb175",
+    "migration_commands.go": "2d50a524e6c0da6a6385e7d32a7bcbfa8e1e1fc8cd53cb94433024c8c46e9a46",
+    "migration_commands_test.go": "1e39db8d0cdf78d94273d5dcc6ea594f252d1da56c56ee90f84d391335226664",
+    "migration_engine.go": "95bff31d3f89e6554432f2f9bd3fbffa025cd2cd8e98b18ea2e9e37e50990f38",
+    "migration_engine_test.go": "3909c531ba19711c9c0de40e0bcc692ebde66e62084a20e93f1ec41dfc444163",
+    "migration_forgejo.go": "72ac55c473b9fd0fa30f96b5578cf7d66cbf3dea86e63c8bd03d612eb0e1ce13",
+    "migration_forgejo_test.go": "4026895c0114d987dbcb360248a369dc346143624b49a37b32efadb9dfa3ca80",
+    "migration_gitea.go": "e6b75a2a50285fde16fb4db392a989e6b9dd6432f3511daca54a9c74e4ea98b9",
+    "migration_gitea_test.go": "627d8a2774d834c7e6aabc100c4cd45e1dab604f536a9383a47e521d7a97c763",
+    "migration_github.go": "25553c87b1e25cdb903283fee6c92ba997f120e9c5f2167973790c4b2ca8afb1",
+    "migration_github_test.go": "c2e7ea9d7d84799bb4c711f8477878f8fef2d2e0291b118f09a2f3fb06df1366",
+    "migration_gitlab.go": "0e5277643b3bb86023ac5929aceadf903cd64883cc7e93fde2c3ff75b26427e2",
+    "migration_gitlab_test.go": "9dfc5f1cfedfe4941c000a0934d0200605093273285a14046eeac8ae49de169e",
+    "migration_journal.go": "849942330284a1e3fe9f46c75e8a46b51239271f90611570716086150c43e67a",
+    "migration_journal_test.go": "beffe9b21b13c78e284e2c636ff9e157a2f15ad7f89b9f0c51486827b8442beb",
+    "migration_local.go": "6504ff2d4e07e90f6a8e873f88c5441d918b250e07d10416e009701bf3cd98f7",
+    "migration_local_test.go": "75c375b1c928345eabf3180dc382192eee48d44a9b3e4fb54b9b99152c6d6ae2",
+    "migration_native.go": "ae415458878cc913665f9125049e7184c5ae1764d2a673cb31a85352a66ac788",
+    "migration_native_test.go": "4727adc053191a3060ccd953668f561ec8d96a349c6581ff0dfabcf25e3da53e",
+    "migration_paths_darwin_test.go": "8fd3678cc5455c06499858b4b657a547dc9df3c91e2cae28f5d9b4b1ac4e3cdf",
+    "migration_provider.go": "96e8dbade8659f394106a52486efcc75523e5503ae98f0fe38c4d8a2fb94930c",
+    "migration_provider_test.go": "b76d8638594f10d0f759c2ae819d3e2a78c00aa5b1f3c6aace53312eb61ba923",
+    "migration_wizard.go": "218b3c0018216cee04ddd10aa9bd9265f88e42be2f88c22599a8933a897afa7d",
+    "migration_wizard_test.go": "0aab1c55e8527da85c4093ddcff5d9ff957eb1e6b15e2f20f29c1ccc02d6735f",
+    "namespace_cutover_test.go": "ad0a10872e5212e9d0997956730254e3f70ac59ad5d15cfde8191ce3f10c1c08",
+    "operational_acceptance_test.go": "bcfdb8a8ea742f39bca35e1bbcf463c512bd132cde859a59b27cc607ae9b3bf6",
+    "optional_bootstrap.go": "7a92764036e6d8c865467e94cd8f36fc7dbf324495486bf17a720f64084a5b2b",
+    "optional_bootstrap_test.go": "620f251f64aa3d47283a00aaa39ca42b673024163b9a0002c1962eb2ed821e39",
+    "policy.go": "ebe2f22328121b363b9b7deb6d2b1d732511c72c4c293876e53de240c11795b3",
+    "policy_commands.go": "f71b81e20a1b16549ec19f8249cb60003c38ba5dd15565de679be059cd35c0e3",
+    "policy_commands_test.go": "471a1e97bb90f1f0ec4110c3bc55b1260d030bd900685e9eb81366a6b4520d7c",
+    "policy_requesters_test.go": "b686ff0b7a1776574d87b1a3926e450a4bdfc6361115da7da0c9b89a827e8e35",
+    "policy_rules_acceptance_test.go": "81b836d1b8b26cf69b800a2ca05a608458da9bed7f699deac6bbd2615c28f7d3",
+    "policy_test.go": "b85b1c79f915e4e5efe58b918e7914c726c2e4c20e4e139e6aa97e086bf9d6f3",
+    "portable_collaboration_acceptance_test.go": "755fbc2c870fc168636e7b335a6c5fae8be850b0a658cadad4a789ddb1b31e59",
+    "project_commands.go": "47777b3b0f4111fb204e073df0f618bc84bbe5177e35e84f9cb1a54bb01208a3",
+    "project_commands_test.go": "9ae8a5d15bf4f61fe2f6f2123af53c5be97cdbd66321d3ee8ef4ea6c4cd357fb",
+    "project_snapshot.go": "2d525e9642c277b242f801b564515ff376b32e5c38a3abc3a49e6f38fb6d269e",
+    "project_snapshot_test.go": "f9105588bc83de7ef2abd3f4f3f475ce11e48fcd8161d9dd15f7cdec02d72274",
+    "proposal.go": "ac517171650b24c562fe6ad7f04dd1aba6bdc9c7628fed96f0a7f81955bb83ed",
+    "proposal_test.go": "237871c672d60b88f08fb7da8bdb93ae5773185232ba44849011063c1ec9fa85",
+    "protected_checks.go": "ab2d2399e83f976f9410ad8272a348ebbe68e24db4fe259a5ad0b3666f4eea81",
+    "protected_checks_test.go": "9c3cbbb36b239e1941fee0503fe8cace2bf98eea40e58cd6537c8f5521e16dbf",
+    "qa_baseline_test.go": "c4ef843cc22ee1dfbfa060049683e72653c099e32ff561f68e0d0b35a3cff2ff",
+    "quarantine.go": "9787afe65d18e5ff48bee097602e21091617d74e95f6b7fc9b488839c3495f63",
+    "replication.go": "6b9f5c687e4e6ee952b96d89c997fed073d3e43410eb543d88dafbe44a38f1ac",
+    "replication_borrow_test.go": "c53eb01c43bb4e94582e9ec2deb1b73e9b787d28f77aa3e12e87db03d5159eca",
+    "replication_reader_test.go": "11065f2e983f87eee28b8f4919a4fd8c66ad1d9834bcd9b767458dabf7e59fb9",
+    "replication_test.go": "58f3c7384596ea3b94404538bcd461a0535f767a340ac4b6708182f4bb9b110a",
+    "repository_path_alias_test.go": "2e16eb02f78432c5325beb7bbb4a9dca0b74eeadb1988fff96b048e873b2d1bd",
+    "resource_engine.go": "b0e5359c110da27f8fc105420aee76d15c59615aaa6cbfcc65d30a536fae0959",
+    "resource_engine_test.go": "8655a4d0be674545b132d8f63c19c7c3272603dc83242387359a7b4cb87759e6",
+    "resource_model.go": "9c52902b743a569cc7a8243936051e8279cd2199d062b8b888db424d7b977753",
+    "resource_replication_test.go": "901eb97fc3a2b3f42cd4e298010526379fa9bb163025d5257afef8bffef878ea",
+    "resource_transfer.go": "c58101f9afb44a799e9852d6c49ec14a0e8dad4e9d67d58df018457f7f7d28ee",
+    "resource_transfer_test.go": "7ecac784b83dc108739fa9718022aaa03bfbf5b6a3a794da17cfdb2eec0907c3",
+    "revision_event_test.go": "57ebbaa53c30e0dc8e01913836b7d2436d780ba84bd2439c4b39dd25c59d4108",
+    "revision_sync_test.go": "51fc397c729b5feb396c11aade22b8eed5597eadacde36df4c415be408756712",
+    "runner.go": "20c556c220b357099dc2f2cab4888e45e32afef412fc397b03ac0aac707ae9c0",
+    "shallow.go": "79b35c62d1d1fc6eccd7ff394defa52646a9e4eff383d5227ec04d1f81bb45bc",
+    "shallow_test.go": "de451541d493634714ba3ca80f56b712fb0bf9192b08aa56c0de56e2248fef2b",
+    "store.go": "9d7c1f8a07040f0f64c41e12723b3b3eacde75de36539f5fae599592d04417bc",
+    "sync_publication_test.go": "849d1182b2c736b434e851bae4e23d4ffbf2dbfd207d4982614e80da9e9322d7",
+    "testdata/compatibility/generate.go": "d063f100d23a90c373ab20e5bbb9dbd929d112bea4023bb09dc983aafad79a67",
+    "workflow_commands.go": "3cf720be09f31a42f42da1eb1d8a0aa99e7212ec5c3cf945c2f453659e99a51c",
+    "workflow_commands_test.go": "9715660df9857fad3bef90a0a9af136c1ed1d38a4b2ae3b2f342cf493e3eab06"
+  },
+  "host": {
+    "cpu": "AMD Ryzen 5 5600X 6-Core Processor",
+    "filesystem": "ext4",
+    "git": "git version 2.43.0",
+    "kernel": "7.0.0-42-generic",
+    "machine": "x86_64",
+    "os": "Linux"
+  },
+  "immutable_assets_sha256": "5588ef39930edfed37a779d8edbd289cc669ab5d95d362d90aa2a28f1bb5d61f",
+  "inputs_sha256": "356be777f5c7c49e5351311ddb3266ca19613b051fe4d1a127ab1953c41e8a7a",
+  "large_fixture_sha256": "7f2e8fb9eaee34634830f005204867d3a695f7a955ec1820ab6ad00c41da625f",
+  "measurement_environment": {
+    "Git_only_PATH": true,
+    "all_observations": "Both separately labelled1080-pair sets/all4320 observations; equivalent warmups excluded by original protocol; alternating role and variant order",
+    "closed_HOME_per_state": true,
+    "global_git_config": "disabled",
+    "local_heavy_execution": "serialized; no concurrent Hubnot build/test/app during measurements",
+    "locale": "C",
+    "no_inherited_GIT_DIR_or_GIT_WORK_TREE": true,
+    "original_inputs_unmodified": true
+  },
+  "method": {
+    "compiler": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "control_binary_sha256": "d39caa826307a9ca1eb014b590aa91d593c4b3b7e19b861573ea5ae8f8f1b183",
+    "control_source_sha256": "870cb50cad4dc3dec292212d4dd020b02f5ea4556df30e5e0fbeb43c5301162e",
+    "elapsed_timer": "Python perf_counter_ns brackets subprocess.run of /usr/bin/time plus command: native wrapper launch/exec/wait overhead included consistently; WP24/WP25 must use this same timer/wrapper mechanism or separately qualify comparability",
+    "method": "GNU Time %M command rusage in KiB after native launcher exec/fork; Python wait4 is not used",
+    "package": "time 1.9-0.2build1",
+    "path": "/usr/bin/time",
+    "rss_scope": "peak command/its waited-descendant maxima as reported by GNU Time on Linux; not sum of simultaneous process RSS and not whole-machine memory",
+    "sha256": "3b11dec50514a8473e9f6efa7a34d584d0657538c09988f61b72d38ad4991a10",
+    "version_output": "time (GNU Time) UNKNOWN\nCopyright (C) 2018 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by David Keppel, David MacKenzie, and Assaf Gordon."
+  },
+  "metrics_sha256": "d8ef57643fb92dd710a0c5c717991f2293aa4009327a8ce52ee4ab6410dc79a2",
+  "native_fixture_sha256": "68a57bcef52839c84a9b3436c723b76683c7cf1bcb095728a9a1e2f42f63d261",
+  "observations": 4320,
+  "pairs_per_setting": 1080,
+  "pairs_total": 2160,
+  "pending_boundaries": {
+    "WP25_final_uncached_whole_suite_packages_and_native_platform_rows": "pending",
+    "WP26_cold_independent_trials": "pending",
+    "beta_acceptance": "independent; unchanged",
+    "independent_formal_WP24_review": "pending",
+    "release_publication": "outside this gate"
+  },
+  "prefix_validation": {
+    "head": "c8e879f9b6672f79cf1be12410083cfb12055aaf",
+    "pages_sha256": [
+      "73fe6ab5838820a6257b53c3b8febfb8397fd4ee2e645e47551d0e8566c7a7c7",
+      "eddf15f1e563ada7914b1a5beffcdd680710d95cc5b520df7b6669eb433ec0ad"
+    ],
+    "record_ids": [
+      "sha256:4f0f040823dd4a3bfa71f4708c1e995ad41a9e43fa2f9cbb386da07b6855a16a",
+      "sha256:5868ea7538966c7f72e62c5f0e72c6cf8fd983908efd529ab9eb45f68856b3f5"
+    ],
+    "schema_id": "sha256:1701b7d675e565935872dc5774f754d74a76f3c9f927bd5b8820c6e37a9ffa89",
+    "scope": "separate public-prefix CLI observation, not whole-chain admission/query availability"
+  },
+  "qualification_scope": "Linux amd64 default/history and both matched nonrace comparisons; independent formal WP24 review pending",
+  "raw_default_transcripts": {
+    "evidence": "final-6b75-transcripts",
+    "files": 3600,
+    "inventory_sha256": "01430e8f18d88f753289fc58b35f0c607ec3212679163f1fb4fc16f85d748529"
+  },
+  "read_inputs_sha256": "064f0fd3f7f3e21bcdda27b04327fc150b9243914a4a72fc9780d21eac48b613",
+  "retained_failed_observations": 17280,
+  "schema": "hn.optional-extensions-default/1",
+  "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1",
+  "source_correction": {
+    "baseline_global_init_declarations_unchanged": 104,
+    "baseline_production_files": 73,
+    "closed_inputs": 316,
+    "compiled_tested_to_commit_proof_sha256": "164b2b8902fdfff9a6cfc35309b6c3bdabf697f3c78d03f2d7700c69034edb01",
+    "independent_source_review_sha256": "f10a495f5240694553953f4ecf772c56d6d196a4e32752b4a6a0cce728ef8448",
+    "inherited_inputs": 311,
+    "other299_old_inputs_byte_exact": true,
+    "outside_region_AST_proof_sha256": "2a3911a6ad002ec3de9118775f29b3840251f1dcbf54fe7c07e521be38d299d8",
+    "owned_inputs": 5,
+    "review_result": "8 checks passed, zero findings; source-only review, not formal WP24 approval",
+    "root_reviewed_proof_sha256": "0b65d7687bac0cc44730b598d378f85ed1b2e72d8ebac94a6c62ea5f5e0fac1c"
+  },
+  "source_correction_controls": {
+    "compiled_cold_RED_sha256": "6b3ad6580959a7d00b4a5e4a5cda9bfc5e7c3516c5b3720bb46e9308474c8fa4",
+    "compiled_old_vocabulary_constructor_RED_sha256": "9650eea778ee6592b797a24a2ad68e96760c92e756f938ee04c5fd469018c2b9",
+    "development_ledger_sha256": "aba22b34d869c31fddeff983572ba2d1e312bb5fcd7f0f8e05b3c67159b69027",
+    "fixed_vocabulary_constructor_GREEN_sha256": "d9bd3bb8f2b255b0da80f5815f7b31823cda038701dfd89b5c8a4fa41f49f6cc",
+    "initial_syntax_error": "Preserved separately as build error, not behavioral RED"
+  },
+  "status": "pass",
+  "summary": [
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 14914269.0,
+        "bound": 5000000,
+        "candidate_median": 15151829.0,
+        "delta": 237560.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13012.0,
+        "bound": 1301.2,
+        "candidate_median": 12332.0,
+        "delta": -680.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 15356452.5,
+        "bound": 5000000,
+        "candidate_median": 15447086.5,
+        "delta": 90634.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13238.0,
+        "bound": 1323.8000000000002,
+        "candidate_median": 12652.0,
+        "delta": -586.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 15367091.5,
+        "bound": 5000000,
+        "candidate_median": 15383263.0,
+        "delta": 16171.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13364.0,
+        "bound": 1336.4,
+        "candidate_median": 12618.0,
+        "delta": -746.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 15311372.0,
+        "bound": 5000000,
+        "candidate_median": 15398003.0,
+        "delta": 86631.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13236.0,
+        "bound": 1323.6000000000001,
+        "candidate_median": 12466.0,
+        "delta": -770.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 15368473.5,
+        "bound": 5000000,
+        "candidate_median": 15409906.5,
+        "delta": 41433.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13236.0,
+        "bound": 1323.6000000000001,
+        "candidate_median": 12554.0,
+        "delta": -682.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 15356072.0,
+        "bound": 5000000,
+        "candidate_median": 15344941.0,
+        "delta": -11131.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13364.0,
+        "bound": 1336.4,
+        "candidate_median": 12560.0,
+        "delta": -804.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 68611881.0,
+        "bound": 6861188.100000001,
+        "candidate_median": 69108337.0,
+        "delta": 496456.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13684.0,
+        "bound": 1368.4,
+        "candidate_median": 12972.0,
+        "delta": -712.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 54196695.5,
+        "bound": 5419669.550000001,
+        "candidate_median": 54726143.0,
+        "delta": 529447.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13748.0,
+        "bound": 1374.8000000000002,
+        "candidate_median": 13100.0,
+        "delta": -648.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 54423146.5,
+        "bound": 5442314.65,
+        "candidate_median": 54310489.5,
+        "delta": -112657.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13812.0,
+        "bound": 1381.2,
+        "candidate_median": 13228.0,
+        "delta": -584.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 14999625.5,
+        "bound": 5000000,
+        "candidate_median": 14737130.5,
+        "delta": -262495.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9772.0,
+        "bound": 1024,
+        "candidate_median": 9630.0,
+        "delta": -142.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 15027284.0,
+        "bound": 5000000,
+        "candidate_median": 15230639.0,
+        "delta": 203355.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9902.0,
+        "bound": 1024,
+        "candidate_median": 9972.0,
+        "delta": 70.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 15033799.5,
+        "bound": 5000000,
+        "candidate_median": 15114582.5,
+        "delta": 80783.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9964.0,
+        "bound": 1024,
+        "candidate_median": 9972.0,
+        "delta": 8.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 14964140.0,
+        "bound": 5000000,
+        "candidate_median": 15070163.0,
+        "delta": 106023.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9902.0,
+        "bound": 1024,
+        "candidate_median": 9874.0,
+        "delta": -28.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 14804088.0,
+        "bound": 5000000,
+        "candidate_median": 15103108.0,
+        "delta": 299020.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9964.0,
+        "bound": 1024,
+        "candidate_median": 9820.0,
+        "delta": -144.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 14856916.0,
+        "bound": 5000000,
+        "candidate_median": 14994005.5,
+        "delta": 137089.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9964.0,
+        "bound": 1024,
+        "candidate_median": 9844.0,
+        "delta": -120.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 68056154.5,
+        "bound": 6805615.45,
+        "candidate_median": 67971110.0,
+        "delta": -85044.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10348.0,
+        "bound": 1034.8,
+        "candidate_median": 10258.0,
+        "delta": -90.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 53824316.5,
+        "bound": 5382431.65,
+        "candidate_median": 54004732.5,
+        "delta": 180416.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10474.0,
+        "bound": 1047.4,
+        "candidate_median": 10356.0,
+        "delta": -118.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 53669167.5,
+        "bound": 5366916.75,
+        "candidate_median": 53857630.0,
+        "delta": 188462.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10348.0,
+        "bound": 1034.8,
+        "candidate_median": 10420.0,
+        "delta": 72.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 15121874.0,
+        "bound": 5000000,
+        "candidate_median": 15082453.5,
+        "delta": -39420.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 12980.0,
+        "bound": 1298.0,
+        "candidate_median": 12298.0,
+        "delta": -682.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 15070239.5,
+        "bound": 5000000,
+        "candidate_median": 15420996.0,
+        "delta": 350756.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13236.0,
+        "bound": 1323.6000000000001,
+        "candidate_median": 12588.0,
+        "delta": -648.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 15247437.0,
+        "bound": 5000000,
+        "candidate_median": 15377079.5,
+        "delta": 129642.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13236.0,
+        "bound": 1323.6000000000001,
+        "candidate_median": 12680.0,
+        "delta": -556.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 15564755.0,
+        "bound": 5000000,
+        "candidate_median": 15405256.5,
+        "delta": -159498.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13302.0,
+        "bound": 1330.2,
+        "candidate_median": 12588.0,
+        "delta": -714.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 15381876.5,
+        "bound": 5000000,
+        "candidate_median": 15421527.5,
+        "delta": 39651.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13236.0,
+        "bound": 1323.6000000000001,
+        "candidate_median": 12556.0,
+        "delta": -680.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 15336403.5,
+        "bound": 5000000,
+        "candidate_median": 15414085.0,
+        "delta": 77681.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13362.0,
+        "bound": 1336.2,
+        "candidate_median": 12588.0,
+        "delta": -774.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 69841692.5,
+        "bound": 6984169.25,
+        "candidate_median": 69870765.0,
+        "delta": 29072.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13748.0,
+        "bound": 1374.8000000000002,
+        "candidate_median": 12844.0,
+        "delta": -904.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 55434107.0,
+        "bound": 5543410.7,
+        "candidate_median": 55521476.5,
+        "delta": 87369.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13802.0,
+        "bound": 1380.2,
+        "candidate_median": 13132.0,
+        "delta": -670.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 55430086.5,
+        "bound": 5543008.65,
+        "candidate_median": 55406474.0,
+        "delta": -23612.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 13814.0,
+        "bound": 1381.4,
+        "candidate_median": 13136.0,
+        "delta": -678.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 14790766.5,
+        "bound": 5000000,
+        "candidate_median": 14785104.0,
+        "delta": -5662.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9708.0,
+        "bound": 1024,
+        "candidate_median": 9564.0,
+        "delta": -144.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 14994018.5,
+        "bound": 5000000,
+        "candidate_median": 15027058.0,
+        "delta": 33039.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9836.0,
+        "bound": 1024,
+        "candidate_median": 9970.0,
+        "delta": 134.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 15067540.0,
+        "bound": 5000000,
+        "candidate_median": 15052917.0,
+        "delta": -14623.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9836.0,
+        "bound": 1024,
+        "candidate_median": 9972.0,
+        "delta": 136.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 14961589.0,
+        "bound": 5000000,
+        "candidate_median": 15351493.0,
+        "delta": 389904.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9836.0,
+        "bound": 1024,
+        "candidate_median": 9780.0,
+        "delta": -56.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 15047987.5,
+        "bound": 5000000,
+        "candidate_median": 15138903.0,
+        "delta": 90915.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9964.0,
+        "bound": 1024,
+        "candidate_median": 9948.0,
+        "delta": -16.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 15052535.0,
+        "bound": 5000000,
+        "candidate_median": 15191303.0,
+        "delta": 138768.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9836.0,
+        "bound": 1024,
+        "candidate_median": 9818.0,
+        "delta": -18.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 69144293.5,
+        "bound": 6914429.350000001,
+        "candidate_median": 69534283.0,
+        "delta": 389989.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10348.0,
+        "bound": 1034.8,
+        "candidate_median": 10292.0,
+        "delta": -56.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 54941555.5,
+        "bound": 5494155.550000001,
+        "candidate_median": 55202652.0,
+        "delta": 261096.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10348.0,
+        "bound": 1034.8,
+        "candidate_median": 10332.0,
+        "delta": -16.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 54864498.0,
+        "bound": 5486449.800000001,
+        "candidate_median": 54788281.5,
+        "delta": -76216.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10474.0,
+        "bound": 1047.4,
+        "candidate_median": 10332.0,
+        "delta": -142.0,
+        "pass": true
+      },
+      "setting": "frozen-cgo1",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 14536775.5,
+        "bound": 5000000,
+        "candidate_median": 14784115.0,
+        "delta": 247339.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9908.0,
+        "bound": 1024,
+        "candidate_median": 10664.0,
+        "delta": 756.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 14942920.0,
+        "bound": 5000000,
+        "candidate_median": 15136812.5,
+        "delta": 193892.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10292.0,
+        "bound": 1029.2,
+        "candidate_median": 10984.0,
+        "delta": 692.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 15019977.5,
+        "bound": 5000000,
+        "candidate_median": 15133762.0,
+        "delta": 113784.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10292.0,
+        "bound": 1029.2,
+        "candidate_median": 10988.0,
+        "delta": 696.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 15038693.5,
+        "bound": 5000000,
+        "candidate_median": 15074647.5,
+        "delta": 35954.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10292.0,
+        "bound": 1029.2,
+        "candidate_median": 10856.0,
+        "delta": 564.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 14977868.0,
+        "bound": 5000000,
+        "candidate_median": 15042110.0,
+        "delta": 64242.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10390.0,
+        "bound": 1039.0,
+        "candidate_median": 11016.0,
+        "delta": 626.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 14921470.0,
+        "bound": 5000000,
+        "candidate_median": 15056030.5,
+        "delta": 134560.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10260.0,
+        "bound": 1026.0,
+        "candidate_median": 10856.0,
+        "delta": 596.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 68494072.5,
+        "bound": 6849407.25,
+        "candidate_median": 68841432.0,
+        "delta": 347359.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10836.0,
+        "bound": 1083.6000000000001,
+        "candidate_median": 11496.0,
+        "delta": 660.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 54763729.5,
+        "bound": 5476372.95,
+        "candidate_median": 54032431.0,
+        "delta": -731298.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10934.0,
+        "bound": 1093.4,
+        "candidate_median": 11368.0,
+        "delta": 434.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 54373676.5,
+        "bound": 5437367.65,
+        "candidate_median": 54224513.0,
+        "delta": -149163.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 11060.0,
+        "bound": 1106.0,
+        "candidate_median": 11496.0,
+        "delta": 436.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "standard"
+    },
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 14656885.0,
+        "bound": 5000000,
+        "candidate_median": 14401875.0,
+        "delta": -255010.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7168.0,
+        "bound": 1024,
+        "candidate_median": 7918.0,
+        "delta": 750.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 14580831.5,
+        "bound": 5000000,
+        "candidate_median": 14805775.0,
+        "delta": 224943.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7552.0,
+        "bound": 1024,
+        "candidate_median": 7984.0,
+        "delta": 432.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 14594548.0,
+        "bound": 5000000,
+        "candidate_median": 14732439.5,
+        "delta": 137891.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7560.0,
+        "bound": 1024,
+        "candidate_median": 7954.0,
+        "delta": 394.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 14986784.0,
+        "bound": 5000000,
+        "candidate_median": 14727939.5,
+        "delta": -258844.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7432.0,
+        "bound": 1024,
+        "candidate_median": 7828.0,
+        "delta": 396.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 14748069.0,
+        "bound": 5000000,
+        "candidate_median": 14840701.0,
+        "delta": 92632.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7556.0,
+        "bound": 1024,
+        "candidate_median": 7984.0,
+        "delta": 428.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 14669589.0,
+        "bound": 5000000,
+        "candidate_median": 14776443.5,
+        "delta": 106854.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7432.0,
+        "bound": 1024,
+        "candidate_median": 8080.0,
+        "delta": 648.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 68262667.0,
+        "bound": 6826266.7,
+        "candidate_median": 68358323.0,
+        "delta": 95656.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 8064.0,
+        "bound": 1024,
+        "candidate_median": 8256.0,
+        "delta": 192.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 53776706.5,
+        "bound": 5377670.65,
+        "candidate_median": 54294812.0,
+        "delta": 518105.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 8102.0,
+        "bound": 1024,
+        "candidate_median": 8464.0,
+        "delta": 362.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 53828219.0,
+        "bound": 5382821.9,
+        "candidate_median": 54001562.5,
+        "delta": 173343.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 8192.0,
+        "bound": 1024,
+        "candidate_median": 8496.0,
+        "delta": 304.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "absent",
+      "variant": "native-only"
+    },
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 14746590.0,
+        "bound": 5000000,
+        "candidate_median": 14726948.5,
+        "delta": -19641.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 9908.0,
+        "bound": 1024,
+        "candidate_median": 10604.0,
+        "delta": 696.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 14979727.0,
+        "bound": 5000000,
+        "candidate_median": 15318028.0,
+        "delta": 338301.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10292.0,
+        "bound": 1029.2,
+        "candidate_median": 10984.0,
+        "delta": 692.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 15008894.5,
+        "bound": 5000000,
+        "candidate_median": 14967490.5,
+        "delta": -41404.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10292.0,
+        "bound": 1029.2,
+        "candidate_median": 10984.0,
+        "delta": 692.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 15089906.5,
+        "bound": 5000000,
+        "candidate_median": 15065622.5,
+        "delta": -24284.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10292.0,
+        "bound": 1029.2,
+        "candidate_median": 10888.0,
+        "delta": 596.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 14838824.5,
+        "bound": 5000000,
+        "candidate_median": 14755054.0,
+        "delta": -83770.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10390.0,
+        "bound": 1039.0,
+        "candidate_median": 10984.0,
+        "delta": 594.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 14903884.0,
+        "bound": 5000000,
+        "candidate_median": 15079358.5,
+        "delta": 175474.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10292.0,
+        "bound": 1029.2,
+        "candidate_median": 10888.0,
+        "delta": 596.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 69501052.0,
+        "bound": 6950105.2,
+        "candidate_median": 69220391.0,
+        "delta": -280661.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10804.0,
+        "bound": 1080.4,
+        "candidate_median": 11368.0,
+        "delta": 564.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 54984302.0,
+        "bound": 5498430.2,
+        "candidate_median": 55249169.5,
+        "delta": 264867.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 10932.0,
+        "bound": 1093.2,
+        "candidate_median": 11398.0,
+        "delta": 466.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 55207640.5,
+        "bound": 5520764.050000001,
+        "candidate_median": 55251658.5,
+        "delta": 44018.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 11030.0,
+        "bound": 1103.0,
+        "candidate_median": 11496.0,
+        "delta": 466.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "standard"
+    },
+    {
+      "case": "issue",
+      "elapsed_ns": {
+        "baseline_median": 14709498.0,
+        "bound": 5000000,
+        "candidate_median": 14567287.0,
+        "delta": -142211.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7142.0,
+        "bound": 1024,
+        "candidate_median": 7824.0,
+        "delta": 682.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "project",
+      "elapsed_ns": {
+        "baseline_median": 14837663.0,
+        "bound": 5000000,
+        "candidate_median": 14721510.0,
+        "delta": -116153.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7552.0,
+        "bound": 1024,
+        "candidate_median": 7952.0,
+        "delta": 400.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "project-item",
+      "elapsed_ns": {
+        "baseline_median": 14922728.0,
+        "bound": 5000000,
+        "candidate_median": 14738087.5,
+        "delta": -184640.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7560.0,
+        "bound": 1024,
+        "candidate_median": 8080.0,
+        "delta": 520.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion",
+      "elapsed_ns": {
+        "baseline_median": 14618387.5,
+        "bound": 5000000,
+        "candidate_median": 14689539.5,
+        "delta": 71152.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7432.0,
+        "bound": 1024,
+        "candidate_median": 7986.0,
+        "delta": 554.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "discussion-reply",
+      "elapsed_ns": {
+        "baseline_median": 14658974.0,
+        "bound": 5000000,
+        "candidate_median": 14761814.0,
+        "delta": 102840.0,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7552.0,
+        "bound": 1024,
+        "candidate_median": 7954.0,
+        "delta": 402.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "workflow",
+      "elapsed_ns": {
+        "baseline_median": 14694253.0,
+        "bound": 5000000,
+        "candidate_median": 14740009.5,
+        "delta": 45756.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 7556.0,
+        "bound": 1024,
+        "candidate_median": 8080.0,
+        "delta": 524.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "memory",
+      "elapsed_ns": {
+        "baseline_median": 69431186.5,
+        "bound": 6943118.65,
+        "candidate_median": 69196567.0,
+        "delta": -234619.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 8008.0,
+        "bound": 1024,
+        "candidate_median": 8344.0,
+        "delta": 336.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "recall",
+      "elapsed_ns": {
+        "baseline_median": 54287989.0,
+        "bound": 5428798.9,
+        "candidate_median": 54714140.5,
+        "delta": 426151.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 8200.0,
+        "bound": 1024,
+        "candidate_median": 8464.0,
+        "delta": 264.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    },
+    {
+      "case": "grep",
+      "elapsed_ns": {
+        "baseline_median": 54433648.0,
+        "bound": 5443364.800000001,
+        "candidate_median": 54641491.5,
+        "delta": 207843.5,
+        "pass": true
+      },
+      "pairs": 30,
+      "peak_rss_kib": {
+        "baseline_median": 8192.0,
+        "bound": 1024,
+        "candidate_median": 8592.0,
+        "delta": 400.0,
+        "pass": true
+      },
+      "setting": "packager-cgo0",
+      "state": "large-unrelated",
+      "variant": "native-only"
+    }
+  ],
+  "tool_identities_sha256": "dea2841efc43cdfeddfdbedd749b95ef1757c6c90458f591d8eb0ea238becbd6",
+  "trace_scope": {
+    "macOS_syscall_absence": "Not observed; no claim",
+    "observed_OS": "Linux",
+    "private_roots": "Actual OS user registry and commonGitDir enablement/owner/control/capture/intent paths; absolute and relative controls; no Git-process exemption",
+    "public_declaration": "Metadata-only tracked inert public-file handling and native Git transport permitted; declaration content parsing/activation forbidden; exact-path content-read causal control retained",
+    "syscalls": "strace -f -yy %file,process,network",
+    "transient_writes": "Syscall tracing plus before/after snapshots; snapshots alone are not claimed to prove absence"
+  },
+  "tree": "a6ea525ac0b8ee460feffcca9df1f2ff80a26ba1"
+}

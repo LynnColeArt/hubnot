@@ -1,0 +1,65 @@
+#!/bin/sh
+# Project CI entry point. Invoked explicitly by native pipelines or hosted CI.
+set -eu
+cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
+export GOENV=off GOTOOLCHAIN=local GOWORK=off GOPROXY=off GOSUMDB=off
+export GORACE=atexit_sleep_ms=0
+# The sandbox exposes /usr read-only but deliberately omits ambient PATH.
+# The official Go installation is an explicit project toolchain location.
+if ! command -v go >/dev/null 2>&1 && [ -x /usr/local/go/bin/go ]; then
+  PATH="/usr/local/go/bin:$PATH"
+  export PATH
+fi
+command -v go >/dev/null 2>&1 || { echo 'Project CI requires an installed Go toolchain' >&2; exit 127; }
+go version
+git --version
+
+case "${1-}" in
+  fast)
+    names=$(sed '/^#/d; /^[[:space:]]*$/d' ci/fast-tests.txt)
+    for name in $names; do
+      case "$name" in Test*[!A-Za-z0-9_]*|*[!A-Za-z0-9_]*|'') echo "Invalid fast test: $name" >&2; exit 2;; esac
+    done
+    pattern="^($(printf '%s\n' "$names" | paste -sd '|' -))$"
+    scratch=$(mktemp -d "${TMPDIR:-/tmp}/hn-ci.XXXXXX")
+    trap 'rm -rf "$scratch"' 0
+    printf '%s\n' "$names" | sort > "$scratch/expected"
+    go test -list "$pattern" . | sed -n '/^Test[A-Za-z0-9_]*$/p' | sort > "$scratch/actual"
+    # Renaming/removing a selected test must fail rather than quietly run less.
+    diff -u "$scratch/expected" "$scratch/actual"
+    go test -race -count=1 -timeout=2m ./internal/... ./cmd/...
+    go test -race -count=1 -timeout=2m -run "$pattern" .
+    go vet ./...
+    ;;
+  integration|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry)
+    # Native execution extracts a source snapshot, not the operator's .git or
+    # private keys. Build its CLI once; source-assisted tests use that binary.
+    scratch=$(mktemp -d "${TMPDIR:-/tmp}/hn-ci.XXXXXX")
+    trap 'rm -rf "$scratch"' 0
+    go build -buildvcs=false -trimpath -o "$scratch/hn" .
+    printf 'Native CI source %s; source-assisted executable: ' "${HN_COMMIT:-working-copy}"
+    if command -v sha256sum >/dev/null 2>&1; then sha256sum "$scratch/hn"; else shasum -a 256 "$scratch/hn"; fi
+    export HN_WP04_BINARY="$scratch/hn" HN_WP05_BINARY="$scratch/hn"
+    export HN_WP13_BINARY="$scratch/hn" HN_WP15_BINARY="$scratch/hn"
+    export HN_WP16_BINARY="$scratch/hn" HN_WP17_BINARY="$scratch/hn" HN_WP18_BINARY="$scratch/hn"
+    export HN_WP21_BINARY="$scratch/hn" HN_WP22_BINARY="$scratch/hn"
+    case "$1" in
+      integration)
+        go build -buildvcs=false -trimpath -o "$scratch/fake-tracker" ./examples/extensions/fake-tracker
+        go build -buildvcs=false -trimpath -o "$scratch/charter" ./examples/extensions/charter-model
+        go build -buildvcs=false -trimpath -o "$scratch/inventory" ./examples/extensions/inventory-model
+        export HN_WP20_CONSUMER="$scratch/fake-tracker" HN_WP21_CONSUMER="$scratch/charter" HN_WP22_CONSUMER="$scratch/inventory"
+        export HN_PROJECT_CI_BINARY="$scratch/hn"
+        test_name='Test(ProjectCINativePublicJourney|ArtifactFullPublicJourneyCLI|ExtensionNativeSixFamiliesCLI|ExtensionArtifactInterruptedRecoveryRawCLI|ExtensionFakeTrackerStandaloneRecovery|ExtensionCharterStandaloneJourney|InventoryStandalonePublicJourney)'
+        budget=8m
+        ;;
+      stress-counts) test_name=TestExtensionPackageInheritedPublicCountLimits; budget=30m;;
+      stress-artifacts) test_name=TestExtensionPackageArtifactLimits; budget=20m;;
+      stress-lifecycle) test_name=TestExtensionPackageLifecycleLimits; budget=30m;;
+      stress-observation) test_name='TestExtensionChangesRaw(Entry|Canonical)Capacity'; budget=20m;;
+      soak-expiry) test_name=TestExtensionChangesRealTenMinuteExpiry; budget=15m;;
+    esac
+    go test -race -count=1 -timeout="$budget" -run "^($test_name)$" .
+    ;;
+  *) echo 'usage: .hn/actions/ci fast|integration|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry' >&2; exit 2;;
+esac

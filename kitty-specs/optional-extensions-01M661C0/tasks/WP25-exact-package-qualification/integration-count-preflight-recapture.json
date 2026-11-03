@@ -1,0 +1,89 @@
+{
+  "authorization_date": "2026-10-31",
+  "intermediate_source_preserved": "0886fe80d8de29a5df3b880cf5e8cc6864ce3afd",
+  "intermediate_runtime_record_boundary": "100000 and100001 both cancelled at30s; numeric guard evidence OPEN",
+  "historical_WP24_approval_immutable": {
+    "event": "01M6A1E4SYYNVZ65GT410JW3EE",
+    "review_sha256_root_verified": "509f327d09c9d6c5277d44c00c98870d44b5230ba8f6fc15bf15757cb64a0ab4"
+  },
+  "reuse_rule": "production equivalence reuse invalid after artifact_read.go changes; historical source-specific approval/evidence are not rewritten",
+  "source_guard": {
+    "closed_total": 317,
+    "inherited": 311,
+    "WP24": 5,
+    "WP25": 1,
+    "added_to_union_only": "extension_package_acceptance_test.go",
+    "all_hashes_new_root_attested": true,
+    "path_set_growth_beyond_this": "stop and coordinate root"
+  },
+  "required_order": [
+    "retain intermediate source, hosted run, failed/open evidence and existing review",
+    "meaningful count-gate original-source RED and fixed-source public at-bound/one-over/control evidence",
+    "independent source-only correction review including graph/refusal/error precedence and scope",
+    "new root exact317-input map, fresh311 inherited attestation, clean committed source/tree and binary freeze",
+    "fresh affected native/default/history/failure/no-registry/no-effect checks and causal controls",
+    "complete unchanged paired performance gate on the new source with a new output directory and all raw observations",
+    "new fixed-source full suite/race/vet/build/format and all eight actual exact native package/platform rows",
+    "normal independent final WP25 review; no lifecycle shortcut"
+  ],
+  "record_count_proof": {
+    "at_bound": 100000,
+    "at_bound_claim": "actual public count-gate admission causally established; later30s verification cancellation labeled narrowly, not complete history success",
+    "one_over": 100001,
+    "one_over_code": "resource_limit",
+    "one_over_exact_message": "selected artifact record limit exceeded",
+    "causal_threshold_control": 99999,
+    "state": "exact protected refs/objects/private-state comparisons; no hidden effects",
+    "graph_cases": [
+      "duplicate/overlapping selected tips count unique commits",
+      "multi-parent malformed streams",
+      "shallow graph and grafted view safe old raw-parent fallback",
+      "unavailable/malformed graph and failed Git command never success/empty",
+      "cancelled context and normal child reaping",
+      "source witness movement and full verification preserved"
+    ]
+  },
+  "affected_existing_default_tests": [
+    "TestExtensionDefaultNativeMatrix",
+    "TestExtensionDefaultHistoricalMatrix",
+    "TestExtensionDefaultFailureConfigurations",
+    "TestExtensionDefaultDetectors",
+    "TestExtensionDefaultControl",
+    "TestExtensionDefaultPerformanceBudgets"
+  ],
+  "paired_capture": {
+    "test": "TestExtensionDefaultPerformanceCapture",
+    "observations": 4320,
+    "pairs_per_group": 30,
+    "settings": [
+      "frozen-cgo1",
+      "packager-cgo0"
+    ],
+    "variants": [
+      "standard",
+      "native-only"
+    ],
+    "cases_per_variant": 9,
+    "states": [
+      "absent",
+      "large-unrelated"
+    ],
+    "elapsed_bound": "max(10%,5ms)",
+    "RSS_bound": "max(10%,1MiB)",
+    "unchanged_collectors_math_flags_baseline_assets_controls": true,
+    "old_candidate_binary_or_report_substitution": false
+  },
+  "publication": "new WP25-owned package evidence references exact new source/default/performance artifacts; do not overwrite historical WP24 default reports",
+  "all_missing_native_platform_observations_remain_pending": true,
+  "no_current_pass_or_WP_verdict": true,
+  "all_prior_failed_captures_preserved": {
+    "sources": [
+      "2d92",
+      "76cd",
+      "414d",
+      "d0f4"
+    ],
+    "observations": 17280,
+    "retention": "immutable failures; later source-specific approval does not rewrite any failed attempt"
+  }
+}

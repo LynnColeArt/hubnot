@@ -652,7 +652,7 @@ func runtimeProtocolInventories() map[string][]string {
 	for name, values := range inventories {
 		actual[name] = values
 	}
-	// The existing WP13 method map remains the source used by requests and the
+	// The existing WP13 method vocabulary remains the source used by requests and the
 	// capabilities result. Inspect its real accessor, not the fixture map.
 	actual["methods"] = methodNames()
 	return actual

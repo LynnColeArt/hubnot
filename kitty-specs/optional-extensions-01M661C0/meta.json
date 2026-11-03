@@ -1,4 +1,18 @@
 {
+  "accept_commit": "8157e08e9c4527a56c2fca2da6a8ebd3cb1fcad3",
+  "acceptance_history": [
+    {
+      "accept_commit": "8157e08e9c4527a56c2fca2da6a8ebd3cb1fcad3",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-03T09:16:15.596024+00:00",
+      "accepted_by": "codex-root",
+      "accepted_from_commit": "4bd5142fed17d0581b9d9dfdb07b4acf23daf188"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-03T09:16:15.596024+00:00",
+  "accepted_by": "codex-root",
+  "accepted_from_commit": "4bd5142fed17d0581b9d9dfdb07b4acf23daf188",
   "coordination_branch": "kitty/mission-optional-extensions-01M661C0",
   "created_at": "2026-10-30T09:13:35.932575+00:00",
   "flattened": false,
@@ -11,6 +25,7 @@
   "purpose_context": "Create a standalone optional extension host, typed documents/lists/tickets, reliable native operation and change-observation contracts, and reference consumers for ThickTicket-style synchronization and a Spec Kitty-shaped charter model. Preserve standalone Go/Git use, existing signed history, explicit authority and conflict recovery. This is a separate planned mission after the beta integration, not a new beta acceptance requirement or implementation of Spec Kitty doctrine.",
   "purpose_tldr": "Let external applications define custom collaboration types and use native Hubnot capabilities without changing the default workflow.",
   "slug": "optional-extensions-01M661C0",
+  "status_phase": "1",
   "target_branch": "feature/optional-extensions",
   "topology": "coord",
   "vcs": "git",
