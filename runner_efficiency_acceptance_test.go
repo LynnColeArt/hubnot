@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -68,6 +69,7 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 	betaContributionWrite(t, filepath.Join(owner, ".hn/policy.json"), raw, 0644)
 	pipeline := map[string]any{"version": "hn.pipeline/0", "steps": []any{map[string]any{"name": "Record exact execution", "command": "./.hn/actions/proof", "args": []string{marker}}}}
 	raw, _ = json.Marshal(pipeline)
+	definition := fmt.Sprintf("sha256:%x", sha256.Sum256(raw))
 	betaContributionWrite(t, filepath.Join(owner, ".hn/pipelines/proof.json"), raw, 0644)
 	betaContributionWrite(t, filepath.Join(owner, ".hn/actions/proof"), []byte("#!/bin/sh\nprintf 'executed\\n' >> \"$1\"\n"), 0755)
 	cli.commit(owner, "Explicit native policy and tiny pipeline")
@@ -78,9 +80,18 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 	head := cli.git(owner, "rev-parse", "HEAD")
 	cli.hn(owner, true, "proposal", "open", "--base", base, "--head", head, "Runner efficiency acceptance")
 	proposal, _ := runnerAcceptanceHead(t, cli, owner, requester)
+	candidateHeads := map[string]string{proposal: head}
 	request := func(candidate string) string {
 		t.Helper()
 		id := publicRunRequestID(t, cli.hn(owner, true, "run", "request", candidate, "proof"))
+		actual, payload := runnerAcceptanceHead(t, cli, owner, requester)
+		var fact struct{ Kind, Subject, Pipeline, Definition, Commit string }
+		if err := json.Unmarshal(payload, &fact); err != nil {
+			t.Fatal(err)
+		}
+		if actual != id || fact.Kind != "run.request" || fact.Subject != candidate || fact.Pipeline != "proof" || fact.Definition != definition || fact.Commit != candidateHeads[candidate] {
+			t.Fatalf("request did not bind exact independently observed tuple: %s", payload)
+		}
 		if publicRunRequestID(t, cli.hn(owner, true, "run", "show", id)) != id {
 			t.Fatal("show lost full Request identity")
 		}
@@ -97,7 +108,27 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 			cli.hn(worker, true, "sync", "origin")
 		}
 	}
-	execute := func(worker, id string) {
+	verifyResult := func(worker, id, commit string) {
+		t.Helper()
+		actor := cli.actor(worker)
+		_, payload := runnerAcceptanceHead(t, cli, worker, actor)
+		var fact struct {
+			Kind, Subject, Pipeline, Definition, Commit, Outcome, Log string
+			ExitCode                                                  int
+		}
+		if err := json.Unmarshal(payload, &fact); err != nil {
+			t.Fatal(err)
+		}
+		if fact.Kind != "run.result" || fact.Subject != id || fact.Pipeline != "proof" || fact.Definition != definition || fact.Commit != commit || fact.Outcome != "passed" || fact.ExitCode != 0 {
+			t.Fatalf("result did not bind exact independently observed tuple: %s", payload)
+		}
+		resultCommit := cli.git(worker, "rev-parse", "refs/hn/actors/"+actor)
+		log := cli.process(worker, "git", true, "show", resultCommit+":log.txt")
+		if fact.Log != fmt.Sprintf("sha256:%x", sha256.Sum256(log)) {
+			t.Fatal("signed result digest differs from exact log bytes")
+		}
+	}
+	execute := func(worker, id, commit string) {
 		t.Helper()
 		before, _ := os.ReadFile(marker)
 		cli.hn(worker, true, "run", "execute", id, "--backend", "host", "--allow-unsafe-host-execution")
@@ -105,6 +136,7 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 		if string(after) != string(before)+"executed\n" {
 			t.Fatalf("eligible pipeline effect: before=%q after=%q", before, after)
 		}
+		verifyResult(worker, id, commit)
 	}
 	// Stable sync first, then snapshot private state, all Git refs/objects, remote
 	// refs and marker before each no-effect probe. Nothing is reset for controls.
@@ -141,20 +173,21 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 	}
 	first, second := request(proposal), request(proposal)
 	syncAll()
-	execute(workers[0], first)
-	execute(workers[1], second)
+	execute(workers[0], first, head)
+	execute(workers[1], second, head)
 	syncAll()
 	fresh := request(proposal)
 	syncAll()
 	// Runner B has no own result on first/fresh; qualifying evidence from TWO
 	// trusted runners across exact requests is what suppresses these starts.
 	automatic(workers[1], "pipeline satisfied by 2 qualifying trusted results")
-	execute(workers[1], fresh) // explicit new intent remains executable
+	execute(workers[1], fresh, head) // explicit new intent remains executable
 	syncAll()
 	cli.commit(owner, "Revised candidate")
 	revisedHead := cli.git(owner, "rev-parse", "HEAD")
 	revisionOutput := cli.hn(owner, true, "proposal", "revise", proposal, "--base", base, "--head", revisedHead)
 	revision, _ := runnerAcceptanceHead(t, cli, owner, requester)
+	candidateHeads[revision] = revisedHead
 	betaContributionContains(t, revisionOutput, revision, proposal)
 	queued := request(revision)
 	syncAll()
@@ -164,8 +197,8 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 		t.Fatal("withdrawal receipt identity/publication")
 	}
 	withdrawalCommit := cli.git(owner, "rev-parse", "refs/hn/actors/"+requester)
-	signedWithdrawal := cli.git(owner, "show", withdrawalCommit+":event.json")
-	signedSignature := cli.git(owner, "show", withdrawalCommit+":signature")
+	signedWithdrawal := cli.process(owner, "git", true, "show", withdrawalCommit+":event.json")
+	signedSignature := cli.process(owner, "git", true, "show", withdrawalCommit+":signature")
 	replay := betaContributionJSON[withdrawalCLIReceipt](t, unchanged(owner, true, "run", "withdraw", queued, "--reason", "superseded queue intent", "--json"))
 	if !replay.Replayed || replay.WithdrawalID != receipt.WithdrawalID {
 		t.Fatal("normalized retry appended intent")
@@ -179,8 +212,8 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 	automatic(workers[1], "superseded", "withdrawn")
 	control := request(revision)
 	syncAll()
-	execute(workers[0], control)
-	execute(workers[1], control)
+	execute(workers[0], control, revisedHead)
+	execute(workers[1], control, revisedHead)
 	request(revision) // untouched request exposes merged guard instead of own-result filtering
 	syncAll()
 	cli.git(owner, "switch", "--quiet", "main")
@@ -199,7 +232,9 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 	cli.commit(owner, "Next candidate")
 	cli.hn(owner, true, "proposal", "open", "--base", nextBase, "--head", "HEAD", "Next useful work")
 	next, _ := runnerAcceptanceHead(t, cli, owner, requester)
-	request(next)
+	nextHead := cli.git(owner, "rev-parse", "HEAD")
+	candidateHeads[next] = nextHead
+	nextRequest := request(next)
 	syncAll()
 	before, _ := os.ReadFile(marker)
 	cli.hn(workers[1], true, "runner", "once", "--accept-pipeline", "proof", "--accept-actor", requester, "--backend", "host", "--allow-unsafe-host-execution")
@@ -207,17 +242,18 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 	if string(after) != string(before)+"executed\n" {
 		t.Fatal("automatic positive control did not execute exactly one tiny action")
 	}
+	verifyResult(workers[1], nextRequest, nextHead)
 	syncAll()
 	// Explicitly select all three accepted actor histories and proposal refs: an archive must
 	// refuse omitted cross-actor decision dependencies rather than invent facts.
 	// Preserve every selected event/signature as exact immutable Git bytes.
 	historyRefs := []string{"refs/hn/actors/" + requester, "refs/hn/remotes/origin/actors/" + actors[0], "refs/hn/remotes/origin/actors/" + actors[1]}
-	signedHistory := map[string]string{}
+	signedHistory := map[string][]byte{}
 	for _, ref := range historyRefs {
 		for _, commit := range strings.Fields(cli.git(owner, "rev-list", ref)) {
 			for _, name := range []string{"event.json", "signature"} {
 				key := commit + ":" + name
-				signedHistory[key] = cli.git(owner, "show", key)
+				signedHistory[key] = cli.process(owner, "git", true, "show", key)
 			}
 		}
 	}
@@ -242,11 +278,11 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 		t.Fatal("archive adopted code checkout")
 	}
 	for key, want := range signedHistory {
-		if got := cli.git(destination, "show", key); got != want {
+		if got := cli.process(destination, "git", true, "show", key); !bytes.Equal(got, want) {
 			t.Fatalf("archive changed signed history %s", key)
 		}
 	}
-	if cli.git(destination, "show", withdrawalCommit+":event.json") != signedWithdrawal || cli.git(destination, "show", withdrawalCommit+":signature") != signedSignature {
+	if !bytes.Equal(cli.process(destination, "git", true, "show", withdrawalCommit+":event.json"), signedWithdrawal) || !bytes.Equal(cli.process(destination, "git", true, "show", withdrawalCommit+":signature"), signedSignature) {
 		t.Fatal("archive changed signed withdrawal bytes")
 	}
 	betaContributionContains(t, cli.hn(destination, true, "run", "show", queued), "Status: withdrawn", queued, receipt.WithdrawalID)
@@ -270,8 +306,8 @@ func TestRunnerEfficiencyPublicJourney(t *testing.T) {
 
 // Independent immutable Git observation, used only to identify/compare signed
 // facts where the proposal CLI prints an abbreviated identifier.
-func runnerAcceptanceHead(t *testing.T, cli *betaContributionCLI, repo, actor string) (string, string) {
+func runnerAcceptanceHead(t *testing.T, cli *betaContributionCLI, repo, actor string) (string, []byte) {
 	t.Helper()
-	raw := cli.git(repo, "show", "refs/hn/actors/"+actor+":event.json")
-	return fmt.Sprintf("sha256:%x", sha256.Sum256([]byte(raw))), raw
+	raw := cli.process(repo, "git", true, "show", "refs/hn/actors/"+actor+":event.json")
+	return fmt.Sprintf("sha256:%x", sha256.Sum256(raw)), raw
 }
