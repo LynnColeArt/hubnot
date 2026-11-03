@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -269,5 +270,61 @@ func TestReplicationReconciliationUsesTheWholeValidatedClosure(t *testing.T) {
 	denied, pending, err := loadReplicationAcceptanceState(gitDir)
 	if err != nil || len(denied) != 0 || len(pending) != 0 {
 		t.Fatalf("after reconciliation: denied=%d pending=%d err=%v", len(denied), len(pending), err)
+	}
+}
+
+// A new transaction never takes the ID of an existing receipt: replacing a
+// settled receipt would drop acceptance that later receipts leave out.
+func TestReplicationTransactionNeverReusesAReceiptID(t *testing.T) {
+	_, remote, receiver, _, first := setupMemoryReplicationFixture(t)
+	if err := os.Chdir(receiver); err != nil {
+		t.Fatal(err)
+	}
+	mustGit(t, "remote", "add", "mirror", remote)
+	stream := []string{first.Envelope.Stream}
+	origin := ReplicationSelection{Version: replicationSelectionVersion, Remote: "origin", Memories: stream, Budgets: defaultReplicationBudgets()}
+	mirror := ReplicationSelection{Version: replicationSelectionVersion, Remote: "mirror", Memories: stream, Budgets: defaultReplicationBudgets()}
+	// Leave the stream's objects denied by an interrupted origin import, then
+	// accept them through mirror in a settled receipt.
+	replicationAfterCopyHook = func() error { return os.ErrClosed }
+	_, err := runReplicationTransaction(origin)
+	replicationAfterCopyHook = nil
+	if err == nil {
+		t.Fatal("origin transaction did not stop after copy")
+	}
+	before := replicationReceipts(t)
+	if _, err := runReplicationTransaction(mirror); err != nil {
+		t.Fatal(err)
+	}
+	settled := newReceipt(t, before)
+	gitDir := mustGitText(t, "rev-parse", "--absolute-git-dir")
+	receiptPath := filepath.Join(gitDir, "hn", "replication", "transactions", settled.ID+".json")
+	original, err := os.ReadFile(receiptPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The next allocation first offers the settled receipt's ID.
+	offered := 0
+	replicationMkdirTemp = func(dir, pattern string) (string, error) {
+		offered++
+		if offered == 1 {
+			path := filepath.Join(dir, settled.ID)
+			return path, os.Mkdir(path, 0o700)
+		}
+		return os.MkdirTemp(dir, pattern)
+	}
+	defer func() { replicationMkdirTemp = os.MkdirTemp }()
+	result, err := runReplicationTransaction(mirror)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if offered < 2 || result.ID == settled.ID {
+		t.Fatalf("transaction took the settled receipt's ID %s (offers %d)", settled.ID, offered)
+	}
+	if after, err := os.ReadFile(receiptPath); err != nil || !bytes.Equal(after, original) {
+		t.Fatalf("settled receipt changed: %v", err)
+	}
+	if denied := deniedAmong(t, reachableFrom(t, first.Commit)); len(denied) != 0 {
+		t.Fatalf("%d objects denied after the second mirror import", len(denied))
 	}
 }

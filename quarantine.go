@@ -133,7 +133,48 @@ var (
 	replicationCopyObjects       = copyGitObjects
 	replicationRemoveQuarantine  = removeGeneratedQuarantine
 	replicationRecordTransaction = recordReplicationTransaction
+	replicationMkdirTemp         = os.MkdirTemp
 )
+
+// allocateReplicationQuarantine creates the quarantine directory of a new
+// transaction, whose name is the transaction ID. os.MkdirTemp only avoids
+// directories that exist now, and a finished transaction's quarantine is
+// gone while its receipt remains; reusing that ID would replace the receipt,
+// and later receipts leave out what a settled receipt accepts. A name that
+// already has a receipt or an anchor is discarded.
+// The check needs no lock: from here until this transaction's own receipt
+// exists, its quarantine directory holds the name.
+func allocateReplicationQuarantine(quarantineRoot, gitDir string) (string, error) {
+	locations := []string{gitDir}
+	for attempt := 0; attempt < 64; attempt++ {
+		directory, err := replicationMkdirTemp(quarantineRoot, "txn-")
+		if err != nil {
+			return "", err
+		}
+		id := filepath.Base(directory)
+		used := false
+		for _, location := range locations {
+			for _, path := range []string{
+				filepath.Join(replicationTransactionsPath(location), id+".json"),
+				filepath.Join(replicationAnchorsPath(location), id+".json"),
+			} {
+				if _, err := os.Lstat(path); err == nil {
+					used = true
+				} else if !errors.Is(err, os.ErrNotExist) {
+					_ = os.Remove(directory)
+					return "", err
+				}
+			}
+		}
+		if !used {
+			return directory, nil
+		}
+		if err := os.Remove(directory); err != nil {
+			return "", err
+		}
+	}
+	return "", fmt.Errorf("no unused replication transaction ID after 64 attempts")
+}
 
 func runReplicationProcessHook(step string) error {
 	if os.Getenv("HN_INTERNAL_TESTING") == "1" && os.Getenv("HN_TEST_REPLICATION_INTERRUPT_AFTER") == step {
@@ -209,7 +250,7 @@ func runReplicationTransaction(selection ReplicationSelection) (replicationTrans
 	if err := repairAnchoredReplicationReceiptsForRecovery(mainGitDir, selection.Remote); err != nil {
 		return result, replicationPhaseError(selection.Remote, "pending acceptance reconciliation")
 	}
-	quarantineDir, err := os.MkdirTemp(quarantineRoot, "txn-")
+	quarantineDir, err := allocateReplicationQuarantine(quarantineRoot, mainGitDir)
 	if err != nil {
 		return result, replicationPhaseError(selection.Remote, "quarantine setup")
 	}
