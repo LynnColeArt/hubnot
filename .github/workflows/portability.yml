@@ -76,7 +76,7 @@ jobs:
         run: ./.hn/actions/ci fast
       - name: Migration boundary regressions
         # Deliberately do not physicalize paths or forward TMPDIR to children.
-        run: go test -race -count=1 -timeout 2m -run '^(TestMigration.*|TestProjectSnapshot.*|TestPortableCollaborationAzure.*)$' .
+        run: ./.hn/actions/ci migration
       - name: Package the exact candidate for the native runner
         shell: bash
         run: |

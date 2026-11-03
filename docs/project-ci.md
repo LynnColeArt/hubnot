@@ -9,6 +9,7 @@ Ordinary users do not enable a runner, install Go, or configure any of this.
 | Tier | Execution | Budget and purpose |
 | --- | --- | --- |
 | Fast regressions | Native `test` pipeline; same action on GitHub PRs | 5-minute native step; 10-minute hosted job cap. Internal unit tests, selected core regressions, native CI protocol, vet. |
+| Migration regressions | Explicit native `migration` pipeline; same action on GitHub PRs | Complete platform-specific selection in three balanced shards, each retaining the 2-minute race-test cap; 10-minute native step and hosted job caps. |
 | Package smoke | Explicit GitHub package run or native Mac certification | Install/runtime checks plus 5 focused extension journeys per variant; 2-minute install and 3-minute extension invocation caps, 15-minute native job cap. |
 | Integration | Explicit native `integration` pipeline | 10-minute step cap. Full native collaboration, artifact recovery and three supplied reference-consumer journeys, using source-assisted binaries. |
 | Stress | Explicit native `stress` pipeline | Separate bounded steps for large record/ref/byte limits, lifecycle faults and observation capacity. Run when these mechanisms change, or during a deliberate deep audit. |
@@ -27,7 +28,7 @@ Known functional or data-integrity failures still need resolution before release
 
 ## Native requests and signed results
 
-The tracked definitions are `.hn/pipelines/test.json`, `integration.json`, `stress.json`,
+The tracked definitions are `.hn/pipelines/test.json`, `migration.json`, `integration.json`, `stress.json`,
 `stress-artifacts.json` (a focused stress request), and `soak.json`. They invoke
 the tracked `.hn/actions/ci` entry point. For an existing signed proposal:
 
@@ -38,6 +39,7 @@ hn run show FULL_REQUEST_ID
 hn run logs FULL_RESULT_ID
 
 # Separate, explicit requests when deeper evidence is needed:
+hn run request FULL_PROPOSAL_ID migration
 hn run request FULL_PROPOSAL_ID integration
 hn run request FULL_PROPOSAL_ID stress
 hn run request FULL_PROPOSAL_ID soak
@@ -91,6 +93,7 @@ Authorized deferred audits and explicit finding follow-up remain available via
 
 ```sh
 ./.hn/actions/ci fast
+./.hn/actions/ci migration
 ./.hn/actions/ci integration
 ./.hn/actions/ci stress-artifacts
 ./.hn/actions/ci stress-counts

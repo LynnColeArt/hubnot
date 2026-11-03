@@ -31,6 +31,28 @@ case "${1-}" in
     go test -race -count=1 -timeout=2m -run "$pattern" .
     go vet ./...
     ;;
+  migration)
+    # Preserve the complete portability selection, including OS-specific tests.
+    # Separate processes keep aggregate setup from consuming one 2m test timer.
+    scratch=$(mktemp -d "${TMPDIR:-/tmp}/hn-ci.XXXXXX")
+    trap 'rm -rf "$scratch"' 0
+    go test -list '^(TestMigration.*|TestProjectSnapshot.*|TestPortableCollaborationAzure.*)$' . |
+      sed -n '/^Test[A-Za-z0-9_]*$/p' | LC_ALL=C sort > "$scratch/expected"
+    test -s "$scratch/expected"
+    for shard in 0 1 2; do
+      awk -v shard="$shard" '(NR - 1) % 3 == shard' "$scratch/expected" > "$scratch/shard-$shard"
+      test -s "$scratch/shard-$shard"
+    done
+    cat "$scratch/shard-0" "$scratch/shard-1" "$scratch/shard-2" |
+      LC_ALL=C sort > "$scratch/actual"
+    diff -u "$scratch/expected" "$scratch/actual"
+    for shard in 0 1 2; do
+      printf 'Migration regression shard %s/3:\n' "$((shard + 1))"
+      cat "$scratch/shard-$shard"
+      names=$(paste -sd '|' "$scratch/shard-$shard")
+      go test -race -count=1 -timeout=2m -run "^($names)$" .
+    done
+    ;;
   integration|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry)
     # Native execution extracts a source snapshot, not the operator's .git or
     # private keys. Build its CLI once; source-assisted tests use that binary.
@@ -61,5 +83,5 @@ case "${1-}" in
     esac
     go test -race -count=1 -timeout="$budget" -run "^($test_name)$" .
     ;;
-  *) echo 'usage: .hn/actions/ci fast|integration|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry' >&2; exit 2;;
+  *) echo 'usage: .hn/actions/ci fast|migration|integration|stress-counts|stress-artifacts|stress-lifecycle|stress-observation|soak-expiry' >&2; exit 2;;
 esac
