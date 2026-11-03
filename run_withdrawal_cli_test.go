@@ -313,10 +313,8 @@ func runWithdrawalFreshIntent(cli *betaContributionCLI) {
 		t.Fatal("withdrawal reinterpreted historical signed result")
 	}
 }
-func runWithdrawalLegacyRetry(cli *betaContributionCLI) {
-	t := cli.t
-	f := newWithdrawalCLI(cli, false)
-	receipt := f.withdraw("Legacy retry")
+func (f *withdrawalCLIFixture) useLegacyIdentity() {
+	t := f.cli.t
 	path := filepath.Join(f.repo, ".git/hn/identities", f.actor+".json")
 	raw, err := os.ReadFile(path)
 	if err != nil {
@@ -334,6 +332,12 @@ func runWithdrawalLegacyRetry(cli *betaContributionCLI) {
 	if err := os.Remove(filepath.Join(f.repo, ".git/hn/active")); err != nil {
 		t.Fatal(err)
 	}
+}
+func runWithdrawalLegacyRetry(cli *betaContributionCLI) {
+	t := cli.t
+	f := newWithdrawalCLI(cli, false)
+	receipt := f.withdraw("Legacy retry")
+	f.useLegacyIdentity()
 	betaContributionContains(t, f.unchanged(f.repo, false, "run", "withdraw", f.request, "--reason", "changed"), "different reason")
 	retry := betaContributionJSON[withdrawalCLIReceipt](t, f.unchanged(f.repo, true, "run", "withdraw", f.request, "--reason", "Legacy retry", "--json"))
 	if !retry.Replayed || retry.WithdrawalID != receipt.WithdrawalID {
@@ -379,4 +383,16 @@ func runWithdrawalModeration(cli *betaContributionCLI) {
 	betaContributionContains(t, f.unchanged(f.repo, false, "run", "list"), "raw history")
 	receipt := f.withdraw("Requester-only cancellation, no moderation grant")
 	betaContributionContains(t, f.unchanged(f.repo, true, "run", "show", f.request), "withdrawn", receipt.WithdrawalID)
+	// Prepare distinct eligible intent before converting to legacy-only state.
+	fresh := f.newRequest()
+	// WP04-R1: the outer moderation gate must not migrate this legacy-only
+	// signer before the observed withdrawal reaches the manual execution guard.
+	// The backend marker was created before every command and is never reset.
+	f.useLegacyIdentity()
+	betaContributionContains(t, f.unchanged(f.repo, false, "run", "execute", f.request, "--backend", "host", "--allow-unsafe-host-execution", "--rerun"), "withdrawn", receipt.WithdrawalID)
+	// Admission and execution authority still apply to eligible fresh intent.
+	// Execute directly from the same untouched legacy state, after every
+	// refusal/private-state assertion and without another migrating command.
+	f.execute(f.repo, fresh)
+
 }

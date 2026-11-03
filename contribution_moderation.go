@@ -470,6 +470,7 @@ func contributionRunBoundary(family string, args []string) error {
 		return nil
 	}
 	subject := args[1]
+	executionRequestID := ""
 	events, e := collectEvents()
 	if e != nil {
 		return e
@@ -480,6 +481,9 @@ func contributionRunBoundary(family string, args []string) error {
 			return e
 		}
 		subject = row.Event.Subject
+		if args[0] == "execute" {
+			executionRequestID = row.ID
+		}
 		if args[0] == "logs" {
 			request, e := resolveEvent(events, subject)
 			if e != nil {
@@ -490,6 +494,14 @@ func contributionRunBoundary(family string, args []string) error {
 	}
 	if e = contributionRequireProposal(subject); e != nil {
 		return e
+	}
+	// Preserve admission first, but refuse observed withdrawn execution before
+	// the ordinary signer loader can migrate a legacy keyring. Eligible requests
+	// continue through the existing identity and native-execution permission gate.
+	if executionRequestID != "" {
+		if e = guardRunNotWithdrawn(events, executionRequestID); e != nil {
+			return e
+		}
 	}
 	identity, e := loadIdentity()
 	if e != nil {
