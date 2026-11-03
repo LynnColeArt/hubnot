@@ -497,10 +497,21 @@ func TestRunWithdrawalRefusesHostileGitAndArchiveBeforePromotion(t *testing.T) {
 			if _, err := collectEvents(); err != nil {
 				t.Fatal(err)
 			}
-			// A real known-good archive remains stageable after all refusal assertions.
-			q, err := StageProjectSnapshot(ctx, good.Snapshot, good, limits)
+			// The identical material builder must produce a valid archive too, so
+			// malformed serialization cannot make every hostile case vacuously pass.
+			controlSnapshot, controlBlobs := withdrawalArchiveMaterial(t, good.Snapshot)
+			var controlArchive bytes.Buffer
+			if err := migration.WriteArchive(ctx, &controlArchive, controlSnapshot, controlBlobs, limits); err != nil {
+				t.Fatal(err)
+			}
+			control, err := migration.ReadArchive(ctx, bytes.NewReader(controlArchive.Bytes()), limits)
 			if err != nil {
 				t.Fatal(err)
+			}
+			defer control.Close()
+			q, err := StageProjectSnapshot(ctx, control.Snapshot, control, limits)
+			if err != nil {
+				t.Fatalf("same-builder valid archive control refused: %v", err)
 			}
 			q.Close()
 			if kind == "duplicate" || kind == "conflict" {
