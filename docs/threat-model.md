@@ -336,3 +336,32 @@ instructions or permission to execute. Exact historical references do not silent
 follow latest heads. See [host methods/errors/recovery](extensions.md),
 [portable artifact semantics](artifacts-v1.md) and
 [consumer recipes and qualification scope](extension-consumers.md).
+
+## Runner efficiency and withdrawal (unreleased source)
+
+Automatic eligibility is derived from verified lineage and the same exact
+signed-base policy/result evaluator used by governance. Latest-per-trusted-
+runner counting across authorized exact requests must not turn untrusted,
+failed, mismatched or predecessor evidence into a pass. Skip diagnostics are
+not attestations. Observed requester-only `run.withdraw` prevents future starts;
+it cannot stop in-flight effects or revoke valid historical/late evidence.
+Strict field, actor-chain and dependency validation apply at local, quarantine,
+archive and shallow-recovery boundaries. Old readers may reject explicitly
+written withdrawals and subsequent actor advancement; no default path writes
+this kind. Import brings history, not private keys or execution/merge roles.
+
+Opt-in `--skip-stale-base --target refs/heads/NAME` probes the configured remote
+with a cancellable 10-second/64-KiB Git advertisement observation. Uncertainty
+prevents backend execution. Supported Git/SSH transports preserve normal auth
+while disabling built-in interactive prompts; configured helpers and supported
+SSH config remain trusted operator inputs, and unsupported wrappers refuse.
+The probe writes no refs and locks no target. Concurrent/disconnected starts
+can occur before results/withdrawals are observed; no global exclusivity or
+exactly-once guarantee is made ([coordination follow-up #37](https://github.com/LynnColeArt/hubnot/issues/37)).
+
+Static keyless run help/capabilities grant no authority. Installation, upgrade,
+import and ordinary use activate no policy, runner, service, account, database
+or extension. These source changes do not alter frozen beta.3 assets or their
+historical qualification. Native deep/soak/capacity qualification, including
+large withdrawal histories, is a separate prerequisite before the next release
+([#38](https://github.com/LynnColeArt/hubnot/issues/38)).

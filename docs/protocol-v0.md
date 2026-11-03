@@ -99,6 +99,7 @@ proposal.open
 proposal.revise
 review.submit
 run.request
+run.withdraw      # unreleased, explicit future-start control
 run.result
 proposal.decision
 proposal.merged
@@ -251,6 +252,25 @@ repository-local pipeline name, SHA-256 ID of the exact pipeline JSON bytes,
 and proposed Git head. A `run.result` references the request and repeats all
 three bindings. It also signs `passed` or `failed`, exit code, duration, exact
 log digest, backend, platform, and runner. Any mismatch is rejected.
+
+The unreleased explicit `run.withdraw` kind uses the existing `hn/0` envelope:
+`subject` is the full `run.request` event ID and `body` is the trimmed nonblank
+UTF-8 reason (at most 4096 bytes). Standard actor/key/sequence/previous metadata
+apply; extraneous fields and duplicate or unknown JSON keys are rejected for
+this new kind. Its referenced request must exist, be earlier in the same
+actor/key history, and have kind `run.request`. Conflicting duplicate withdrawal
+facts are invalid; exact normalized writer retries reuse the original event.
+Local collection and quarantined Git/archive/shallow dependency validation
+apply the same rules. Selected replication and archive closure include the
+original request and its required history; no historical bytes are rewritten.
+
+Withdrawal is a future-start control, never historical evidence revocation.
+Valid results (including late results), decisions and merges remain valid.
+It is written only by an explicit requester command, not by old/default flows.
+Older readers may reject this new kind and that actor-history advancement;
+keyless `hn run capabilities --json` advertises support without granting roles.
+These features are not present in frozen beta.3 packages. See the
+[operator semantics and examples](ci-v0.md#useful-work-and-queued-withdrawal-unreleased-source).
 
 These events are attestations. Signatures protect attribution and contents;
 they do not prove honest execution. The exact base policy chooses which actors'

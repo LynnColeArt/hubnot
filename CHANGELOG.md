@@ -6,6 +6,36 @@ experimental. Beta prerelease publication does not by itself adopt the full
 
 ## Unreleased
 
+### Added
+
+- Source-only native runner efficiency: verified obsolete-lineage skips,
+  shared exact signed-base latest-per-trusted-runner threshold suppression,
+  requester-only signed queued withdrawal with normalized retries, status and
+  static keyless capability discovery, and opt-in fresh bounded stale-base
+  observation. Explicit execution remains available for fresh intent; no
+  concurrent-start exclusivity or interruption of running effects is promised.
+  This addresses [#27](https://github.com/LynnColeArt/hubnot/issues/27) and
+  [#30](https://github.com/LynnColeArt/hubnot/issues/30) after reviewed delivery.
+- Bounded native public CLI/Git acceptance across two trusted runners,
+  revisions/merges, withdrawal and exact archive continuation. Deep native
+  qualification remains a prerequisite for the next release
+  ([#38](https://github.com/LynnColeArt/hubnot/issues/38)); optional concurrent
+  coordination is separate ([#37](https://github.com/LynnColeArt/hubnot/issues/37)).
+
+No new package/version is published here. Existing beta.3 tarballs, Debian
+packages, provenance and historical qualification are unchanged and do not
+include these runner features. Old readers may reject explicitly written
+`run.withdraw` histories. Ordinary default use activates nothing new.
+
+## [0.1.0-beta.3](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.3) — 2026-11-03
+
+Published from `852f9d0bdfebb9635efdd122bad5f9d546d7c15b`.
+[Release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.3)
+and the README retain exact package evidence, downloads/APT instructions and
+platform limits. Exact beta.3 Apple Silicon runtime qualification remains
+pending; Developer ID signing/notarization remain outstanding. These are
+released facts, not qualification of unreleased source.
+
 ### Fixed
 
 - Proposal open/revise refuse a head that does not descend from the base before
