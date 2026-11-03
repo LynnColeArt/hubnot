@@ -11,6 +11,9 @@ experimental. Beta prerelease publication does not by itself adopt the full
 - Refreshed the README, support/platform guides, packaging and feature guidance
   for the published beta.2 prerelease. Current results are distinguished from
   frozen alpha, beta.1 and extension-mission qualification records.
+- Added an isolated plugin quickstart and a release checklist requiring open
+  PR/issue review before candidate freeze and publication. Documented beta.2's
+  receipt-growth issue and the separately reviewed proposed fix in PR #32.
 
 ## [0.1.0-beta.2](https://github.com/LynnColeArt/hubnot/releases/tag/v0.1.0-beta.2) — 2026-11-03
 

@@ -105,6 +105,10 @@ for exact source/compiler identities, test scope, historical handoff files and
 Mac distribution limits. Earlier release assets and their qualification records
 remain unchanged.
 
+Known beta.2 issue: [replication receipt growth](docs/releases/0.1.0-beta.2.md#known-replication-performance-issue)
+can make long-lived clones progressively slower. [PR #32](https://github.com/LynnColeArt/hubnot/pull/32)
+contains a proposed fix that is not in these published binaries.
+
 ## Build and verify
 
 Building from source requires Go 1.26 or newer and Git 2.x. Docker and Python
@@ -328,8 +332,9 @@ hn artifact help
 hn extension help
 ```
 
-See [portable artifacts](docs/artifacts-v1.md), [the extension contract](docs/extensions.md)
-and [consumer recipes](docs/extension-consumers.md).
+Start with the [plugin quickstart](docs/plugin-quickstart.md). See
+[portable artifacts](docs/artifacts-v1.md), [the extension contract](docs/extensions.md)
+and [consumer recipes](docs/extension-consumers.md) for the detailed references.
 
 ## Optional contribution and moderation workflow
 
@@ -640,6 +645,7 @@ promise global erasure from every replica.
 - [Native workflows and explicit execution](docs/workflows-v1.md)
 - [Optional forge interoperability and local gh subset](docs/github-interoperability.md)
 - [Optional local extension host](docs/extensions.md)
+- [Plugin quickstart: a custom ticket from setup to removal](docs/plugin-quickstart.md)
 - [Portable typed artifacts](docs/artifacts-v1.md)
 - [Optional consumer examples](docs/extension-consumers.md)
 - [Protocol and storage](docs/protocol-v0.md)

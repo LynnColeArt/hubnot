@@ -5,6 +5,7 @@ Extensions add an explicitly started local executable; there is no automatic
 installation, discovery, provider connection, account, daemon, or required language
 runtime. Generic [artifact commands](artifacts-v1.md) work without extensions.
 The [consumer guide](extension-consumers.md) contains optional source examples.
+New to plugins? Start with the [isolated inventory-ticket walkthrough](plugin-quickstart.md).
 
 The current host protocol is **`hn.extension/1`**, carried over private stdio pipes.
 Manifest, registry, repository declaration and enablement versions are respectively
