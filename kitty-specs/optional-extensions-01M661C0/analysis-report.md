@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: optional-extensions-01M661C0
 mission_id: 01M661C0T0E4DS0AXBCXG7WCAX
-generated_at: '2026-11-02T13:11:16.811217+00:00'
+generated_at: '2026-11-03T07:45:31.223644+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
@@ -12,7 +12,7 @@ input_artifacts:
     sha256: de1d9ef9995b6a84cabafdfa3c15371badb7ac6721fe389dbc20c1933c7c266f
   plan.md:
     path: kitty-specs/optional-extensions-01M661C0/plan.md
-    sha256: 128cc07a815776f923b975069df57ca0b8d38d7b7fb92be3ccbe9c0c14bd22c4
+    sha256: 68b7f0c80feacc71ef2169924bc5e592776e0ea95a1039ed9db83f0928c20588
   tasks.md:
     path: kitty-specs/optional-extensions-01M661C0/tasks.md
     sha256: 7696be21f4afa44001707449c031333af96c0c99c603a84243e2d9804dcc85b9
@@ -22,71 +22,96 @@ input_artifacts:
 verdict: ready
 issue_counts:
   low: 0
-  critical: 0
   medium: 1
   high: 0
+  critical: 0
   info: 0
 findings:
 - id: EXP-OBS-01
   severity: medium
   category: acceptance-proof
-  summary: The inherited expiry fixture has no explicit postresponse-before-expiry observation guard. The adopted diagnostics intentionally preserve it; WP25 lifetime acceptance remains pending a separate root scope decision and actual evidence.
+  summary: The current real-ten-minute expiry fixture still has no explicit postresponse-before-expiry observation-time assertion. Preserve this existing acceptance-proof concern for exact-source WP25 review; the current planning and CI scheduling decisions do not close it.
 ---
 
-# Fresh ACTUAL analysis of adopted expiry diagnostics
+# Current extension-mission planning consistency analysis
 
-Verdict: **READY for normal analysis recording of this bounded planning scope**. No current high/critical planning inconsistency was found. This is a planning verdict, not source permission, a runtime PASS, WP25 approval, WP26 eligibility, mission acceptance or permission to merge. The failed H full-source gate remains a final-acceptance blocker. Root must actually read/re-hash and normally record this report; its existence changes no gate.
+**Planning verdict: READY to continue normal WP25 implementation/evidence reconciliation and independent review; WP26 remains dependent on actual WP25 approval.** This is a fresh planning analysis, not a source-test pass, WP approval, platform certification, gate override or mission acceptance. No high/critical planning blocker was found.
 
-This independent analysis began at2026-11-02T12:58:49.392798UTC, after the finalizer-refresh command finished at2026-11-02T12:54:49.121333UTC. Actual `analyst-annie` was resolved through the canonical profile CLI; `analyze/software-dev` charter context and the profile context were loaded with `--no-mark-loaded`. Annie's requirements/acceptance boundary applies: this report assesses the adopted plan and evidence obligations, without selecting a new design or implementing it. Applicable PRIMARY/SOURCE/COORD AGENTS and the implement-review skill's isolated-context guidance were read. No model override or Op was invented. No earlier fresh-analysis result or currentness judgment was reused.
+## Analyst and scope
 
-## Actual authority and adoption
+Independent agent `/root/review_workflow_preservation`, using canonical `analyst-annie` profile resolved through `spec-kitty agent profile show analyst-annie`, with `spec-kitty charter context --action analyze --json`. Applied project HN-001..005 and analyze-scoped directives including documented decisions, specification fidelity, local changes, efficient tooling, meaningful tests, targeted staging and canonical workflow surfaces. No model recommendation or model identity was fabricated.
 
-PRIMARY is `bbcc6b067cee01c0d6fb14f5ea5577b9fd44c66c` on `feature/optional-extensions`. The exact six-file adoption and recorded `planning_commit_sha` are **`6cc29e567447cb7ede902a419d6c5245660cd346`**. `bbcc6b06` is subsequent finalizer bookkeeping, not a substitute adoption identity. All six working files match the reviewed manifest and their adoption-commit bytes. The proposal is SHA256 `4589894e6eee47afb2a94224e9f73ca0516190da83aa9b3008eae7cb07b1ed17`; the manifest is `56bf28dbbb036aa13b2f1a2db41e10df47f2b58d0a74f43e38f0ee62c4a3779b`. Root's adoption decision and the independent exact metadata/design review are separately hashed inputs.
+Read current PRIMARY spec, plan, tasks outline, all26 WP frontmatter/dependency/subtask/ownership records, requirement coverage, current CI integration decision and WP25 continuation decision. Inspected relevant current default/host/artifact boundaries and the existing expiry finding's exact fixture. The present plan's six-line CI precedence note and the later explicit maintainer decisions are current authority; older prospective/ROOT PENDING appendices remain historical within that stated supersession scope.
 
-SOURCE remains clean H `b389b4dda20f6cbe419e359e5f5cbbfab5d4c497`, tree `64a1153bee3333be76d342a01bb39f08d3612625`. COORD remains `42c82787b29c8d0716601c1db1477aef10e464e1`. Its **physical** mission `status.json` (105957bytes) and `status.events.jsonl` (536662bytes) are the lifecycle authority. PRIMARY's historical projection and dossier are not used to infer state. Direct materialized state agrees with replay of719 events:24 approved, WP25 in_progress, WP26 planned.
+## Exact planning inputs inspected
 
-The actual preflight, preserve, adopt, validate-only and refresh result records all report exit0. The validate and refresh outputs report26 unchanged WPs and no ownership, requirement-extraction or post-integration-acceptance warnings. Refresh stderr states the sync store was locked, routing failed and an event did not durably queue. There is **no remote sync/publication claim**, and no auth repair was performed.
+| Input | SHA-256 |
+| --- | --- |
+| `spec.md` | `de1d9ef9995b6a84cabafdfa3c15371badb7ac6721fe389dbc20c1933c7c266f` |
+| `plan.md` | `68b7f0c80feacc71ef2169924bc5e592776e0ea95a1039ed9db83f0928c20588` |
+| `tasks.md` | `916577f9b1fa7a347578cca94380cf4566511af5b37b9880b260e47628844ce4` |
+| `ci-integration-decision.md` | `50cdbd58d465e27b58cea778a9d7689ba8fd5ebd786a6a1651f2605208901b8d` |
+| `wp25-review-continuation.md` | `02a71b1516976b36c9122d7471598af887dab03fc8c47840604e8bb5f57a2517` |
+| `coverage.md` | `80767341f0db191f9597c96c58adf20eb0ee2d8eee5dc47037eedf5ff6a1fbb3` |
+| `.kittify/charter/charter.yaml` | `404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9` |
 
-The proposal/regions/verification and appended prose retain their original ROOT PENDING authoring wording. Root's exact decision, adoption commit and normal finalizer resolve that wording **only for these six metadata payloads**. Separate source authority and runtime/acceptance gates remain held. External payload0600 versus adopted filesystem0664/Git100644 is the deliberate root metadata-mode decision. No source mode change is authorized.
+The normal recorder must bind the actual current artifacts itself. If an input above changes before recording, refresh this analysis instead of substituting a hand-written stale hash.
 
-## Systematic coverage and consistency
+## Structural and traceability checks actually performed
 
-The actual adopted spec/plan/tasks, all26 detailed WP frontmatters and substantive bodies, all107 guidance/observable-acceptance/evidence sections, common verification/DoD/reviewer constraints and dated amendment chain were considered against the new scope. Exact duplicate planning lines were presented once for read-through; full input bytes and per-subtask bodies are retained in the evidence artifacts. The scope assessment does not reopen or re-review the24 approved implementations.
+A read-only parse of current spec and WP YAML frontmatter established:
 
-`systematic-coverage.md` gives26 WP judgments,52 requirement/criterion rows and107 subtask rows. The JSON companions preserve each real source row, detailed task body, source line and WP/frontmatter relationship. The52 identities are24FR+8NFR+10constraints+10success criteria. SC mapping is explicitly cross-cutting rather than an invented SC frontmatter reference. All107 are unique T001–T107 and match their WP frontmatter. Every task retains guidance, observable acceptance and evidence/controls. Every later WP has WP01 as an ancestor. The lane graph, write scopes, parallel groups, profiles, authoritative surfaces and feature target match the activation baseline. WP25 retains14 owned/13 create-intent entries; the expiry test is exclusively prospectively WP25-owned, with WP19 approved/inactive. No new task, ownership transfer, dependency, Go key or lane is needed.
+- **52 criteria:** 24 FRs, eight NFRs, ten constraints and ten success criteria. IDs remain unique and the spec's default/native/history, bounded-host, external-consumer and application-owned doctrine boundaries remain in force.
+- **26 WPs /107 unique subtasks**, exactly T001–T107, with no missing subtask IDs or unknown requirement references.
+- Every FR/NFR/constraint is referenced in WP frontmatter. The existing coverage map links all FRs to success criteria and IC concerns; WP26 T107 explicitly reconciles FR/NFR/constraint/success-criterion evidence. No requirement is removed by the CI decision.
+- All dependency names resolve and the graph is acyclic. WP01 is an ancestor of every later WP; WP25 depends on WP24, WP26 on WP25. No dependency was removed or bypassed.
+- No exact `owned_files` path overlaps across the26 WP records. The separately declared coordinator-owned CI maintenance overlay and approved distribution documentation are explicit root integration scope, not a new WP, reopened earlier package or overlapping active writer.
+- Planning base and final mission target remain `feature/optional-extensions`; there is no authorization for main/release publication.
 
-The review observes the frozen host30s read/240s mutation/10s startup/250ms revocation/2s TERM/5s exit contract,10minute capture validity and precise checkpoint invalidation, plus default no-loader/no-effect and paired elapsed/RSS obligations. All69 existing limit-reconciliation rows are carried with their current narrow classifications, including dominated, source-only/private and enclosing bounds. Their presence is not runtime acceptance. The actual206 ordered callback inventory recomputes to `6286bcb20f796972494a94cf151a9ddedde4461280084b1d02318a36bb813f2c`; fixed heavy4/remaining202 membership remains intact. Diagnostics add no parent/registry entry and cannot waive a nested assertion or any of69 limits.
+The latest canonical task readback during this analysis reported **24 approved /WP25 blocked /WP26 planned**, consistent with the actual stale-analysis refusal. This report does not mutate those states or claim WP25 has already resumed. Existing24 approvals are preserved.
 
-The initial1039 independent static guards pass. They bind current source bytes, sizes, filesystem full modes, index/Git modes and blobs against activation pins, PRIMARY220 and SOURCE317 closed keysets, fresh inherited311, all77 pinned frontmatter records, exact six adoption payloads, unchanged lane mapping, exact protected/allowed expiry anchors and canonical24 full payloads/review bindings. After-guards and the final hash map provide the closing check. All24 actual review files are hashed;23 also match the original78 preservation-map hashes, while WP01 is bound by its direct canonical file identity and unchanged before/after inputs. No missing WP01 preservation-map row is silently represented as a baseline comparison.
+## Requirement/plan/task consistency
 
-## Diagnostic delta assessment
+The plan preserves the additive typed-artifact model plus explicitly enabled external process host. Native commands remain the default; registry parsing, module starts, network providers and extension-local writes are prohibited on unrelated native paths. Custom document/list/ticket types remain inert namespaced data, independent of memory cognition and native built-in kinds. Signature/search matches do not activate policy or doctrine. The Spec Kitty-shaped sample remains an external data-model consumer, not a resolver, composition engine or runtime embedded in Hubnot.
 
-The exact adopted three-file expiry record is internally consistent and testable:
+The bounded stdio host, per-request repository/identity/grant checks, native adapters, exact actor/operation recovery, accepted-visible change capture, public/private separation, custom Git/file closure and unknown-type refusals remain mapped to dedicated WPs. The first capability set still excludes generic review/accept/merge, policy/identity lifecycle, runner/audit execution and implicit sync. Adding project-development CI pipelines does not grant those extension-host capabilities or change default application optionality.
 
-- Successful Start has exactly one Wait owner; failed Start has zero Wait. Completion-channel join precedes reading ProcessState or buffered output. The testing goroutine owns Fatal/Goexit defers and failure preservation before TempDir cleanup.
-- Polling retains15s/5ms. Actual observed early settlement is separate from timeout and cleanup-induced settlement. Synchronous callbacks stay synchronous: settlement during callback0's sleep can be recorded but is observed by the main test only when control returns.
-- Ordinary CLI TERM delegates to existing owned-child cleanup within5s. A hardKill fallback or unverified controlled-peer absence is nonqualifying. No arbitrary PID signaling or descendant framework is introduced.
-- One bounded last-peer record and one safe terminal projection retain validated public origin/code/recovery, joined status/times/counts/digests and fixed marker metadata. Raw stdout/stderr, payloads, private observer state, signatures and environment are excluded. Checked0600 full-write/close/rename,2KiB peer/8KiB terminal and16KiB total including transient slots are explicit refusal conditions, not silent truncation.
-- Meaningful staged OLD RED uses the real supplied host, registered raw peer and existing `$9.capture` resolver92 with the original helper still exact. New controls must show precise host/unavailable_module/do_not_retry, single Wait, timeout versus cleanup settlement, a successful pause across one existing20s keepalive, Fatal cleanup, write/overflow/redaction failures and controlled-peer absence. Missing-helper/compile failures cannot establish RED.
+The current CI decision deliberately changes **where/how often** checks execute: native signed fast/integration/stress/soak requests, bounded hosted install/runtime plus five extension callbacks, with the full206 registry and original production/assertion limits retained. It expressly distinguishes smoke from exhaustive and source-assisted from exact-package evidence; historical cancelled/failed runs remain unchanged. Change-appropriate reuse must establish exact unchanged inputs and retain original source identities. It does not manufacture full new-source qualification from a smoke row. This coherently implements the maintainer's explicit CI/hardware-cost direction without weakening the product's bounds or default-path requirements.
 
-The entire expiry test body H770–821 and existing success transcript block259–280 are protected by exact hashes.11minute child safety,20s heartbeat, all assertions and product clocks/caps stay exact. The same file's raw framing remains protected through the unchanged shared reader/writer. The proposed fifth cumulative DD Go delta leaves312 protected DD inputs **prospectively**; currently only the four declared Go paths differ from DD and its complement is313. Fresh inherited311 is a distinct current qualification identity from historical DD311; all317 keys/full modes remain mandatory. Other316 H inputs, production, A/B fixes and C harness/validator/workflow remain protected. None of the diagnostic source change is implemented.
+Mac packages without Developer ID/notarization are now an explicit maintainer-approved beta distribution limitation. The actual browser-quarantine/Gatekeeper rejection stays in the record, and normal browser-download certification remains unclaimed. Signing is a separate follow-up, not a missing mandatory dependency for functional review. This decision grants no broad beta/issue23 acceptance or new runtime dependency.
 
-## Actual failure and open proof concern
+## Frozen candidate / continuation consistency
 
-Independent parsing of the retained H race log confirms3974 named RUNs,3967 PASS,1 FAIL,6 helper SKIPs;17 package PASS,1 FAIL and1 no-test package SKIP. The sole named failure is `TestExtensionChangesRealTenMinuteExpiry`: response1 was not published within15s. Callback1 and the final expired-page assertion were not observed. ROOT6503 was fully reaped exit1 after4262.878s; the driver reports4262.701154867s. These are distinct clocks. Results contain only the failed race entry; the six later checks NEVER STARTED. Source-after317 remains exact.
+The original candidate remains exact `3dcbb96091c6191bc5d98cde9dbd1d2b98433f95`, tree `df57aeda7553e88ab1eb54ab2f0564a7844dee01`, now in the explicitly archived local execution worktree. Read-only HEAD/tree and Go/module working-tree comparison matched those identities. The root has separately recorded archival path/branch renaming and sparse metadata hydration; these do not authorize source or package alias rewrites.
 
-Cause remains **UNKNOWN**. The old Fatal path lost nested terminal stdout/stderr/exit/peer phase; empty outer stderr cannot establish empty nested diagnostics. Ordinary expiry refusal normally still publishes response1. H/DD equality of the inspected helper/expiry/product sources does not prove an old-source PASS, exclude indirect integration effects or establish a product expiry regression. The one-second advertised-expiry offset is a fragility, not the established cause. No infrastructure attribution is justified.
+The allocator's refusal of explicit --base on a dependency lane is correctly retained as a real refusal. The supported continuation uses normal fresh allocation and records its actual moving coordination parent and immutable allocation commit truthfully. A real final WP25 manifest/checks deliverable commit must be made AFTER allocation on that lane, so normal ahead/readiness checks have actual implementation evidence. No empty commit, forged base provenance, force, skipped gate or manual status JSON edit is proposed.
 
-**EXP-OBS-01 (medium, separate acceptance proof concern):** callback1 lacks an explicit postresponse-before-expiry observation-time guard. The diagnostic plan names and intentionally preserves that gap. Diagnostics may produce better evidence but cannot close the valid-page-before-expiry proof, identify the historical cause or authorize a timing change. WP25 T101–T103/root must resolve the proof disposition through separate scope/evidence before claiming lifetime acceptance. It does not prevent the bounded observation correction from being coherently planned now. A fresh actual unchanged600s run remains required and must retain either real success/refusal evidence or the precise newly captured failure; synthetic controls cannot replace it.
+Review must additionally inspect approved WP24 `4bb26359dbdb2fbc149911dc99c3a5880a24c031` through the exact reviewed HEAD. A generated continuation-only diff is insufficient for original WP25 work. Normal subtask/gate/review-result operations and exact source-bound independent verdicts remain required.
 
-H's new B three leaves+parent and source-only approval, its scoped default149 and4320observations/2160pairs/72groups/144criteria PASS, and static asset identity remain source-specific. They do not promote H's failed full gate or qualify changed source. The root recomputation and source binding were read as distinct evidence, not rerun here. Native41434652393 attempt1 remains immutable H; no remote query, cancellation, relabel, retry or changed-source credit was performed. Root's later communication reports LinuxARM success at H with other outcomes still pending; this analysis makes no whole-row/eight-row qualification verdict from that update.
+## Existing medium acceptance-proof observation
 
-## Required handoff and remaining acceptance
+**EXP-OBS-01 remains a medium acceptance-proof concern, not a new planning blocker.** In current coord `extension_changes_acceptance_test.go`, `TestExtensionChangesRealTenMinuteExpiry` begins at1775; callback1 parses the page, asserts `complete == true`, then sleeps until expiry+1. It does not explicitly assert the response was OBSERVED before the advertised expiry. The genuine600s fixture and all its existing assertions remain intact; current scoped CI decisions do not close or waive that temporal proof question. A previously passing/incomplete/failed run retains its exact meaning.
 
-Root's actual read/re-hash → normal record-analysis/next → normal WP25 reentry → root-owned narrow restoration of original78 → **separate explicit exact-region diagnostic source permission** remain the ordered handoff. Original78 is still STASHED in new21st `b2b0033baa4fc5026267366a528b30b68a9b8ea4`; all prior20 OIDs are retained. This analysis listed identities only and did not inspect stash bodies or restore anything.
+The independent WP25 reviewer must inspect current exact-source evidence and explicitly disposition this concern before claiming the corresponding lifetime proof. This analysis does not assume the old failed H source is the current source, does not ascribe a cause to historical failures, and does not infer a current production defect solely from this missing observation assertion. No long suite, soak, hosted dispatch or fault injection was run in this analysis.
 
-After authorized implementation: meaningful old/new controls, actual unchanged600s execution, independent exact-diff/error-path/source review, fresh311/all317/312-complement identities, six default roots/all149, complete unchanged4320/2160/72/144 paired gate, full7 checks under original120m and all8 NEW actual native composite rows remain required. C retains fixed heavy4/remaining202 serial120m invocations/300m job.100000/100001 plus99999 causal controls,16384/16385/maps/receipts/policy,45s migration,69 limits/206 callbacks, raw traces/detectors and three standalone consumers remain hard.
+## WP26 cold-trial readiness contract
 
-Formal WP25 approval must precede WP26 eligibility/T104, two actual independent public-guides-only cold trials and T107 all52 plus24 canonical FR judgments. The24-FR acceptance matrix is still a pending scaffold; neither the52 coverage map nor historical24 approvals supplies those judgments. Normal accept precedes feature-only merge; target validation, full postmerge suite/fidelity review and retrospective remain mandatory. Main/release, betaC001/pilot and independent issue23 acceptance stay separate.
+The plan's separate fresh public-docs-only AI-agent trials are coherent with SC-010 and WP26 T105/T106 when participants actually operate the exact supplied packages and report their observations/friction. They must be labelled AI-agent trials, not human-adopter research, CI replay or implementer self-validation. Separate contexts receive public guides and the necessary package/consumer assets, not implementation history or hidden acceptance scripts. Native trial stays extension-free; author trial exercises the published external-consumer guide. Prepared trial kits alone are not observations and neither trial can be claimed complete before execution. WP26's dependency and independent boundary review remain binding.
 
-Only this fresh external analysis directory was written. No code, planning metadata, lifecycle/status/event data, stashes, checkpoint, remote state or processes were mutated. No tests, builds, apps, probes, process inspection/signals, further agents, private intel-v2-correction access or old pinned verifiers were used. Metadata/hash/parser subprocesses were synchronous and reaped. The installed pure collector generated normalized recorder fingerprints; the installed pure carrier parser validates this report without recording it.
+## Required normal next steps
+
+1. Root records this actual report through the supported command below, letting the recorder generate source hashes/metadata.
+2. Retry normal allocation; author the genuine owned WP25 manifest/checks reconciliation on the new lane; complete truthful subtask/readiness and poll the pre-review gate.
+3. Perform independent full-scope WP25 review and capture the verdict canonically, including the existing temporal-proof disposition.
+4. Only after actual WP25 approval, claim WP26 and execute its two fresh public-guide trials plus independent boundary/readiness review. Missing observations stay pending.
+
+Supported recorder schema verified from installed CLI/source:
+
+```sh
+spec-kitty agent mission record-analysis \
+  --mission optional-extensions-01M661C0 \
+  --input-file /tmp/hubnot-current-plan-analysis.md \
+  --agent codex --json
+```
+
+The body begins with `schema: analysis-findings/v1`, a closed-severity findings list and matching counts. The installed recorder derives readiness from actual finding severities (high/critical block); it wraps its own `spec-kitty.analysis-report` frontmatter and current input digests. A bare prose READY or copied old rendered report would be inadequate. This child did not invoke the recorder or mutate project source/status/configuration.

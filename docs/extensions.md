@@ -13,6 +13,24 @@ Manifest, registry, repository declaration and enablement versions are respectiv
 These describe the implementation in this source tree; they do not assert that an
 older released executable supports the new protocols.
 
+## Contract reference, online or offline
+
+The version-pinned [host contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md) defines the wire protocol. The
+same source also contains the [artifact contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md),
+[conformance fixtures](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/conformance-fixtures.md), and [default-workflow contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/default-workflow.md).
+These links identify published contract bytes; using an extension does not require
+GitHub or a network connection.
+
+For offline reading, extract the source archive matching your package's
+`BUILD.json` / `PROVENANCE.json` source revision, or use a local Git checkout at
+that revision. Inside its root, open
+`kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md` and the other three
+Markdown files in that directory. Read them as text or with a Markdown viewer;
+Go is not needed. Binary packages include product guides but do not include this
+contract directory. For the qualification candidate, the linked revision is
+`d5aee5d0226c2e86615c1a0910d3cc8b9592cce7`; use the matching source archive rather
+than assuming a later checkout describes an older binary.
+
 ## Explicit lifecycle
 
 A manifest declares interest, not permission or an executable path:
@@ -43,6 +61,15 @@ sample's command file using [its guide](../examples/extensions/inventory-model/R
 before `run`. `--arg` repeats to supply each literal argument; no shell interprets
 it. Register can read its manifest from `--manifest -`. Inspection, registration,
 enablement, disable and removal never launch or probe a module. Only `run` launches.
+
+**Check the application result after every run.** A successful management summary
+(`ok:true`, `outcome:completed`, child exit 0) means the session completed; the
+private `result.json` can still contain a business refusal (`ok:false`). Read that
+file and continue only on its business `ok:true`. Preserve its exact error and
+recovery instruction on refusal. A management exit code alone is insufficient.
+The [inventory conversion recipe](extension-consumers.md#publish-version-2-and-convert-an-item)
+in the packaged consumer guide shows the separate result read without requiring
+Python or jq.
 
 Registration records the physically resolved absolute executable, its byte digest,
 argv, manifest digest and a fresh private registration instance. Exact duplicate
@@ -91,7 +118,7 @@ and raw inspection are custom-only. Grants mediate host calls, not OS access.
 
 All fourteen methods are listed once by `capabilities.list`, including undeclared
 or ungranted rows. The closed parameter/result shapes are specified in the
-[frozen host contract](../kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md#4-strict-method-types-and-grants).
+[frozen host contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md#4-strict-method-types-and-grants).
 
 | Method | Required selector/action | Behavior |
 |---|---|---|
@@ -171,7 +198,7 @@ Absolute deadlines include partial frames, encoding and blocked response writes.
 Revocation is checked before each request and at most every 250 ms. Idle hosts hold
 no contribution write lock. Cancellation joins writers; synchronous kernel I/O can
 outlast watchdog budgets, so these are not a hard kernel-I/O SLA. See the
-[complete limit table](../kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md#7-cli-private-bounds-and-required-conformance).
+[complete limit table](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/host-v1.md#7-cli-private-bounds-and-required-conformance).
 
 For inert wire inspection only:
 

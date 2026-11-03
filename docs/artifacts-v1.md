@@ -10,8 +10,16 @@ doctrine, chooses policy, grants prompt/business authority or runs code.
 ## Public identity and wire
 
 The normative byte grammar is the
-[frozen artifact contract](../kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md).
+[frozen artifact contract](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md).
 It is a bounded Hubnot JSON encoding, not unrestricted JSON Schema or JCS.
+
+For offline use, extract the source archive matching the package's `BUILD.json` /
+`PROVENANCE.json` source revision, or use a local checkout at that revision, then
+read `kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md` as Markdown
+or plain text. Binary packages omit that contract directory; their matching source
+archive includes all four canonical contracts. No Go toolchain or GitHub runtime
+connection is required. The [contract reference](extensions.md#contract-reference-online-or-offline)
+links the same version-pinned host, artifact, fixture and default-workflow files.
 
 Canonical JSON C has UTF-8-byte-sorted object keys, preserved array order, exact
 Unicode scalar text without normalization, no BOM/whitespace/final newline.
@@ -140,6 +148,12 @@ returned full IDs; no prefix lookup. JSON uses `{ok,data,error}`, exits 0/1, and
 The [copyable inventory journey](extension-consumers.md#inventory-publication-and-plugin-free-reading)
 generates the IDs used for its later commands.
 
+These exit/JSON rules describe direct `hn artifact` commands. When a publisher
+uses `hn extension run`, that parent command reports session management; a
+completed session can still write a business `ok:false` to its private result
+file. Inspect that file separately, as explained in the
+[extension lifecycle](extensions.md#explicit-lifecycle).
+
 Persist original actor/key, target, exact payload and parents before sending.
 Exact replay looks up the key **before** comparing current heads, returns original
 identities and appends nothing; changed replay is operation_conflict. For a new
@@ -231,4 +245,4 @@ public bytes/signature. Optional paired --previous-input FILE and
 --previous-signature RAW_BASE64 prove only that supplied adjacent predecessor;
 without it a non-genesis envelope reports continuity not_checked. Inspect adds
 the decoded envelope. Neither utility proves complete history/schema/closure or
-accepted visibility. See the [normative limits and utility contracts](../kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md#6-published-bounds-and-refusals).
+accepted visibility. See the [normative limits and utility contracts](https://github.com/LynnColeArt/hubnot/blob/d5aee5d0226c2e86615c1a0910d3cc8b9592cce7/kitty-specs/optional-extensions-01M661C0/contracts/artifact-v1.md#6-published-bounds-and-refusals).
