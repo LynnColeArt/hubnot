@@ -13,7 +13,7 @@ requirement_refs:
 - NFR-003
 planning_base_branch: fix/runner-efficiency
 merge_target_branch: fix/runner-efficiency
-branch_strategy: Computed mission workspace; consolidate to fix/runner-efficiency, then reviewed PR to main.
+branch_strategy: Planning artifacts for this mission were generated on fix/runner-efficiency. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into fix/runner-efficiency unless the human explicitly redirects the landing branch.
 subtasks:
 - T006
 - T007
@@ -104,7 +104,7 @@ respect its dependency order. Check the owned-file metadata before editing.
 
 ### T010 — Validate automatic-only semantics and hand off
 
-Prove a second runner skips after observing enough trusted evidence; threshold logic is not an exclusive claim when starts race. Use exact request/candidate/definition checks, fresh target-advancement and failed-target controls with untouched backend marker. Preserve manual run execute behavior at this WP. Run focused race tests and static/diff checks; commit and enter for_review with gate completion.
+Prove a second runner skips after observing enough trusted evidence; threshold logic is not an exclusive claim when starts race. Use exact request/candidate/definition checks, fresh target-advancement and failed-target controls with untouched backend marker. Add explicit probe controls for authenticated configured-remote success after environment sanitization, poisoned ambient Git redirects/config injection, retained standard SSH identity/proxy semantics or actionable custom-wrapper refusal, output overflow, deadline, cancellation and built-in prompt/askpass suppression. Preserve manual run execute behavior at this WP. Run focused race tests and static/diff checks; commit and enter for_review with gate completion.
 
 **Parallel**: No; this WP shares the computed sequential workspace and must
 respect its dependency order. Check the owned-file metadata before editing.
@@ -120,8 +120,12 @@ pre-create backend markers before invocation, snapshot relevant objects/refs/
 private signer state, assert no change, and run an eligible positive control
 after refusal assertions without resetting evidence.
 
-Run gofmt on changed Go files, focused race tests, go vet ./..., go build ./...
-and git diff --check. Use the native fast/default controls when the WP changes
+Run gofmt on changed Go files, focused race tests, the charter's full source
+race gate (go test -race -timeout 20m ./...), go vet ./..., go build ./...
+and git diff --check before review at each changed head. Keep that full gate
+native/local, never add it to the bounded hosted workflow. Do not repeat a
+successful unchanged full run; the independent reviewer verifies its exact-head
+evidence and runs meaningful focused controls. Use native fast/default controls when the WP changes
 their boundary. Do not launch hosted deep corpora, loosen lint/test assertions,
 claim an unexecuted full suite or mutate frozen signed fixtures.
 
