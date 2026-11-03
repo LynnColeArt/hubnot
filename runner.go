@@ -17,6 +17,8 @@ type runnerOptions struct {
 	Backend         executionBackend
 	Interval        time.Duration
 	ReportNoPending bool
+	SkipStaleBase   bool
+	Target          string
 }
 
 func cmdRunner(args []string) error {
@@ -50,6 +52,8 @@ func parseRunnerOptions(name string, args []string, watching bool) (runnerOption
 	actor := flags.String("accept-actor", "", "only execute requests signed by this actor")
 	backendName := flags.String("backend", "sandbox", "execution backend: sandbox or host")
 	allowHost := flags.Bool("allow-unsafe-host-execution", false, "permit an unsandboxed host backend")
+	skipStale := flags.Bool("skip-stale-base", false, "skip when the explicit remote target differs from the signed proposal base")
+	target := flags.String("target", "", "exact remote refs/heads/NAME; requires --skip-stale-base")
 	interval := flags.Duration("interval", 30*time.Second, "watch polling interval")
 	if err := flags.Parse(args); err != nil {
 		return runnerOptions{}, err
@@ -59,6 +63,9 @@ func parseRunnerOptions(name string, args []string, watching bool) (runnerOption
 	}
 	if watching && *interval < time.Second {
 		return runnerOptions{}, fmt.Errorf("runner watch interval must be at least 1s")
+	}
+	if err := validateRunnerTargetOptions(*skipStale, *target); err != nil {
+		return runnerOptions{}, err
 	}
 	backend, err := selectBackend(*backendName, *allowHost)
 	if err != nil {
@@ -73,6 +80,8 @@ func parseRunnerOptions(name string, args []string, watching bool) (runnerOption
 		AcceptedActor: *actor,
 		Backend:       backend,
 		Interval:      *interval,
+		SkipStaleBase: *skipStale,
+		Target:        *target,
 	}, nil
 }
 
@@ -86,6 +95,9 @@ func runnerOnce(options runnerOptions) (bool, error) {
 }
 
 func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error) {
+	if err := validateRunnerTargetOptions(options.SkipStaleBase, options.Target); err != nil {
+		return false, err
+	}
 	if err := runnerSync(options.Remote); err != nil {
 		return false, err
 	}
@@ -94,6 +106,10 @@ func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error)
 		return false, err
 	}
 	identity, err := loadIdentity()
+	if err != nil {
+		return false, err
+	}
+	lineage, err := buildLineageIndex(events)
 	if err != nil {
 		return false, err
 	}
@@ -111,6 +127,28 @@ func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error)
 			}
 		}
 		if alreadyRan {
+			continue
+		}
+		reason, err := runnerSkipReason(events, lineage, request)
+		if err == nil && reason == "" && options.SkipStaleBase {
+			var target string
+			target, err = observeRunnerTarget(ctx, options.Remote, options.Target)
+			if err == nil {
+				proposal, _ := lineage.candidate(request.Event.Subject)
+				if target != proposal.Event.Base {
+					reason = "stale base: remote target differs from signed proposal base"
+				}
+			}
+		}
+		if err != nil {
+			runnerError("skipped %s: %v", shortID(request.ID), err)
+			if firstError == nil {
+				firstError = err
+			}
+			continue
+		}
+		if reason != "" {
+			runnerLog("Runner skipped %s: %s", shortID(request.ID), reason)
 			continue
 		}
 		runnerLog("Runner accepted request %s from %s for pipeline %s", shortID(request.ID), shortID(request.Event.Actor), oneLine(request.Event.Pipeline))
