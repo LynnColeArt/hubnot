@@ -1,0 +1,28 @@
+{
+  "event_count": 1,
+  "last_event_id": "01M6HJA3RVTBNQZKC15Q8N2WZ4",
+  "materialized_at": "2026-11-03T20:41:17.339596+00:00",
+  "mission_number": "",
+  "mission_slug": "runner-efficiency-01M6HH8H",
+  "mission_type": "",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 0,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 1
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M6HJA3RVTBNQZKC15Q8N2WZ4",
+      "last_transition_at": "2026-11-03T20:41:17.339596+00:00"
+    }
+  }
+}
