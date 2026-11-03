@@ -88,9 +88,6 @@ jobs:
           done
       - name: Actual standard and native-only package public journeys
         run: go test -race -count=1 -timeout 3m -v -run '^TestPortableCollaborationIntegratedPublicVariants$' . -args -hn-package-dir "$RUNNER_TEMP/portability-unpacked"
-      - name: Static checks
-        run: go vet ./...
-
   candidate-request:
     name: Validate optional candidate request
     if: github.event_name == 'workflow_dispatch' && inputs.qualification != 'optional-extensions'

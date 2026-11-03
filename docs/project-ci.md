@@ -33,7 +33,7 @@ the tracked `.hn/actions/ci` entry point. For an existing signed proposal:
 ```sh
 hn run request FULL_PROPOSAL_ID test
 hn run execute FULL_REQUEST_ID
-hn run show FULL_RESULT_ID
+hn run show FULL_REQUEST_ID
 hn run logs FULL_RESULT_ID
 
 # Separate, explicit requests when deeper evidence is needed:
@@ -41,7 +41,9 @@ hn run request FULL_PROPOSAL_ID stress
 hn run request FULL_PROPOSAL_ID soak
 ```
 
-Use the request/result IDs printed by each command. Inspect the result's
+Use full signed `sha256:` event IDs for proposal/request inputs; abbreviated
+display IDs are insufficient for requesting or executing a run. `run show`
+inspects a request; `run logs` reads a result. Inspect the result's
 outcome and exit code; successful publication of a failed result is not a test
 pass. Results bind the exact proposed commit and pipeline digest and retain
 signed attribution, backend/platform, duration and a bounded log. Existing
