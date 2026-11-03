@@ -248,4 +248,3 @@ T045 Write docs/contributions.md with submission/admission/moderation commands, 
 ### Dependencies
 
 Depends on: WP12
-
