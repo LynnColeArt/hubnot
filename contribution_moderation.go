@@ -438,6 +438,9 @@ func contributionRequireProposal(id string) error {
 // runner side effect. The daemon runner is deliberately unsupported while this
 // first contribution profile is selected; no implicit worker is introduced.
 func contributionRunBoundary(family string, args []string) error {
+	if family == "run" && isStaticRunDiscovery(args) {
+		return nil
+	}
 	a, e := loadContributionAuthority()
 	if e != nil {
 		return e
@@ -449,6 +452,15 @@ func contributionRunBoundary(family string, args []string) error {
 		return fmt.Errorf("runner is unsupported under enabled contribution policy; use explicit hn run request/execute")
 	}
 	if len(args) < 1 {
+		return nil
+	}
+	if args[0] == "withdraw" {
+		// Cancellation belongs solely to the original requester, independently of
+		// execution/moderation roles. The writer validates complete signed history
+		// and that exact signer; this path grants no execution or intake authority.
+		if a.ReadOnly {
+			return fmt.Errorf("read-only contribution authority cannot withdraw requests")
+		}
 		return nil
 	}
 	if args[0] == "list" {

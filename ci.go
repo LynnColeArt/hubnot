@@ -160,9 +160,19 @@ func safeRelativePath(path string) bool {
 
 func cmdRun(args []string) error {
 	if len(args) == 0 {
-		return usageError("usage: hn run <request|list|show|execute|logs>")
+		return usageError("usage: hn run <request|list|show|execute|logs|withdraw|help|capabilities>")
 	}
 	switch args[0] {
+	case "help":
+		if len(args) != 1 {
+			return usageError("usage: hn run help")
+		}
+		fmt.Print(runHelp)
+		return nil
+	case "capabilities":
+		return cmdRunCapabilities(args[1:])
+	case "withdraw":
+		return cmdRunWithdraw(args[1:])
 	case "request":
 		return cmdRunRequest(args[1:])
 	case "list":
@@ -326,6 +336,9 @@ func cmdRunList() error {
 		if passed > 0 || failed > 0 {
 			status = fmt.Sprintf("passed=%d failed=%d", passed, failed)
 		}
+		if withdrawal := findRunWithdrawal(events, request.ID); withdrawal != nil {
+			status = fmt.Sprintf("withdrawn (%s); request=%s; passed=%d failed=%d", withdrawal.ID, request.ID, passed, failed)
+		}
 		fmt.Printf("%s  %-16s  %s  %s\n", shortID(request.ID), oneLine(request.Event.Pipeline), shortOID(request.Event.Commit), status)
 	}
 	return nil
@@ -352,6 +365,9 @@ func cmdRunShow(query string) error {
 	fmt.Printf("%s  pipeline %s\n", shortID(request.ID), oneLine(request.Event.Pipeline))
 	fmt.Printf("Requested by %s at %s\n", oneLine(request.Event.ActorName), request.Event.Timestamp)
 	fmt.Printf("Proposal: %s\nCommit: %s\nDefinition: %s\n", shortID(request.Event.Subject), request.Event.Commit, request.Event.Definition)
+	if withdrawal := findRunWithdrawal(events, request.ID); withdrawal != nil {
+		fmt.Printf("Status: withdrawn\nRequest: %s\nWithdrawal: %s\nReason: %s\n", request.ID, withdrawal.ID, safeText(withdrawal.Event.Body))
+	}
 	results := currentRunResults(events, request.ID)
 	if len(results) == 0 {
 		fmt.Println("\nNo results.")
@@ -432,6 +448,9 @@ func cmdRunExecute(args []string) error {
 	if request.Event.Kind != "run.request" {
 		return fmt.Errorf("%s is not a run request", shortID(request.ID))
 	}
+	if err := guardRunNotWithdrawn(events, request.ID); err != nil {
+		return err
+	}
 	identity, err := loadIdentity()
 	if err != nil {
 		return err
@@ -445,6 +464,9 @@ func cmdRunExecute(args []string) error {
 }
 
 func executeRunRequest(ctx context.Context, events []StoredEvent, request *StoredEvent, identity *Identity, backend executionBackend, rerun bool) (*StoredEvent, error) {
+	if err := guardRunNotWithdrawn(events, request.ID); err != nil {
+		return nil, err
+	}
 	proposal, err := resolveEvent(events, request.Event.Subject)
 	if err != nil {
 		return nil, fmt.Errorf("resolve run proposal: %w", err)
