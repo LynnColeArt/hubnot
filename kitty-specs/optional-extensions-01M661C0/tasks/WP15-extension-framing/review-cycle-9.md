@@ -1,0 +1,29 @@
+---
+affected_files: []
+cycle_number: 9
+mission_slug: optional-extensions-01M661C0
+reproduction_command:
+reviewed_at: '2026-10-31T18:18:21Z'
+reviewer_agent: codex
+wp_id: WP15
+---
+
+# New post-approval maintenance finding — optional validator startup cost
+
+Root/architect-alphonso, 2026-10-31. Administrative maintenance reopen for a newly observed WP24 hard-gate regression, not a rewrite of any previous independent verdict. Prior source/results remain historical. A fresh independent review is required after correction.
+
+## Observed failure
+
+WP24 fixed source `2d92ff4525fbafccf79ea83391e1dcfc147b19a5` completed both full comparisons: 4,320 observations / 2,160 pairs. All elapsed budgets passed. Eighteen peak-RSS rows failed: all nine packaged native-only CGO0 commands in both registry-absent and 10,000-unrelated-record states. Median deltas were 1,326–1,774 KiB against the unchanged 1,024 KiB bound. Full report `/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP24/capture-2d92/report.json`, SHA256 `d5e8e6c53b5b57cc32e8f0aa48ba25a3be5023b6a73546ef0df88d6937d1c303`; all original raw samples remain retained. Neither rerunning unchanged code nor dropping rows, changing build settings or increasing budgets resolves this failure.
+
+Exact-binary diagnostic `GODEBUG=inittrace=1` observes baseline 33,728 initialization bytes versus candidate 879,040 (+845,312), including internal/extension 422,256 bytes, internal/artifact 317,000 bytes and main 115,224 versus baseline 9,184. Diagnostic `/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP24/diagnostic-inittrace-2d92.json`, SHA256 `8fba29e373a1579bf4519d48d8c2fe76012a7b5bcc21618c571e93b21fc1cc02`. This is allocation attribution, not a claim that allocation bytes equal RSS or independently prove final budget compliance. WP24 will requalify the full paired performance gate after real source corrections.
+
+## Owned correction
+
+Eager matches() invocations and decimal/native-identifier pattern initializers in `internal/extension/protocol.go` run before command dispatch even for native issue/project/discussion/workflow/memory commands. Preserve the exact existing patterns, anchored matching, validation/error behavior, signed bytes, closed inventories, public protocol, limits and authority semantics. Defer optional validator construction until the corresponding artifact/extension operation actually needs it, with safe concurrent first use. Avoid new dependencies, native setup, command-specific budget tricks, global GC/runtime tuning or a broader validation redesign. Change only this WP's owned production/test paths. Other owners independently address their own eager initializers.
+
+Current integrated input SHA256 for `internal/extension/protocol.go` is `ea453470d76a219174eb7bcb14cb9d145f87e7101d462538e6035372958c0b0c`. Before editing, verify the owned input equals this value or report a real discrepancy; never overwrite newer code with an old lane copy. Root will integrate only independently approved owned corrections into the full current union and verify every other input unchanged. An older lane's test run is not final integrated-source/package qualification.
+
+Demonstrate a meaningful retained RED for unnecessary eager construction (the actual failed WP24 run plus causal owned startup check), corrected lazy behavior and unchanged valid/invalid acceptance. Exercise concurrent first use under race checks and the actual public caller for this slice using standard and combined native variants as applicable. Keep frozen literal/vector and malformed/refusal tests effective. No re-signing or private-state transfer. Do not claim this isolated correction by itself passes the whole RSS budget.
+
+Load the normal implementation prompt/profile/charter, acknowledge this finding, implement and commit the narrow correction, run relevant focused checks, and wait for the normal for_review gate to exit. Root serializes one heavy local execution slot: read/edit only until explicit grant. No skip/force/bypass or fabricated Python coverage pass. Independent review must record one canonical verdict with all eight anti-pattern checks; root then owns integration and full performance requalification. No main/release/beta-acceptance change.

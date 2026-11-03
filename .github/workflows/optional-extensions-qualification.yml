@@ -1,0 +1,201 @@
+name: Optional extension package smoke
+
+# The registered portability caller selects this workflow explicitly. A relative
+# call runs this file at the same immutable caller commit, independent of H.
+on:
+  workflow_call:
+    inputs:
+      candidate_source:
+        description: Exact committed candidate source H
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  QUALIFICATION_VERSION: 0.0.0-optional-extensions-qualification.1
+  QUALIFICATION_COMPILER: go1.26.4
+  CALLER_SOURCE: ${{ github.sha }}
+  CALLER_WORKFLOW_SHA: ${{ github.workflow_sha }}
+  CALLER_WORKFLOW_REF: ${{ github.workflow_ref }}
+
+jobs:
+  build:
+    name: Freeze optional extension candidate and references
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      source: ${{ steps.freeze.outputs.source }}
+      tree: ${{ steps.freeze.outputs.tree }}
+      provenance: ${{ steps.freeze.outputs.provenance }}
+      references: ${{ steps.freeze.outputs.references }}
+      artifact: ${{ steps.upload.outputs.artifact-id }}
+      artifact_digest: ${{ steps.upload.outputs.artifact-digest }}
+    steps:
+      - name: Require an immutable source selector before checkout
+        shell: bash
+        env:
+          CANDIDATE_SOURCE: ${{ inputs.candidate_source }}
+        run: |
+          set -euo pipefail
+          [[ "$CANDIDATE_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.candidate_source }}
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.4'
+          cache: false
+      - name: Freeze all eight packages and twelve separate reference executables
+        id: freeze
+        shell: bash
+        env:
+          CANDIDATE_SOURCE: ${{ inputs.candidate_source }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/build-evidence"
+          assets="$RUNNER_TEMP/qualification-assets"
+          mkdir "$evidence" "$assets"
+          exec > >(tee "$evidence/build.log") 2>&1
+          trap 'result=$?; printf "%s\n" "$result" > "$evidence/exit"; date -u > "$evidence/finished"' EXIT
+          date -u > "$evidence/started"
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SOURCE"
+          test -z "$(git status --porcelain)"
+          test "$(go env GOVERSION)" = "$QUALIFICATION_COMPILER"
+          tree="$(git rev-parse HEAD^{tree})"
+          go version > "$evidence/compiler.txt"
+          go env GOMOD GOOS GOARCH GOVERSION > "$evidence/go-environment.txt"
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 sha256sum > "$evidence/source-inputs.before.sha256"
+          jq -n --arg caller "$CALLER_SOURCE" --arg workflow_sha "$CALLER_WORKFLOW_SHA" --arg workflow_ref "$CALLER_WORKFLOW_REF" --arg candidate "$CANDIDATE_SOURCE" --arg tree "$tree" --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" --arg job "$GITHUB_JOB" '{caller_source:$caller,caller_workflow_sha:$workflow_sha,caller_workflow_ref:$workflow_ref,candidate_source:$candidate,candidate_tree:$tree,run_id:$run,run_attempt:$attempt,job:$job,dispatch_inputs:{qualification:"optional-extensions",extension_source:$candidate}}' > "$evidence/binding.json"
+          printf '%s\n' 'go run -buildvcs=false ./cmd/hn-release --source . --rev "$CANDIDATE_SOURCE" --version "$QUALIFICATION_VERSION" --out "$assets/candidate"' > "$evidence/commands.txt"
+          go run -buildvcs=false ./cmd/hn-release --source . --rev "$CANDIDATE_SOURCE" --version "$QUALIFICATION_VERSION" --out "$assets/candidate"
+          (cd "$assets/candidate" && sha256sum -c SHA256SUMS)
+          mkdir "$assets/references"
+          : > "$evidence/reference-assets.jsonl"
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64; do
+            target_dir="${target/\//_}"
+            mkdir "$assets/references/$target_dir"
+            for sample in fake-tracker charter inventory; do
+              case "$sample" in
+                fake-tracker) package=./examples/extensions/fake-tracker ;;
+                charter) package=./examples/extensions/charter-model ;;
+                inventory) package=./examples/extensions/inventory-model ;;
+              esac
+              name="$target_dir/$sample"
+              printf 'CGO_ENABLED=0 GOOS=%s GOARCH=%s go build -buildvcs=false -trimpath -o references/%s %s\n' "${target%/*}" "${target#*/}" "$name" "$package" >> "$evidence/commands.txt"
+              CGO_ENABLED=0 GOOS="${target%/*}" GOARCH="${target#*/}" go build -buildvcs=false -trimpath -o "$assets/references/$name" "$package"
+              go version -m "$assets/references/$name" > "$assets/references/$name.buildinfo"
+              jq -n --arg name "$name" --arg target "$target" --arg sample "$sample" --arg package "$package" --arg sha256 "$(sha256sum "$assets/references/$name" | cut -d ' ' -f1)" --arg build_info_sha256 "$(sha256sum "$assets/references/$name.buildinfo" | cut -d ' ' -f1)" '{name:$name,target:$target,sample:$sample,package:$package,sha256:$sha256,build_info_sha256:$build_info_sha256}' >> "$evidence/reference-assets.jsonl"
+            done
+          done
+          jq -s --arg source "$CANDIDATE_SOURCE" --arg tree "$tree" --arg compiler "$QUALIFICATION_COMPILER" '{schema:"hn.extension-references/1",source_commit:$source,source_tree:$tree,compiler:$compiler,flags:["-buildvcs=false","-trimpath"],assets:.}' "$evidence/reference-assets.jsonl" > "$assets/references/manifest.json"
+          test "$(jq '.assets | length' "$assets/references/manifest.json")" = 12
+          find "$assets" -type f -print0 | sort -z | xargs -0 sha256sum > "$evidence/frozen-assets.sha256"
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 sha256sum > "$evidence/source-inputs.after.sha256"
+          cmp "$evidence/source-inputs.before.sha256" "$evidence/source-inputs.after.sha256"
+          git diff --exit-code
+          printf 'source=%s\ntree=%s\nprovenance=%s\nreferences=%s\n' "$CANDIDATE_SOURCE" "$tree" "$(sha256sum "$assets/candidate/PROVENANCE.json" | cut -d ' ' -f1)" "$(sha256sum "$assets/references/manifest.json" | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: optional-extensions-assets-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qualification-assets/
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optional-extensions-build-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/build-evidence/
+          if-no-files-found: error
+          retention-days: 30
+
+  native:
+    name: Extension package smoke (${{ matrix.target }})
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            target: linux/amd64
+            uname: x86_64
+          - runner: ubuntu-24.04-arm
+            target: linux/arm64
+            uname: aarch64
+          - runner: macos-15-intel
+            target: darwin/amd64
+            uname: x86_64
+          - runner: macos-15
+            target: darwin/arm64
+            uname: arm64
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.candidate_source }}
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.4'
+          cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: optional-extensions-assets-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qualification-assets
+      - name: Check exact native packages and representative product journeys
+        shell: bash
+        env:
+          EXPECTED_TARGET: ${{ matrix.target }}
+          EXPECTED_UNAME: ${{ matrix.uname }}
+          HN_WP25_GROUP: smoke
+          HN_WP25_REFERENCE_DIR: ${{ runner.temp }}/qualification-assets/references
+          GORACE: atexit_sleep_ms=0
+        run: |
+          set -euo pipefail
+          assets="$RUNNER_TEMP/qualification-assets"
+          evidence="$RUNNER_TEMP/smoke-evidence"
+          mkdir "$evidence" "$RUNNER_TEMP/unpacked"
+          uname -a > "$evidence/platform.txt"
+          git --version >> "$evidence/platform.txt"
+          test "$(uname -m)" = "$EXPECTED_UNAME"
+          test "$(go env GOOS)/$(go env GOARCH)" = "$EXPECTED_TARGET"
+          test "$(git rev-parse HEAD)" = '${{ needs.build.outputs.source }}'
+          test "$(git rev-parse HEAD^{tree})" = '${{ needs.build.outputs.tree }}'
+          if [ "$(uname -s)" = Darwin ]; then
+            sw_vers >> "$evidence/platform.txt"
+            test "$(sysctl -in sysctl.proc_translated 2>/dev/null || true)" != 1
+          fi
+          (cd "$assets/candidate" && shasum -a 256 -c SHA256SUMS) > "$evidence/checksums.txt"
+          # Artifact ZIP transport does not retain executable modes on references.
+          for target in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
+            for sample in fake-tracker charter inventory; do chmod 755 "$assets/references/$target/$sample"; done
+          done
+          for archive in "$assets/candidate"/hubnot_"$QUALIFICATION_VERSION"_"${EXPECTED_TARGET%/*}"_"${EXPECTED_TARGET#*/}"*.tar.gz; do
+            tar -xzf "$archive" -C "$RUNNER_TEMP/unpacked"
+          done
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source.before"
+          go test -race -c -o "$RUNNER_TEMP/smoke.test" .
+          result=0
+          # Short native install/runtime proof covers both package variants.
+          "$RUNNER_TEMP/smoke.test" -test.v -test.count=1 -test.timeout=2m -test.run '^TestBetaPlatformPackageInstallAndRuntime$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$evidence/install-runtime.log" || result=1
+          for variant in standard native-only; do
+            export HN_WP25_VARIANT="$variant" HN_WP25_EVIDENCE="$evidence/$variant"
+            mkdir "$HN_WP25_EVIDENCE"
+            "$RUNNER_TEMP/smoke.test" -test.v -test.count=1 -test.timeout=3m -test.run '^TestExtensionPackageQualification$' -hn-package-dir "$RUNNER_TEMP/unpacked" -hn-package-bundle "$assets/candidate" -hn-package-version "$QUALIFICATION_VERSION" -hn-package-compiler "$QUALIFICATION_COMPILER" 2>&1 | tee "$HN_WP25_EVIDENCE/results.log" || result=1
+          done
+          git ls-files -z '*.go' go.mod go.sum | xargs -0 shasum -a 256 > "$evidence/source.after"
+          cmp "$evidence/source.before" "$evidence/source.after"
+          git diff --exit-code
+          printf 'scope=package-smoke\nexhaustive=false\nexit=%s\n' "$result" > "$evidence/result.txt"
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optional-extensions-smoke-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/smoke-evidence/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,6 @@
+{
+  "version": "hn.pipeline/0",
+  "steps": [
+    {"name": "Artifact capacity boundaries", "command": "./.hn/actions/ci", "args": ["stress-artifacts"], "timeoutSeconds": 1500}
+  ]
+}

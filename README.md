@@ -208,6 +208,9 @@ required.
 
 ## Start a repository
 
+Run these commands inside an existing Git repository. For a new project, create
+and enter its directory, then run `git init` before `hn init`.
+
 ```sh
 hn init --name "Alice's device"
 hn identity public
@@ -569,6 +572,9 @@ promise global erasure from every replica.
 - [Discussions and pinned answers](docs/discussions-v1.md)
 - [Native workflows and explicit execution](docs/workflows-v1.md)
 - [Optional forge interoperability and local gh subset](docs/github-interoperability.md)
+- [Optional local extension host](docs/extensions.md)
+- [Portable typed artifacts](docs/artifacts-v1.md)
+- [Optional consumer examples](docs/extension-consumers.md)
 - [Protocol and storage](docs/protocol-v0.md)
 - [Agent Memory Protocol and operator guide](docs/memory-v0.md)
 - [Agent memory safety model](docs/memory-safety.md)
@@ -576,6 +582,7 @@ promise global erasure from every replica.
 - [Governance and policy amendments](docs/governance-v0.md)
 - [Selected replication and shallow recovery](docs/replication-v0.md)
 - [CI and runner threat model](docs/ci-v0.md)
+- [Hubnot's own CI: fast feedback and native stress runs](docs/project-ci.md)
 - [Hosted Git compatibility](docs/host-compatibility.md)
 - [Operational self-hosting proof](docs/self-hosting-alpha.md)
 

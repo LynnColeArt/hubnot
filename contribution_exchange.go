@@ -17,14 +17,18 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -1693,6 +1697,361 @@ func contributionRef(project, actor string) (string, error) {
 	return "refs/hn/contributions/" + project[7:] + "/" + actor, nil
 }
 
+// contributionClosureMaterial belongs to one raw-closure invocation. Offsets
+// remain valid while the material grows; no raw object cache crosses a call.
+type contributionClosureObject struct {
+	kind   string
+	size   int64
+	offset int
+}
+type contributionClosureMaterial struct {
+	bytes   []byte
+	objects map[string]contributionClosureObject
+}
+
+func (m *contributionClosureMaterial) Bytes() []byte { return m.bytes }
+func (m *contributionClosureMaterial) Len() int      { return len(m.bytes) }
+func (m *contributionClosureMaterial) selected(ctx context.Context, dir, oid, logical string, limit int64) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, contributionClosureGitError(logical, err)
+	}
+	object, ok := m.objects[oid]
+	if !ok || object.offset < 0 || object.size < 0 || object.size > int64(len(m.bytes))-int64(object.offset) {
+		return nil, fmt.Errorf("missing contribution object")
+	}
+	// Non-blob role bindings retain the original semantic Git show, including
+	// its formatting/error boundary. Raw transport failure never reaches here.
+	if object.kind != "blob" {
+		return projectGit(ctx, dir, nil, limit, "show", logical)
+	}
+	if object.size > limit {
+		return nil, fmt.Errorf("bounded Git %s failed: %w", logical, errors.New("Git output budget exceeded"))
+	}
+	return m.bytes[object.offset : object.offset+int(object.size)], nil
+}
+
+// Every pipe is directly owned. In particular stderr is drained without retained
+// bytes or a cap, and never delegated to an os/exec copy goroutine whose inherited
+// writer could delay Wait. Only this caller invokes Wait.
+type contributionClosureProcess struct {
+	parent          context.Context
+	cmd             *exec.Cmd
+	in, out, stderr *os.File
+	reader          *bufio.Reader
+	stderrDone      chan struct{}
+	callbackDone    chan struct{}
+	stopCallback    func() bool
+	waited          bool
+	waitErr         error
+}
+
+func contributionClosureStart(ctx context.Context, dir, mode string) (*contributionClosureProcess, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	ends := []*os.File{}
+	closeEnds := func() {
+		for _, f := range ends {
+			_ = f.Close()
+		}
+	}
+	pipe := func() (*os.File, *os.File, error) {
+		r, w, err := os.Pipe()
+		if err == nil {
+			ends = append(ends, r, w)
+		}
+		return r, w, err
+	}
+	input, in, err := pipe()
+	if err != nil {
+		return nil, err
+	}
+	out, output, err := pipe()
+	if err != nil {
+		closeEnds()
+		return nil, err
+	}
+	stderr, errorOutput, err := pipe()
+	if err != nil {
+		closeEnds()
+		return nil, err
+	}
+	cmd := exec.Command("git", "--git-dir="+dir, "cat-file", mode)
+	env := []string{}
+	for _, value := range os.Environ() {
+		key, _, _ := strings.Cut(value, "=")
+		if !strings.HasPrefix(key, "GIT_") {
+			env = append(env, value)
+		}
+	}
+	cmd.Env = append(env, "GIT_NO_REPLACE_OBJECTS=1", "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+os.DevNull, "GIT_TERMINAL_PROMPT=0", "GIT_NO_LAZY_FETCH=1")
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = input, output, errorOutput
+	if err = ctx.Err(); err != nil {
+		closeEnds()
+		return nil, err
+	}
+	if err = cmd.Start(); err != nil {
+		closeEnds()
+		return nil, err
+	}
+	_ = input.Close()
+	_ = output.Close()
+	_ = errorOutput.Close()
+	p := &contributionClosureProcess{parent: ctx, cmd: cmd, in: in, out: out, stderr: stderr, reader: bufio.NewReaderSize(out, 256), stderrDone: make(chan struct{}), callbackDone: make(chan struct{})}
+	go func() { _, _ = io.Copy(io.Discard, stderr); close(p.stderrDone) }()
+	p.stopCallback = context.AfterFunc(ctx, func() { p.closePipes(); _ = cmd.Process.Kill(); close(p.callbackDone) })
+	return p, nil
+}
+func (p *contributionClosureProcess) closePipes() {
+	_ = p.in.Close()
+	_ = p.out.Close()
+	_ = p.stderr.Close()
+}
+func (p *contributionClosureProcess) wait() error {
+	if p.waited {
+		return p.waitErr
+	}
+	p.waited = true
+	p.waitErr = p.cmd.Wait()
+	p.closePipes()
+	<-p.stderrDone
+	if !p.stopCallback() {
+		<-p.callbackDone
+	}
+	return p.waitErr
+}
+func (p *contributionClosureProcess) abort() {
+	if p.waited {
+		return
+	}
+	p.closePipes()
+	_ = p.cmd.Process.Kill()
+	_ = p.wait()
+}
+func contributionClosureGitError(logical string, err error) error {
+	return fmt.Errorf("bounded Git %s failed: %w", logical, err)
+}
+func (p *contributionClosureProcess) request(oid string) error {
+	n, err := io.WriteString(p.in, oid+"\n")
+	if err == nil && n != len(oid)+1 {
+		err = io.ErrShortWrite
+	}
+	return err
+}
+func (p *contributionClosureProcess) header() (string, error) {
+	line, err := p.reader.ReadSlice('\n')
+	if err != nil {
+		return string(line), err
+	}
+	if len(line) > 256 {
+		return "", bufio.ErrBufferFull
+	}
+	return string(line[:len(line)-1]), nil
+}
+func (p *contributionClosureProcess) readFailure(caller, phase, oid, logical string, cause error) error {
+	if p.parent.Err() != nil {
+		_ = p.in.Close()
+		err := p.wait()
+		if err == nil {
+			err = p.parent.Err()
+		}
+		return contributionClosureGitError(logical, err)
+	}
+	// EOF with a real failed child is the legacy process boundary, not an
+	// exit0 synthetic framing fault. Do not kill first and lose that ExitError.
+	if errors.Is(cause, io.EOF) || errors.Is(cause, io.ErrUnexpectedEOF) {
+		_ = p.in.Close()
+		if err := p.wait(); err != nil {
+			return contributionClosureGitError(logical, err)
+		}
+	}
+	return fmt.Errorf("%s raw %s protocol failed for %s: %w", caller, phase, oid, cause)
+}
+func (p *contributionClosureProcess) finalizationError(caller, phase string, cause error) error {
+	if p.parent.Err() != nil {
+		cause = p.wait()
+		if cause == nil {
+			cause = p.parent.Err()
+		}
+	}
+	return fmt.Errorf("%s raw %s finalization failed: %w", caller, phase, cause)
+}
+
+func (p *contributionClosureProcess) finish(caller, phase string) error {
+	if err := p.in.Close(); err != nil {
+		return p.finalizationError(caller, phase, err)
+	}
+	_, err := p.reader.ReadByte()
+	if err != io.EOF {
+		if err == nil {
+			err = errors.New("trailing stdout")
+		}
+		return p.finalizationError(caller, phase, err)
+	}
+	if err = p.wait(); err != nil {
+		return p.finalizationError(caller, phase, err)
+	}
+	return nil
+}
+
+func contributionClosureMetadata(line, oid string) (contributionClosureObject, error) {
+	fields := strings.Fields(line)
+	if len(fields) == 2 && fields[0] == oid && fields[1] == "missing" {
+		return contributionClosureObject{}, errors.New("Git byte budget exceeded")
+	}
+	if len(fields) != 3 || fields[0] != oid || strings.Join(fields, " ") != line {
+		return contributionClosureObject{}, errors.New("invalid object header")
+	}
+	kind := fields[1]
+	if kind != "blob" && kind != "tree" && kind != "commit" && kind != "tag" {
+		return contributionClosureObject{}, errors.New("invalid object type")
+	}
+	n, err := strconv.ParseInt(fields[2], 10, 64)
+	if err != nil || n < 0 {
+		return contributionClosureObject{}, errors.New("Git byte budget exceeded")
+	}
+	if strconv.FormatInt(n, 10) != fields[2] {
+		return contributionClosureObject{}, errors.New("noncanonical object size")
+	}
+	return contributionClosureObject{kind: strings.Clone(kind), size: n}, nil
+}
+
+func contributionRawClosure(ctx context.Context, dir string, roots []string, limits migration.Limits, framedLimit int64, caller string) (*contributionClosureMaterial, error) {
+	result := &contributionClosureMaterial{bytes: []byte(projectGitSchema), objects: map[string]contributionClosureObject{}}
+	if len(roots) == 0 {
+		return result, nil
+	}
+	// Preserve projectObjectIDs' enumeration/count/dedup/sort semantics locally;
+	// its independent users retain their existing implementation unchanged.
+	raw, err := projectGit(ctx, dir, []byte(strings.Join(roots, "\n")+"\n"), int64(limits.GitObjects)*65+1, "rev-list", "--objects", "--no-object-names", "--stdin")
+	if err != nil {
+		return nil, err
+	}
+	ids, seen := []string{}, map[string]bool{}
+	for _, oid := range strings.Fields(string(raw)) {
+		if !migration.ValidOID(oid) || seen[oid] {
+			continue
+		}
+		seen[oid] = true
+		ids = append(ids, oid)
+		if len(ids) > limits.GitObjects {
+			return nil, errors.New("Git traversal budget exceeded")
+		}
+	}
+	sort.Strings(ids)
+	if len(ids) == 0 {
+		return result, nil
+	}
+	metadata, err := contributionClosureStart(ctx, dir, "--batch-check")
+	if err != nil {
+		return nil, contributionClosureGitError("--batch-check=%(objectsize)", err)
+	}
+	defer metadata.abort()
+	var total int64
+	for _, oid := range ids {
+		if err = metadata.request(oid); err != nil {
+			return nil, contributionClosureGitError("--batch-check=%(objectsize)", err)
+		}
+		line, e := metadata.header()
+		if e != nil {
+			return nil, metadata.readFailure(caller, "metadata", oid, "--batch-check=%(objectsize)", e)
+		}
+		object, e := contributionClosureMetadata(line, oid)
+		if e != nil {
+			if e.Error() == "Git byte budget exceeded" {
+				return nil, e
+			}
+			return nil, fmt.Errorf("%s raw metadata protocol failed for %s: %w", caller, oid, e)
+		}
+		if object.size > limits.GitObjectBytes || object.size > limits.GitTotalBytes-total {
+			return nil, errors.New("Git byte budget exceeded")
+		}
+		total += object.size
+		result.objects[oid] = object
+	}
+	if err = metadata.finish(caller, "metadata"); err != nil {
+		return nil, err
+	}
+	// The first worker has exited and every owned descriptor/callback/drainer
+	// joined before the second constructor is reachable.
+	var body *contributionClosureProcess
+	defer func() {
+		if body != nil {
+			body.abort()
+		}
+	}()
+	var material bytes.Buffer
+	material.WriteString(projectGitSchema)
+	for _, oid := range ids {
+		object := result.objects[oid]
+		if framedLimit < int64(material.Len())+256 || object.size > framedLimit-int64(material.Len())-256 {
+			if caller == "retained" {
+				return nil, errors.New("retained snapshot byte bound")
+			}
+			return nil, errors.New("contribution ref byte limit")
+		}
+		if body == nil {
+			body, err = contributionClosureStart(ctx, dir, "--batch")
+			if err != nil {
+				return nil, contributionClosureGitError(oid, err)
+			}
+		}
+		if err = body.request(oid); err != nil {
+			return nil, contributionClosureGitError(oid, err)
+		}
+		line, e := body.header()
+		if e != nil {
+			return nil, body.readFailure(caller, "body", oid, oid, e)
+		}
+		if line == oid+" missing" {
+			cause := "missing contribution object"
+			if caller == "retained" {
+				cause = "retained object unavailable"
+			}
+			return nil, contributionClosureGitError(oid, errors.New(cause))
+		}
+		expected := fmt.Sprintf("%s %s %d", oid, object.kind, object.size)
+		if line != expected {
+			return nil, fmt.Errorf("%s raw body protocol failed for %s: %w", caller, oid, errors.New("object header changed"))
+		}
+		if object.size > int64(int(^uint(0)>>1)) {
+			return nil, errors.New("Git byte budget exceeded")
+		}
+		data := make([]byte, int(object.size))
+		if _, e = io.ReadFull(body.reader, data); e != nil {
+			return nil, body.readFailure(caller, "body", oid, oid, e)
+		}
+		sep, e := body.reader.ReadByte()
+		if e != nil {
+			return nil, body.readFailure(caller, "body", oid, oid, e)
+		}
+		if sep != '\n' {
+			return nil, fmt.Errorf("%s raw body protocol failed for %s: %w", caller, oid, errors.New("object body separator"))
+		}
+		var digest hash.Hash
+		if len(oid) == 40 {
+			digest = sha1.New()
+		} else {
+			digest = sha256.New()
+		}
+		_, _ = fmt.Fprintf(digest, "%s %d\x00", object.kind, object.size)
+		_, _ = digest.Write(data)
+		if hex.EncodeToString(digest.Sum(nil)) != oid {
+			return nil, fmt.Errorf("%s raw object hash mismatch: %s", caller, oid)
+		}
+		fmt.Fprintf(&material, "%s\n", expected)
+		object.offset = material.Len()
+		material.Write(data)
+		material.WriteByte('\n')
+		result.objects[oid] = object
+	}
+	if err = body.finish(caller, "body"); err != nil {
+		return nil, err
+	}
+	result.bytes = material.Bytes()
+	return result, nil
+}
+
 // ReadContributionManifest reads only an explicit canonical raw-retention ref.
 // Its records are signature-authenticated data, not admitted project authority.
 // Full commit/object history must fit the same finite bytes/count/depth bounds.
@@ -1724,33 +2083,9 @@ func ReadContributionManifest(ctx context.Context, gitDir, project, actor string
 	if e != nil {
 		return nil, "", e
 	}
-	ids, e := projectObjectIDs(ctx, gitDir, []string{head}, ml)
+	material, e := contributionRawClosure(ctx, gitDir, []string{head}, ml, l.DecodedBytes, "contribution")
 	if e != nil {
 		return nil, "", e
-	}
-	// Inspect raw objects before any parser could expand nested material.
-	var material bytes.Buffer
-	material.WriteString(projectGitSchema)
-	for _, id := range ids {
-		meta, e := projectGit(ctx, gitDir, []byte(id+"\n"), 256, "cat-file", "--batch-check=%(objecttype) %(objectsize)")
-		if e != nil {
-			return nil, "", e
-		}
-		f := strings.Fields(string(meta))
-		if len(f) != 2 {
-			return nil, "", fmt.Errorf("missing contribution object")
-		}
-		n, e := strconv.ParseInt(f[1], 10, 64)
-		if e != nil || n < 0 || n > l.DecodedBytes-int64(material.Len())-256 {
-			return nil, "", fmt.Errorf("contribution ref byte limit")
-		}
-		data, e := projectGit(ctx, gitDir, nil, n, "cat-file", f[0], id)
-		if e != nil {
-			return nil, "", e
-		}
-		fmt.Fprintf(&material, "%s %s %d\n", id, f[0], n)
-		material.Write(data)
-		material.WriteByte('\n')
 	}
 	if _, _, e = contributionObjectPreflight(ctx, material.Bytes(), l); e != nil {
 		return nil, "", e
@@ -1771,6 +2106,7 @@ func ReadContributionManifest(ctx context.Context, gitDir, project, actor string
 		return nil, "", e
 	}
 	names := map[string]bool{}
+	namedObjects := map[string]string{}
 	for _, entry := range strings.Split(string(tree), "\x00") {
 		if entry == "" {
 			continue
@@ -1781,6 +2117,7 @@ func ReadContributionManifest(ctx context.Context, gitDir, project, actor string
 			return nil, "", fmt.Errorf("unsupported contribution manifest tree")
 		}
 		names[name] = true
+		namedObjects[name] = f[2]
 	}
 	if len(names) != 1+len(m.Records)*2 || !names["manifest.json"] {
 		return nil, "", fmt.Errorf("unselected manifest material")
@@ -1796,11 +2133,11 @@ func ReadContributionManifest(ctx context.Context, gitDir, project, actor string
 		if !names[payloadName] || !names[signatureName] {
 			return nil, "", fmt.Errorf("missing selected contribution record")
 		}
-		payload, e := projectGit(ctx, gitDir, nil, c.MaxRecordBytes, "show", head+":"+payloadName)
+		payload, e := material.selected(ctx, gitDir, namedObjects[payloadName], head+":"+payloadName, c.MaxRecordBytes)
 		if e != nil {
 			return nil, "", e
 		}
-		sig, e := projectGit(ctx, gitDir, nil, 64, "show", head+":"+signatureName)
+		sig, e := material.selected(ctx, gitDir, namedObjects[signatureName], head+":"+signatureName, 64)
 		if e != nil {
 			return nil, "", e
 		}

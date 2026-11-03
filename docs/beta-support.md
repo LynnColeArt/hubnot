@@ -48,8 +48,18 @@ a promise that every Git 2.x release or host configuration is qualified.
 
 These observations come from the [0.0.3-dev release notes](https://github.com/LynnColeArt/hubnot/releases/tag/v0.0.3-dev).
 They do not transfer automatically to a new candidate. Windows distribution is
-outside this beta target set. Apple signing/notarization is a distribution
-decision still to resolve; current downloads have neither.
+outside this beta target set.
+
+**Mac distribution decision, 2026-11-03:** the maintainer accepts Mac beta
+packages without Developer ID signing or notarization as a documented beta
+limitation. Signing is separate follow-up work, not a prerequisite for functional
+qualification or independent review. Release notes must disclose the Gatekeeper
+limitation: browser-downloaded quarantined copies of the extension candidate
+were rejected and direct launch failed, as recorded in
+[issue #24](https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846).
+Native runtime/CI passes do not certify that download/install path. Missing
+independent installation observations remain pending; this decision supplies
+neither a successful browser-install result nor general beta acceptance.
 
 An ordinary full local checkout and local bare Git transport form the baseline.
 Shallow repositories require complete selected dependencies or the explicit

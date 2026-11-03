@@ -287,3 +287,52 @@ normal Git behavior. Suppressing hooks on the private uncommitted operation guar
 does not globally disable operator hooks. Adapter-free `noforge` retains native
 execution, follow-ups, local/archive work and foreign inspection with Git and no
 provider credentials, Python or service.
+
+
+## Optional local extension host
+
+Only explicit `hn extension run` launches the operator-selected registered
+executable, without a shell. Repository declarations and manifests are inert;
+register/inspect/enable/disable/remove never launch or probe. Ordinary native and
+generic artifact commands do not read executable registration, start modules or
+write extension state. Native setup still requires only the supplied hn and Git;
+optional source samples and their fake service are separate experiments.
+
+A module runs as the same OS user with ordinary filesystem and network powers.
+**The extension host is not a sandbox.** Grants mediate host calls and do not
+prevent malicious same-user code from accessing files directly. Owned process
+group cleanup cannot contain a process that escapes its group. Installed Git
+hooks retain their ordinary operator-controlled behavior; no generic host grant
+creates governance, execution, identity-lifecycle, memory-write, provider or
+transport-apply authority.
+
+Registration binds physical executable bytes/argv and manifest to a fresh private
+instance; repository enablement/grants bind the physical common Git directory and
+revocable epoch. Clones do not inherit trust. Re-registration cannot resurrect old
+grants; replacement requires explicit operator action. Every request rechecks
+actual scope/binding, and native adapters retain shared admission, moderation,
+retention and selected-authority checks. Custom writes/change capture under
+selected contribution policy are unsupported before effects. Signature validity
+alone is neither admission nor visibility.
+
+Keep user-local registration, common-Git enablement/control/capture state, signing
+keys, custom immutable intents, provider credentials, connector journals/results
+and raw stderr private. Public export includes selected verified artifact closure,
+never those local files. Explicit opaque preservation addresses only bounded
+public quarantine objects; it is not arbitrary Git-object or private-file access
+and never grants accepted visibility. Removing an executable preserves public
+signed records and plugin-free generic access.
+
+Requests/frames/schemas/captures are bounded and closed. Cancellation, disable,
+EOF and response loss preserve settled native refusals or original mutation
+uncertainty. A lost acknowledgement does not prove absence; no detached writer
+may publish after a definitive refusal. Kernel I/O can exceed cancellation budgets,
+so cleanup deadlines are observed limits rather than a kernel-I/O SLA. External
+API reconciliation remains connector-owned; there is no global exactly-once claim.
+
+Custom types, schema validity, exact signed selections and search matches are
+inert data, not doctrine activation, project policy, business truth, prompt
+instructions or permission to execute. Exact historical references do not silently
+follow latest heads. See [host methods/errors/recovery](extensions.md),
+[portable artifact semantics](artifacts-v1.md) and
+[consumer recipes and qualification scope](extension-consumers.md).
