@@ -254,6 +254,7 @@ func cmdRunRequest(args []string) error {
 		return err
 	}
 	fmt.Printf("Requested pipeline %s as run %s\n", oneLine(event.Pipeline), shortID(stored.ID))
+	fmt.Printf("Request: %s\n", stored.ID)
 	fmt.Printf("Commit: %s  Definition: %s\n", shortOID(event.Commit), shortID(event.Definition))
 	fmt.Println("Recorded locally; run 'hn sync REMOTE' to publish this request so remote runners can see it.")
 	return nil
@@ -364,9 +365,9 @@ func cmdRunShow(query string) error {
 	}
 	fmt.Printf("%s  pipeline %s\n", shortID(request.ID), oneLine(request.Event.Pipeline))
 	fmt.Printf("Requested by %s at %s\n", oneLine(request.Event.ActorName), request.Event.Timestamp)
-	fmt.Printf("Proposal: %s\nCommit: %s\nDefinition: %s\n", shortID(request.Event.Subject), request.Event.Commit, request.Event.Definition)
+	fmt.Printf("Request: %s\nProposal: %s\nCommit: %s\nDefinition: %s\n", request.ID, shortID(request.Event.Subject), request.Event.Commit, request.Event.Definition)
 	if withdrawal := findRunWithdrawal(events, request.ID); withdrawal != nil {
-		fmt.Printf("Status: withdrawn\nRequest: %s\nWithdrawal: %s\nReason: %s\n", request.ID, withdrawal.ID, safeText(withdrawal.Event.Body))
+		fmt.Printf("Status: withdrawn\nWithdrawal: %s\nReason: %s\n", withdrawal.ID, safeText(withdrawal.Event.Body))
 	}
 	results := currentRunResults(events, request.ID)
 	if len(results) == 0 {

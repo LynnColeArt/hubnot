@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -15,6 +16,21 @@ import (
 )
 
 func TestRunWithdrawalCLI(t *testing.T) {
+	// Go's VCS discovery can select the enclosing primary repository for a lane.
+	// Reuse the established source-binding pattern without changing CLI fixture
+	// environments: only compilation receives the registered source Git context.
+	source, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	git := exec.Command("git", "rev-parse", "--absolute-git-dir")
+	gitDir, err := git.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("GIT_DIR", strings.TrimSpace(string(gitDir)))
+	t.Setenv("GIT_WORK_TREE", source)
+
 	for _, variant := range []struct{ name, tags string }{{"standard", ""}, {"native-only", "nogithub,noforge"}} {
 		t.Run(variant.name, func(t *testing.T) {
 			binary := betaContributionBinary(t, variant.tags != "")
@@ -74,6 +90,16 @@ func runWithdrawalDiscovery(cli *betaContributionCLI) {
 	}
 }
 
+// Independent public wire mirror; changing production receipt field names must
+// not silently update the contract assertions.
+type withdrawalCLIReceipt struct {
+	Schema       string `json:"schema"`
+	RequestID    string `json:"request_id"`
+	WithdrawalID string `json:"withdrawal_id"`
+	Replayed     bool   `json:"replayed"`
+	Publication  string `json:"publication"`
+}
+
 type withdrawalCLIFixture struct {
 	cli                                                        *betaContributionCLI
 	repo, remote, marker, actor, base, head, proposal, request string
@@ -124,10 +150,36 @@ func (f *withdrawalCLIFixture) actorHead(repo, actor, kind string) (string, stri
 	}
 	return fmt.Sprintf("sha256:%x", sha256.Sum256([]byte(raw))), raw
 }
+func publicRunRequestID(t *testing.T, output string) string {
+	t.Helper()
+	var full string
+	for _, line := range strings.Split(output, "\n") {
+		if strings.HasPrefix(line, "Request: ") {
+			if full != "" {
+				t.Fatal("duplicate full request identity")
+			}
+			full = strings.TrimPrefix(line, "Request: ")
+		}
+	}
+	if !validEventID(full) {
+		t.Fatalf("public output omitted a usable full request ID before withdrawal: %s", output)
+	}
+	return full
+}
 func (f *withdrawalCLIFixture) newRequest() string {
 	f.cli.t.Helper()
-	f.cli.hn(f.repo, true, "run", "request", f.proposal, "proof")
-	id, _ := f.actorHead(f.repo, f.actor, "run.request")
+	output := f.cli.hn(f.repo, true, "run", "request", f.proposal, "proof")
+	id := publicRunRequestID(f.cli.t, output)
+	// A user can also resolve a known prefix through the existing read command;
+	// the pending request must expose the full writer identifier before withdrawal.
+	shown := f.cli.hn(f.repo, true, "run", "show", shortID(id))
+	if fromShow := publicRunRequestID(f.cli.t, shown); fromShow != id {
+		f.cli.t.Fatal("pending show changed full request identity")
+	}
+	actual, _ := f.actorHead(f.repo, f.actor, "run.request")
+	if id != actual {
+		f.cli.t.Fatal("public request identifier differs from actual signed event")
+	}
 	return id
 }
 func (f *withdrawalCLIFixture) cloneWorker() string {
@@ -170,10 +222,10 @@ func (f *withdrawalCLIFixture) execute(repo, request string) {
 		f.cli.t.Fatal("eligible actual pipeline did not append marker")
 	}
 }
-func (f *withdrawalCLIFixture) withdraw(reason string) runWithdrawalReceipt {
+func (f *withdrawalCLIFixture) withdraw(reason string) withdrawalCLIReceipt {
 	f.cli.t.Helper()
 	raw := f.cli.hn(f.repo, true, "run", "withdraw", f.request, "--reason", reason, "--json")
-	receipt := betaContributionJSON[runWithdrawalReceipt](f.cli.t, raw)
+	receipt := betaContributionJSON[withdrawalCLIReceipt](f.cli.t, raw)
 	if receipt.Schema != "hn.run-withdrawal/1" || receipt.RequestID != f.request || !validEventID(receipt.WithdrawalID) || receipt.Replayed || receipt.Publication != "explicit-sync" {
 		f.cli.t.Fatalf("bad withdrawal receipt: %s", raw)
 	}
@@ -200,14 +252,18 @@ func runWithdrawalPublicJourney(cli *betaContributionCLI) {
 	}
 	// Advance the requester chain, then retry in new real CLI processes.
 	cli.hn(f.repo, true, "issue", "open", "--json", "Same-actor continuation")
-	retry := betaContributionJSON[runWithdrawalReceipt](t, f.unchanged(f.repo, true, "run", "withdraw", f.request, "--reason", "moved elsewhere", "--json"))
+	retry := betaContributionJSON[withdrawalCLIReceipt](t, f.unchanged(f.repo, true, "run", "withdraw", f.request, "--reason", "moved elsewhere", "--json"))
 	if !retry.Replayed || retry.WithdrawalID != receipt.WithdrawalID || retry.RequestID != f.request {
 		t.Fatal("restart retry signed new intention")
 	}
 	betaContributionContains(t, f.unchanged(f.repo, true, "run", "withdraw", f.request, "--reason", " moved elsewhere "), receipt.WithdrawalID, f.request, "sync REMOTE")
 	betaContributionContains(t, f.unchanged(f.repo, false, "run", "withdraw", f.request, "--reason", "changed reason"), "different reason")
 	betaContributionContains(t, f.unchanged(f.repo, true, "run", "list"), "withdrawn", receipt.WithdrawalID, f.request)
-	betaContributionContains(t, f.unchanged(f.repo, true, "run", "show", f.request), "Status: withdrawn", receipt.WithdrawalID, f.request, "moved elsewhere")
+	shown := f.unchanged(f.repo, true, "run", "show", f.request)
+	betaContributionContains(t, shown, "Status: withdrawn", receipt.WithdrawalID, f.request, "moved elsewhere")
+	if publicRunRequestID(t, shown) != f.request {
+		t.Fatal("withdrawn show changed or duplicated request identity")
+	}
 	cli.hn(f.repo, true, "sync", "origin")
 	cli.hn(worker, true, "sync", "origin")
 	cli.hn(worker, true, "sync", "origin")
@@ -275,7 +331,7 @@ func runWithdrawalLegacyRetry(cli *betaContributionCLI) {
 		t.Fatal(err)
 	}
 	betaContributionContains(t, f.unchanged(f.repo, false, "run", "withdraw", f.request, "--reason", "changed"), "different reason")
-	retry := betaContributionJSON[runWithdrawalReceipt](t, f.unchanged(f.repo, true, "run", "withdraw", f.request, "--reason", "Legacy retry", "--json"))
+	retry := betaContributionJSON[withdrawalCLIReceipt](t, f.unchanged(f.repo, true, "run", "withdraw", f.request, "--reason", "Legacy retry", "--json"))
 	if !retry.Replayed || retry.WithdrawalID != receipt.WithdrawalID {
 		t.Fatal("legacy replay changed withdrawal")
 	}
