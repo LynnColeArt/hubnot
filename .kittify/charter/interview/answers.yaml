@@ -17,9 +17,14 @@ answers:
     Run the race detector for concurrency-sensitive changes and add regression
     tests for trust boundaries, malformed input, conflicts, and partial failure.
   quality_gates: >-
-    Require gofmt-clean code, go test -race ./..., go vet ./..., go build ./...,
-    git diff --check, protocol documentation updates for wire or trust-semantic
-    changes, and Spec Kitty review before a work package is approved.
+    Require relevant behavioral Go race regressions, native fast/default controls,
+    gofmt-clean code, go vet ./..., go build ./..., git diff --check, protocol
+    documentation updates for wire or trust-semantic changes, and independent
+    Spec Kitty review before a work package is approved. Before mission acceptance
+    run affected native integration, migration, protocol, runner, trust, recovery
+    and compatibility cases. Preserve exhaustive capacity/stress/transport and
+    real-clock soak suites as separately tracked native release prerequisites;
+    do not claim scoped checks establish exhaustive coverage or weaken tests.
   review_policy: >-
     Develop on focused feature branches with narrowly staged commits. Review
     each Spec Kitty work package before approval; when Hubnot can represent
