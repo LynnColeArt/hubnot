@@ -121,6 +121,80 @@ result loss**, not a claim to reproduce a transport crash. A genuinely uncertain
 lookup must stop; do not replay on an invented absence or change payload/parents
 under the old key. The publisher has no durable recovery journal.
 
+### Publish version 2 and convert an item
+
+This optional author recipe continues the version-1 item above; ordinary native
+Hubnot commands require none of it. Keep the same `PRIVATE` directory and registered
+`$PRIVATE/command.json` / `$PRIVATE/result.json` paths from the initial journey.
+That directory remains private (mode 0700), outside public Git, with private JSON
+files. Run in the initialized author repository while the publisher is enabled;
+if you already removed it below, explicitly register and enable it again first.
+
+Paste **complete returned IDs**, including `sha256:`, at the prompts below.
+`TYPE_V1` is the original type publication's `data.event_id`; `RECORD_ID` is the
+item opening's `data.resource_id`. `OLD_HEAD` is its current sole head, obtained
+with `hn artifact heads`; for the unchanged version-1 item it equals the opening
+ID. Do not convert a conflicting record with this sole-head recipe.
+
+```sh
+umask 077
+printf 'Paste the full version-1 type data.event_id: '
+read -r TYPE_V1
+printf 'Paste the full item opening data.resource_id: '
+read -r RECORD_ID
+hn artifact heads "$RECORD_ID" --json
+printf 'Paste the full current sole head ID: '
+read -r OLD_HEAD
+cat > "$PRIVATE/command.json" <<JSON
+{"action":"type","model":"item","schema_version":2,"parents":["$TYPE_V1"],"operation":"guide-item-type-v2"}
+JSON
+cp "$PRIVATE/command.json" "$PRIVATE/type-v2-command.json"
+rm -f "$PRIVATE/result.json"
+hn extension run example.inventory/publisher --json && cat "$PRIVATE/result.json"
+```
+
+**Stop unless the private result has `ok:true`.** Management `ok:true` / exit 0
+alone does not establish business success: an immutable-key or schema refusal
+can complete a session normally. On failure, retain the exact input/error and
+follow its recovery instruction. No Python or jq is needed to read the JSON.
+
+After business success, copy the full new type `data.event_id` at the next
+prompt. Publishing it has not changed the old item's pinned schema:
+
+```sh
+hn artifact show "$RECORD_ID" --json
+printf 'Paste the full version-2 type data.event_id: '
+read -r TYPE_V2
+cat > "$PRIVATE/command.json" <<JSON
+{"action":"convert","model":"item","operation":"guide-pump-convert-v2","record":"$RECORD_ID","parents":["$OLD_HEAD"],"type_revision":"$TYPE_V2","title":"Pump 42","content":"Exact maintenance text\n雪","fields":{"sku":"PUMP-0042","quantity":7,"location":"North shelf","unit":"pieces"},"members":[],"relationships":[],"conversion_sources":["$OLD_HEAD"]}
+JSON
+cp "$PRIVATE/command.json" "$PRIVATE/convert-v2-command.json"
+rm -f "$PRIVATE/result.json"
+hn extension run example.inventory/publisher --json && cat "$PRIVATE/result.json"
+```
+
+Again continue only on the private business `ok:true`. The full state above is
+for the sample Pump 42; preserve your own title/content/fields/members/relationships
+when converting a different item. The old sole head appears explicitly in both
+`parents` and `conversion_sources`; the new declaration is the exact `TYPE_V2`,
+not a type name or an implied latest revision. Inspect the result and history:
+
+```sh
+printf 'Paste the full conversion data.event_id: '
+read -r CONVERTED_ID
+hn artifact inspect --id "$CONVERTED_ID" --json
+hn artifact show "$RECORD_ID" --json
+hn artifact inspect --id "$OLD_HEAD" --json
+hn artifact history "$RECORD_ID" --json
+```
+
+Current show now selects version 2 with `unit: pieces`; exact old inspection still
+contains version 1 and its original fields/text. To transfer both selections,
+explicitly include both `RECORD_ID` and `CONVERTED_ID` in push/export. Keep the
+saved command for an identical replay; changing a request under either original
+operation key must refuse. Use a fresh key only for a deliberately new intent,
+not to bypass an uncertain operation or a refused replay.
+
 For independent public transfer, choose a new absolute remote directory. Retain
 RECORD_ID (public) for the reader, and configure the same remote there:
 

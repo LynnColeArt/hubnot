@@ -71,6 +71,10 @@ new exact type revision and supply the full new fields, exact old sole head in
 `parents`, and that same head in `conversion_sources`. All older signed records
 retain their original exact schema, text, fields, order and relationships.
 
+The [complete schema-v2 conversion recipe](../../../docs/extension-consumers.md#publish-version-2-and-convert-an-item)
+in the packaged consumer guide shows private command files, full-ID prompts,
+explicit declaration parents, conversion sources and business-result checks.
+
 `open`, `revise`, `resolve` and `convert` use the full command state shown above.
 `record` is null for open and the full opening ID otherwise. `revise` requires the
 current sole head; `resolve` requires every current head in increasing ID order.

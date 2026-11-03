@@ -208,6 +208,9 @@ required.
 
 ## Start a repository
 
+Run these commands inside an existing Git repository. For a new project, create
+and enter its directory, then run `git init` before `hn init`.
+
 ```sh
 hn init --name "Alice's device"
 hn identity public
