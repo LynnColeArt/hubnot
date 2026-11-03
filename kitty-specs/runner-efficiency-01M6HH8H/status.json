@@ -115,7 +115,7 @@
     },
     "WP04": {
       "actor": "codex",
-      "agent": null,
+      "agent": "codex",
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -125,7 +125,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "WP04 ready364939d0: original-requester idempotent withdrawal CLI, full request IDs before writing, static keyless discovery, status and future-start controls preserve moderation/history/in-flight/default workflows. Standard+native actual CLI, native source race, metadata-free source discovery, native fast/default, static and DarwinARM64 cross-build gates PASS with source/input/binary hash bindings. Evidence /home/lynn/Documents/Codex/2026-11-03/hubnot-runner-efficiency/WP04/IMPLEMENTATION.md. Original full20m timeout/deep release qualification remain incomplete; framework pytest baseline unsupported. Normal gate; no overrides, release or self-approval.",
-        "Independent review requests changes: WP04-R1 P2 reproduced at fixed 364939d0 / source-identical 8423df28. Under enabled moderation, withdrawn public execution migrates legacy identity in outer contributionRunBoundary before handler guard; creates active and identities/<actor>.json despite refusal. Preserve admission/execution permissions and late-result acceptance while moving refusal before signer migration; scoped CLI regression required. Existing actual standard/native CLI journeys, distributed default and in-flight controls PASS. Shared lane-b contracts remain intact; no WP05 verdict. Reproducer and exact paths in canonical review feedback."
+        "Independent review requests changes: WP04-R1 P2 reproduced at fixed 364939d0 / source-identical 8423df28. Under enabled moderation, withdrawn public execution migrates legacy identity in outer contributionRunBoundary before handler guard; creates active and identities/<actor>.json despite refusal. Preserve admission/execution permissions and late-result acceptance while moving refusal before signer migration; scoped CLI regression required. Existing actual standard/native CLI journeys, distributed default and in-flight controls PASS. Shared lane-b contracts remain intact; no WP05 verdict. Reproducer and exact paths in canonical review feedback.",
+        "WP04-R1 fixed860f675c: after existing proposal admission, outer moderation refuses observed withdrawn execution before migrating legacy signer; eligible permission/loading path unchanged. Standard/native combined regression preserves private state/marker, then prepared eligible request executes from same untouched legacy state. Focused/default/in-flight race, nativefast, static/committed diff and DarwinARM64 compile gates PASS. Causal actual CLI red and source/binary bindings in /home/lynn/Documents/Codex/2026-11-03/hubnot-runner-efficiency/WP04/fix-r1/IMPLEMENTATION.md. Original full timeout/deep qualification remain incomplete. Independent re-review required; no overrides or self-approval."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
