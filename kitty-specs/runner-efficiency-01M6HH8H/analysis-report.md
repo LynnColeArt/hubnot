@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: runner-efficiency-01M6HH8H
 mission_id: 01M6HH8H0T23C5T5BABHJWKVTV
-generated_at: '2026-11-03T20:47:20.123742+00:00'
+generated_at: '2026-11-03T21:39:17.722396+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
@@ -12,19 +12,19 @@ input_artifacts:
     sha256: 7847a83eaeae0a88ebf4f876d0a512eb94b6c8b87d9571855cfc9363d4aa13e3
   plan.md:
     path: kitty-specs/runner-efficiency-01M6HH8H/plan.md
-    sha256: c5cfece2a3390d46cd10b69085cde1c12bc1fbac11d1bd71b7b0faeddde9c17d
+    sha256: b0ef4b51ba3f54aea96ff5db1496f8781b254bb7a5a9a2abe2e792d3ced54f0f
   tasks.md:
     path: kitty-specs/runner-efficiency-01M6HH8H/tasks.md
     sha256: 02b0bf2cd4756948dd784e28fe0e72536a33b2a1f48d072fda852f2054e047bb
   charter:
     path: .kittify/charter/charter.yaml
-    sha256: 404c65fe9e64919858d009c763644aefbfd369884d573d1986e3db7fa1f14bc9
+    sha256: 3b0165cdbea9e22adf47d441d2e05c0acad4513350b2bce8e87924a03fe2ee5a
 verdict: unknown
 issue_counts:
-  info:
-  high:
   medium:
   low:
+  high:
+  info:
   critical:
 findings: []
 ---
@@ -44,9 +44,18 @@ No production implementation or test execution is claimed by this analysis.
 
 ## Resolved findings
 
-- The plan and all WPs now require the charter's full source race command,
-  go test -race -timeout 20m ./..., before review at each changed head, plus
-  focused/static checks. It runs natively/local; hosted CI stays bounded.
+- The initial monolithic native full race gate at f60d4046 timed out after
+  1200s; retain it as failed/incomplete with regression attribution unknown.
+  Captured inventory contains 988 root tests plus one example, including deep
+  capacity and real-clock cases. Independent governance review approved the
+  explicit versioned amendment9fba89b5 (count correctionfacd6417): relevant
+  behavioral race regressions, nativefast/default and static checks before
+  each review, affected integration/migration/protocol/trust/runner/recovery
+  coverage before mission acceptance, with exact unrun deep selections and
+  commands tracked before source-only merge as native release prerequisites.
+  No assertion, fixture size or deadline is weakened; no full pass is claimed.
+  All five active WP paragraphs and authoritative/companion/interview governance
+  now agree; preflight passed. This is planning approval, not WP approval.
 - NFR-001 now describes supported built-in Git/SSH prompt suppression and the
   intentional configured-helper trust boundary instead of guaranteeing arbitrary
   custom executable behavior.
