@@ -1,0 +1,92 @@
+package artifact
+
+import "context"
+
+// Canonical validates the bounded hn-artifact JSON value domain before returning
+// C(value). Unlike signed-envelope Verify, unsigned mutation input may include
+// noncanonical spacing and object key order.
+func Canonical(raw []byte) ([]byte, error) {
+	_, canonical, err := canonicalValue(raw)
+	return canonical, err
+}
+
+// ValidateOpening checks complete unsigned opening payloads before a writer
+// creates an immutable intent or asks the native signer to sign. It uses the
+// exact declaration already validated by ValidateType, never a latest-name lookup.
+func (t TypeDeclaration) ValidateOpening(ctx context.Context, raw []byte) error {
+	if t.schema == nil {
+		return refuse("invalid_input", "opening requires a validated exact declaration")
+	}
+	value, err := validationValue(ctx, raw, MaxEnvelopeBytes)
+	if err != nil {
+		return err
+	}
+	payload, ok := value.(map[string]any)
+	if !ok {
+		return refuse("invalid_input", "opening payload must be an object")
+	}
+	if err = payloadEnvelope("record.open", payload, nil); err != nil {
+		return err
+	}
+	if text(payload, "type_id") != t.TypeID || text(payload, "shape") != t.Shape {
+		return refuse("invalid_input", "opening type identity or shape mismatch")
+	}
+	return t.schema.validate(ctx, payload["fields"], 0)
+}
+
+// ValidateRecordContext shares the existing immediate record rules with the
+// bounded accepted-history loader. The caller has already checked the strict
+// JSON value domain and each signed envelope, bounded the parent/model objects,
+// and charged the complete history to its read budget. This avoids serializing
+// that graph through the inert utility's16MiB wire cap. It grants no accepted-view
+// authority; the shared core rechecks individual signatures and exact identities.
+func ValidateRecordContext(ctx context.Context, value map[string]any) (RecordValidation, error) {
+	return validateRecordValue(ctx, value)
+}
+
+// ValidateIntentPayload checks only the self-contained frozen payload shape and
+// bounds of an immutable private hint. Exact type/history dependencies remain
+// the verified loader's and authorized mutation caller's responsibility.
+func ValidateIntentPayload(ctx context.Context, kind string, raw []byte, parents []string) error {
+	if len(parents) > 1024 {
+		return refuse("resource_limit", "parents exceed 1024 entries")
+	}
+	values := make([]any, len(parents))
+	for i, id := range parents {
+		values[i] = id
+	}
+	if _, err := ids(values); err != nil {
+		return err
+	}
+	switch kind {
+	case "type.publish":
+		if len(parents) > 1 {
+			return refuse("invalid_input", "type publication has at most one parent")
+		}
+		_, err := ValidateType(ctx, raw)
+		return err
+	case "record.open":
+		if len(parents) != 0 {
+			return refuse("invalid_input", "opening cannot have parents")
+		}
+	case "record.revise", "record.convert":
+		if len(parents) != 1 {
+			return refuse("invalid_input", "revision requires one parent")
+		}
+	case "record.resolve":
+		if len(parents) == 0 {
+			return refuse("invalid_input", "resolution requires parents")
+		}
+	default:
+		return refuse("invalid_input", "unsupported artifact kind")
+	}
+	value, err := validationValue(ctx, raw, MaxEnvelopeBytes)
+	if err != nil {
+		return err
+	}
+	payload, ok := value.(map[string]any)
+	if !ok {
+		return refuse("invalid_input", "intent payload must be an object")
+	}
+	return payloadEnvelope(kind, payload, parents)
+}

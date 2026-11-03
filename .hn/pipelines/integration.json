@@ -1,0 +1,6 @@
+{
+  "version": "hn.pipeline/0",
+  "steps": [
+    {"name": "Native cross-feature recovery and reference consumers", "command": "./.hn/actions/ci", "args": ["integration"], "timeoutSeconds": 600}
+  ]
+}

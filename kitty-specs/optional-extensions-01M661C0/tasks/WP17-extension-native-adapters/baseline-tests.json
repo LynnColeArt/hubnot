@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP17",
+  "captured_at": "2026-10-31T06:42:18Z",
+  "base_branch": "feature/optional-extensions",
+  "base_commit": "04edb7205c5299fc093a99fad6305e0e88dfd4d6",
+  "test_runner": "pytest",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<gate-coverage-junit>",
+      "error": "no JUnit XML artifact produced by the scoped run",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

@@ -1,0 +1,9 @@
+{
+  "version": "hn.pipeline/0",
+  "steps": [
+    {"name": "Native 100000 record/ref boundaries", "command": "./.hn/actions/ci", "args": ["stress-counts"], "timeoutSeconds": 2100},
+    {"name": "Artifact capacity boundaries", "command": "./.hn/actions/ci", "args": ["stress-artifacts"], "timeoutSeconds": 1500},
+    {"name": "Process lifecycle and cleanup", "command": "./.hn/actions/ci", "args": ["stress-lifecycle"], "timeoutSeconds": 2100},
+    {"name": "Change capture capacity", "command": "./.hn/actions/ci", "args": ["stress-observation"], "timeoutSeconds": 1500}
+  ]
+}

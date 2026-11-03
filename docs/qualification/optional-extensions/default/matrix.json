@@ -1,0 +1,1560 @@
+{
+  "budget_boundary_controls": [
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/elapsed-floor-at",
+      "test_output_sha256": "69b78c3c2ae4cfbb4f3d805348f00db57f70d9e7b64535d0c9cd1e41395dd0d6"
+    },
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/elapsed-floor-over",
+      "test_output_sha256": "eac051910b1e48f1f160984be42248dcd5d63cc60282ca9b976f329b3050aca2"
+    },
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/elapsed-percent-at",
+      "test_output_sha256": "a79c94cb5fb9c71b8b617022ecaa3c9f20b091f52b974c50d9481b35fbb86a60"
+    },
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/elapsed-percent-over",
+      "test_output_sha256": "b954b554d18ff43a1a0763e989394b5e0c15897abe78eca568f94ce60a4807ef"
+    },
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/RSS-floor-at",
+      "test_output_sha256": "b6a3ae6bef91f153746313b01ad8d44b10a80606d2198538734572f8d9536242"
+    },
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/RSS-floor-over",
+      "test_output_sha256": "03d6f888758c0d2fba772025fa19fad58b80e130c5c1668e517eb743aab25f83"
+    },
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/RSS-percent-at",
+      "test_output_sha256": "c71c0635333c097f69367fbb0d5005878b13e3aa70056c6042a6c07ae34ea506"
+    },
+    {
+      "status": "pass",
+      "test": "TestExtensionDefaultPerformanceBudgets/RSS-percent-over",
+      "test_output_sha256": "6f91b2996a386eee840f5d5ef03d9f488fde252a5a118db9030ce01b59fff80e"
+    }
+  ],
+  "deliberate_mutants": [
+    {
+      "actual_exit": 1,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-json",
+        "-run",
+        "^TestExtensionDefaultPerformanceBudgets$",
+        ".",
+        "-args",
+        "-hn-default-budget-mutant"
+      ],
+      "command_sha256": "635a78e194b76f9fa913471ecc31e98cc9a6c0073e26704f77d30adcd362d304",
+      "evidence": "final-6b75-budget-mutant",
+      "expected_exit": 1,
+      "finished_unix_ns": 1793485176739182196,
+      "log_sha256": "78ba378d14d9cee95dd2228b446bfb269af0e3bc628d964733d99ff8e3b21ab3",
+      "meaning": "intentional mutant rejected",
+      "started_unix_ns": 1793485176154048794
+    },
+    {
+      "actual_exit": 1,
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-json",
+        "-run",
+        "^TestExtensionDefaultDetectors$/^module-start-",
+        ".",
+        "-args",
+        "-hn-default-binaries=$EVIDENCE/WP24/capture-6b75/packager-candidate",
+        "-hn-default-binary-proof=$EVIDENCE/WP24/capture-6b75/binaries.json",
+        "-hn-baseline-trace=/usr/bin/strace",
+        "-hn-default-detector-mutant=module-start",
+        "-hn-default-evidence=$EVIDENCE/WP24/final-6b75-mutant-transcripts"
+      ],
+      "command_sha256": "3c6045eb3191f242df1087464e1ff6b5e28e999c5980e755a428e147022b05ca",
+      "evidence": "final-6b75-start-detector-mutant",
+      "expected_exit": 1,
+      "finished_unix_ns": 1793485177405789970,
+      "log_sha256": "f3c9166802d5bbcac9a92d1f0a26ee8f745d455c0afbbfb9c4a910a808a1e506",
+      "meaning": "intentional mutant rejected",
+      "started_unix_ns": 1793485176751118862
+    }
+  ],
+  "detector_controls": [
+    {
+      "cause": "data-activation",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/data-activation",
+      "test_output_sha256": "b4b116857832f53fcaf7118e62d2d8c4c25666fa6f393335371f3dd489bfbd1d"
+    },
+    {
+      "cause": "module-probe-0",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/module-probe-0",
+      "test_output_sha256": "b6fe201ed5b4e5ac544048318424d167eb4c66c658bd646643a7f16b81a3ff18"
+    },
+    {
+      "cause": "module-start-1",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/module-start-1",
+      "test_output_sha256": "4adfb8585b4128bd7e635f236447feef147f8d6782f86e0d3ddc33c29aaa677a"
+    },
+    {
+      "cause": "provider-connect-2",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/provider-connect-2",
+      "test_output_sha256": "f458f492d2a2ef12c4871e3e6b5a4095f09d501b17158f18ab5c08a181256be4"
+    },
+    {
+      "cause": "registry-read-3",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/registry-read-3",
+      "test_output_sha256": "974b4ee219bf67d4a9c020a25c88fc981f6e8ec5c526cafbc48e54197d8072c9"
+    },
+    {
+      "cause": "registry-read-4",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/registry-read-4",
+      "test_output_sha256": "f4e3e0da21b619f1ee5b10eed4674f37d3ddc791ac99e0ea87ddb00d92a20e08"
+    },
+    {
+      "cause": "registry-read-5",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/registry-read-5",
+      "test_output_sha256": "fd90eb0dd53a47accc96acca9dc2610a7eb22614bbae17861c77dee936991590"
+    },
+    {
+      "cause": "registry-read-6",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/registry-read-6",
+      "test_output_sha256": "1f8091242849d46c9378369fc3d6bc1fa663c891c4b061a55a25f645f01d9bfa"
+    },
+    {
+      "cause": "registry-read-7",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/registry-read-7",
+      "test_output_sha256": "436e0521cb6c3195a367d20c40870b9d96c7317d64d7cfab40e09e3b5cf9079b"
+    },
+    {
+      "cause": "registry-read-8",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/registry-read-8",
+      "test_output_sha256": "786b165ce0995f04b01d0f3fe642f91595ee5db9f29ac39e53c39ee2f38b7a80"
+    },
+    {
+      "cause": "extension-state-write-9",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/extension-state-write-9",
+      "test_output_sha256": "a5769f934c9e645f067f784196ebd304da42d4ba09cc29530aa83375a6bd5ce4"
+    },
+    {
+      "cause": "extension-state-write-10",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/extension-state-write-10",
+      "test_output_sha256": "8709e29a6d5d5bb3e1be217938f3dc8233df1dbd254d21b3612d60ef2af707d1"
+    },
+    {
+      "cause": "extension-state-write-11",
+      "status": "pass",
+      "test": "TestExtensionDefaultDetectors/extension-state-write-11",
+      "test_output_sha256": "225bbd8081d2d0a3c8efd5cf10fb357433f17218baa5769a0a8fca644ecee39a"
+    }
+  ],
+  "fault_rows": [
+    {
+      "children_reaped": true,
+      "configuration": "disabled",
+      "expected_code": "denied_access",
+      "observed_code": "denied_access",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/disabled",
+      "test_output_sha256": "47c9debefdc2e6bb13da829d28d5742ca0d281109bfe0814744081327341a885",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "missing",
+      "expected_code": "unavailable_module",
+      "observed_code": "unavailable_module",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/missing",
+      "test_output_sha256": "bea1d6eef810989877cc07a4d7f4e90b57330901948c5f49e896e7de7c3c2c6b",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "incompatible",
+      "expected_code": "incompatible_version",
+      "observed_code": "incompatible_version",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/incompatible",
+      "test_output_sha256": "07fa0eceb002da0f490aec9a8cf8d24963b7a6aa4e64314230020542611226f4",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "crashed",
+      "expected_code": "unavailable_module",
+      "observed_code": "unavailable_module",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/crashed",
+      "test_output_sha256": "4dfcdc88e259dde09aa3c3aab3f3355ddf9ca5a391b603bad151e169f00e31e3",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "malformed",
+      "expected_code": "invalid_input",
+      "observed_code": "invalid_input",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/malformed",
+      "test_output_sha256": "5dba5b6f3936c3249bd6b322a094a8cb1e26816218db9d8f2e3b0d875b7a6f55",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "oversized",
+      "expected_code": "resource_limit",
+      "observed_code": "resource_limit",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/oversized",
+      "test_output_sha256": "f9ae3f8b265c5c75fa85b9ef0138b686a622c893d0b7ef25272ca58c263612f4",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "EOF",
+      "expected_code": "unavailable_module",
+      "observed_code": "unavailable_module",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/EOF",
+      "test_output_sha256": "ab36564d36e4fa6033eadbd9c8003c20a5a94375c548c9047de879116162d152",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "blocked",
+      "expected_code": "cancelled",
+      "observed_code": "cancelled",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/blocked",
+      "test_output_sha256": "65fa46058cc4345c98f735e935ac91a0c8418625bd6e7e7af37e3fdbdd1a4eb5",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "cancelled",
+      "expected_code": "cancelled",
+      "observed_code": "cancelled",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/standard/cancelled",
+      "test_output_sha256": "1802779884389677fd5a88834545a19dc5629d76c15240fe8730c68274d401ec",
+      "variant": "standard"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "disabled",
+      "expected_code": "denied_access",
+      "observed_code": "denied_access",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/disabled",
+      "test_output_sha256": "5b6694cc4d0ac5e5d6e2c9efdaed4ff271b653de98370d744848b162e4d44619",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "missing",
+      "expected_code": "unavailable_module",
+      "observed_code": "unavailable_module",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/missing",
+      "test_output_sha256": "875c2efa09a5871eee224960d92c15ed9f3f6a865c5c98102f0ad155f4c9268f",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "incompatible",
+      "expected_code": "incompatible_version",
+      "observed_code": "incompatible_version",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/incompatible",
+      "test_output_sha256": "634e8fc69092e698f115aa19551557d2326f1f131865ae4c13f770c78588cd6b",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "crashed",
+      "expected_code": "unavailable_module",
+      "observed_code": "unavailable_module",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/crashed",
+      "test_output_sha256": "50c98287461d08853e22cb1cf01d916071b33077d5a4981a17025d4b41216104",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "malformed",
+      "expected_code": "invalid_input",
+      "observed_code": "invalid_input",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/malformed",
+      "test_output_sha256": "3f17ae7d71c9e83461c0eeae95a4d8b46ea5fa38e8fb2a711b2f555bf5a70928",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "oversized",
+      "expected_code": "resource_limit",
+      "observed_code": "resource_limit",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/oversized",
+      "test_output_sha256": "708093219a7f0db1c925709a44f2cf10550538658792316036e27d1b3afef1ca",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "EOF",
+      "expected_code": "unavailable_module",
+      "observed_code": "unavailable_module",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/EOF",
+      "test_output_sha256": "544718048029265926552466975511bfb6162f5592adf2d13445d26d22751a85",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "blocked",
+      "expected_code": "cancelled",
+      "observed_code": "cancelled",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/blocked",
+      "test_output_sha256": "38563e97814d36d2c6e59fe85581079175b5659aa279f45f6c917e6f509547fe",
+      "variant": "native-only"
+    },
+    {
+      "children_reaped": true,
+      "configuration": "cancelled",
+      "expected_code": "cancelled",
+      "observed_code": "cancelled",
+      "public_refs_unchanged": true,
+      "status": "pass",
+      "test": "TestExtensionDefaultFailureConfigurations/native-only/cancelled",
+      "test_output_sha256": "763d563467b45f358beadb65aec943c5f11ab5ca471ff4503c8ee249563b029c",
+      "variant": "native-only"
+    }
+  ],
+  "full_chain": {
+    "actor": "56a0a8dede0b0bbef5fad4d80dbb0f1dc8b751c8606dc380dcd183c209a5819f",
+    "all_refs_sha256": "b42a62c80f8802bce2995770a0ac0e9d46c5dceff9da415a5f220bdfda84dc77",
+    "artifact_object_count": 40004,
+    "bundle_sha256": "7f2e8fb9eaee34634830f005204867d3a695f7a955ec1820ab6ad00c41da625f",
+    "complete_full_chain_proof_sha256": "7cd31e3fea4399530d10cfb65432ae60349951f22cf4e0acc489f425162ccf78",
+    "head": "b7b6af4946659102df4ae9079bfc8629031e98d9",
+    "original_public_inventory": {
+      "all_repository_objects": {
+        "canonical_json_sha256": "f011076e27676bed06c0254e60bd060a82a6086f8e7ae1cf15c0497e0040caef",
+        "count": 40047
+      },
+      "entries": {
+        "canonical_json_sha256": "ab3d1f9a279a77d577b5af1e8f34aab58e26a73a8dd6e33056a8cf9e021ed33c",
+        "count": 10001
+      },
+      "record_ids": {
+        "canonical_json_sha256": "64891ecc030df76f6967b853f527072aff046d4b5233d101e3be12cb9bc0b6dc",
+        "count": 10000
+      }
+    },
+    "prefix_head": "c8e879f9b6672f79cf1be12410083cfb12055aaf",
+    "prefix_record_ids": [
+      "sha256:4f0f040823dd4a3bfa71f4708c1e995ad41a9e43fa2f9cbb386da07b6855a16a",
+      "sha256:5868ea7538966c7f72e62c5f0e72c6cf8fd983908efd529ab9eb45f68856b3f5"
+    ],
+    "public_envelope_repository_id": "absent by frozen protocol; portable original bytes retained",
+    "record_count": 10000,
+    "ref": "refs/hn/artifacts/56a0a8dede0b0bbef5fad4d80dbb0f1dc8b751c8606dc380dcd183c209a5819f/55a7e3ef1a89e9501f231dd44872c49a167e8fd3c415fe8d35790463211c5aed",
+    "repository_id": "sha256:df9483ca82b205154f87345edb3fd8a3cc576cbf95b8f66f0702fde3369350d8",
+    "schema_id": "sha256:1701b7d675e565935872dc5774f754d74a76f3c9f927bd5b8820c6e37a9ffa89",
+    "scope": "source-assisted full original chain, signatures/canonical IDs/actor continuity/schema/model validation; separate live two-record prefix, no full query or bounded file-exchange admission claim",
+    "source_cut": "sha256:bba70b1033af7def969b8d71f165b9d4c7db16bb9289811f78308a2d5ff41de0",
+    "status": "valid_source_assisted_fixture",
+    "transport": "Git-only public-object container; no bounded artifact file-exchange admission claimed",
+    "type_count": 1
+  },
+  "functional_fixture_scope": "Functional rows create separate fresh signed10000-record inert fixtures; measurements reuse exact original2d92 public donor without resigning or donor private state.",
+  "historical_rows": [
+    {
+      "configuration": "absent",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/absent/0.0.1-dev",
+      "test_output_sha256": "cfcc782bd5f8a2bbe3c469e55e839a3f6e098f163a922ae969faa2fec576d215",
+      "variant": "standard"
+    },
+    {
+      "configuration": "absent",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/absent/0.0.2-dev",
+      "test_output_sha256": "20d9707ff09d7cbd712498d1c083dfb350b16ecea69ea8344e986f1d48c2016d",
+      "variant": "standard"
+    },
+    {
+      "configuration": "absent",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/absent/0.0.3-dev",
+      "test_output_sha256": "6cf394e9d01544dc6e3770a1f541a037021827562a07935909489166f4628aa3",
+      "variant": "standard"
+    },
+    {
+      "configuration": "disabled",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/disabled/0.0.1-dev",
+      "test_output_sha256": "a2a0da303d7960f0f06558a1f279c06f1ac9792efa17feec22d0d6d78d3ef045",
+      "variant": "standard"
+    },
+    {
+      "configuration": "disabled",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/disabled/0.0.2-dev",
+      "test_output_sha256": "87e3be8de77cc0797075b0a4227a5d0f5239132b26e79d863c6981c3d9393d58",
+      "variant": "standard"
+    },
+    {
+      "configuration": "disabled",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/disabled/0.0.3-dev",
+      "test_output_sha256": "7f8b2ad4a23ca05b9dcc07eee5eaa4681a81ee533d9b97d6d215adc7881216ab",
+      "variant": "standard"
+    },
+    {
+      "configuration": "missing",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/missing/0.0.1-dev",
+      "test_output_sha256": "b8b51e3f6b29162d0653b265d8188ee9432776c97299670c7be013b2decb4b7e",
+      "variant": "standard"
+    },
+    {
+      "configuration": "missing",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/missing/0.0.2-dev",
+      "test_output_sha256": "4e5aa60189359f30b46540ff8a0c2d3b7ccd86c93ea3f424f71456d0cb4457cf",
+      "variant": "standard"
+    },
+    {
+      "configuration": "missing",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/missing/0.0.3-dev",
+      "test_output_sha256": "e84380f9c858c0534ef2ef5709614708476891ac3b0a5105fad5482c250335d8",
+      "variant": "standard"
+    },
+    {
+      "configuration": "incompatible",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/incompatible/0.0.1-dev",
+      "test_output_sha256": "245e829cf56d150ae123d6608b4a0b6288a5f6ff6c87cfc823a04f7ee943fc05",
+      "variant": "standard"
+    },
+    {
+      "configuration": "incompatible",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/incompatible/0.0.2-dev",
+      "test_output_sha256": "dd55e3f7a7681e8af62040a09a758f83d98950cb246c4d319c209227a3e8497b",
+      "variant": "standard"
+    },
+    {
+      "configuration": "incompatible",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/incompatible/0.0.3-dev",
+      "test_output_sha256": "8c91ad75d0c80a70655ad025a86bb131cc4df1bdeff7a698fc6ae990fcedb5fe",
+      "variant": "standard"
+    },
+    {
+      "configuration": "crashed",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/crashed/0.0.1-dev",
+      "test_output_sha256": "ce54d8dda5598cc12e043bed2bbe320108774bfd420585ee9cae9147f93a5c42",
+      "variant": "standard"
+    },
+    {
+      "configuration": "crashed",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/crashed/0.0.2-dev",
+      "test_output_sha256": "f4cd5aa04f2b8c9a13d40a1e79c7d06c62afc61ea80931416207d13f49ff2dde",
+      "variant": "standard"
+    },
+    {
+      "configuration": "crashed",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/crashed/0.0.3-dev",
+      "test_output_sha256": "35d34e46744d18f492d0745cb708145c9fb576fc58428525d1b87b77e43f179e",
+      "variant": "standard"
+    },
+    {
+      "configuration": "malformed",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/malformed/0.0.1-dev",
+      "test_output_sha256": "dc0f1d3382bd7c835fc100007381ee9668085cd12483910b2910c3dbbf875531",
+      "variant": "standard"
+    },
+    {
+      "configuration": "malformed",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/malformed/0.0.2-dev",
+      "test_output_sha256": "f82ebca16cc4292162c3380b47e2379650926d08672b0a5161424439130fe935",
+      "variant": "standard"
+    },
+    {
+      "configuration": "malformed",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/malformed/0.0.3-dev",
+      "test_output_sha256": "1c758a3f0058ad81baabfc9c62e0505401cb4525077cf4fdd3d39b2ed42cec60",
+      "variant": "standard"
+    },
+    {
+      "configuration": "many-custom",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/many-custom/0.0.1-dev",
+      "test_output_sha256": "be8ca93ac84b9718bc6b99483193392ca2daee5c7b09d10ce9436794745caa14",
+      "variant": "standard"
+    },
+    {
+      "configuration": "many-custom",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/many-custom/0.0.2-dev",
+      "test_output_sha256": "4d34b6f21a14f8c3195a8b614060e3768ed69def324da00b20f856902e2af54d",
+      "variant": "standard"
+    },
+    {
+      "configuration": "many-custom",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/many-custom/0.0.3-dev",
+      "test_output_sha256": "b152967eca92d930c25531b5633e4051eb82e3fd92fa2c62bc5032aa80810a6f",
+      "variant": "standard"
+    },
+    {
+      "configuration": "oversized",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/oversized/0.0.1-dev",
+      "test_output_sha256": "0850c4bf28834dcb632557489f909d7d7cd3ba1f2ceed3765942f67be01d6410",
+      "variant": "standard"
+    },
+    {
+      "configuration": "oversized",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/oversized/0.0.2-dev",
+      "test_output_sha256": "53e607752d0abe075a56524d720f6b154b3d6b7fd699aba06c9d2e1a84137c18",
+      "variant": "standard"
+    },
+    {
+      "configuration": "oversized",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/oversized/0.0.3-dev",
+      "test_output_sha256": "39400dd2587a1a21626d5992e4462538c9552c2e41e937e7e06463904bb947c9",
+      "variant": "standard"
+    },
+    {
+      "configuration": "EOF",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/EOF/0.0.1-dev",
+      "test_output_sha256": "879c29a9d6ca0ad150b944f24acfa35842c92d354f949c3ed1090c1a421a803c",
+      "variant": "standard"
+    },
+    {
+      "configuration": "EOF",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/EOF/0.0.2-dev",
+      "test_output_sha256": "9a0e1968e4a000b7cd5c4c7f29ca4d9baa131d805fca5c8aff414af5a4956ecd",
+      "variant": "standard"
+    },
+    {
+      "configuration": "EOF",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/EOF/0.0.3-dev",
+      "test_output_sha256": "f62d20f18260848d260f6f6c09fdb8f2778ffb220fe643e80c4487b05b7f21a2",
+      "variant": "standard"
+    },
+    {
+      "configuration": "blocked",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/blocked/0.0.1-dev",
+      "test_output_sha256": "ede70d51744c3847ef9b54865ded523920f261ba00856ac256ca387d5cf0bdf5",
+      "variant": "standard"
+    },
+    {
+      "configuration": "blocked",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/blocked/0.0.2-dev",
+      "test_output_sha256": "c4d584e38d05f316dcf992f4a1b868b610de146a4b3600e0dd04b94206c7d2d4",
+      "variant": "standard"
+    },
+    {
+      "configuration": "blocked",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/blocked/0.0.3-dev",
+      "test_output_sha256": "40e6935357d46060afa4c3c83445a153e39babfbd4fa82f51b8d73965e28cef0",
+      "variant": "standard"
+    },
+    {
+      "configuration": "cancelled",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/cancelled/0.0.1-dev",
+      "test_output_sha256": "93431dcd898cc547323c7df9cf0b24ffe59cd88ddd11188b8efc8c503b1b67de",
+      "variant": "standard"
+    },
+    {
+      "configuration": "cancelled",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/cancelled/0.0.2-dev",
+      "test_output_sha256": "0b5a8ab8d484ccf4a2235123d0ba65f7c931fcc7e4246b407761404add1fdd88",
+      "variant": "standard"
+    },
+    {
+      "configuration": "cancelled",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/cancelled/0.0.3-dev",
+      "test_output_sha256": "0140da2aa3855c5c403d6aec6ee1a4aaf0af96d14e922cd14c244d25c89da764",
+      "variant": "standard"
+    },
+    {
+      "configuration": "malformed-custom",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/malformed-custom/0.0.1-dev",
+      "test_output_sha256": "5fa6e5aa25f9906935f6ff39a91a584350a5a35f18824c8287523333cc2af929",
+      "variant": "standard"
+    },
+    {
+      "configuration": "malformed-custom",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/malformed-custom/0.0.2-dev",
+      "test_output_sha256": "9e44dc02f22b70116c1d9f292181e49d1921599c5626ad6f99a56466fdf2a091",
+      "variant": "standard"
+    },
+    {
+      "configuration": "malformed-custom",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/malformed-custom/0.0.3-dev",
+      "test_output_sha256": "770ee128c9b0ba007b65a727d4d75ba85c45897b1926b42ce5f3e57eb85135cd",
+      "variant": "standard"
+    },
+    {
+      "configuration": "opaque-custom",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/opaque-custom/0.0.1-dev",
+      "test_output_sha256": "72152c19f93d3ca1420d2c510246727b2043997ae9c222b116e92b94b85e57fc",
+      "variant": "standard"
+    },
+    {
+      "configuration": "opaque-custom",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/opaque-custom/0.0.2-dev",
+      "test_output_sha256": "e7727d56ab64781cf913d72aff4c9bb5031cd2f5351df2abc60933e4bfead529",
+      "variant": "standard"
+    },
+    {
+      "configuration": "opaque-custom",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/standard/opaque-custom/0.0.3-dev",
+      "test_output_sha256": "9d70c0617c90564cf06e687bc2ef16a1da914c519a29c624f8b2c5653a816c70",
+      "variant": "standard"
+    },
+    {
+      "configuration": "absent",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/absent/0.0.1-dev",
+      "test_output_sha256": "d57aadf8bb37329af82d054c8b92bd00c7be871385410d68ea8c0d2ff57fe257",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "absent",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/absent/0.0.2-dev",
+      "test_output_sha256": "5162fec74841a561c1c123c6cbec0c2f73ac00bdacda9dbda724708532c8eb70",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "absent",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/absent/0.0.3-dev",
+      "test_output_sha256": "c1f332285946a22c706cbc50717b5895df6c555d561d71c237f18cca2a9c7a24",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "disabled",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/disabled/0.0.1-dev",
+      "test_output_sha256": "eb86f889e40fd6ec98c66d8362c60078f4092690974bc7595c678ef1cce030ed",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "disabled",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/disabled/0.0.2-dev",
+      "test_output_sha256": "9c0b79d66a0412d64e081185527b33e17bfb5a465b9cdc3a5e5f5189b1661f6f",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "disabled",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/disabled/0.0.3-dev",
+      "test_output_sha256": "8afe871efb9c12908ed92da05827fc90c1b25572be063e1af17e75ae243f12ad",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "missing",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/missing/0.0.1-dev",
+      "test_output_sha256": "cb7a3b61144e005fe12c861457acfd66f88200d00c830785c849236001d3514d",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "missing",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/missing/0.0.2-dev",
+      "test_output_sha256": "35036d62d436edb1482089d9952b1d1df296e619d175df36f577f856a00e5949",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "missing",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/missing/0.0.3-dev",
+      "test_output_sha256": "18c5396d76f26f318bf158d12cad22a5c718c5194c6e28bbf8de4b8ca221d11e",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "incompatible",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/incompatible/0.0.1-dev",
+      "test_output_sha256": "acc0d4e8c84c79dc1171d00b362e33e936fc7f7e5205c8501c89a60b449a9856",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "incompatible",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/incompatible/0.0.2-dev",
+      "test_output_sha256": "a53b183b04e36311b03038da75c357f4b29f14a4db4662588d6a7d111d6d5da1",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "incompatible",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/incompatible/0.0.3-dev",
+      "test_output_sha256": "b87cffff942ae0d10045552853b3d3df725e0572316dfdefdcb90781a9170020",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "crashed",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/crashed/0.0.1-dev",
+      "test_output_sha256": "22b932d6260f68b2d9823ae3844a6314e3677d9552948f935f41494d19f32876",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "crashed",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/crashed/0.0.2-dev",
+      "test_output_sha256": "90ec21f326be032df2b0cb0222eb2f4d35dded49899002b163e0a46a0e4116bf",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "crashed",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/crashed/0.0.3-dev",
+      "test_output_sha256": "0cb6ed54b20b857ad6977a3c8eaa7b74e76db353849e0fb6b06d27109ebd5531",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "malformed",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/malformed/0.0.1-dev",
+      "test_output_sha256": "7db0b111ec5711a1f7e826fb098f55ab6c1acadf8bfc14cbf7db642b71ef0385",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "malformed",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/malformed/0.0.2-dev",
+      "test_output_sha256": "4f182bec095ec4a702550452cf2e7e705792795e8d2113f3da7ce2ffc2a33d18",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "malformed",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/malformed/0.0.3-dev",
+      "test_output_sha256": "226580bb228a8c0cc224dca1241c74714b20d66e14a0e869778651580d25f888",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "many-custom",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/many-custom/0.0.1-dev",
+      "test_output_sha256": "be55f283ec06d869db9db08f4c3dfd53d559d17fa481f14806311a38c882adad",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "many-custom",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/many-custom/0.0.2-dev",
+      "test_output_sha256": "f3b463d1d0d0450cf221982ca87c8eaa3b5e5b587e21bb5cf9c1edb160bf011a",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "many-custom",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/many-custom/0.0.3-dev",
+      "test_output_sha256": "fadc4151f8d2c0365ff5ec2b66018c91f7756192e091613ebbb8b19aedae4f92",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "oversized",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/oversized/0.0.1-dev",
+      "test_output_sha256": "676a2340a1c9e4633b841d6035fe356418b2393be68cd1bf3046a6cc677809f7",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "oversized",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/oversized/0.0.2-dev",
+      "test_output_sha256": "1da53949bb4fd60ccc53beba710031074aaa6760e524f66a0ef4a0fbb4edbc72",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "oversized",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/oversized/0.0.3-dev",
+      "test_output_sha256": "daf42898c1a7dee4af7a5b369e5b9f28d9d1cdea3ab44c99a31e7414991a8f99",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "EOF",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/EOF/0.0.1-dev",
+      "test_output_sha256": "5b5446e82c404c04baff5f6f53b06eff9ac75d664965d531e9ef6b3877bc6c60",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "EOF",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/EOF/0.0.2-dev",
+      "test_output_sha256": "db607267aedfc4d58eea68b8cf50e735373300c14cc167cc24ae3747c6d20cb8",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "EOF",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/EOF/0.0.3-dev",
+      "test_output_sha256": "0785558de529dcfa99a27d8e4c42990cbe42721a9f7b1e0d7789f75ea07ae1a9",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "blocked",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/blocked/0.0.1-dev",
+      "test_output_sha256": "a8cb40d6deaa7ae5e850bd557e58bdff64daea6f6690d6fa6bfd8a6f6e2bbc0e",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "blocked",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/blocked/0.0.2-dev",
+      "test_output_sha256": "2e1eb8b7c8e4c84d304b1fcca84d5fb8969b256fd4cdf97730be75e22ee25f01",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "blocked",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/blocked/0.0.3-dev",
+      "test_output_sha256": "da0ce7f5c39d1c31b64d97aca035cfc816ef60921798a768ce5841753b8cc144",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "cancelled",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/cancelled/0.0.1-dev",
+      "test_output_sha256": "154693eca60ed9ee1908101e9aedcd22ec05820cb3eb25285e74353459c03170",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "cancelled",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/cancelled/0.0.2-dev",
+      "test_output_sha256": "86ee99cb18e351202b401d9512e430088d5376ae2bd0b4b395c819e09a33aecc",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "cancelled",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/cancelled/0.0.3-dev",
+      "test_output_sha256": "f3d8c96ef4a04e49254ed504feaa1f08ce4d2d353f96174360a4e2b323ef7389",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "malformed-custom",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/malformed-custom/0.0.1-dev",
+      "test_output_sha256": "433604eb16d0516064be8a93bfe47ac68588aab05f3089ba6fe22062b2f8ccb3",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "malformed-custom",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/malformed-custom/0.0.2-dev",
+      "test_output_sha256": "40edf215632e271086676e4a88e4919b7203dc8ed95f839e345c41ec744ce68c",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "malformed-custom",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/malformed-custom/0.0.3-dev",
+      "test_output_sha256": "f0a682c646c19fd2d2d9d4528d5592024f4ec111f78f4e321e3e2f713128b6c3",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "opaque-custom",
+      "objects_sha256": "c06b93b574d18456e1cf953544efe93d22a25bcb23d930e69a08203e89b047aa",
+      "release": "0.0.1-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/opaque-custom/0.0.1-dev",
+      "test_output_sha256": "52a8b76935e9956f15ed55855d5938588160648fdef8899deb348aefa23f9b9f",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "opaque-custom",
+      "objects_sha256": "66bf4e3f44650a078861b8e73941faf9d56e536744068a6c341c7c2512d4a85a",
+      "release": "0.0.2-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/opaque-custom/0.0.2-dev",
+      "test_output_sha256": "d0e65aa719bbd7ef45b1eadb4e886e7cfcb2d87f5a49f1ed6964c71e76815c5c",
+      "variant": "native-only"
+    },
+    {
+      "configuration": "opaque-custom",
+      "objects_sha256": "38c52f594a11acd44d681b6ccd0d3a01a82ffe18f810e03244534612e8b29183",
+      "release": "0.0.3-dev",
+      "status": "pass",
+      "test": "TestExtensionDefaultHistoricalMatrix/native-only/opaque-custom/0.0.3-dev",
+      "test_output_sha256": "20ae81011ded64044868c2810c6a3d3b8eea1c30f1d2a70e828102f28a73c465",
+      "variant": "native-only"
+    }
+  ],
+  "native_build_exclusion": "unchanged legacy TestForgeStrictMappingsAndLocalExtensionDispatch compile-excluded by !nogithub&&!noforge; passedstandard; native own pure generic/override/nil/help cases passed",
+  "native_rows": [
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "absent",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/absent",
+      "test_output_sha256": "c904449d3bcc3d7aee4c7a93dbf9c7f0dde80bcf3391ce94dabc40c798628d66",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "disabled",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/disabled",
+      "test_output_sha256": "1c82ac88998df1a04ae6563ed45c62f9216ad38d52e871d9e1d249a4980db5b6",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "missing",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/missing",
+      "test_output_sha256": "d1dc08b829d454ef848dc783c4a78a376a9f491f906d87cd518767424318a897",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "incompatible",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/incompatible",
+      "test_output_sha256": "1536fad40629ac663bebf808c2b88a8fb4706ab090a5a9922645497e5b18509c",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "crashed",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/crashed",
+      "test_output_sha256": "468e0f2f1585a723e1da39a61cdad671764ac7761ada0a00a4f4932c7f1f6fd2",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "malformed",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/malformed",
+      "test_output_sha256": "9a6943ba6d515a638433efe919d64409eabe76957e6e1b02455366a0596a13df",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "many-custom",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/many-custom",
+      "test_output_sha256": "90bff4ece6852bef0fbb8ae05822c6cfaaebbbd9fc95686f92aefaef73981db8",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "oversized",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/oversized",
+      "test_output_sha256": "6f63a34e128b658664716cea97be45ef9bef978058d113c9bba9ac4b5659ffba",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "EOF",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/EOF",
+      "test_output_sha256": "ab03ba8ee6aa3a71fc26c9efc3f7c500d6142a26974092834fe422e4a9f121f6",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "blocked",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/blocked",
+      "test_output_sha256": "59b5afeb116183a3f2ba1567003cce55fb6314deb6ef81a9caa5aa530fb6312f",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "cancelled",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/cancelled",
+      "test_output_sha256": "5a4a5859b973c7e92a614a079cdadf3f720d2562c59ac754ad70199d45591477",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "malformed-custom",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/malformed-custom",
+      "test_output_sha256": "5bd71af60469d1bc8da38592020aea14d868aee29ee8338495408d25326c1cf6",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "117d496e95c8bde15fad31e79034f369cd58ac2ce463d2d59661e1d08eb1c550",
+      "configuration": "opaque-custom",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/standard/opaque-custom",
+      "test_output_sha256": "0549c79a2e60838be454e07d66e933a44f2d63430405a7973a9d28ef47f70996",
+      "variant": "standard"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "absent",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/absent",
+      "test_output_sha256": "77652f11ad5591ebf9129726004cdebfdcd66778bd991dc63d98fdcf2b9f6ceb",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "disabled",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/disabled",
+      "test_output_sha256": "b69684392bb485e6373db7437ed90e311fa626434db4af699ed562c910669f2f",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "missing",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/missing",
+      "test_output_sha256": "815c5266909fae862d0a791f24007a5e6782ccd2f8c3853ec1a571a8ee447b4d",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "incompatible",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/incompatible",
+      "test_output_sha256": "ee259cddd2b4e9cac4f6abb3870be53ce664864f734cac40dbf5e255f4ffbf95",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "crashed",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/crashed",
+      "test_output_sha256": "3d7791fcaf1c65c46ea7602f50a098e100b7d4436627922a3257f98e6ed2b95a",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "malformed",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/malformed",
+      "test_output_sha256": "c3283c90eb953f10ac7a4b6d550109547191eb8b1343f9bac9b9f813f71df0b0",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "many-custom",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/many-custom",
+      "test_output_sha256": "eadee3b9795bbdb3a761f34d9055bec1eebaf0b20020b3e73f9edfdd7440f99f",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "oversized",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/oversized",
+      "test_output_sha256": "0bb0f498ce0eb375470f6dc5b720618ab09fe06a5a4ddc30e8dd3f56c8194907",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "EOF",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/EOF",
+      "test_output_sha256": "aaf91de208be2f3f198d743dbf3296fda79ee2e39857b28421c94c58b2435078",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "blocked",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/blocked",
+      "test_output_sha256": "5bdb9a37c961f214d5ede48c5bfeb43b83a94b5748f2d23c5107d08ec983b114",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "cancelled",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/cancelled",
+      "test_output_sha256": "cfd75a274b20e827a5981dfe52597e36fe16963daa3e7cfa2e9ba2f93efffb1d",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "malformed-custom",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/malformed-custom",
+      "test_output_sha256": "647eda69d771b08a548536054174add99884b37cbb3b7a1dccb490382eb18255",
+      "variant": "native-only"
+    },
+    {
+      "assertions": [
+        "live baseline setup/semantic journeys and meaningful stale/unsafe refusals",
+        "public native Git exchange",
+        "zero registry parsing/module probes or starts/provider requests/extension-private writes; Linux syscall traces plus private snapshots",
+        "private environment isolated for each process",
+        "custom contents inert"
+      ],
+      "binary_sha256": "9140ae9d10fcc2946a834a80c2a10b8e0d9b50bc5b2f3cf97f7c9f2909af86f7",
+      "configuration": "opaque-custom",
+      "kind": "native",
+      "status": "pass",
+      "test": "TestExtensionDefaultNativeMatrix/native-only/opaque-custom",
+      "test_output_sha256": "6af42aea2778f17ae82ee65581108a7797248987a2edc4fb6c66af2dbb19590e",
+      "variant": "native-only"
+    }
+  ],
+  "prefix_live_validation": {
+    "head": "c8e879f9b6672f79cf1be12410083cfb12055aaf",
+    "pages_sha256": [
+      "73fe6ab5838820a6257b53c3b8febfb8397fd4ee2e645e47551d0e8566c7a7c7",
+      "eddf15f1e563ada7914b1a5beffcdd680710d95cc5b520df7b6669eb433ec0ad"
+    ],
+    "record_ids": [
+      "sha256:4f0f040823dd4a3bfa71f4708c1e995ad41a9e43fa2f9cbb386da07b6855a16a",
+      "sha256:5868ea7538966c7f72e62c5f0e72c6cf8fd983908efd529ab9eb45f68856b3f5"
+    ],
+    "schema_id": "sha256:1701b7d675e565935872dc5774f754d74a76f3c9f927bd5b8820c6e37a9ffa89",
+    "scope": "separate public-prefix CLI observation, not whole-chain admission/query availability"
+  },
+  "schema": "hn.optional-extensions-default-matrix/1",
+  "semantic_coverage": [
+    "native setup/version/help/init",
+    "issue open/comment/close/reopen/revise conflict and stale refusal",
+    "project/item,discussion/reply,workflow",
+    "memory record/recall/grep/retract and inert hostile custom content",
+    "proposal/review/CI unsafe refusal and explicit host opt-in/decide/merge",
+    "keyless public Git exchange and identity refusal",
+    "all7named configs plus oversized/EOF/blocked/cancelled/malformed-custom/opaque-custom",
+    "cold native optional state remains zero; exact21/3/8/13bindings and2fallback routers; native-map nil/override precedence; fresh help union; fixed vocabularies and concurrent capture first use"
+  ],
+  "source": "6b75d9fe6a1a8a5e727dacd1a34e245b0de7a4d1",
+  "status": "pass",
+  "trace_inventory_sha256": "01430e8f18d88f753289fc58b35f0c607ec3212679163f1fb4fc16f85d748529"
+}

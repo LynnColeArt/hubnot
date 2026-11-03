@@ -1,0 +1,568 @@
+{
+  "schema": "hn.optional-extension-platform-matrix/1",
+  "status": "PENDING",
+  "rows": [
+    {
+      "target": "linux/amd64",
+      "variant": "standard",
+      "tags": "",
+      "runner_label": "ubuntu-24.04",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "eb20950180fa2bc9cd1f453f813b2436dd1f8827796fd269a3442f8b9e18e973",
+      "executable_sha256": "0af01c366e4a85639f0c90970d14003ae2693db574448c0ba51281ba75fee99a",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "fdb38de71975436c7464549b8d3f8dfc5f6e62841324b2cd5c95aa2d093cc353"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "0679744dcc0faddc4a77c6774b64b4559e9b6370442e8e65e88dc5241b9a50f1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "fbb7839728de0115c6ace816d6ea456808f31c1f7433f3cc0360fc327309e073"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771209976,
+      "artifact_id": 13210134457,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 9.71,
+        "install_runtime_seconds_both_variants": 2.36,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "2a232fa8f3daef731c521c0b42060850144eb33130f415d1fe226d074b2830e4",
+        "group_sha256": "6814fce1c2be2cf4452d4b23652b20329809249e99565b6639e3691f0454d280",
+        "log_sha256": "1128f67338bbac6f1b98b7d12a5fc4472d3c691401d593da79829a051ed6e675",
+        "install_runtime_log_sha256": "2a462e3f5909bad934fb4fc26258a46ab300119c70d0a9738af32290696a55c0",
+        "platform_sha256": "016856ec1c8b38466b7376e2b1f316068fa7fa8703ff490733ed3a620de8f335",
+        "artifact_digest_from_api": "sha256:c188e1c70d81237cbee118a0b6adf0bced2be77333711e78f3da1245219b4b7a",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771209976"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ]
+    },
+    {
+      "target": "linux/amd64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "runner_label": "ubuntu-24.04",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "ad7ba2a52b54ce8f786c816e58c86cbb5b178f8c259bafb4d1724349855e8555",
+      "executable_sha256": "34dbc10634573938d1873eab70513965829bd98d84ee8526a8744e17e391720c",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "fdb38de71975436c7464549b8d3f8dfc5f6e62841324b2cd5c95aa2d093cc353"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "0679744dcc0faddc4a77c6774b64b4559e9b6370442e8e65e88dc5241b9a50f1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "fbb7839728de0115c6ace816d6ea456808f31c1f7433f3cc0360fc327309e073"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771209976,
+      "artifact_id": 13210134457,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 9.74,
+        "install_runtime_seconds_both_variants": 2.36,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "2a232fa8f3daef731c521c0b42060850144eb33130f415d1fe226d074b2830e4",
+        "group_sha256": "2802a61c7a94debcc8a7be161a217956d87fb6bf333868218cc9066aadef9252",
+        "log_sha256": "1d720354e906379d15a8f6030326bcb7ba3a0a1a6de66c7eea4203a4b42aea3b",
+        "install_runtime_log_sha256": "2a462e3f5909bad934fb4fc26258a46ab300119c70d0a9738af32290696a55c0",
+        "platform_sha256": "016856ec1c8b38466b7376e2b1f316068fa7fa8703ff490733ed3a620de8f335",
+        "artifact_digest_from_api": "sha256:c188e1c70d81237cbee118a0b6adf0bced2be77333711e78f3da1245219b4b7a",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771209976"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ]
+    },
+    {
+      "target": "linux/arm64",
+      "variant": "standard",
+      "tags": "",
+      "runner_label": "ubuntu-24.04-arm",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "791c6ca1dfa6269ca4fb70e704c9d6441ad606d3e99cecc28ba765a6ba4fce4c",
+      "executable_sha256": "e3a4101a1ed2cd1073c2fdc761754268ca579454fcf230f8e5a822269d0435cc",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "5b72ed640f49f83f77df1ea2540871d8146c55af9dffdf55460cf9be106a9971"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "efedd735d940300a19fa9ef83a7ea59725bf00bdfabffaf24e65cf9b545b93ee"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "f20f61c0283fd926a255a6ac6e77512e3b9b3cc2a657a5bcf857c8efaf8bc897"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210049,
+      "artifact_id": 13210487264,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 13.71,
+        "install_runtime_seconds_both_variants": 1.52,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "e21e4b276b9b44068e770cc8b9ecd31e8149ae86f7c1abb42b8136d23aeb0ee0",
+        "group_sha256": "5d07b94659bee51271e505d03908aeaf8ded9ccb7a84e77a92bcff7599af6f62",
+        "log_sha256": "312362195c0e87ef4518dfb3daebbb91183214b37dfe8ae3b4aa246663ceecfd",
+        "install_runtime_log_sha256": "c14ddbd1e6c75803618a12780ca204f9bb5ee57c4035da94a41aba43d96f38ca",
+        "platform_sha256": "7fe33f62c5aba484d081f837c3bb26099cfd404a09781481be73788d548736e7",
+        "artifact_digest_from_api": "sha256:8b71669cacfe356a5f58852e4879bc157395e2710abe96df6b916a8d7da0a668",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210049"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ]
+    },
+    {
+      "target": "linux/arm64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "runner_label": "ubuntu-24.04-arm",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "d142b20c4ecc36a6d4e51081336072a3e6b4ee1143b78434aaa2ea01275ba66f",
+      "executable_sha256": "521d08add949a3bd26465042f8352546b212d9af9d37433fc6da0195c186bdc0",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "5b72ed640f49f83f77df1ea2540871d8146c55af9dffdf55460cf9be106a9971"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "efedd735d940300a19fa9ef83a7ea59725bf00bdfabffaf24e65cf9b545b93ee"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "f20f61c0283fd926a255a6ac6e77512e3b9b3cc2a657a5bcf857c8efaf8bc897"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210049,
+      "artifact_id": 13210487264,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 13.68,
+        "install_runtime_seconds_both_variants": 1.52,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "e21e4b276b9b44068e770cc8b9ecd31e8149ae86f7c1abb42b8136d23aeb0ee0",
+        "group_sha256": "2844c22e121f1f36db255c82523415e5e645ab246cb9fe31ed28b959fbc9956b",
+        "log_sha256": "86caecde06f88fdd035ad0d1831f9da9c819bce5c6dc0986165f8865c7fe99a8",
+        "install_runtime_log_sha256": "c14ddbd1e6c75803618a12780ca204f9bb5ee57c4035da94a41aba43d96f38ca",
+        "platform_sha256": "7fe33f62c5aba484d081f837c3bb26099cfd404a09781481be73788d548736e7",
+        "artifact_digest_from_api": "sha256:8b71669cacfe356a5f58852e4879bc157395e2710abe96df6b916a8d7da0a668",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210049"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ]
+    },
+    {
+      "target": "darwin/amd64",
+      "variant": "standard",
+      "tags": "",
+      "runner_label": "macos-15-intel",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "205f503e85cce1daf16caaa81b5674c069e9fe4b4faaa07abda4749af3cd5df1",
+      "executable_sha256": "891d350c506e18ba81128185a4b0bc22f34660e934564cb8b985d4d0aea82521",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "6549215696d4422c3533af22349a2dbc59b5711d2afaf0ea7f60375e3db521c4"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "1312b5bb4a44205817937ff2bc6cf52ea8a7e2187aaa107479ea51c435dfbd2a"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "817cad36872feea7ea7ff56b381ccf7f9ef1ebb3fd96aeaf031faec1ebe9002f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210081,
+      "artifact_id": 13211245466,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 23.25,
+        "install_runtime_seconds_both_variants": 8.99,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "7f0efa309375e6f67d34501ba4d9696d766bc76b12bdcd73b5db7021852caf2f",
+        "group_sha256": "b2ce14d98e38660289dcd72d1985a71e45c347e8b44b9d05acbc4d0504badd5f",
+        "log_sha256": "6ce277c377148a2e0caf494c4976328584967b3b2a76bc1b57861c8876c95428",
+        "install_runtime_log_sha256": "4c9a1484accd76ad8627ed868e18c147e1e18811f39e73c3b0b2f4a287aa7b34",
+        "platform_sha256": "aa5fec527e3c9226a935a1cfb964821ed16a3a27123ba3884e03dbb7b11f7030",
+        "artifact_digest_from_api": "sha256:8463baf9186e16f04c90520061d7eacc08f584586af6d956802fe3a809688b83",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210081"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
+      ]
+    },
+    {
+      "target": "darwin/amd64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "runner_label": "macos-15-intel",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "3bff806949b294ccb835cced04f3638dc4afb5e07709d32b86127142b218e3d5",
+      "executable_sha256": "38f872f19d11a69817aa877c5eba5f61045a1d968dd8e5c86062253afe59923e",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "6549215696d4422c3533af22349a2dbc59b5711d2afaf0ea7f60375e3db521c4"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "1312b5bb4a44205817937ff2bc6cf52ea8a7e2187aaa107479ea51c435dfbd2a"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "817cad36872feea7ea7ff56b381ccf7f9ef1ebb3fd96aeaf031faec1ebe9002f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210081,
+      "artifact_id": 13211245466,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 23.28,
+        "install_runtime_seconds_both_variants": 8.99,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "7f0efa309375e6f67d34501ba4d9696d766bc76b12bdcd73b5db7021852caf2f",
+        "group_sha256": "d948338aaea01cdbc47e85af2ff4c6c30b7af9c5ad4642a2b2f716c842cbc1ce",
+        "log_sha256": "da99cd49db0352182aec53e86dc940d81a98a49f7f43721ae8a692e222aebe1e",
+        "install_runtime_log_sha256": "4c9a1484accd76ad8627ed868e18c147e1e18811f39e73c3b0b2f4a287aa7b34",
+        "platform_sha256": "aa5fec527e3c9226a935a1cfb964821ed16a3a27123ba3884e03dbb7b11f7030",
+        "artifact_digest_from_api": "sha256:8463baf9186e16f04c90520061d7eacc08f584586af6d956802fe3a809688b83",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210081"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
+      ]
+    },
+    {
+      "target": "darwin/arm64",
+      "variant": "standard",
+      "tags": "",
+      "runner_label": "macos-15",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "89a9cda02a4f40c0470db0fef5ae7d7e722569776e9b13b939e931f1d682cb2f",
+      "executable_sha256": "3ec77aa798ac4238493925b9175fe24194df5bc20f25d56aa46bc2fc048b00cb",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "7c7d5191983db754de70aba0a04c811675da3be7b4f746e6f102e2b80b4edd90"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "077352d26bf6c290a4d3e3281b4c4ed3b3a8bb607c281bdf23f643f7a24003c1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "e2edc95a7e1f18cd32a8b7071a81536dfe8a7423985b74603ce14d450d7dc69f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210177,
+      "artifact_id": 13210796846,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 19.34,
+        "install_runtime_seconds_both_variants": 5.46,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "ab41083780765ec51dbc0e392577a40f95fd5cc76d8b77ac1c34a8d0caefcc38",
+        "group_sha256": "d75f5153dccf9e46782e8c4196c218807b1cc55f4fe57a6acea7b4eaae85fae6",
+        "log_sha256": "64e11b44c56940f3c6dc71be358d398a16f5ae8ec98f27294cbe7288e45c961e",
+        "install_runtime_log_sha256": "240b77b2f62ecdb3737742efc34a701edd67b8c7105b2529fdc9b51a06a4b2f6",
+        "platform_sha256": "931e9789cbf241cb5677888bb6691162b1b826301849c264627c23ca2bf46739",
+        "artifact_digest_from_api": "sha256:5d592c2193e86e1fa3ac57f792966cb49781a490d89d977b679fae52e090e92e",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210177"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
+      ]
+    },
+    {
+      "target": "darwin/arm64",
+      "variant": "native-only",
+      "tags": "nogithub,noforge",
+      "runner_label": "macos-15",
+      "status": "PENDING",
+      "native_observed": true,
+      "candidate_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "archive_sha256": "d2fbb32aa4d6d8e8e4e8a3099d2f484bc22027c82c27b8a90da2ca3c98d7c6b9",
+      "executable_sha256": "14cdfbee724fe4c321c1800210322059aa0a87c50a94e11c394b7369d67ffb1e",
+      "references": [
+        {
+          "sample": "charter",
+          "sha256": "7c7d5191983db754de70aba0a04c811675da3be7b4f746e6f102e2b80b4edd90"
+        },
+        {
+          "sample": "fake-tracker",
+          "sha256": "077352d26bf6c290a4d3e3281b4c4ed3b3a8bb607c281bdf23f643f7a24003c1"
+        },
+        {
+          "sample": "inventory",
+          "sha256": "e2edc95a7e1f18cd32a8b7071a81536dfe8a7423985b74603ce14d450d7dc69f"
+        }
+      ],
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "job_id": 125771210177,
+      "artifact_id": 13210796846,
+      "functional_evidence": {
+        "kind": "package-smoke",
+        "result": "PASS",
+        "exhaustive": false,
+        "selected_roots": 5,
+        "excluded_roots": 201,
+        "duration_seconds": 19.25,
+        "install_runtime_seconds_both_variants": 5.46,
+        "compiler": "go1.26.4",
+        "source_tree": "52ae0a18359665b0697a24ba917d33f480f52775",
+        "harness_sha256": "ab41083780765ec51dbc0e392577a40f95fd5cc76d8b77ac1c34a8d0caefcc38",
+        "group_sha256": "c5a0d77f3a79654de6f5d6dd55b29e73735b0b038eeeccd50b5a850699276010",
+        "log_sha256": "583ef5d205db4f753861573f742ece40eb7dfe8fc134890b5f08e12078a78500",
+        "install_runtime_log_sha256": "240b77b2f62ecdb3737742efc34a701edd67b8c7105b2529fdc9b51a06a4b2f6",
+        "platform_sha256": "931e9789cbf241cb5677888bb6691162b1b826301849c264627c23ca2bf46739",
+        "artifact_digest_from_api": "sha256:5d592c2193e86e1fa3ac57f792966cb49781a490d89d977b679fae52e090e92e",
+        "source_fallback": false,
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505/job/125771210177"
+      },
+      "instrumentation_evidence": null,
+      "remaining_acceptance": [
+        "Independent WP25 evidence review; broader native integration/stress evidence retains its own source/platform scope"
+      ],
+      "accepted_beta_limitations": [
+        "No Developer ID signing/notarization; normal browser-download installation uncertified; disclosure required"
+      ]
+    }
+  ],
+  "ci_integration": {
+    "decision": "../../../../kitty-specs/optional-extensions-01M661C0/ci-integration-decision.md",
+    "integrated_ci_source": "f5ea2531cf0a547a19578662589924d97ca36bdf",
+    "frozen_candidate": {
+      "source": "3dcbb96091c6191bc5d98cde9dbd1d2b98433f95",
+      "run_id": 41465035433,
+      "run_attempt": 1,
+      "artifact_id": 13149409710,
+      "overall_conclusion": "cancelled",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433",
+      "preserved": true
+    },
+    "hosted_job_observations": [
+      {
+        "target": "linux/amd64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344477749,
+        "conclusion": "success",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344477749",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      },
+      {
+        "target": "linux/arm64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344477753,
+        "conclusion": "success",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344477753",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      },
+      {
+        "target": "darwin/amd64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344477764,
+        "conclusion": "cancelled",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344477764",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      },
+      {
+        "target": "darwin/arm64",
+        "variants": [
+          "standard",
+          "native-only"
+        ],
+        "scope": "hosted_job_conclusion_only",
+        "job_id": 125344478073,
+        "conclusion": "success",
+        "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41465035433/job/125344478073",
+        "raw_row_revalidation": "not_performed_in_this_integration"
+      }
+    ],
+    "independent_apple_silicon_observation": {
+      "scope": "exact_frozen_packages",
+      "install_and_runtime": "reported_pass",
+      "browser_download_launch": "reported_blocked",
+      "gatekeeper_exit": 3,
+      "direct_launch_exit": 137,
+      "url": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846",
+      "developer_id_setup": "not_available; maintainer confirmed 2026-11-03",
+      "beta_disposition": "Accepted unsigned-beta limitation; actual Gatekeeper rejection and direct-launch failure retained"
+    },
+    "acceptance": "PENDING",
+    "row_statuses_unchanged": true,
+    "next": [
+      "Independent WP25 evidence review; then WP26 boundary and adopter observations"
+    ],
+    "native_fast_verification": {
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "request": "sha256:bce828a55e3e9d72d6c79fec8f271f3496400a4f48c4a49365b873a4f43152c0",
+      "result": "sha256:caa7e14d31f88704726e3f2d17e8dce54f072909bf16c4b4cc62a717a1f8d689",
+      "outcome": "passed",
+      "duration_ms": 101161,
+      "backend": "sandbox",
+      "platform": "linux/amd64",
+      "scope": "Isolated verification clone; default sandbox; no project trusted-runner role change"
+    },
+    "initial_post_integration_smoke": {
+      "run_id": 41589853578,
+      "source": "3f4c1a39a4fde59a0c2c04c0f38446de5b08a391",
+      "overall_conclusion": "failure",
+      "linux_variants": "4 PASS, artifact-verified, 13 selected roots each",
+      "mac_variants": "4 TIMED_OUT at 180 seconds; no group pass",
+      "correction": "Five focused hosted callbacks plus package install/runtime; broad journeys in native integration pipeline",
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41589853578"
+    },
+    "native_verified_source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+    "native_integration_verification": {
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "request": "sha256:a135781ae05d755974c3e2939d48d85b1e3ee574dba5c22ec8d417ba44e89dc2",
+      "result": "sha256:5c36d45af197dc1020dbfddcdec155aac8f69b3cddd87c06b86525b60c23378d",
+      "outcome": "passed",
+      "duration_ms": 116154,
+      "backend": "sandbox",
+      "platform": "linux/amd64",
+      "scope": "Isolated verification clone; default sandbox; no project trusted-runner role change"
+    },
+    "revised_hosted_smoke": {
+      "source": "d5aee5d0226c2e86615c1a0910d3cc8b9592cce7",
+      "run_id": 41591987505,
+      "run_attempt": 1,
+      "result": "PASS",
+      "scope": "5 focused extension callbacks per variant plus install/runtime for both variants",
+      "exhaustive": false,
+      "native_rows": 8,
+      "created_to_last_completed_job_seconds": 321,
+      "url": "https://github.com/LynnColeArt/hubnot/actions/runs/41591987505"
+    },
+    "row_status_note": "Acceptance remains PENDING; eight native smoke observations now recorded. Smoke is not exhaustive or browser-launch certification.",
+    "accepted_beta_limitations": [
+      {
+        "area": "macOS public distribution",
+        "decision": "Mac beta may ship without Developer ID signing or notarization; maintainer approved 2026-11-03",
+        "blocks_functional_qualification": false,
+        "blocks_independent_review": false,
+        "normal_browser_download_installation": "uncertified; actual Gatekeeper rejection retained",
+        "required_release_disclosure": true,
+        "evidence": "https://github.com/LynnColeArt/hubnot/issues/24#issuecomment-6595409846"
+      }
+    ],
+    "deferred_distribution_work": [
+      "Developer ID signing/notarization setup when available; new signed-package digests/provenance and exact native browser-download retest"
+    ]
+  }
+}

@@ -22,6 +22,13 @@ func main() {
 }
 
 func run(args []string) error {
+	if !(len(args) >= 2 && args[0] == "extension" && args[1] == "run") && len(args) > 0 && args[0] != "help" && args[0] != "--help" && args[0] != "-h" && args[0] != "version" && args[0] != "--version" {
+		unlock, err := contributionCommandLock(args)
+		if err != nil {
+			return err
+		}
+		defer unlock()
+	}
 	if len(args) == 0 {
 		printUsage()
 		return nil
@@ -57,8 +64,14 @@ func run(args []string) error {
 	case "review":
 		return cmdReview(args[1:])
 	case "run":
+		if err := contributionRunBoundary("run", args[1:]); err != nil {
+			return err
+		}
 		return cmdRun(args[1:])
 	case "runner":
+		if err := contributionRunBoundary("runner", args[1:]); err != nil {
+			return err
+		}
 		return cmdRunner(args[1:])
 	case "decide":
 		return cmdDecide(args[1:])
@@ -71,7 +84,7 @@ func run(args []string) error {
 	case "log":
 		return cmdLog(args[1:])
 	default:
-		if command, ok := localCommands[args[0]]; ok {
+		if command, ok := lookupLocalCommand(args[0]); ok {
 			return command(args[1:])
 		}
 		return fmt.Errorf("unknown command %q; run 'hn help'", args[0])
@@ -112,6 +125,7 @@ Usage:
   hn proposal list
   hn proposal show PROPOSAL
   hn proposal status PROPOSAL
+  hn contribution authority set|show; prepare|receive|pending|inspect|decide|archive|restore|baseline|retained|intake|rollover
   hn policy show [REV]
   hn policy check --base REV <--head REV|--file PATH>
   hn review PROPOSAL <--approve|--request-changes> [--body TEXT]
@@ -130,10 +144,7 @@ Usage:
   hn log
   hn version
 `)
-	names := make([]string, 0, len(localCommands))
-	for name := range localCommands {
-		names = append(names, name)
-	}
+	names := localCommandNames()
 	sort.Strings(names)
 	if len(names) > 0 {
 		fmt.Println("\nNative resource commands:")

@@ -2,6 +2,9 @@
 
 Hubnot CI separates coordination from computation:
 
+Hubnot's own [project CI tiers and commands](project-ci.md) use this protocol.
+Fast feedback is separate from explicit stress and real-clock soak requests.
+
 ```text
 signed proposal
       ↓

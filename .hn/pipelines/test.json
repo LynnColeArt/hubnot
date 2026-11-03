@@ -2,9 +2,9 @@
   "version": "hn.pipeline/0",
   "steps": [
     {
-      "name": "Go tests",
-      "command": "go",
-      "args": ["test", "./..."],
+      "name": "Fast unit, native CI, protocol and CLI regressions",
+      "command": "./.hn/actions/ci",
+      "args": ["fast"],
       "timeoutSeconds": 300
     }
   ]

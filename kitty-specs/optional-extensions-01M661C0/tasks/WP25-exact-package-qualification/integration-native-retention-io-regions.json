@@ -1,0 +1,173 @@
+{
+  "schema": "hn.wp25-native-retention-io-regions/1",
+  "status": "EXTERNAL PROSPECTIVE DRAFT; no adoption or implementation authority",
+  "source": "9fc8728896236c9cd341e22edb35ae995143e19d",
+  "tree": "b5e5367de767a595750c7822b34fc69a74165615",
+  "root_decision_sha256": "a71cf08fe63fc0551896cf7870b0ebeb7c1e9ff150ce10c5916b7faa156b65a5",
+  "baseline_line_numbers_only": true,
+  "ownership_transfer": false,
+  "new_Go_paths_or_dependencies": false,
+  "supersedes_only": "Earlier no-edit restrictions for exactly these sequential exceptions after normal root adoption; all previous adopted scopes and protections remain.",
+  "production_exceptions": [
+    {
+      "path": "contribution_exchange.go",
+      "source_sha256": "72b49b40f72eb2ca2632bb73075a318cdafb032bf1324a6e2afa3bc1a21b628e",
+      "original_owner": "beta-readiness-01M60J8C/WP11 (root checked approved/inactive)",
+      "regions": [
+        {
+          "baseline_lines": [
+            1727,
+            1757
+          ],
+          "anchor": "ReadContributionManifest closure construction through existing contributionObjectPreflight",
+          "baseline_region_sha256": "3d962286cc82debc41531ef6e4cd011ea0284bc30ddd1e1a73d02ff1b5ab85ee",
+          "allowed": "Replace raw closure only, preserving preflight invocation/semantics; adjacent private native-local helper/session in same file, two sequential classic workers."
+        },
+        {
+          "baseline_lines": [
+            1773,
+            1815
+          ],
+          "anchor": "Existing ls-tree names and sorted records through records append",
+          "baseline_region_sha256": "41275298f9e71dca29581b90a5f28b82cabe61b924612b56a7854dfe199799dc",
+          "allowed": "Retain all exact checks/order; add name\u2192OID index and same-invocation bounded material-offset payload/signature reuse; preserve original caps/Verify/namespace checks."
+        }
+      ],
+      "adjacent_insertion": "Private native-only helper(s) directly adjacent to ReadContributionManifest in existing file; no exported API or new Go path.",
+      "imports": "Only directly necessary standard-library import adjustments."
+    },
+    {
+      "path": "contribution_moderation.go",
+      "source_sha256": "a75448cb1309382dbaeed52b84861d8523f8af1749da647814742f3d7a1b838f",
+      "original_owner": "beta-readiness-01M60J8C/WP12 and WP06; optional-extensions-01M661C0/WP17 narrower lock/context seam (all root checked approved/inactive)",
+      "regions": [
+        {
+          "baseline_lines": [
+            1521,
+            1548
+          ],
+          "anchor": "contributionRegisterRetained raw object closure and existing preflight call boundary",
+          "baseline_region_sha256": "fd90ecd4e11e2eb59ad1d0b6f9fb10201afb7c0ff760acfc84210078eb9b455a",
+          "allowed": "Replace raw closure only with native helper/caller adapter; preflight and all prior/later transaction/charge/authority/lock/ref/coverage/settlement semantics unchanged."
+        }
+      ],
+      "imports": "Only directly necessary standard-library import adjustments."
+    }
+  ],
+  "test_only_exceptions": [
+    {
+      "path": "extension_changes_test.go",
+      "source_sha256": "8dc027b9b4a63a24195ba046eb8c6d5a2d73bc9154c2209e80ad3cb77ffd0255",
+      "original_owner": "optional-extensions-01M661C0/WP19 (root checked approved/inactive)",
+      "regions": [
+        {
+          "baseline_lines": [
+            117,
+            141
+          ],
+          "anchor": "TestExtensionChangesPrivateProofAccountingAndEviction filesystem checkpoint subsection",
+          "baseline_region_sha256": "b0a625dc702258fbecc1b3ea587c5f102a59678a303a4e85ae4b3522fd63ddfb",
+          "allowed": "Explicit controlled/read-back distinct mtimes, alternate creation-vs-mtime order control, exact64 descriptor+key/lock and newest-valid assertions; directly necessary local test helper only."
+        }
+      ],
+      "protected_regions": [
+        {
+          "baseline_lines": [
+            101,
+            116
+          ],
+          "anchor": "Initial maximum proof/capture source accounting",
+          "baseline_region_sha256": "2f4d04c4e15ccc91d14db6c6980123863cc5f369422d98752c003b32868a62c2",
+          "allowed": "BYTE-IDENTICAL"
+        },
+        {
+          "baseline_lines": [
+            142,
+            156
+          ],
+          "anchor": "Existing17\u00d716MiB in-memory capture eviction",
+          "baseline_region_sha256": "d3ea09db18395fd028e122e43ebab6c2b6325cb2009d258168f76adf8f40df8d",
+          "allowed": "BYTE-IDENTICAL"
+        }
+      ],
+      "imports": "Only directly necessary standard-library import adjustments; no general fixture rewrite.",
+      "forbidden": "No production extension_changes.go edit, FIFO/tie policy, sleep/retry-to-green, production clock or source-wide helper."
+    }
+  ],
+  "protected": [
+    "artifact_read.go and existing approved artifact I/O",
+    "project_snapshot.go/shared projectObjectIDs/projectGit",
+    "extension_changes.go and production checkpoint/capture eviction algorithms",
+    "both independent plan observations and all authority/reservation/lock/journal/ref/coverage/settlement algorithms",
+    "native policy/limits/deadlines/source safety/signatures/canonical parsing/preflight/manifest/tree/role ordering",
+    "native default initialization/registry/dependencies and all signed public contracts"
+  ],
+  "preserved_metadata": {
+    "WP_count": 26,
+    "unique_subtask_count": 107,
+    "WP25_owned_files": [
+      "artifact_envelope_commands_test.go",
+      "artifact_schema_commands_test.go",
+      "artifact_read_test.go",
+      "artifact_replication_test.go",
+      "artifact_search_acceptance_test.go",
+      "extension_enablement_test.go",
+      "extension_changes_acceptance_test.go",
+      "extension_charter_acceptance_test.go",
+      "extension_package_acceptance_test.go",
+      "docs/qualification/optional-extensions/packages/manifest.json",
+      "docs/qualification/optional-extensions/packages/platform-matrix.json",
+      "docs/qualification/optional-extensions/packages/checks.md",
+      ".github/workflows/portability.yml",
+      ".github/workflows/optional-extensions-qualification.yml"
+    ],
+    "WP25_create_intent": [
+      "artifact_envelope_commands_test.go",
+      "artifact_schema_commands_test.go",
+      "artifact_read_test.go",
+      "artifact_replication_test.go",
+      "artifact_search_acceptance_test.go",
+      "extension_enablement_test.go",
+      "extension_changes_acceptance_test.go",
+      "extension_charter_acceptance_test.go",
+      "extension_package_acceptance_test.go",
+      "docs/qualification/optional-extensions/packages/manifest.json",
+      "docs/qualification/optional-extensions/packages/platform-matrix.json",
+      "docs/qualification/optional-extensions/packages/checks.md",
+      ".github/workflows/optional-extensions-qualification.yml"
+    ],
+    "WP25_dependencies": [
+      "WP24"
+    ],
+    "WP25_subtasks": [
+      "T100",
+      "T101",
+      "T102",
+      "T103"
+    ],
+    "WP25_frontmatter_sha256": "0334dc9f6b5188b9b46157528dc8ca115fcf8bffa4e5e5541317258f451ea972",
+    "lanes_sha256": "354aa4b1c9e8cb14c33cd49cfea81dda6c33a5a257dc012443af4614fc14c230"
+  },
+  "required_activation": "Root adoption after H5 local source run fully reaped, normal finalizer planning refresh, fresh actual analysis/record-analysis and normal WP25 implement reentry; no force/skip/hand events.",
+  "new_diagnostic_proposals": {
+    "status": "PROSPECTIVE; root must approve or revise before adoption",
+    "legacy_first": "Use old single-fault errors/logical bounded-Git wrappers whenever they apply. These new templates are only for new protocol/finalization events; no artifactFailure/fabricated ExitError.",
+    "caller_templates": {
+      "contribution": {
+        "metadata_protocol": "contribution raw metadata protocol failed for %s: %w",
+        "body_protocol": "contribution raw body protocol failed for %s: %w",
+        "raw_hash": "contribution raw object hash mismatch: %s",
+        "metadata_finalization": "contribution raw metadata finalization failed: %w",
+        "body_finalization": "contribution raw body finalization failed: %w"
+      },
+      "retained": {
+        "metadata_protocol": "retained raw metadata protocol failed for %s: %w",
+        "body_protocol": "retained raw body protocol failed for %s: %w",
+        "raw_hash": "retained raw object hash mismatch: %s",
+        "metadata_finalization": "retained raw metadata finalization failed: %w",
+        "body_finalization": "retained raw body finalization failed: %w"
+      }
+    },
+    "variable_fields": "%s is bounded exact selected OID; %w is an honest fixed native reason/underlying process or I/O cause. Host OS cause spelling may vary. Keep first detected error through cleanup."
+  }
+}

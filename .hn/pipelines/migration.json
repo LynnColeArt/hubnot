@@ -1,0 +1,6 @@
+{
+  "version": "hn.pipeline/0",
+  "steps": [
+    {"name": "Complete sharded migration portability regressions", "command": "./.hn/actions/ci", "args": ["migration"], "timeoutSeconds": 600}
+  ]
+}

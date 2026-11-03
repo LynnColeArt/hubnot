@@ -1,0 +1,81 @@
+{
+  "schema": "wp25.e2big-fixture-portability.verification.v1",
+  "status": "UNEXECUTED_PROSPECTIVE_ROOT_PENDING",
+  "source_commit": "43574af5b57217df15a6ccf0b8f5c29cadc28593",
+  "rows": [
+    {
+      "id": "EB01",
+      "case": "Preserve genuine historical fixture RED",
+      "expected": "Retain C844 run41349086217 attempt1 Darwin ARM job124975681149 four sha1/sha256 x standard/native E2BIG leaf failures; verification_failure wanted but got nil. Prepare/trace pass. Preserve original logs and source identity; no current4357 failure inferred. An authorized isolated old-size overlay on actual Mac may reproduce RED, but its error must be the same reached assertion/observed real successful exec, not compile/timeout/environment/setup failure."
+    },
+    {
+      "id": "EB02",
+      "case": "Real errno GREEN",
+      "expected": "On Linux AMD64/ARM64 and Mac AMD64/ARM64, both Git formats and both supplied candidate variants: existing child reaches E2BIG case; artifactCheckSourceWitnesses yields exact verification_failure; direct real projectGit yields errors.Is(syscall.E2BIG) with nil stdout; complete descriptor names equal; child zero exit and PASS with no FAIL/SKIP. No mocked errno, wrapper, fallback-to-skip or exit-only assertion."
+    },
+    {
+      "id": "EB03",
+      "case": "Healthy-path and causal positive controls",
+      "expected": "Preserve existing successful selected-0/1/63/64/65/127/128/129/191/192/193/257 and authentic full public read/unchanged repository controls on the same real fixture. Retain missing-exec/bad-interpreter/lowFD controls. Required evidence is the actual old256KiB Mac RED and corrected2MiB actual native8 GREEN with all genuine errno/nilstdout/fullFD/child assertions, plus these existing healthy controls; actual Mac observations are mandatory and Linux alone is insufficient. A separately authorized local temporary size-to-zero mutation is optional supplementary source-causal evidence: if performed, it must fail the same E2BIG contract because real witness exec succeeds, retaining exact overlay/source/harness/binary hashes and safe output. It is not a new mandatory Mac/native collector gate and requires no rebuilding/execution of current qualification assets. Never dump ambient environment.",
+      "optional_supplementary_fault_injection": true
+    },
+    {
+      "id": "EB04",
+      "case": "Scope/freeze review",
+      "expected": "Only the one constant and optional adjacent explanation change in artifact_read_test.go against4357; all316 other Go/module inputs and317 keyset exact; retain both4357 import-union corrected files. Explicitly supersede only that file in C844315-of317 import-union freeze; combined other314 remain C844. No production/import/collector/workflow/driver change."
+    },
+    {
+      "id": "EB05",
+      "case": "Fresh mandatory source/default/native gates",
+      "expected": "Independent clean exact-diff/source review; fresh root311 inherited-hash attestation and all317 source freeze. Preserve six default roots, collector TestExtensionDefaultPerformanceCapture, COMPLETE4320 observations/2160pairs/72groups/144criteria, original corpora/ordering/thresholds/math. Full frozen-source race/static/build checks and8 actual native rows; old evidence remains historical. Formal WP25 review; normal WP26 eligibility/two true cold trials/52 adjudications and accept/merge gates unchanged."
+    }
+  ],
+  "supported_targets": [
+    "linux/amd64",
+    "linux/arm64",
+    "darwin/amd64",
+    "darwin/arm64"
+  ],
+  "no_test_app_build_probe_or_remote_execution_in_this_design": true,
+  "no_waiver_or_lifecycle_change": true,
+  "historical_summary": {
+    "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/hosted-c8440287/root-darwin-arm-terminal-failure-summary.json",
+    "sha256": "8a52e617c24b94d5c537d6066304be0dcaf48649db1b19297d8abbb466479f19"
+  },
+  "current_runs_preserved": {
+    "root53154": "Root-supplied terminal exit143 at approximately00:06:04UTC; first race check INCOMPLETE,2520 namedPASS/0FAIL/6 known helper skips; no driver results or after-file; six later checks NEVER STARTED; signal15 cause unknown, neither PASS nor proven infrastructure failure. No independent status/process query by this design author.",
+    "native_run41361822832": "All4 jobs LIVE per task context; do not cancel/rerun/relabel"
+  },
+  "preserved_counts": {
+    "requirements": 52,
+    "WPs": 26,
+    "subtasks": 107,
+    "historical_approvals": 24,
+    "WP25_owned_paths": 14,
+    "WP25_create_intent": 13
+  },
+  "scheduling_proposal": {
+    "status": "AUTHORITATIVE_ROOT_SCHEDULING_UPDATE_NOT_SOURCE_ACTION_AUTHORITY",
+    "supersedes": "Prior requirement that old ROOT53154 all seven checks complete before adoption; impossible after interruption and must not be fabricated.",
+    "local_preconditions": [
+      "Interrupted ROOT command and every owned child fully reaped",
+      "Exact manual all317 source-after input capture, identical4357 source/tree, and partial/failure output preserved",
+      "No remaining local check writer"
+    ],
+    "root_reported_state": "No driver Python, lane Go/test or current fixture-test processes remain; working tree clean. Manual source-after capture is planned, not completed by this design author.",
+    "old4357_qualification": "Full7 INCOMPLETE, cannot qualify or approve. No rerun merely to satisfy administrative wording.",
+    "remote_preservation": "C844/current4357 source-specific jobs finish independently against immutable remote checkouts/aliases; no cancel/rerun/relabel/rewrite",
+    "new_local_candidate": "After verified cleanup/evidence/no-writer conditions, normal root adoption and separate bounded producer authorization may proceed while old source-specific remote jobs continue; no same-local-source overlap.",
+    "new_candidate_qualification": "All unchanged7 checks must PASS plus all default/native/other gates; no qualification waiver."
+  },
+  "initial_version_history": {
+    "directory": "initial-version",
+    "original_manifest_preserved": true,
+    "purpose": "Retain initial proposal bytes and hashes before optional-control clarification; historical proposal is not current authority."
+  },
+  "prior_revision_history": {
+    "directory": "pre-interruption-scheduling-version",
+    "original_manifest_preserved": true,
+    "purpose": "Retain optional-control revision before authoritative interrupted-run scheduling clarification."
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "wp25.import-union.verification.v1",
+  "status": "UNEXECUTED_PROSPECTIVE_ROOT_PENDING",
+  "source_commit": "c84402877996015cf33784bebd826e5be4981a4a",
+  "finding": "BR-001",
+  "runtime_reproduction_performed": false,
+  "rows": [
+    {
+      "id": "IU01",
+      "case": "Actual signed public CLI invalid-union refusal",
+      "expected": "sha1+sha256; receiver type X; disjoint sender Y/R with missing optional revision X; identical valid export passes incoming shape/closure; actual import invalid_history before destination writes; original receiver read remains successful."
+    },
+    {
+      "id": "IU02",
+      "case": "Exact receiver no-effects and detector strength",
+      "expected": "Full repo/object/ref/home/private bytes/modes/directories equal; no object preseed or input inside receiver; retain existing snapshot detector controls and original assertions."
+    },
+    {
+      "id": "IU03",
+      "case": "Same-wire missing-optional positive control",
+      "expected": "Same bundle bytes succeed in same-format receiver lacking X; signed target retained and missing_optional; no blanket missing-link refusal."
+    },
+    {
+      "id": "IU04",
+      "case": "Meaningful baseline RED and corrected GREEN",
+      "expected": "Frozen c844 production plus regression overlay observed invalid-union uncertainty/state mutation; no compile/missing-helper fake RED; corrected candidate invalid_history/no-effects plus positive control. Bind production/harness/binary identities and actual output."
+    },
+    {
+      "id": "IU05",
+      "case": "Exact P and unchanged resource/cancellation rules",
+      "expected": "P current exact-ref map overlaid by promoted destination imported refs, not b.Refs; prefer import-local safe common-ODB read-only borrowing; otherwise admitted/verified exact sorted current.readObjects fallback only. Preserve existing shallow/graft/config/ambient/alternate refusals, linked-worktree relations, bounded metadata checks, no lazy fetch, cancellation/errors, actual stage-old batch witness transaction. Full unchanged central loader before receiver writes; original validation30s/copy30s/caller cancellation; no new receiver limits or clocks; children/readers/writers owned/joined."
+    },
+    {
+      "id": "IU06",
+      "case": "Atomicity and accepted-only semantics preserved",
+      "expected": "Retain original source equality, prefix/rewind, selected-only closure/object/ref promotion, no-deref CAS, lost ACK truthful uncertainty, opaque/privacy, postpromotion ordinary Cut; destination wrappers distinguish stage-local writes."
+    },
+    {
+      "id": "IU07",
+      "case": "Aggregate exact-union admission",
+      "expected": "Source review establishes exact P traverses unchanged central ref/record/byte validators before effects. Use existing100000/100001 corpus only if needed; overlapping prefixes deduplicate; no giant new fixture, no fullread success claim from preflight/cancellation or receiver timeout."
+    },
+    {
+      "id": "IU08",
+      "case": "Live native qualification reachability",
+      "expected": "New named helper called by existing TestArtifactExchangeRefusalsCLI; original qualification selection unchanged; actual events for both formats with supplied binary in each of8 native rows."
+    },
+    {
+      "id": "IU09",
+      "case": "Fresh corrected-source mandatory gates",
+      "expected": "Independent exact-diff/source review, fresh root311/all317, unchanged6 default roots + COMPLETE4320/2160pairs/72groups/144criteria, fullsource race/static/build and native8, formal WP25 review; later actual cold trials and52 adjudications."
+    },
+    {
+      "id": "IU10",
+      "case": "Bounded staging-path safety controls",
+      "expected": "Verify healthy borrow and otherwise admitted fully verified fallback (e.g. retained promisor pack marker) without bypassing original unsafe-layout refusals. Preserve linked-worktree acceptance, real30s cancellation/error propagation and original raw-object verification; no giant duplicate numeric corpus or inferred100000-record import success."
+    }
+  ],
+  "unchanged_default_roots": [
+    "TestExtensionDefaultNativeMatrix",
+    "TestExtensionDefaultHistoricalMatrix",
+    "TestExtensionDefaultFailureConfigurations",
+    "TestExtensionDefaultDetectors",
+    "TestExtensionDefaultControl",
+    "TestExtensionDefaultPerformanceBudgets"
+  ],
+  "collector": "TestExtensionDefaultPerformanceCapture",
+  "default_is_hard_gate": true,
+  "default_observations": 4320,
+  "pairs": 2160,
+  "groups": 72,
+  "criteria": 144,
+  "native_rows": 8,
+  "historical_evidence": {
+    "source_commit": "c84402877996015cf33784bebd826e5be4981a4a",
+    "default_criteria_PASS": 144,
+    "full_source_checks_PASS": 7,
+    "native_run": 41349086217,
+    "attempt": 1,
+    "jobs_status_at_preparation": "LIVE; not fresh remote observation",
+    "inheritance_to_corrected_source": false
+  },
+  "handoffs": [
+    "Root exact metadata/design review and explicit new inactive-WP10 exceptions",
+    "Normal metadata adoption preserving original78/current planning/source/index/canonical state",
+    "Normal finalizer/planning-commit refresh; fresh independent actual analysis/record; normal WP25 reentry",
+    "Separate bounded producer authorization, meaningful RED/GREEN/positive control",
+    "Independent corrected-source review and fresh unchanged full qualification; normal WP review/mission gates"
+  ],
+  "waivers_or_lifecycle_changes": false,
+  "independent_staging_followup_sha256": "a6ce8cc9c22f0f2fd4b2e0a2cc6194a4168e4e2a51c1973bc1c7ff0331897311"
+}

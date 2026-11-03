@@ -1,0 +1,219 @@
+{
+  "schema": "hn.native-correction-amendment-regions/1",
+  "status": "EXTERNAL_DRAFT_V1_PENDING_EXACT_METADATA_REVIEW_ROOT_ADOPTION",
+  "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+  "tree": "ccf0b4061134595c8c9b27bb0087dfd904f72ac9",
+  "production_candidates": [
+    {
+      "id": "A",
+      "path": "internal/extension/session.go",
+      "original_owner": "WP16",
+      "allowed_change": "Only ticker expression RevocationInterval→RevocationInterval/2",
+      "region": {
+        "path": "internal/extension/session.go",
+        "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+        "git_mode": "100644",
+        "git_blob": "94039395edba3e1e86bef3e81094463d9da8d70e",
+        "sha256": "5e98513e58076e4dd5925be558ffd3553bf5844f79839e54039469fd5b17ed61",
+        "bytes": 27443,
+        "start_line": 492,
+        "end_line": 543,
+        "region_sha256": "474dfad3642a263656c9923506378dabf9cabd3658468644edc14766e22507b4",
+        "region_bytes": 1560
+      },
+      "exact_target_line": 498,
+      "public_constants_unchanged": {
+        "RevocationInterval_ms": 250,
+        "TerminateGrace_ms": 2000,
+        "ExitBudget_ms": 5000
+      },
+      "new_narrow_owner_exception_required": true
+    },
+    {
+      "id": "B",
+      "path": "artifact_read.go",
+      "original_owner": "WP05",
+      "allowed_change": "Only private loader factoring and ordinary discovery-owned initial witness omission; explicit entry still both rounds, shared body still final round, ordinary final complete observation/equality/Cut exact",
+      "regions": [
+        {
+          "path": "artifact_read.go",
+          "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+          "git_mode": "100644",
+          "git_blob": "90f3026de7430e3406b8856513f8da21d2ac0010",
+          "sha256": "03268bf11d51942979373a523be823719ba1185bdd85645545182c90e6ec533f",
+          "bytes": 32624,
+          "start_line": 292,
+          "end_line": 317,
+          "region_sha256": "f54aec7f4bb94d455ba3e70bffeb74a5e5820a4c107c5e9c6c01958bd8e0fd65",
+          "region_bytes": 767
+        },
+        {
+          "path": "artifact_read.go",
+          "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+          "git_mode": "100644",
+          "git_blob": "90f3026de7430e3406b8856513f8da21d2ac0010",
+          "sha256": "03268bf11d51942979373a523be823719ba1185bdd85645545182c90e6ec533f",
+          "bytes": 32624,
+          "start_line": 324,
+          "end_line": 460,
+          "region_sha256": "c2a3a93b9892e980d6ca89f6877c558bd586c59b8e6324434d67edbac71e1a10",
+          "region_bytes": 4760
+        }
+      ],
+      "supersedes_prior_RW01C_only": "Initial witness requirement on ordinary local discovery route; prior RW01C does not authorize this change",
+      "frozen_worker_region": {
+        "path": "artifact_read.go",
+        "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+        "git_mode": "100644",
+        "git_blob": "90f3026de7430e3406b8856513f8da21d2ac0010",
+        "sha256": "03268bf11d51942979373a523be823719ba1185bdd85645545182c90e6ec533f",
+        "bytes": 32624,
+        "start_line": 766,
+        "end_line": 985,
+        "region_sha256": "21818eafb2731fcf53f18b1b8753a0757e680fce8c731c031a232e48a509944e",
+        "region_bytes": 7233
+      },
+      "frozen_worker_requirement": "Keep entire source witness function/job parser/admission/cancel/join byte-identical; no pair/fallback/argv/cap/error change",
+      "new_narrow_owner_exception_required": true
+    }
+  ],
+  "test_scope": [
+    {
+      "path": "internal/extension/session_test.go",
+      "original_owner": "WP16",
+      "change": "Focused append-only cadence/recheck/real owner test controls and only necessary existing imports; preserve all inherited assertions",
+      "new_narrow_owner_exception_required": true,
+      "baseline": {
+        "path": "internal/extension/session_test.go",
+        "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+        "git_mode": "100644",
+        "git_blob": "6e4ea48d9fa23e81008bd1ffa542be501906e584",
+        "sha256": "e0fea37c5f86e85190131baf35e3759d99ecf8d2abf9f41548b2bc10a68c853b",
+        "bytes": 21152
+      },
+      "append_after_original_line": 575,
+      "original_body_byte_preservation": "Every baseline statement/assertion unchanged; only append focused tests and necessary imports",
+      "baseline_import_region": {
+        "path": "internal/extension/session_test.go",
+        "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+        "git_mode": "100644",
+        "git_blob": "6e4ea48d9fa23e81008bd1ffa542be501906e584",
+        "sha256": "e0fea37c5f86e85190131baf35e3759d99ecf8d2abf9f41548b2bc10a68c853b",
+        "bytes": 21152,
+        "start_line": 1,
+        "end_line": 13,
+        "region_sha256": "c0f202807413882d8b5565489732f6f007f890f4d60c7bc073a359b6c9484efe",
+        "region_bytes": 121
+      }
+    },
+    {
+      "path": "artifact_read_test.go",
+      "original_owner": "WP25 test transfer",
+      "change": "Focused append-only discovery/explicit-source/precedence/cancellation controls and only necessary imports; preserve2MiB and every baseline assertion",
+      "new_narrow_owner_exception_required": false,
+      "baseline": {
+        "path": "artifact_read_test.go",
+        "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+        "git_mode": "100644",
+        "git_blob": "50d1cf7816665910fffa1e191142d7ab49e48072",
+        "sha256": "0ea2df0a373b965c8591ac1ba2babd23ef2c85129e667a14d929bee785ecdd31",
+        "bytes": 225919
+      },
+      "append_after_original_line": 5270,
+      "original_body_byte_preservation": "Every baseline statement/assertion unchanged; only append focused tests and necessary imports",
+      "baseline_import_region": {
+        "path": "artifact_read_test.go",
+        "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+        "git_mode": "100644",
+        "git_blob": "50d1cf7816665910fffa1e191142d7ab49e48072",
+        "sha256": "0ea2df0a373b965c8591ac1ba2babd23ef2c85129e667a14d929bee785ecdd31",
+        "bytes": 225919,
+        "start_line": 1,
+        "end_line": 29,
+        "region_sha256": "2a2e6a48167af03538228d9569804c5be94cec67b6a36ed819de5d19aa831c1c",
+        "region_bytes": 358
+      }
+    }
+  ],
+  "forbidden": [
+    "No generic skip flag/provenance enum/token/knob or callback-selected bypass",
+    "No source cache/default dependency/new worker/Git floor change",
+    "No final witness or outer snapshot comparison removal",
+    "No explicit-source/exchange/replication weakening",
+    "No public budget/deadline/threshold/sample/corpus/trace/registration change",
+    "No third production or fixture-budget correction in this scope"
+  ],
+  "preserved": {
+    "requirements": 52,
+    "tasks": 107,
+    "WPs": 26,
+    "historical_reviews": 24,
+    "canonical_FRs": 24,
+    "WP25_owned_paths": 14,
+    "WP25_create_intent": 13,
+    "Go_module_keys": 317,
+    "at_least_other_inputs_exact29": 313,
+    "all_other_inputs_exact29": 313
+  },
+  "source_bindings": [
+    {
+      "path": "internal/extension/session.go",
+      "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+      "git_mode": "100644",
+      "git_blob": "94039395edba3e1e86bef3e81094463d9da8d70e",
+      "sha256": "5e98513e58076e4dd5925be558ffd3553bf5844f79839e54039469fd5b17ed61",
+      "bytes": 27443
+    },
+    {
+      "path": "internal/extension/session_test.go",
+      "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+      "git_mode": "100644",
+      "git_blob": "6e4ea48d9fa23e81008bd1ffa542be501906e584",
+      "sha256": "e0fea37c5f86e85190131baf35e3759d99ecf8d2abf9f41548b2bc10a68c853b",
+      "bytes": 21152
+    },
+    {
+      "path": "artifact_read.go",
+      "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+      "git_mode": "100644",
+      "git_blob": "90f3026de7430e3406b8856513f8da21d2ac0010",
+      "sha256": "03268bf11d51942979373a523be823719ba1185bdd85645545182c90e6ec533f",
+      "bytes": 32624
+    },
+    {
+      "path": "artifact_read_test.go",
+      "source": "29ffc43cbc71d10ff4ee2a86bea7f407017fb920",
+      "git_mode": "100644",
+      "git_blob": "50d1cf7816665910fffa1e191142d7ab49e48072",
+      "sha256": "0ea2df0a373b965c8591ac1ba2babd23ef2c85129e667a14d929bee785ecdd31",
+      "bytes": 225919
+    }
+  ],
+  "supersession": {
+    "prior": "RW01C both witness passes plus plan original worker/error/pair constraints",
+    "only_exception": "Initial witness requirement on locally discovering loadArtifactHistory composition",
+    "explicit_source_both_rounds_unchanged": true,
+    "discovery_call_reach": "Includes ordinary mutation/catalog/export/import-current-state/replication local discovery",
+    "copy_before_sort": true,
+    "captured_source_slice_preserved": true
+  },
+  "owner_confirmation": {
+    "WP16": "ROOT_PENDING_INACTIVE_NO_EXTERNAL_WRITER",
+    "WP05": "ROOT_PENDING_INACTIVE_NO_EXTERNAL_WRITER"
+  },
+  "precise_task_boundaries": {
+    "integration": "WP25 T101/T102/T103 only",
+    "WP16": [
+      "T064",
+      "T065",
+      "T066",
+      "T067"
+    ],
+    "WP05": [
+      "T021",
+      "T023"
+    ],
+    "no_tasks_or_WPs_added": true,
+    "frontmatter_unchanged": true
+  }
+}

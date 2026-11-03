@@ -1,0 +1,250 @@
+{
+  "status": "EXTERNAL PROSPECTIVE REQUIREMENTS ONLY; NO EXECUTION OR GATE",
+  "existing_tasks": [
+    "T100",
+    "T101",
+    "T102",
+    "T103"
+  ],
+  "order": [
+    "root fullrun reap and evidence retention",
+    "normal metadata amendment/finalizer/analyze/implementation reentry",
+    "test-first narrow changes/focused causal proof",
+    "fresh independent source review",
+    "new root311/317 attestation/freeze",
+    "fresh default+4320 paired evidence",
+    "full source and native8",
+    "normal independent WP25 review and all remaining mission gates"
+  ],
+  "rows": [
+    {
+      "id": "V01-scope",
+      "evidence_class": "independent source-only review",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [],
+      "required_positive": "Every production change contained in five exact regions; correct four original producer owners; WP22 helper exception exact; 26 lanes/107 tasks/14 owned/13 create_intent exact.",
+      "required_negative_or_fault_control": "Reject hidden public contract/error/budget/path/authority/config/lock/settlement/tree-parser change, scope overlap or orphan process return.",
+      "required_retained_evidence": "Full diff, source317 identities, all owner frontmatter, count-wrapper semantics, all direct reader constructions and success/error returns inspected by fresh independent reviewer.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V02-metadata-first",
+      "evidence_class": "source-assisted protocol + real Git/public caller",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Real SHA1/SHA256 exact raw commits/trees/blobs pass; each info precedes host contents authorization; repeated OID reread, charged once.",
+      "required_negative_or_fault_control": "8MiB/+1 selected role cap; 256MiB/+1 unique aggregate including duplicate OIDs; selected tip AND ancestor oversize deny contents; wrong kind/OID/negative/noncanonical size/repeated-header mismatch/same-size corrupt hash/short body/missing LF/extra bytes.",
+      "required_retained_evidence": "Explicit stage ledger, admitted bytes, requested OIDs/kinds, original diagnostic, no fetch/state effects; source-assisted controls labeled supplementary.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V03-count-unchanged",
+      "evidence_class": "existing public numeric + causal source-assisted",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Actual100000 causal admission, raw shallow/grafted and overlapping-tip semantics; empty selection starts no child.",
+      "required_negative_or_fault_control": "100001 exact resource_limit/selected artifact record limit exceeded;99999 threshold and removed-preflight mutant fail; later30s cancellation at equality labeled count-admission only; safe8MiB/+1 and9MiB fixtures retain before-body guard.",
+      "required_retained_evidence": "Unchanged exact count assertions and production count wrapper behavior. Adapt only owned TEST shim state/ledgers to distinguish the ONE count session from later generic full-reader sessions, forwarding later real Git honestly; do not combine their info/body counts or weaken dedup/before-body assertions. Mandatory real-Git/public controls remain separate. Before/after count source behavior/diagnostics and actual responses/protected state retained; no giant OOM probe.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V04-full-reader-owner",
+      "evidence_class": "source-assisted faults + real Git/public caller",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "History finish before h.validate/final witnesses; closure/export/inventory/candidate finish before escape; single-shot object/commit callers own their entire scope.",
+      "required_negative_or_fault_control": "Valid final body + nonzero final exit; close/EOF/extra-output failure; already expired parent starts no child; cancel at setup/info/body/finish; partial-pipe setup and8192/+1 stderr.",
+      "required_retained_evidence": "Owned PID/FD/pipe lifecycle, Wait joined all returns, no blocked workers; exact caller-specific verification_failure/cancelled diagnostics. Dedicated generic full-reader peer controls run through the owned compiled native harness and are distinguished from the commit-only count peer. They exercise commit/tree/blob framing and raw hash, caller-specific finalization placement, and each owner/fallback rather than inheriting a pass from count tests.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V05-first-error",
+      "evidence_class": "source-assisted individually injected faults",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Semantic invalid_history, actor_stream_conflict, signature/hash verification_failure, unsupported/incomplete schema/envelope errors and resource_limit retain original sole-fault code/message/wrapper.",
+      "required_negative_or_fault_control": "Semantic/protocol/budget refusal followed by cleanup kill must retain primary; cleanup cancellation never fakes parent cancellation. Correct body/ACK followed by sole final-exit fault must fail.",
+      "required_retained_evidence": "First detected error ledger plus cleanup outcome; combined independent faults assert failure/no promotion/all children reaped only, no invented universal exact-code precedence.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V06-ls-tree-business",
+      "evidence_class": "unchanged source tests + public real Git",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Raw commits/trees, exact two100644 blobs/names, unsigned author metadata accepted by frozen artifact contract, message/signature/actor/schema/continuity/source witnesses unchanged.",
+      "required_negative_or_fault_control": "Malformed mode/name/tree/message, actor mismatch/divergence, tamper, missing objects/no-fetch, witness movement, named-ref/namespace isolation all refuse at original boundaries.",
+      "required_retained_evidence": "Run existing closure/exchange/store/operation tests unchanged; raw SHA1/SHA256 body/OID equality through export/import/push/fetch; independent signature/raw identity evidence.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V07-blob-ACK",
+      "evidence_class": "source-assisted fault controls + actual Git implementation qualification",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "One owned blob worker/scratch; original object order; exact ACK before advancing; real pipe ACK progresses before stdin EOF on each actual qualified Git.",
+      "required_negative_or_fault_control": "Wrong/missing/truncated/extra ACK, failed child after final correct ACK, interrupted filename/scratch write/read/ACK/finish; no future request after detected fault.",
+      "required_retained_evidence": "Actual Git executable/version, per-request ACK timings/order, temp file mode/size/path/cleanup, literal commit/tree exact hashes, child Wait; Git2.43/2.56 source check alone insufficient. Dedicated blob-writer protocol/finalization peers are provided by the owned compiled native harness, separate from cat-file/count peers; count framing does not prove filename/ACK/writer EOF/Wait behavior.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V08-copy-precedence",
+      "evidence_class": "public CLI + supplementary direct helper controls",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Valid full public table decodes before any copy; valid complete ordered copy finishes before quarantine/destination refs.",
+      "required_negative_or_fault_control": "Later malformed table entry and4097/32MiB+1 refuse before copy dispatch; unavailable later replication reread retains ordinary verification_failure (unsupported type invalid_history); no generic remap.",
+      "required_retained_evidence": "Actual public table/hash, copy dispatch marker, exact response and no promoted refs/private effects; direct-helper faults do not define a new public API.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V09-copy-bounds",
+      "evidence_class": "public equality/first-over + raw byte fixtures",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "4096 total objects incl4094 blobs/one tree/one commit; bounded unreachable blob >8MiB permitted within existing table32MiB+wire16MiB; selected object8MiB, aggregate256MiB; selected replication32MiB.",
+      "required_negative_or_fault_control": "4097 total,2049 records,depth257 transfer,32MiB/+1 decoded,16MiB/+1 wire; no accidental selected8MiB cap on unreachable table blobs.",
+      "required_retained_evidence": "Otherwise-valid equality and exact first-over errors; fixture/table/wire hashes, selected versus whole-table inventory, scratch\u226432MiB; malformed equality is not a positive.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V10-budget-positives",
+      "evidence_class": "actual supplied candidate binaries on actual failed Mac path",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Exact4096 import; depth256 push and exchange; ordinary257 inspect; selected-ref boundary positive and1024-parent/conversion-source resolution succeed inside unchanged30s/240s.",
+      "required_negative_or_fault_control": "4097/depth257 exchange/1025-parent refusals and state preservation; no late unrelated cancellation accepted as equality pass.",
+      "required_retained_evidence": "Matched old/new fixture hashes, source/tree/binary/Git identities, command-stage times separate fixture construction, direct exec/descendant counts, complete final refs/intents on uncertainty; no source arithmetic claimed as measured speedup.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V11-publication-safety",
+      "evidence_class": "unchanged public/host integration + source-assisted cleanup",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Independent clones, complete closure inventories, current-authority/source-recapture, expected-old atomic refs/CAS, replay/operation and opaque paths remain exact.",
+      "required_negative_or_fault_control": "CAS wrong-old, lost ACK, alias-at-transaction, uncertainty/prepared interruptions retain actual markers and public status; no accepted visibility on failed selection.",
+      "required_retained_evidence": "Raw transaction markers, protected-state snapshots, final known/uncertain evidence; interrupted descriptor-lock and Intel killed causes remain separately owned/unproven.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V12-physical-temp",
+      "evidence_class": "actual Darwin package + owned fixture controls",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "Normalize verified OS-owned alias before ANY temp creation (including nested/forked fixtures); same directory identity; physical digest/snapshot/shim predicates exercised.",
+      "required_negative_or_fault_control": "Unsafe/arbitrary TMPDIR aliases still refuse; explicit negative alias fixtures remain negative; sham wrappers without actual marker fail.",
+      "required_retained_evidence": "Lexical/physical temp names, directory modes/same-file identity, wrapper argv/PWD/pwd-P/executable and injection marker, actual old/new Mac assertions; no production safepath edit.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V13-inventory-selection",
+      "evidence_class": "actual source/host public journey + controlled causal RED/GREEN",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "extension_inventory_acceptance_test.go (WP22 exact helper exception)"
+      ],
+      "required_positive": "One sorted selection contains all three exact final converted item/maintenance/stock IDs and one fetch; shape/search/read/privacy/model projections unchanged.",
+      "required_negative_or_fault_control": "Controlled old separate selection that advances dependency then requests older prefix fails anti-rewind; complete batch passes. Never allow concurrent_update as positive success or omit/relabel an ID.",
+      "required_retained_evidence": "Actual H12f8 failure immutable; original map order/intermediate refs explicitly unknown. Retain controlled order, signed selected closures, accepted refs before/after, three ID/projection verification and real host responses.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V14-native-inert",
+      "evidence_class": "fresh root native/default/no-registry/control attestations",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "All native no-input/error/history/opaque/corrupt-config/absent+large-unrelated controls show no added session/scratch/probe/module/registry work.",
+      "required_negative_or_fault_control": "Real shell/Go/descendant registry-read detectors and effect controls must actually fail when violated; default native errors stay meaningful.",
+      "required_retained_evidence": "Fresh source-bound root/default independent attestations, causal detector logs and all historical compatibility hashes; historical WP24 approval remains source-specific.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V15-performance",
+      "evidence_class": "complete unchanged paired gate",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [],
+      "required_positive": "All4320 observations/2160 pairs/72 groups,30 pairs/group, nine cases, absent+large-unrelated, standard/native-only, frozen-cgo1/packager-cgo0 pass unchanged.",
+      "required_negative_or_fault_control": "Retain all prior failed observations, all detector/budget/collector controls, elapsed max(10%,5ms) and RSS max(10%,1MiB); no retry-to-green/partial substitute.",
+      "required_retained_evidence": "Fresh independently root-attested311 hash VALUES, exact inherited membership/full317 frozen input union, unchanged driver literal/math/order/flags/assets/control hashes, exact executable captures.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V16-full-and-native8",
+      "evidence_class": "full frozen source + actual distributed packages",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [],
+      "required_positive": "New source race/vet/build/format plus all Linux/macOS AMD64/ARM64 \u00d7 standard/native-only actual packages, separately supplied target-bound references.",
+      "required_negative_or_fault_control": "Missing target remains pending; no cross-compile/source-build/helper-only/native-substitution pass; all failures preserved.",
+      "required_retained_evidence": "Exact source/tree/compiler/workflow/caller/candidate/archive/binary/harness/reference/fixture hashes; watchdog policy separate from product budgets; sole heavy-slot execution and complete reap.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    },
+    {
+      "id": "V17-owned-shim-session-separation",
+      "evidence_class": "source-assisted TEST-only session-aware protocol ledgers + mandatory independent real-Git/public controls",
+      "existing_task": "T101\u2013T103 (no new task)",
+      "permitted_new_test_paths": [
+        "artifact_read_test.go",
+        "artifact_replication_test.go",
+        "extension_package_acceptance_test.go"
+      ],
+      "required_positive": "For each existing nonempty count traversal, retain exactly ONE actual preflight session, one admitted metadata/body per unique counted OID, exact dedup/aggregate accounting, before-body refusal and clean EOF/reaping assertions. Owned TEST-only shim state scopes the targeted count interception to that invocation and explicitly records/forwards later full-reader sessions to actual Git, or separately routes them to a dedicated generic peer for its own named control. Each forwarded/new session has honest role/invocation/PID/argv/transport evidence; do not silently drop or relabel it. Empty selection retains zero count sessions. Dedicated generic full-reader and blob-writer controls are executed via the already-owned compiled native qualification harness.",
+      "required_negative_or_fault_control": "A deliberately duplicated/omitted count session, duplicate counted info/body, contents before metadata admission, contents for oversize/aggregate-first-over, or wrong role attribution must still fail. The count-only peer must not receive generic tree/blob traffic accidentally. Separate generic peers inject exact info/repeated-header/body/LF/raw-hash/EOF/trailing-output/nonzero-final-exit/cancel faults; separate blob-writer peers inject filename/ACK framing/trailing-output/final-exit/cancel faults. Assert mandatory owner join/cleanup/no-success/no-ref effects for each, retaining first detected diagnostic. No production marker/flag, capability probe, session skip, weakened expected counts, fixture-specific production behavior or broader ownership is permitted.",
+      "required_retained_evidence": "Bind original artifact_read_test.go shim/peer/ledger anchors700\u2013775,943\u20131012,1040\u20131088,1352\u20131413 to its H12f8 SHA256. Retain separate count/fullreader/blobwriter role ledgers, test shim state location/lifetime and per-public-invocation reset, selected fixtures/hashes, actual Git executable, actual child PIDs/Wait outcomes and scratch cleanup. Explain that repeated raw reads are expected in full verification while preflight unique-OID dedup stays exact. Independent source review checks that test routing cannot hide a second preflight or manufacture full-reader evidence.",
+      "current_result": "REQUIREMENT ONLY; NOT EXECUTED"
+    }
+  ],
+  "version": 2,
+  "original_matrix": {
+    "path": "/home/lynn/Documents/Codex/2026-10-24/wa/work/optional-extensions-WP25/io-amendment-preparation/verification-matrix.json",
+    "sha256": "0b234829979e7c38b83d0afea80bae0fa73be8f0435fc4d4a8bb5adc4b852dba",
+    "immutable": true
+  },
+  "supplement_scope": "Explicit existing count-protocol shim separation and dedicated generic full-reader/blob-writer lifecycle coverage, in already-owned tests only. No production/new ownership scope."
+}
