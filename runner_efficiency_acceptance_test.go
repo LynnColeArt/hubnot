@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-// This fast-tier journey executes only a tiny fixture action. It must never
+// This native integration journey executes only a tiny fixture action. It must never
 // invoke the project's own fast pipeline recursively. Expectations below come
 // from the public runner contract, not scheduler or withdrawal internals.
 func TestRunnerEfficiencyPublicJourney(t *testing.T) {

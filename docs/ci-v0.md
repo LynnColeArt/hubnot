@@ -5,6 +5,13 @@ Hubnot CI separates coordination from computation:
 Hubnot's own [project CI tiers and commands](project-ci.md) use this protocol.
 Fast feedback is separate from explicit stress and real-clock soak requests.
 
+The fast portability selection keeps 21 representative roots, including the
+runner target-option, exact trusted-result counting and moderated legacy-identity
+refusal controls. The full requester/two-runner, lineage, withdrawal and archive
+journey runs in the explicit native integration selection (eight roots), with
+its existing eight-minute race-package budget and 600-second pipeline step.
+Test assertions, fixture sizes and per-operation deadlines are unchanged.
+
 ```text
 signed proposal
       ↓

@@ -72,7 +72,7 @@ case "${1-}" in
         go build -buildvcs=false -trimpath -o "$scratch/inventory" ./examples/extensions/inventory-model
         export HN_WP20_CONSUMER="$scratch/fake-tracker" HN_WP21_CONSUMER="$scratch/charter" HN_WP22_CONSUMER="$scratch/inventory"
         export HN_PROJECT_CI_BINARY="$scratch/hn"
-        test_name='Test(ProjectCINativePublicJourney|ArtifactFullPublicJourneyCLI|ExtensionNativeSixFamiliesCLI|ExtensionArtifactInterruptedRecoveryRawCLI|ExtensionFakeTrackerStandaloneRecovery|ExtensionCharterStandaloneJourney|InventoryStandalonePublicJourney)'
+        test_name='Test(ProjectCINativePublicJourney|ArtifactFullPublicJourneyCLI|ExtensionNativeSixFamiliesCLI|ExtensionArtifactInterruptedRecoveryRawCLI|ExtensionFakeTrackerStandaloneRecovery|ExtensionCharterStandaloneJourney|InventoryStandalonePublicJourney|RunnerEfficiencyPublicJourney)'
         budget=8m
         ;;
       stress-counts) test_name=TestExtensionPackageInheritedPublicCountLimits; budget=30m;;
