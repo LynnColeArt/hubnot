@@ -1,7 +1,7 @@
 {
   "rows": {
     "#27": {
-      "evidence_ref": "WP02 and WP03/WP04 implement request eligibility and withdrawal; WP05 independently validates before closure.",
+      "evidence_ref": "Source remedy verified by approved WP02-WP05 at 34ee0aa5: lineage/stale filtering, signed requester withdrawal, public CLI/replay and replica/archive controls; WP05/ACCEPTANCE-MATRIX.md. Public closure remains tied to reviewed main merge.",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -9,11 +9,11 @@
       "scope": null,
       "source_file": null,
       "title": null,
-      "verdict": "in-mission",
+      "verdict": "fixed",
       "wp": "WP05"
     },
     "#30": {
-      "evidence_ref": "WP01 preserves canonical trusted-result semantics; WP02 suppresses automatic starts after qualifying requiredResults; WP05 independently validates and records the concurrent-start coordination follow-up before reviewed source closure.",
+      "evidence_ref": "Observed-evidence suppression verified by approved shared policy evaluation and two-runner public/native controls at 34ee0aa5. Simultaneous-start optional coordination is explicitly tracked at https://github.com/LynnColeArt/hubnot/issues/37; deep native release qualification at https://github.com/LynnColeArt/hubnot/issues/38. No exclusive execution claim. Public closure remains tied to reviewed main merge.",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -21,7 +21,7 @@
       "scope": null,
       "source_file": null,
       "title": null,
-      "verdict": "in-mission",
+      "verdict": "fixed",
       "wp": "WP05"
     }
   },
