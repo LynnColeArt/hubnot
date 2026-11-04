@@ -1,5 +1,4 @@
 {
-  "accept_commit": "21fa85d5e360496a39d255f61061e6242c53c472",
   "acceptance_history": [
     {
       "accept_commit": "cbe9a48436c4e4cd14a148b410249089dfc94100",
@@ -14,12 +13,18 @@
       "accepted_at": "2026-11-04T08:27:32.677087+00:00",
       "accepted_by": "codex",
       "accepted_from_commit": "0d3e7dac9662e393a4a914742fd6bb5736a1a93e"
+    },
+    {
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-04T08:28:41.248907+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "2f87b8d42dc702f4eb0fd5f47c75499375b918c0"
     }
   ],
   "acceptance_mode": "local",
-  "accepted_at": "2026-11-04T08:27:32.677087+00:00",
+  "accepted_at": "2026-11-04T08:28:41.248907+00:00",
   "accepted_by": "codex",
-  "accepted_from_commit": "0d3e7dac9662e393a4a914742fd6bb5736a1a93e",
+  "accepted_from_commit": "2f87b8d42dc702f4eb0fd5f47c75499375b918c0",
   "created_at": "2026-11-04T07:10:00.975709+00:00",
   "flattened": false,
   "friendly_name": "Consumer CLI contract",
