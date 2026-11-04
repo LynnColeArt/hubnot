@@ -3,6 +3,10 @@ project:
   slug: hubnot
   node_id: 752e6076aa27
   build_id: ece07f81-5366-5cb0-a0cf-25581682c2b9
+  # Go source and *_test.go files are colocated in the module/package tree.
+  path_conventions:
+    workspace: "."
+    tests: "."
 mission_type_activations:
 - software-dev
 - documentation

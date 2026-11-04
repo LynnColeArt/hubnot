@@ -1092,6 +1092,12 @@ func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent
 			return nil, fmt.Errorf("run request commit does not match proposal head")
 		}
 		return dependency, err
+	case "run.withdraw":
+		dependency, err := require(e.Subject, "run request", func(value StoredEvent) bool { return value.Event.Kind == "run.request" })
+		if err != nil || dependency != nil {
+			return dependency, err
+		}
+		return nil, validateRunWithdrawalRelationship(event, byID)
 	case "run.result":
 		dependency, err := require(e.Subject, "run request", func(value StoredEvent) bool { return value.Event.Kind == "run.request" })
 		if err == nil && dependency == nil {
@@ -1138,7 +1144,7 @@ func replicationEventReferences(event Event) []string {
 	references = append(references, resourceReferences(event)...)
 	references = append(references, auditReferences(event)...)
 	switch event.Kind {
-	case "issue.comment", "proposal.revise", "review.submit", "run.request", "run.result", "proposal.decision", "proposal.merged", "identity.accept":
+	case "issue.comment", "proposal.revise", "review.submit", "run.request", "run.result", "run.withdraw", "proposal.decision", "proposal.merged", "identity.accept":
 		references = append(references, event.Subject)
 	}
 	return sortedUniqueStrings(references...)

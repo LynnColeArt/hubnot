@@ -1,5 +1,20 @@
 schema_version: 2.0.0
 governance:
+  enforcement:
+    review_validation: >-
+      Before each Go work-package review, require relevant behavioral race
+      regressions, native fast/default controls, gofmt, go vet ./...,
+      go build ./... and git diff --check at the reviewed source. Record exact
+      selections and exits; any observed functional failure blocks review.
+    mission_validation: >-
+      Before mission acceptance, require native integration/migration and all
+      protocol, trust, runner, replication, recovery and compatibility cases
+      affected by that mission, with independent review of the fixed source.
+    release_qualification: >-
+      Preserve exhaustive capacity, stress, transport-deadline and real-clock
+      soak tests as explicit native release qualification jobs. Track unrun
+      selections before a source-only merge; do not claim a scoped pass is a
+      full-suite pass, loosen assertions/deadlines, or expand hosted PR corpora.
   testing:
     min_coverage: 0
     tdd_required: true
@@ -54,7 +69,6 @@ governance:
     authority_paths: []
     governance_references: []
   activations: []
-  enforcement: {}
 directives:
   directives:
   - id: HN-001

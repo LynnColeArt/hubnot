@@ -69,6 +69,40 @@ func appendEventWithAttachments(event Event, identity *Identity, attachments map
 		return nil, err
 	}
 
+	// Refuse withdrawals before creating a signature or writing any Git object.
+	if event.Kind == "run.withdraw" {
+		if err := validateEventContent(event); err != nil {
+			return nil, err
+		}
+		if len(attachments) != 0 {
+			return nil, fmt.Errorf("run withdrawal does not support attachments")
+		}
+		if err := guardShallowEventClosure("run withdraw"); err != nil {
+			return nil, err
+		}
+		events, err := collectEvents()
+		if err != nil {
+			return nil, err
+		}
+		byID := make(map[string]StoredEvent, len(events))
+		for _, stored := range events {
+			byID[stored.ID] = stored
+		}
+		if err := validateRunWithdrawalRelationship(StoredEvent{Event: event}, byID); err != nil {
+			return nil, err
+		}
+		if hasPrevious {
+			previous, err := readStoredEvent(previousCommit)
+			if err != nil {
+				return nil, err
+			}
+			if event.Previous != previous.ID || event.Sequence != previous.Event.Sequence+1 {
+				return nil, fmt.Errorf("actor history changed while creating event; retry the command")
+			}
+		} else if event.Previous != "" || event.Sequence != 1 {
+			return nil, fmt.Errorf("first actor event must have sequence 1 and no predecessor")
+		}
+	}
 	payload, signature, err := encodeAndSign(event, identity)
 	if err != nil {
 		return nil, err
@@ -350,6 +384,11 @@ func readStoredEventAt(gitDir, commit string) (*StoredEvent, error) {
 		return nil, fmt.Errorf("verify %s: %w", commit, err)
 	}
 	attachments := make(map[string][]byte)
+	if event.Kind == "run.withdraw" {
+		if err := validateQuarantinedEventTree(gitDir, StoredEvent{ID: id, Commit: commit, Event: event}); err != nil {
+			return nil, err
+		}
+	}
 	if isAuditKind(event.Kind) {
 		stored := StoredEvent{ID: id, Commit: commit, Event: event}
 		if err := validateQuarantinedEventTree(gitDir, stored); err != nil {
@@ -522,6 +561,10 @@ func validateEventRelationships(events []StoredEvent) error {
 			subject, exists := byID[event.Subject]
 			if !exists || !isProposalKind(subject.Event.Kind) || subject.Event.Head != event.Commit {
 				return fmt.Errorf("run request %s does not match an available proposal", shortID(stored.ID))
+			}
+		case "run.withdraw":
+			if err := validateRunWithdrawalRelationship(stored, byID); err != nil {
+				return err
 			}
 		case "run.result":
 			request, exists := byID[event.Subject]

@@ -1,0 +1,39 @@
+{
+  "accept_commit": "789ed600b6daaf5fd1b1cae31b81125a46f723bf",
+  "acceptance_history": [
+    {
+      "accept_commit": "be1efa81132e0c439d833191e40a54649fc32e54",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-04T00:06:52.299779+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "45ed28226db78864795fd07a8d5f8da89010401e"
+    },
+    {
+      "accept_commit": "789ed600b6daaf5fd1b1cae31b81125a46f723bf",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-04T00:07:43.496547+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "f242111ced3686c5d8c841fd1c67ad03c18041d8"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-04T00:07:43.496547+00:00",
+  "accepted_by": "codex",
+  "accepted_from_commit": "f242111ced3686c5d8c841fd1c67ad03c18041d8",
+  "baseline_merge_commit": "9f56b3b627534cc0e31dd28294b0d1f631f0dbc7",
+  "created_at": "2026-11-03T20:23:21.481345+00:00",
+  "flattened": true,
+  "friendly_name": "Native Runner Efficiency",
+  "mission_id": "01M6HH8H0T23C5T5BABHJWKVTV",
+  "mission_number": null,
+  "mission_slug": "runner-efficiency-01M6HH8H",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Implement issues 27 and 30 with native runner eligibility and requester-authorized queued withdrawal. Preserve exact policy/evidence binding, immutable signed history, explicit execution and inert default use. Keep stale-base skipping explicit and document concurrent-start limits separately from result-threshold suppression.",
+  "purpose_tldr": "Avoid obsolete and already-satisfied runner work while preserving native Hubnot defaults.",
+  "slug": "runner-efficiency-01M6HH8H",
+  "status_phase": "1",
+  "target_branch": "fix/runner-efficiency",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-03T20:59:06.462744+00:00"
+}

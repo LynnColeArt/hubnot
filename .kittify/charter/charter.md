@@ -25,8 +25,20 @@ and independently verifiable, and does not depend on a particular forge.
 
 ## Quality gates
 
-Before review, Go changes pass formatting checks, `go test -race ./...`,
-`go vet ./...`, `go build ./...`, and `git diff --check`. Wire-format, trust,
+Before each work-package review, Go changes pass relevant behavioral race
+regressions, the native fast/default controls, formatting checks,
+`go vet ./...`, `go build ./...`, and `git diff --check` at the reviewed source.
+Before mission acceptance, run native integration/migration and the protocol,
+trust, runner, replication, recovery and compatibility cases affected by the
+mission. Any observed functional failure blocks review or acceptance.
+
+Keep exhaustive capacity/stress, transport-deadline and real-clock soak tests
+as explicit native release qualification jobs. Track unrun selections before
+source-only merge; do not claim a scoped pass is an exhaustive pass. Preserve
+assertions, fixture sizes and deadlines. Hosted PR checks remain bounded.
+This policy was made explicit during runner-efficiency after the aggregate
+twenty-minute suite timed out; that failed/incomplete run remains evidence.
+Wire-format, trust,
 runner-isolation, policy, or recovery changes update the relevant documentation
 in the same mission.
 

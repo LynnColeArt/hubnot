@@ -1,0 +1,9 @@
+id,source,observation
+S01,https://github.com/LynnColeArt/hubnot/issues/27,Obsolete work and no withdrawal
+S02,https://github.com/LynnColeArt/hubnot/issues/30,Redundant work after trusted threshold
+S03,runner.go,Explicit scheduler
+S04,policy.go,Canonical evidence evaluator
+S05,lineage.go,Native lineage semantics
+S06,event.go store.go quarantine.go,Wire and dependency validation
+S07,project_snapshot.go shallow.go,Closure and contextual Git
+S08,ci_test.go contribution_moderation.go,Default and moderation boundaries
