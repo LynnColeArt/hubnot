@@ -119,14 +119,18 @@ pre-create backend markers before invocation, snapshot relevant objects/refs/
 private signer state, assert no change, and run an eligible positive control
 after refusal assertions without resetting evidence.
 
-Run gofmt on changed Go files, focused race tests, the charter's full source
-race gate (go test -race -timeout 20m ./...), go vet ./..., go build ./...
-and git diff --check before review at each changed head. Keep that full gate
-native/local, never add it to the bounded hosted workflow. Do not repeat a
-successful unchanged full run; the independent reviewer verifies its exact-head
-evidence and runs meaningful focused controls. Use native fast/default controls when the WP changes
-their boundary. Do not launch hosted deep corpora, loosen lint/test assertions,
-claim an unexecuted full suite or mutate frozen signed fixtures.
+Follow the explicit validation governance decision in plan.md and
+.kittify/charter/charter.yaml: before review at each changed source, run focused
+behavioral race regressions, native fast/default controls, gofmt, go vet ./...,
+go build ./... and git diff --check. Record exact source, selections and exits;
+any observed functional failure blocks approval. Independent review verifies
+that evidence and runs meaningful focused controls without repeating unchanged
+successful checks solely for handoff. Mission acceptance additionally requires
+all affected integration/migration/protocol/runner/recovery/compatibility cases.
+Exhaustive capacity/stress/transport-deadline/real-clock soak qualification stays
+an explicit, separately tracked native release prerequisite. Preserve every
+assertion, fixture and deadline. Never claim a scoped pass is exhaustive,
+expand hosted deep corpora or mutate frozen signed fixtures.
 
 Record commands, source head, test selection, exits and limitations in this WP's
 evidence directory under its mission task folder. Independent reviewer reads
