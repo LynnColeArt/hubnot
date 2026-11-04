@@ -15,7 +15,9 @@
         "WP05"
       ],
       "write_scope": [
+        ".hn/actions/ci",
         "README.md",
+        "commands.go",
         "consumer_contract.go",
         "consumer_contract_test.go",
         "consumer_events_test.go",
@@ -40,10 +42,10 @@
       "parallel_group": 0
     }
   ],
-  "computed_at": "2026-11-04T07:21:47.258455+00:00",
+  "computed_at": "2026-11-04T07:25:20.095857+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "1c66a0c96c691d08196df38aedbf7986ea06ce72",
+  "planning_commit_sha": "71fe7a1dd80aa3b00e09b1ca0639d828f9e085c4",
   "collapse_report": {
     "events": [
       {
