@@ -17,7 +17,8 @@ func cmdDecide(args []string) error {
 	accept := flags.Bool("accept", false, "accept the proposal")
 	reject := flags.Bool("reject", false, "reject the proposal")
 	body := flags.String("body", "", "decision explanation")
-	if err := flags.Parse(args[1:]); err != nil {
+	writerArgs, machine := consumerMutationArguments("decide", args[1:])
+	if err := flags.Parse(writerArgs); err != nil {
 		return err
 	}
 	if flags.NArg() != 0 || *accept == *reject {
@@ -108,6 +109,9 @@ func cmdDecide(args []string) error {
 	stored, err := appendEvent(event, identity)
 	if err != nil {
 		return err
+	}
+	if machine {
+		return consumerOutput(consumerMutationReceipt(stored), nil)
 	}
 	fmt.Printf("Recorded %s decision %s on proposal %s under policy %s\n", event.Verdict, shortID(stored.ID), shortID(proposal.ID), shortID(event.Policy))
 	if len(event.Evidence) > 0 {

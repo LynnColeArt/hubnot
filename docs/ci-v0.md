@@ -8,9 +8,15 @@ Fast feedback is separate from explicit stress and real-clock soak requests.
 The fast portability selection keeps 21 representative roots, including the
 runner target-option, exact trusted-result counting and moderated legacy-identity
 refusal controls. The full requester/two-runner, lineage, withdrawal and archive
-journey runs in the explicit native integration selection (eight roots), with
-its existing eight-minute race-package budget and 600-second pipeline step.
-Test assertions, fixture sizes and per-operation deadlines are unchanged.
+journey remains in the explicit native integration selection. Its original eight
+roots are retained, alongside eleven bounded native consumer-contract roots
+(19 total), including the full public journey in actual default/native-only
+executables and deterministic resolver ambiguity coverage. The action verifies
+the explicit consumer inventory and rejects overlap with the unchanged 21 fast
+roots. Its existing eight-minute race-package budget and 600-second pipeline step
+are unchanged, as are existing assertions, fixture sizes and per-operation deadlines.
+The [consumer contract](consumer-cli-v1.md) documents full identities, attributed
+verdicts, exact receipts and the separate readiness/lineage observations.
 
 ```text
 signed proposal

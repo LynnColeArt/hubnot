@@ -219,6 +219,13 @@ signature integrity or dispatch.
 
 ## Closed errors and immutable recovery
 
+The optional [native consumer CLI contract](consumer-cli-v1.md) reuses the same
+`{ok,data,error}` envelope and native closed vocabulary below without requiring an
+extension. Its unkeyed review/decision writers return `operation:null` and
+`do_not_retry`; they do not gain the keyed-operation recovery/idempotency
+semantics described for extension methods. Static native discovery and ordinary
+native reads never start a host or grant extension authority.
+
 Error is exactly `{origin,code,message,recovery,operation}`. Message is sanitized
 UTF-8 <=4096 bytes. Operation is null or original `{protocol,actor,operation}`,
 where protocol is `hn/0` or `hn-artifact/1`.

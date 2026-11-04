@@ -649,6 +649,24 @@ func validateRevisionGraph(events []StoredEvent, byID map[string]StoredEvent) er
 	return nil
 }
 
+type eventResolutionError struct {
+	query     string
+	ambiguous bool
+}
+
+func (e *eventResolutionError) Error() string {
+	if e.ambiguous {
+		return fmt.Sprintf("event prefix %q is ambiguous", e.query)
+	}
+	return fmt.Sprintf("event %q not found", e.query)
+}
+func (e *eventResolutionError) NativeCode() string {
+	if e.ambiguous {
+		return "ambiguous_id"
+	}
+	return "not_found"
+}
+
 func resolveEvent(events []StoredEvent, query string) (*StoredEvent, error) {
 	query = strings.TrimPrefix(query, "sha256:")
 	var match *StoredEvent
@@ -656,13 +674,13 @@ func resolveEvent(events []StoredEvent, query string) (*StoredEvent, error) {
 		candidate := strings.TrimPrefix(events[i].ID, "sha256:")
 		if strings.HasPrefix(candidate, query) {
 			if match != nil && match.ID != events[i].ID {
-				return nil, fmt.Errorf("event prefix %q is ambiguous", query)
+				return nil, &eventResolutionError{query: query, ambiguous: true}
 			}
 			match = &events[i]
 		}
 	}
 	if match == nil {
-		return nil, fmt.Errorf("event %q not found", query)
+		return nil, &eventResolutionError{query: query}
 	}
 	return match, nil
 }
