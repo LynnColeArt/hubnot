@@ -67,11 +67,11 @@
     {
       "criterion_id": "FR-007",
       "description": "Verify FR-007 is satisfied",
-      "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "proof_type": "manual_review",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP01-independent.md and reviews/WP05-independent.md: actual nine contribution JSON parse sites/aliases audited and docs/consumer-cli-v1.md records existing always-JSON/default schemas; no contribution implementation/default-byte change; baseline invariant audit ea505e40.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:29.445314+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
