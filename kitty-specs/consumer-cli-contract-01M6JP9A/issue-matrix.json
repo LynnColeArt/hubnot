@@ -35,6 +35,18 @@
       "title": null,
       "verdict": "fixed",
       "wp": "WP05"
+    },
+    "#41": {
+      "evidence_ref": "Local source fixed by reviewed/tested ea505e406f25d895ec190597e3f60f878f71a695; strictaccept6610a8c7e4b95dbdadad9a5a9e1706627778ed79; mission-review.md and acceptance-trace.md verify exact stored receipts/policy/evidence, read-only resolver and discovery FR-004/005/006/008. Public closure reserved for root after PR/hostedCI/main merge.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "fixed",
+      "wp": "WP05"
     }
   },
   "schema_version": 1
