@@ -7,6 +7,16 @@ import (
 )
 
 func cmdProposal(args []string) error {
+	if machine, action, query, err := consumerProposalOptions(append([]string{"proposal"}, args...)); machine {
+		if err != nil {
+			return err
+		}
+		data, err := consumerProposalData(action, query)
+		if err != nil {
+			return err
+		}
+		return consumerOutput(data, nil)
+	}
 	if len(args) == 0 {
 		return usageError("usage: hn proposal <open|revise|list|show|status>")
 	}

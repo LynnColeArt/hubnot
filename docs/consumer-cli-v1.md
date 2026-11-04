@@ -62,3 +62,61 @@ mean nine distinct CLI command names. Other contribution commands may also emit
 JSON through their existing handlers. This is a consistency/discovery audit,
 not an envelope transition: no contribution default output bytes, signatures,
 accepted-history selection or authority change here.
+
+## Exact proposal reads
+
+Capability `native.proposal-read` version 1 supports:
+
+```sh
+hn proposal show PROPOSAL --json
+hn proposal status FULL_PROPOSAL --json
+```
+
+Options follow the proposal argument. `show` retains its existing read-only prefix
+lookup; `status` still requires a full proposal event ID. Neither command treats a
+review event ID as a proposal. JSON show evaluates the candidate like status and
+therefore requires code, policy and pipeline dependencies that its original text
+view may not require. Existing text handlers and output are unchanged.
+
+Both JSON reads return the same `hn.consumer/1` data projection:
+
+| Field | Meaning |
+|---|---|
+| `id`, `kind`, `actor`, `actor_name`, `title`, `body`, `base`, `head`, `policy` | Full candidate event, author fingerprint, Git revisions and base-policy digest; display names are labels. |
+| `current_reviews` | Object keyed by full actor fingerprint. Each row has full event `id`, `actor`, `actor_name`, `sequence`, `verdict`, `subject` and `policy_eligible` / `protected_policy_eligible` flags. |
+| `readiness` | Existing native evidence readiness, independent of lineage and current change requests. |
+| `requirements` | Code availability/match; ordinary reviewer pool/eligible actors, required/actual approval count and deficit; pipelines with required passes, deficit, trusted runners/requesters and full passed/failed event references; optional protected-check paths/changed paths, count, eligible actors and evidence. `satisfied` and `missing` name the readiness requirements. |
+| `evidence` | Exact full event IDs in the current native evaluation. This is current status, not the immutable evidence stored in an older decision. |
+| `lineage` | Full root/predecessor/successor/sibling/ancestor/descendant/member/merge identities and merged/superseded/closed/conflict facts. |
+| `disagreements` | Observed approvals/change requests, qualified change requests and whether differing current verdicts coexist. |
+| `decisions` | Full current qualified accept/reject/merge event IDs, required accepts, deficit and native accepted/rejected/merged observations. |
+| `status` | Existing native status, including superseded and lineage closed. |
+| `observed_preconditions` | Selected-history evidence/lineage/decision preconditions described below. |
+
+Current reviews use the existing latest actor-local sequence for **exactly** the
+candidate. A late review of a predecessor remains attached to that predecessor;
+no successor inherits it. The visible operative history selection preserves
+contribution admission and visibility boundaries. Observed untrusted reviews
+remain attributable in this selected history; qualification flags distinguish
+them from policy-counting evidence. `policy_eligible` describes the actor/author
+rule, not whether its verdict is an approval. Protected-check eligibility always
+excludes the candidate author and uses its own designated reviewer pool.
+
+Reviewer pools and thresholds are policy facts, **not Fleet assignments**.
+Consumers join their own assigned-reviewer list with `current_reviews` to compute
+pending assigned reviewers. A threshold deficit does not name an absent assigned
+reviewer or introduce unanimity. Arrays/objects are empty `[]`/`{}` rather than
+null; `requirements.protected_checks` is null when not enabled.
+
+`observed_preconditions.scope` is `selected_history_evidence_and_lineage_only`.
+Its `lineage_terminal` excludes superseded, closed and conflicting lineages.
+`acceptance.met` combines this with readiness and not-already-merged;
+`merge.met` also requires accepted and not rejected. These are scoped observed
+preconditions, **not permission to write or a merge-success guarantee**. A
+proposal binds no target branch; keyless reads neither identify the active
+signer nor probe target policy, fresh remote state or local target advancement.
+Writers recheck their existing actor, target, trust and concurrency guards.
+A superseded proposal can thus have `readiness:true` and
+`observed_preconditions.acceptance.met:false` without contradiction. An accepted
+proposal can later lose readiness after a newer review. Change requests are
+reported independently and do not silently change native acceptance policy.

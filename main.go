@@ -21,7 +21,18 @@ func main() {
 	}
 }
 
-func run(args []string) error {
+func run(args []string) (result error) {
+	machine, _, _, parseErr := consumerProposalOptions(args)
+	if machine {
+		if parseErr != nil {
+			return consumerOutput(nil, parseErr)
+		}
+		defer func() {
+			if result != nil {
+				result = consumerOutput(nil, result)
+			}
+		}()
+	}
 	if len(args) > 0 && (args[0] == "capabilities" || ((args[0] == "version" || args[0] == "--version") && consumerDiscoveryJSON(args[1:]))) {
 		return cmdConsumerDiscovery(args[1:])
 	}
