@@ -42,17 +42,17 @@
       "parallel_group": 0
     }
   ],
-  "computed_at": "2026-11-04T07:25:20.095857+00:00",
+  "computed_at": "2026-11-04T07:36:14.987517+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
-  "planning_commit_sha": "71fe7a1dd80aa3b00e09b1ca0639d828f9e085c4",
+  "planning_commit_sha": "5c6b6d634a79902ce67f41a3a3939b1501ea9842",
   "collapse_report": {
     "events": [
       {
         "wp_a": "WP01",
         "wp_b": "WP02",
         "rule": "write_scope_overlap",
-        "evidence": "overlapping globs: 'consumer_contract.go' vs 'consumer_contract.go', 'docs/consumer-cli-v1.md' vs 'docs/consumer-cli-v1.md'; WP02 depends on WP01"
+        "evidence": "overlapping globs: 'main.go' vs 'main.go', 'consumer_contract.go' vs 'consumer_contract.go', 'docs/consumer-cli-v1.md' vs 'docs/consumer-cli-v1.md'; WP02 depends on WP01"
       },
       {
         "wp_a": "WP01",
