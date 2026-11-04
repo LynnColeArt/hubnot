@@ -22,6 +22,9 @@ func main() {
 }
 
 func run(args []string) error {
+	if len(args) > 0 && (args[0] == "capabilities" || ((args[0] == "version" || args[0] == "--version") && consumerDiscoveryJSON(args[1:]))) {
+		return cmdConsumerDiscovery(args[1:])
+	}
 	staticRun := len(args) > 0 && args[0] == "run" && isStaticRunDiscovery(args[1:])
 	if !staticRun && !(len(args) >= 2 && args[0] == "extension" && args[1] == "run") && len(args) > 0 && args[0] != "help" && args[0] != "--help" && args[0] != "-h" && args[0] != "version" && args[0] != "--version" {
 		unlock, err := contributionCommandLock(args)
