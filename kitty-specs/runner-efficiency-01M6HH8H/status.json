@@ -159,7 +159,8 @@
       "last_transition_at": "2026-11-04T00:04:11.570809+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Ready for independent review: source34ee0aa5; bounded public native journey, exact archive/result assertions, final22-root incremental coverage and documented limits; evidence in external WP05 dossier"
+        "Ready for independent review: source34ee0aa5; bounded public native journey, exact archive/result assertions, final22-root incremental coverage and documented limits; evidence in external WP05 dossier",
+        "Independent review approved fixed34ee0aa5: exact154 product+26fixture bindings; three affected metadata-free race controls pass; withdrawn-execute mutation fails causally; docs/default/history/auth/compatibility and incremental22-root evidence verified. Deep release qualification remains #38; no full or final22-root-native claim. Review dossier WP05/independent-review/REVIEW.md."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
