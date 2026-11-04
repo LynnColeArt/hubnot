@@ -58,10 +58,10 @@
       "criterion_id": "FR-006",
       "description": "Verify FR-006 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP01-independent.md and reviews/WP04-independent.md: static keyless/no-Git/no-lock discovery in actual default/native binaries; registered grammar/default bytes; finalintegration ea505e40 PASS.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:26.144756+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
