@@ -111,3 +111,33 @@ Lessons for the next mission:
 
 Retrospective synthesis was run in its default dry-run mode: no proposals,
 conflicts, applications or global doctrine mutations were produced.
+
+## Pre-merge platform check correction
+
+The first PR #39 run at `e4b98f6c` passed Linux but exposed a macOS aggregate
+fast-suite timeout: the root process reached 120.048 seconds while the full
+multi-replica journey had consumed 1 minute 13 seconds. No earlier assertion
+failure was shown. The merge was held; the failure was retained, not retried as
+if it were a pass. The original source-only review remains a historical record.
+
+Correction `68a70c4143f146efdcce982fc29fdb52a23830c9` moves that unchanged journey
+from the shared fast selection to the existing explicit native integration tier.
+The exact union is preserved: old fast 22 plus integration 7 equals current fast
+21 plus integration 8, the same 29 distinct roots with no omission or overlap. Cheap
+authority, trusted-result and target-option controls stay in fast. The only Go
+change is the journey's tier-description comment; executable test statements,
+assertions, native-only child builder, fixtures and deadlines are unchanged.
+Hosted workflows are unchanged. Current placement is documented in `docs/ci-v0.md`.
+
+Actual corrected-source commands passed with before/after inputs unchanged:
+`./.hn/actions/ci fast` (84.266 seconds total; 7.548-second root package),
+`./.hn/actions/ci integration` (123.906 seconds total), and static/build checks.
+The two-minute fast package timer, eight-minute integration package timer and
+600-second native integration step remain intact. This corrects test placement;
+it does not reclassify any historical 20/22-root result or complete #38.
+
+The separate [CI follow-up review](mission-review-ci-followup.md) records the P2
+finding and independently reviewed correction. Final public merge also requires
+fresh successful Linux and macOS PR checks at the updated head. The lesson is to
+keep complete replica/archive journeys in explicit native integration and use
+small representative controls for routine portability feedback.
