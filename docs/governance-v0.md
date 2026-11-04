@@ -160,6 +160,22 @@ not a protocol-level veto. A runner's latest exact result is current for a
 pipeline. Evidence for a predecessor or sibling candidate never qualifies a
 revision, even when code or lineage is related.
 
+Automatic runners use this same exact-result evaluator (unreleased source).
+Each trusted actor contributes at most its latest qualifying result across
+all authorized requests for that exact candidate/head/pipeline/definition;
+a later failure replaces its pass. Matching the checked-out policy instead
+of the signed base, or evidence for another revision, cannot suppress work.
+A satisfied required pipeline suppresses automatic starts, not a deliberate
+explicit execution of a fresh request. No required pipeline preserves the
+existing ungoverned execution path and ordinary backend/authority gates.
+
+An original requester may explicitly withdraw queued work. Withdrawal does
+not grant policy roles, revoke any earlier or late evidence, or invalidate a
+previous decision/merge. Replication/import preserve signed history, while
+private signers and execution/merge authority remain local and explicit.
+Concurrent starts before observation remain possible; result counting does
+not constitute a distributed claim. See [runner operation](ci-v0.md).
+
 Before publishing an acceptance, the client reloads the verified event set and
 re-evaluates the exact base policy. An accept decision signs the exact review
 and passing run-result IDs selected as evidence. A rejection requires an

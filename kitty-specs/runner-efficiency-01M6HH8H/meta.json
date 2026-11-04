@@ -32,7 +32,6 @@
   "purpose_context": "Implement issues 27 and 30 with native runner eligibility and requester-authorized queued withdrawal. Preserve exact policy/evidence binding, immutable signed history, explicit execution and inert default use. Keep stale-base skipping explicit and document concurrent-start limits separately from result-threshold suppression.",
   "purpose_tldr": "Avoid obsolete and already-satisfied runner work while preserving native Hubnot defaults.",
   "slug": "runner-efficiency-01M6HH8H",
-  "status_phase": "1",
   "target_branch": "fix/runner-efficiency",
   "topology": "coord",
   "vcs": "git",

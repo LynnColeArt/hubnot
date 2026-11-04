@@ -219,13 +219,22 @@ go test -count=1 -run 'TestOperational(SelfHostingAlpha|AgentMemory)$' ./...
 go test -count=1 -run '^TestOperationalRichIssue' -v ./...
 ```
 
-Run the full local release checks with:
+Run bounded local development checks with:
 
 ```sh
-go test -race -timeout 20m ./...
-go vet ./...
+./.hn/actions/ci fast
+./.hn/actions/ci migration
+./.hn/actions/ci integration
+go build ./...
 git diff --check
 ```
+
+These scoped source checks are not exhaustive release qualification. The prior
+monolithic 20-minute race invocation exhausted its aggregate timer and remains
+incomplete. Unchanged capacity/stress/deadline/real-clock corpora stay explicit
+native release prerequisites ([#38](https://github.com/LynnColeArt/hubnot/issues/38));
+see [CI tiers and exact commands](docs/project-ci.md). Source compilation does
+not certify downloaded release bytes or Mac runtime behavior.
 
 Bubblewrap is used by the default Linux CI executor when you choose to execute
 a pipeline. It is not required for identity, policy, proposal, review,
@@ -593,6 +602,31 @@ A runner refuses to publish a second result for the same exact request unless
 the operator deliberately passes `--rerun`; the replacement is another signed
 fact from that runner rather than a mutation of earlier bytes.
 
+The following runner-efficiency additions are **unreleased source features**;
+they are absent from the frozen beta.3 downloads and Debian packages above:
+
+```sh
+hn run help
+hn run capabilities --json
+hn run show REQUEST_PREFIX          # prints the full Request: sha256:… ID
+hn run withdraw FULL_REQUEST --reason "Replaced by revised work" --json
+hn sync origin                      # explicitly publish the signed withdrawal
+hn runner once --accept-pipeline test --accept-actor FULL_REQUESTER_ACTOR \
+  --skip-stale-base --target refs/heads/main --remote origin
+```
+
+Only the original requester can withdraw. Same trimmed-reason retries reuse
+the original fact; withdrawal prevents future starts without interrupting
+running effects or revoking historical evidence. Older readers may reject the
+explicit new kind and subsequent actor-history advancement. Automatic runners
+skip obsolete lineages, withdrawn requests and required pipelines with enough
+latest exact trusted results; explicit fresh requests remain executable under
+normal authority/backend checks. Stale-base mode is optional, observes a fresh
+bounded remote snapshot and locks nothing. Simultaneous starts remain possible.
+See [runner semantics, authentication boundaries and examples](docs/ci-v0.md).
+Installation/import/upgrade/default use starts no worker or service and grants
+no policy or execution authority. GitHub remains optional.
+
 ## Command surface
 
 ```text
@@ -617,6 +651,9 @@ hn policy show [REV]
 hn policy check --base REV <--head REV|--file PATH>
 hn review PROPOSAL <--approve|--request-changes> [--body TEXT]
 hn run request|list|show|logs
+hn run help
+hn run capabilities --json
+hn run withdraw FULL_REQUEST --reason TEXT [--json]  # unreleased source
 hn run execute REQUEST [--backend sandbox|host] [--allow-unsafe-host-execution] [--rerun]
 hn runner once|watch --accept-pipeline NAME --accept-actor ACTOR
 hn decide PROPOSAL <--accept|--reject> [--body TEXT]

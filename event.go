@@ -103,6 +103,11 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return Event{}, "", fmt.Errorf("invalid event JSON: %w", err)
 	}
+	if event.Kind == "run.withdraw" {
+		if err := strictRunWithdrawalJSON(payload, &event); err != nil {
+			return Event{}, "", fmt.Errorf("invalid run withdrawal JSON: %w", err)
+		}
+	}
 	if isResourceKind(event.Kind) {
 		if err := strictResourceJSON(payload, &event, resourcePayloadLimit(resourceFamily(event.Kind))); err != nil {
 			return Event{}, "", fmt.Errorf("invalid resource event JSON: %w", err)
@@ -193,6 +198,8 @@ func validateEventContent(event Event) error {
 		if !validEventID(event.Subject) || !validPipelineName(event.Pipeline) || !validEventID(event.Definition) || !validGitOID(event.Commit) {
 			return fmt.Errorf("run request requires a proposal, pipeline digest, and commit")
 		}
+	case "run.withdraw":
+		return validateRunWithdrawalContent(event)
 	case "run.result":
 		if !validEventID(event.Subject) || !validPipelineName(event.Pipeline) || !validEventID(event.Definition) || !validGitOID(event.Commit) {
 			return fmt.Errorf("run result does not match a valid request shape")
