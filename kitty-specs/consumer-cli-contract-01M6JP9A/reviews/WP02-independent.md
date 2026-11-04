@@ -1,0 +1,15 @@
+# WP02 independent review — APPROVED
+
+Reviewer reviewer-renata; exact source 1b779037cfb52d7eac3c85c0b659f227f28dd3e2. Read full canonical prompt, WP02 scope/amendment, mission contract, actual diff from e4ffdf91, handoff and validation evidence. No blocking findings.
+
+Projection uses collectGovernedEvents before exact-candidate currentReviews, retaining native operative selection and actor-local latest sequence. Ordinary/protected actor qualification is separate from observed verdicts, including untrusted actors. Review/pipeline/protected deficits, full evidence references and lineage match existing native evaluation; policy logic and signed event bytes remain untouched. Protected eligibility excludes author exactly as native checks do. Observed preconditions are explicitly selected-history evidence/lineage observations, with no signer/target checks or generic merge guarantee. Ready remains distinct from lineage terminality and current disagreement.
+
+Outer grammar selection occurs before contribution lock; malformed machine inputs fail without effects, and lock/no-repository errors are enveloped. Typed native issue/read error codes are retained through consumerOutput; generic repository failures remain repository_error, with sanitized diagnostics, operation:null and do_not_retry. Non-JSON show/status handler bodies are unchanged. Discovery advertises only the implemented proposal-read capability.
+
+Independent verification: `go test -race -count=1 -run '^TestConsumer(Proposal(Projection|Errors)|StaticDiscovery)CLI$' .` PASS (9.638s), `git diff --check` PASS. Public fixture proves actual native pipeline evidence, colliding reviewer names, untrusted attribution, latest sequence, late predecessor verdict isolation, protected deficits, superseded Ready, keyless reads, exact empty-case default text and outer refusal/no-effect behavior. Existing exact-source fast/vet passed; no broad repeat needed.
+
+Contract roundtrip: implemented proposal invocations and documented fields/empty shapes agree with scoped contract. Existing status still requires full proposal IDs; show keeps read prefix support. Event-resolution and mutation receipt requirements are orthogonal upcoming WPs, not falsely advertised here.
+
+Anti-pattern checklist: dead code PASS (run/cmdProposal -> options/data/projection and all helper callers inspected); synthetic-fixture PASS (actual child CLI and signed histories); silent empty PASS (deliberate []/{} shapes and nonmatching-command parser return); FR coverage PASS; frozen surface PASS (no event schema/bytes/release changes); locked decisions PASS; shared-file ownership PASS (main.go/proposal.go/consumer_contract.go/docs are coordinated sequentially in lane-a); production fragility PASS (failure propagation retains native guards).
+
+Limitations retained: Linux source-built binaries, no release/macOS/stress certification. Framework unsupported Python no_coverage is not Go coverage success; prior no-JUnit sentinel distinct. This approval covers WP02 only.

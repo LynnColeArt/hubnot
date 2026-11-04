@@ -21,7 +21,27 @@ func main() {
 	}
 }
 
-func run(args []string) error {
+func run(args []string) (result error) {
+	machine, _, _, parseErr := consumerProposalOptions(args)
+	if len(args) > 0 && (args[0] == "review" || args[0] == "decide") {
+		machine, parseErr = consumerMutationOptions(args)
+	}
+	if len(args) > 0 && (args[0] == "log" || args[0] == "event") {
+		machine, _, _, parseErr = consumerEventOptions(args)
+	}
+	if machine {
+		if parseErr != nil {
+			return consumerOutput(nil, parseErr)
+		}
+		defer func() {
+			if result != nil {
+				result = consumerOutput(nil, result)
+			}
+		}()
+	}
+	if len(args) > 0 && (args[0] == "capabilities" || ((args[0] == "version" || args[0] == "--version") && consumerDiscoveryJSON(args[1:]))) {
+		return cmdConsumerDiscovery(args[1:])
+	}
 	staticRun := len(args) > 0 && args[0] == "run" && isStaticRunDiscovery(args[1:])
 	if !staticRun && !(len(args) >= 2 && args[0] == "extension" && args[1] == "run") && len(args) > 0 && args[0] != "help" && args[0] != "--help" && args[0] != "-h" && args[0] != "version" && args[0] != "--version" {
 		unlock, err := contributionCommandLock(args)
@@ -84,6 +104,8 @@ func run(args []string) error {
 		return cmdSync(args[1:])
 	case "log":
 		return cmdLog(args[1:])
+	case "event":
+		return cmdConsumerEvent(args[1:])
 	default:
 		if command, ok := lookupLocalCommand(args[0]); ok {
 			return command(args[1:])

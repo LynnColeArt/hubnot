@@ -1,0 +1,15 @@
+# WP04 independent review — APPROVED
+
+Reviewer reviewer-renata, exact source 5303cf932f297e94595180d8edd8c6761a954bc3; reviewed full canonical prompt, scoped mission contract, diff since 72b793ee, public tests, documentation and raw handoff evidence. No blocking findings.
+
+Receipt helpers are reached only after original appendEvent success and read exact returned StoredEvent identity/actor/subject/verdict/Policy/Evidence. Decision evidence is not reconstructed from current status. Public tests compare native actor-head identity, status using PROPOSAL ID, separate event reads of evidence IDs and older decision payload after a later review changes readiness. Both verdicts and exact legacy success bytes are exercised. No operation key, event schema, authority or signing-order change.
+
+Registered grammar correctly consumes string body values and stops at `--`/positionals; last valid boolean selects output. Valid JSON options are stripped before original writer FlagSets, preserving default unknown-flag usage inventory. Malformed boolean remains a refusal and cannot disappear into a successful mutation. Discovery now shares positional-stop/last-valid grammar, with a reproduced regression test. Early JSON parse errors wrap before lock; remaining outer errors use existing consumer envelope. Existing late decide identity-loading/migration order is preserved and explicitly documented; early refusals prove full private/public stability, later not-ready refusals prove no signed refs advance while existing migration occurs. This matches the instruction to preserve native writer behavior.
+
+Independent verification: `go test -race -count=1 -run '^TestConsumer(ReceiptsCLI|ReceiptEarlyRefusalsCLI|ReceiptLaterRefusalPreservesWriterBehavior|OutputGrammarCLI)$' .` PASS (9.749s); `git diff --check` PASS. Inspected actual production callers and unchanged default render/guard blocks. Exact-source all-consumer race and native fast/vet evidence green. Prior red attempts preserved: original unsupported flag, discovery grammar and malformed-boolean defects were corrected before reviewed source, with no assertion weakening.
+
+Contract walk: review/decide invocations, stored fields, evidence [], full mutation ID rule, unkeyed error operation:null and nonretry promise match docs/mission contract. Discovery advertises only implemented receipt support. Bounded prefix path remains read-only. No release/macOS/stress claim.
+
+Anti-pattern checklist: dead code PASS (main and both writer callers verified); synthetic fixture PASS (actual CLI/signatures/native actor-head and later event read); silent empty PASS (intentional empty signed review policy/evidence and optional parser nonmatch); FR coverage PASS; frozen surfaces PASS; locked decisions PASS; shared-file ownership PASS (main/proposal/governance/consumer/docs explicitly sequential lane-a); production fragility PASS (failures propagate, malformed booleans refuse before publication).
+
+Framework unsupported Python no_coverage remains a limitation, not Go coverage evidence. Reviewer did not edit production source.

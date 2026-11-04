@@ -1,0 +1,89 @@
+{
+  "mission_slug": "consumer-cli-contract-01M6JP9A",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "Verify FR-001 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/acceptance-trace.md: TestConsumerProposalProjectionCLI, TestConsumerEventAndLogCLI and both-variant TestConsumerPublicJourney; native19-root integration PASS ea505e406f25d895ec190597e3f60f878f71a695,165.107s; independent WP02/WP03/WP05 approvals.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:08.433331+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Verify FR-002 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP02-independent.md: public colliding display-name actors, exact candidate latest sequence, late predecessor verdict and observed untrusted qualification; source1b779037 approved; finalintegration ea505e40 PASS.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:11.870671+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Verify FR-003 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP02-independent.md: protected/pipeline/count deficits, readiness/disagreement/lineage and scoped observed_preconditions; no caller/target authorization promise; finalintegration ea505e40 PASS.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:15.675985+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "Verify FR-004 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP04-independent.md: exact created IDs and stored Policy/Evidence after later history; status uses PROPOSAL and evidence reads use event IDs; both verdicts/default bytes; finalintegration ea505e40 PASS.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:19.306075+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Verify FR-005 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP03-independent.md: verified12hex/full read, typed unchanged resolver algorithm/Error text and distinct native ambiguous_id through bounded two-ID fixture/actual encoder; no mutation/artifact prefix relaxation; finalintegration ea505e40 PASS.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:22.848218+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "Verify FR-006 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP01-independent.md and reviews/WP04-independent.md: static keyless/no-Git/no-lock discovery in actual default/native binaries; registered grammar/default bytes; finalintegration ea505e40 PASS.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:26.144756+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-007",
+      "description": "Verify FR-007 is satisfied",
+      "proof_type": "manual_review",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP01-independent.md and reviews/WP05-independent.md: actual nine contribution JSON parse sites/aliases audited and docs/consumer-cli-v1.md records existing always-JSON/default schemas; no contribution implementation/default-byte change; baseline invariant audit ea505e40.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:29.445314+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    },
+    {
+      "criterion_id": "FR-008",
+      "description": "Verify FR-008 is satisfied",
+      "proof_type": "automated_test",
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP04-independent.md and reviews/WP05-independent.md: closed native envelope5-field errors, operation:null/do_not_retry, unknown/invalid grammar no effects, distinct resolver ambiguity, existing writer order preserved; nativeintegration19 PASS ea505e40.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:32.812833+00:00",
+      "notes": "TODO: replace with a real acceptance criterion"
+    }
+  ],
+  "negative_invariants": []
+}

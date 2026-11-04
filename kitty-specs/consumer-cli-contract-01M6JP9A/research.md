@@ -1,0 +1,11 @@
+# Research: consumer CLI contract
+
+Sources: GitHub issues #40/#41 fetched 2026-11-04, original baseline 7a43830aec9fe75cdf2b8f9050591fe287fde801, proposal.go currentReviews, policy.go evaluateProposal, store.go resolveEvent, main.go run, governance.go cmdDecide, docs/extensions.md closed errors, contribution_commands.go contributionPrint.
+
+Findings: currentReviews already keys full actors and filters exact candidate; preserve sequence selection. evaluateProposal.Ready is evidence readiness and can remain true on a superseded candidate, so export lineage and terminal eligibility separately. Stored decision Evidence/Policy are immutable receipts; never substitute a later evaluation. Existing resolveEvent handles ambiguity; expose it through verified read-only event read/resolution without relaxing mutation full-ID guards. Nine contribution json flags are compatibility no-ops because the commands already emit JSON; audit/document their actual default bytes instead of wrapping them.
+
+Decisions: native optional versioned JSON only; reuse existing envelope/error/recovery vocabulary. Read operations append no facts and load no signer/migrate identity. Static version discovery bypasses locks, Git IO, authority and implicit bootstrap. No operation-key idempotency is added: receipt error.operation is null; recovery never implies automatic mutation retry. Native-only support needs no extension/service/provider. Trusted reviewer pool and required approval count are not Fleet assignments; expose eligible actors, deficits and current attributed verdicts, leaving assignment joins to Fleet.
+
+Validation: focused race, existing native fast/static before each review; native integration and affected migration/protocol/trust/recovery before acceptance. Keep 21 fast and 8 integration roots bounded; new full journey belongs integration. No exhaustive stress/soak repeat (#38 remains open), release binary certification, Mac signing or assets. Framework Python no_coverage gate is unsupported for this Go repository and is not a Go coverage pass. Optional SaaS logged out; transport disable is not review bypass.
+
+Open product questions: none; user corrections settle scope. Independent review may refine concrete schema without changing requirements.

@@ -1,0 +1,48 @@
+{
+  "accept_commit": "6610a8c7e4b95dbdadad9a5a9e1706627778ed79",
+  "acceptance_history": [
+    {
+      "accept_commit": "cbe9a48436c4e4cd14a148b410249089dfc94100",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-04T08:27:04.163937+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "1e68562066ced014bf27b66dab7bc4d7b29fb4ac"
+    },
+    {
+      "accept_commit": "21fa85d5e360496a39d255f61061e6242c53c472",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-04T08:27:32.677087+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "0d3e7dac9662e393a4a914742fd6bb5736a1a93e"
+    },
+    {
+      "accept_commit": "6610a8c7e4b95dbdadad9a5a9e1706627778ed79",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-04T08:28:41.248907+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "2f87b8d42dc702f4eb0fd5f47c75499375b918c0"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-04T08:28:41.248907+00:00",
+  "accepted_by": "codex",
+  "accepted_from_commit": "2f87b8d42dc702f4eb0fd5f47c75499375b918c0",
+  "baseline_merge_commit": "0dbc3d522811250aec28027cf03677ef493eed32",
+  "created_at": "2026-11-04T07:10:00.975709+00:00",
+  "flattened": false,
+  "friendly_name": "Consumer CLI contract",
+  "mission_id": "01M6JP9AMBAX8T9CM978P8N1FM",
+  "mission_number": null,
+  "mission_slug": "consumer-cli-contract-01M6JP9A",
+  "mission_type": "software-dev",
+  "purpose_context": "This mission advances Consumer CLI contract on feat/consumer-cli-contract so stakeholders can track the work from mission creation onward.",
+  "purpose_tldr": "Consumer CLI contract",
+  "retain_branches": true,
+  "retain_worktrees": true,
+  "slug": "consumer-cli-contract-01M6JP9A",
+  "status_phase": "1",
+  "target_branch": "feat/consumer-cli-contract",
+  "topology": "lanes",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-04T07:26:19.026704+00:00"
+}

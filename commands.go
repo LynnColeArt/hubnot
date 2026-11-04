@@ -183,6 +183,16 @@ func actorPublicationCovered(ref, verifiedHead string) bool {
 // cmdLog is the explicit immutable raw history inspector. Admission and hiding
 // govern ordinary queries, not this signed historical provenance surface.
 func cmdLog(args []string) error {
+	if machine, _, _, err := consumerEventOptions(append([]string{"log"}, args...)); machine {
+		if err != nil {
+			return err
+		}
+		data, err := consumerLogData()
+		if err != nil {
+			return err
+		}
+		return consumerOutput(data, nil)
+	}
 	if len(args) != 0 {
 		return usageError("usage: hn log")
 	}

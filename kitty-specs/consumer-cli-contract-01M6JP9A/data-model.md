@@ -1,0 +1,3 @@
+# Read projection model
+
+Candidate: full signed event ID, base/head commits, policy digest, author fingerprint, lineage predecessor/successors and terminal state. CurrentReview: exact candidate, full review event ID, actor fingerprint, display name, sequence, verdict. Evaluation: native requirements, eligible actors, thresholds/deficits, pipeline observations, evidence IDs, readiness, acceptance/rejection/merge observations; terminal eligibility is distinct. Receipt: exact stored event and stored decision Evidence/Policy. Discovery: static capability IDs and schema versions. Error: existing closed origin/code/message/recovery/operation shape, operation null for commands without operation identity. No signed event/schema changes or new authority.

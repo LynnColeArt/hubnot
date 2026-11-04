@@ -11,7 +11,7 @@ Ordinary users do not enable a runner, install Go, or configure any of this.
 | Fast regressions | Native `test` pipeline; same action on GitHub PRs | 5-minute native step; 10-minute hosted job cap. Internal unit tests, selected core regressions, native CI protocol, vet. |
 | Migration regressions | Explicit native `migration` pipeline; same action on GitHub PRs | Complete platform-specific selection in three balanced shards, each retaining the 2-minute race-test cap; 10-minute native step and hosted job caps. |
 | Package smoke | GitHub PR install/runtime; explicit full-platform smoke or native Mac certification | PRs check both native variants within 2 minutes. Explicit extension qualification adds 5 focused journeys per variant with 3-minute invocation caps and a 15-minute native job cap. |
-| Integration | Explicit native `integration` pipeline | 10-minute step cap. Full native collaboration, artifact recovery and three supplied reference-consumer journeys, using source-assisted binaries. |
+| Integration | Explicit native `integration` pipeline | 10-minute step cap. Full native collaboration, artifact recovery, three supplied reference-consumer journeys and the native consumer CLI contract in actual default/native-only executables. Original eight roots plus eleven bounded consumer roots; source-assisted binaries, unchanged eight-minute race-package cap. |
 | Stress | Explicit native `stress` pipeline | Separate bounded steps for large record/ref/byte limits, lifecycle faults and observation capacity. Run when these mechanisms change, or during a deliberate deep audit. |
 | Real-clock soak | Explicit native `soak` pipeline | The unchanged ten-minute expiry test, separately requested. |
 

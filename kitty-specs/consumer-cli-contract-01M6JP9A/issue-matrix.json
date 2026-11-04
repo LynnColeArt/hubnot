@@ -1,0 +1,53 @@
+{
+  "rows": {
+    "#21": {
+      "evidence_ref": "Follow-up: #21 https://github.com/LynnColeArt/hubnot/issues/21. User C-003 excludes memory operation idempotency/recovery; only unkeyed native receipts operation:null in this mission.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "deferred-with-followup",
+      "wp": null
+    },
+    "#38": {
+      "evidence_ref": "Follow-up: #38 https://github.com/LynnColeArt/hubnot/issues/38. User C-004/NFR-003 keeps exhaustive stress/soak release qualification separate; source-only focused race/native fast/static and affected integration here.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "deferred-with-followup",
+      "wp": null
+    },
+    "#40": {
+      "evidence_ref": "Local source fixed by reviewed/tested ea505e406f25d895ec190597e3f60f878f71a695; strictaccept6610a8c7e4b95dbdadad9a5a9e1706627778ed79; mission-review.md and acceptance-trace.md verify FR-001/002/003/006/007/008. Public issue closure reserved for root after PR/hostedCI/main merge.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "fixed",
+      "wp": "WP05"
+    },
+    "#41": {
+      "evidence_ref": "Local source fixed by reviewed/tested ea505e406f25d895ec190597e3f60f878f71a695; strictaccept6610a8c7e4b95dbdadad9a5a9e1706627778ed79; mission-review.md and acceptance-trace.md verify exact stored receipts/policy/evidence, read-only resolver and discovery FR-004/005/006/008. Public closure reserved for root after PR/hostedCI/main merge.",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "fixed",
+      "wp": "WP05"
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,166 @@
+{
+  "event_count": 35,
+  "last_event_id": "01M6JTSVZMA6XQ577TV0VG474E",
+  "materialized_at": "2026-11-04T08:28:56.692948+00:00",
+  "mission_number": "",
+  "mission_slug": "consumer-cli-contract-01M6JP9A",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 5,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M6JTSM2DDPMJ12W6BVY2XW91",
+      "last_transition_at": "2026-11-04T08:28:48.589603+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Static discovery and envelope complete; public default/native focused race, native fast and static pass at e4ffdf91; evidence WP01-handoff.md",
+        "Independent review passed at e4ffdf91: static discovery, default bytes, closed unkeyed errors, contribution audit and focused public race verified. Shared main.go/consumer_contract.go/docs ownership is sequential lane-a coordination WP01 through WP05."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/hubnot-runner-efficiency-work/kitty-specs/consumer-cli-contract-01M6JP9A/tasks/WP01/review-cycle-1.md",
+        "reference": "review-cycle://consumer-cli-contract-01M6JP9A/WP01/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1790163,
+      "shell_pid_created_at": "1793672743.25",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done"
+      }
+    },
+    "WP02": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M6JTSP2R484B6H65KAD8C65M",
+      "last_transition_at": "2026-11-04T08:28:50.648681+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Exact operative proposal projections, attributed qualified/untrusted reviews, pipeline/protected requirements, scoped observations; focused race/native fast/static pass 1b779037; WP02-handoff.md",
+        "Independent review passed at 1b779037: native proposal projection, observed versus qualified reviews, protected/pipeline deficits, exact-candidate lineage, default bytes and outer grammar/refusal boundaries. Focused public race passed. Shared main.go/proposal.go/consumer_contract.go/docs ownership coordinated sequentially in lane-a."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/hubnot-runner-efficiency-work/kitty-specs/consumer-cli-contract-01M6JP9A/tasks/WP02/review-cycle-1.md",
+        "reference": "review-cycle://consumer-cli-contract-01M6JP9A/WP02/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1790163,
+      "shell_pid_created_at": "1793672743.25",
+      "subtasks": {
+        "T003": "done",
+        "T004": "done"
+      }
+    },
+    "WP03": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M6JTSR2E3WN5EK2X8TDRHDHD",
+      "last_transition_at": "2026-11-04T08:28:52.686699+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Full raw JSON log and ordinary visible operative event reads/resolution; focused race/native fast/static pass 72b793ee; WP03-handoff.md",
+        "Independent review passed at 72b793ee: raw full-ID log/default bytes, verified ordinary visibility and evidence bindings, successor lineage, original resolver semantics/distinct errors and keyless no-migration. Focused race passed. Shared commands/main/store/consumer/docs files coordinated sequentially in lane-a."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/hubnot-runner-efficiency-work/kitty-specs/consumer-cli-contract-01M6JP9A/tasks/WP03/review-cycle-1.md",
+        "reference": "review-cycle://consumer-cli-contract-01M6JP9A/WP03/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1790163,
+      "shell_pid_created_at": "1793672743.25",
+      "subtasks": {
+        "T005": "done",
+        "T006": "done"
+      }
+    },
+    "WP04": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M6JTSSZEZMM0DCRG81HQCN29",
+      "last_transition_at": "2026-11-04T08:28:54.638064+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Exact stored review/decision receipts, registered grammar and preserved default writer behavior; all consumer race/native fast/static pass 5303cf93; WP04-handoff.md",
+        "Independent review passed at5303cf93: exact stored receipts and evidence roundtrip, unchanged writer order/default bytes, grammar body/terminator/last boolean/invalid boolean and discovery regressions, early and later refusal scopes. Focused race passed. Shared main/proposal/governance/consumer/docs ownership coordinated sequentially lane-a."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/hubnot-runner-efficiency-work/kitty-specs/consumer-cli-contract-01M6JP9A/tasks/WP04/review-cycle-1.md",
+        "reference": "review-cycle://consumer-cli-contract-01M6JP9A/WP04/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1790163,
+      "shell_pid_created_at": "1793672743.25",
+      "subtasks": {
+        "T007": "done",
+        "T008": "done"
+      }
+    },
+    "WP05": {
+      "actor": "merge",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "done",
+      "last_event_id": "01M6JTSVZMA6XQ577TV0VG474E",
+      "last_transition_at": "2026-11-04T08:28:56.692948+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Actual default/native public journey; integration19/fast21 inventory preserved; clean-head fast/integration/migration/protocol race and static pass ea505e40; WP05-handoff.md",
+        "Independent review passed at ea505e40: actual default/native consumer journey, all11 consumer integration inventory roots and no fast overlap, preserved original8/fast21/tests/deadlines, aligned contracts/docs and exact-source validation evidence. Independent journey race passed. Shared docs coordinated sequential lane-a; CI ownership WP05."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/hubnot-runner-efficiency-work/kitty-specs/consumer-cli-contract-01M6JP9A/tasks/WP05/review-cycle-1.md",
+        "reference": "review-cycle://consumer-cli-contract-01M6JP9A/WP05/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1790163,
+      "shell_pid_created_at": "1793672743.25",
+      "subtasks": {
+        "T009": "done",
+        "T010": "done"
+      }
+    }
+  }
+}

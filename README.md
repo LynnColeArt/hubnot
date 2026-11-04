@@ -727,6 +727,7 @@ promise global erasure from every replica.
 - [Interrupted operations and upgrades](docs/operation-recovery.md)
 - [Guided and scripted project migration](docs/migration-cli.md)
 - [Optional contribution and moderation](docs/contributions.md)
+- [Native consumer CLI: full IDs, attributed verdicts and exact receipts](docs/consumer-cli-v1.md)
 - [Rich issues](docs/issues-v1.md)
 - [Projects and typed items](docs/projects-v1.md)
 - [Discussions and pinned answers](docs/discussions-v1.md)
