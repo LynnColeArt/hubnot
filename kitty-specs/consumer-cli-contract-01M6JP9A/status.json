@@ -1,36 +1,42 @@
 {
-  "event_count": 9,
-  "last_event_id": "01M6JQGVS1TJ8TH2Y4DM6KC0MB",
-  "materialized_at": "2026-11-04T07:31:35.841627+00:00",
+  "event_count": 10,
+  "last_event_id": "01M6JQN5Q9HQ39DQKE178JKYSJ",
+  "materialized_at": "2026-11-04T07:33:57.097227+00:00",
   "mission_number": "",
   "mission_slug": "consumer-cli-contract-01M6JP9A",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 0,
+    "approved": 1,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 4
   },
   "work_packages": {
     "WP01": {
-      "actor": "codex",
+      "actor": "user",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M6JQGVS1TJ8TH2Y4DM6KC0MB",
-      "last_transition_at": "2026-11-04T07:31:35.841627+00:00",
+      "lane": "approved",
+      "last_event_id": "01M6JQN5Q9HQ39DQKE178JKYSJ",
+      "last_transition_at": "2026-11-04T07:33:57.097227+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Static discovery and envelope complete; public default/native focused race, native fast and static pass at e4ffdf91; evidence WP01-handoff.md"
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/lynn/projects/hubnot-runner-efficiency-work/kitty-specs/consumer-cli-contract-01M6JP9A/tasks/WP01/review-cycle-1.md",
+        "reference": "review-cycle://consumer-cli-contract-01M6JP9A/WP01/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "shell_pid": 1790163,
       "shell_pid_created_at": "1793672743.25",
