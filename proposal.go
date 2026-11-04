@@ -476,7 +476,8 @@ func cmdReview(args []string) error {
 	approve := flags.Bool("approve", false, "approve the proposal")
 	requestChanges := flags.Bool("request-changes", false, "request changes")
 	body := flags.String("body", "", "review explanation")
-	if err := flags.Parse(args[1:]); err != nil {
+	writerArgs, machine := consumerMutationArguments("review", args[1:])
+	if err := flags.Parse(writerArgs); err != nil {
 		return err
 	}
 	if flags.NArg() != 0 || *approve == *requestChanges {
@@ -533,6 +534,9 @@ func cmdReview(args []string) error {
 	stored, err := appendEvent(event, identity)
 	if err != nil {
 		return err
+	}
+	if machine {
+		return consumerOutput(consumerMutationReceipt(stored), nil)
 	}
 	fmt.Printf("Recorded %s review %s on proposal %s\n", event.Verdict, shortID(stored.ID), shortID(proposal.ID))
 	return nil

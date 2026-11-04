@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -96,6 +97,8 @@ func cmdConsumerDiscovery(args []string) error {
 		"schema": consumerSchema, "version": version,
 		"capabilities": map[string]any{
 			"native.discovery":           map[string]any{"version": 1, "commands": []string{"version --json", "--version --json", "capabilities --json"}},
+			"native.review-receipt":      map[string]any{"version": 1, "commands": []string{"review FULL_PROPOSAL --approve|--request-changes [--body TEXT] --json"}, "operation_key": false},
+			"native.decision-receipt":    map[string]any{"version": 1, "commands": []string{"decide FULL_PROPOSAL --accept|--reject [--body TEXT] --json"}, "operation_key": false},
 			"native.event-read":          map[string]any{"version": 1, "commands": []string{"event show EVENT [--json]", "event resolve EVENT [--json]"}, "minimum_prefix_hex": 12},
 			"native.log-read":            map[string]any{"version": 1, "commands": []string{"log --json"}, "history_scope": "raw_signed_history"},
 			"native.proposal-read":       map[string]any{"version": 1, "commands": []string{"proposal show PROPOSAL --json", "proposal status PROPOSAL --json"}},
@@ -107,15 +110,10 @@ func cmdConsumerDiscovery(args []string) error {
 // Discovery has no string-valued options. Respect '--' so a positional value
 // that happens to be --json never selects the new version output mode.
 func consumerDiscoveryJSON(args []string) bool {
-	for _, arg := range args {
-		if arg == "--" {
-			break
-		}
-		if arg == "--json" || arg == "--json=true" {
-			return true
-		}
-	}
-	return false
+	flags := flag.NewFlagSet("discovery", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	flags.Bool("json", false, "versioned JSON")
+	return issueMachineRequested(args, flags)
 }
 
 // consumerProposalOptions recognizes only this command's boolean option grammar.
@@ -422,4 +420,86 @@ func cmdConsumerEvent(args []string) error {
 		fmt.Printf("%s\n", safeText(string(stored.Payload)))
 	}
 	return nil
+}
+
+// Use the registered writer grammar for output selection even when parsing fails.
+// In particular, a body value or literal after '--' cannot select machine mode.
+func consumerMutationOptions(args []string) (machine bool, err error) {
+	if len(args) == 0 || (args[0] != "review" && args[0] != "decide") {
+		return
+	}
+	command := args[0]
+	rest := args[1:]
+	query := ""
+	if len(rest) > 0 && !strings.HasPrefix(rest[0], "-") {
+		query = rest[0]
+		rest = rest[1:]
+	}
+	flags := flag.NewFlagSet(command, flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	flags.Bool("json", false, "versioned JSON")
+	body := flags.String("body", "", "explanation")
+	first, second := new(bool), new(bool)
+	if command == "review" {
+		first = flags.Bool("approve", false, "approve")
+		second = flags.Bool("request-changes", false, "request changes")
+	} else {
+		first = flags.Bool("accept", false, "accept")
+		second = flags.Bool("reject", false, "reject")
+	}
+	machine = issueMachineRequested(rest, flags)
+	parseErr := flags.Parse(rest)
+	if machine && (parseErr != nil || flags.NArg() != 0 || !validEventID(query) || *first == *second || (command == "decide" && *second && strings.TrimSpace(*body) == "")) {
+		err = consumerFailure("invalid_input", "writer requires a full proposal ID, exactly one verdict, and valid options")
+	}
+	return
+}
+func consumerMutationReceipt(stored *StoredEvent) map[string]any {
+	return map[string]any{"schema": consumerSchema, "id": stored.ID, "kind": stored.Event.Kind, "subject": stored.Event.Subject, "actor": stored.Event.Actor, "actor_name": stored.Event.ActorName, "sequence": stored.Event.Sequence, "verdict": stored.Event.Verdict, "policy": stored.Event.Policy, "evidence": consumerStrings(stored.Event.Evidence)}
+}
+
+// Remove only registered JSON options before the original writer parser. This
+// keeps its legacy flag inventory (including unknown-flag usage bytes) intact.
+func consumerMutationArguments(command string, args []string) ([]string, bool) {
+	flags := flag.NewFlagSet(command, flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	flags.Bool("json", false, "")
+	flags.String("body", "", "")
+	if command == "review" {
+		flags.Bool("approve", false, "")
+		flags.Bool("request-changes", false, "")
+	} else {
+		flags.Bool("accept", false, "")
+		flags.Bool("reject", false, "")
+	}
+	machine := issueMachineRequested(args, flags)
+	clean := []string{}
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if arg == "--" || arg == "-" || !strings.HasPrefix(arg, "-") {
+			clean = append(clean, args[i:]...)
+			break
+		}
+		name, value, assigned := strings.Cut(strings.TrimPrefix(strings.TrimPrefix(arg, "-"), "-"), "=")
+		registered := flags.Lookup(name)
+		if registered != nil && name == "json" {
+			if !assigned {
+				continue
+			}
+			if _, err := strconv.ParseBool(value); err == nil {
+				continue
+			}
+			// Invalid booleans must reach a refusing parser, never disappear and
+			// accidentally turn a rejected request into a text-mode mutation.
+		}
+		clean = append(clean, arg)
+		if registered != nil {
+			boolean, isBool := registered.Value.(interface{ IsBoolFlag() bool })
+			if (!isBool || !boolean.IsBoolFlag()) && !assigned && i+1 < len(args) {
+				i++
+				clean = append(clean, args[i])
+			}
+		}
+	}
+	return clean, machine
 }

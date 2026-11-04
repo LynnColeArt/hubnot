@@ -162,3 +162,49 @@ identity. Prefix lookup grants no mutation authority. Proposal status still take
 a proposal ID; use event read/resolve separately for review/result evidence IDs.
 Every existing mutation still requires full IDs, and artifact's documented
 no-prefix rule is unchanged. No artifact command or signed wire bytes change.
+
+## Exact review and decision receipts
+
+Capabilities `native.review-receipt` and `native.decision-receipt` version 1 add:
+
+```sh
+hn review FULL_PROPOSAL --approve --json
+hn review FULL_PROPOSAL --request-changes --body TEXT --json
+hn decide FULL_PROPOSAL --accept --json
+hn decide FULL_PROPOSAL --reject --body TEXT --json
+```
+
+Receipt data contains `schema:"hn.consumer/1"`, full created `id`, `kind`,
+`subject`, full signing `actor`, `actor_name`, actor-local `sequence`, `verdict`,
+`policy` and `evidence`. Values come directly from the exact event returned by
+successful native append. A decision's `policy` is its stored full policy digest
+and `evidence` its stored full event-ID list; neither is recomputed from later
+status. Review receipts have empty `policy`/`evidence`; rejection decisions have
+an empty evidence list, matching their signed event. Empty evidence is `[]`.
+
+To round-trip acceptance evidence, read `proposal status FULL_PROPOSAL --json`
+using the proposal ID and compare its current `evidence` references with the
+receipt. Read or resolve each review/result ID using `event show`/`event resolve`.
+A later review can change current status evidence; the older signed decision and
+its stored policy/evidence remain unchanged and readable as that event.
+
+These options change output only. Existing writer validation order, authority,
+signing, mutation full-ID requirements and text output/unknown-flag usage remain
+unchanged. Registered grammar selects machine mode: the last valid JSON boolean
+wins; `--body --json` supplies literal body text, and text after `--` is not an
+output option. Malformed JSON booleans refuse; they must never be dropped into a
+successful text mutation. Static version selection also stops at positional text
+and honors the last valid JSON boolean, preserving its original text behavior.
+
+Early refusals (invalid full IDs/options, hidden candidates, superseded
+acceptance) preserve the tested private and signed state, including legacy-only
+identity state. Later writer refusals retain existing behavior: deciding a
+not-ready candidate can load/migrate the legacy signer before refusing, while
+appending no signed event or advancing refs. This receipt addition does not
+reorder guards or promise every refusal has zero private effect. Reads still load
+no signer and migrate no identity.
+
+No operation key or idempotency is added. `error.operation` remains null;
+`do_not_retry` is guidance to inspect before a fresh explicit intent. A missing
+acknowledgement is not proof the writer did nothing, and these receipts provide
+no automatic retry/lost-ack recovery or fabricated operation identity.

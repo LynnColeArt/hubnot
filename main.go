@@ -23,6 +23,9 @@ func main() {
 
 func run(args []string) (result error) {
 	machine, _, _, parseErr := consumerProposalOptions(args)
+	if len(args) > 0 && (args[0] == "review" || args[0] == "decide") {
+		machine, parseErr = consumerMutationOptions(args)
+	}
 	if len(args) > 0 && (args[0] == "log" || args[0] == "event") {
 		machine, _, _, parseErr = consumerEventOptions(args)
 	}
