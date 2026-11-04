@@ -8,10 +8,10 @@
       "criterion_id": "FR-001",
       "description": "Verify FR-001 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/acceptance-trace.md: TestConsumerProposalProjectionCLI, TestConsumerEventAndLogCLI and both-variant TestConsumerPublicJourney; native19-root integration PASS ea505e406f25d895ec190597e3f60f878f71a695,165.107s; independent WP02/WP03/WP05 approvals.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:08.433331+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
