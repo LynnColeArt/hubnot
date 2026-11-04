@@ -1,7 +1,7 @@
 {
   "rows": {
     "#21": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Follow-up: #21 https://github.com/LynnColeArt/hubnot/issues/21. User C-003 excludes memory operation idempotency/recovery; only unkeyed native receipts operation:null in this mission.",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -9,11 +9,11 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "deferred-with-followup",
       "wp": null
     },
     "#38": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Follow-up: #38 https://github.com/LynnColeArt/hubnot/issues/38. User C-004/NFR-003 keeps exhaustive stress/soak release qualification separate; source-only focused race/native fast/static and affected integration here.",
       "fr": null,
       "nfr": null,
       "repo": null,
@@ -21,7 +21,7 @@
       "scope": null,
       "source_file": "spec.md",
       "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "verdict": "deferred-with-followup",
       "wp": null
     }
   },
