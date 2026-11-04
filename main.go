@@ -23,6 +23,9 @@ func main() {
 
 func run(args []string) (result error) {
 	machine, _, _, parseErr := consumerProposalOptions(args)
+	if len(args) > 0 && (args[0] == "log" || args[0] == "event") {
+		machine, _, _, parseErr = consumerEventOptions(args)
+	}
 	if machine {
 		if parseErr != nil {
 			return consumerOutput(nil, parseErr)
@@ -98,6 +101,8 @@ func run(args []string) (result error) {
 		return cmdSync(args[1:])
 	case "log":
 		return cmdLog(args[1:])
+	case "event":
+		return cmdConsumerEvent(args[1:])
 	default:
 		if command, ok := lookupLocalCommand(args[0]); ok {
 			return command(args[1:])

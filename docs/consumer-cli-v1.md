@@ -120,3 +120,45 @@ A superseded proposal can thus have `readiness:true` and
 `observed_preconditions.acceptance.met:false` without contradiction. An accepted
 proposal can later lose readiness after a newer review. Change requests are
 reported independently and do not silently change native acceptance policy.
+
+## Full signed log and ordinary event resolution
+
+Capability `native.log-read` version 1 adds `hn log --json`. It returns
+`schema:"hn.consumer/1"`, `history_scope:"raw_signed_history"` and `events:[]`.
+Each row includes full `id`, full storage `commit`, exact signed `event` object
+and raw unpadded Base64 `signature`. This is the existing **raw signed history**
+boundary: it includes unadmitted/hidden native facts, as the original text log's
+explicit raw banner states under selected contribution authority. It does not
+claim those facts are admitted, visible or policy-qualifying. Non-JSON log bytes
+are unchanged. Empty history returns `events:[]`.
+
+Capability `native.event-read` version 1 supports:
+
+```sh
+hn event resolve PREFIX [--json]
+hn event show FULL_EVENT [--json]
+```
+
+Both accept a full event ID or 12–64 lowercase hexadecimal characters, with
+optional `sha256:` prefix. Resolution invokes the existing native event resolver;
+it never chooses among ambiguous matches. `ambiguous_id` and `not_found` are
+separate native error codes. `resolve` without JSON prints the full event ID and
+newline; `show` without JSON prints the full ID, kind, actor and signed payload.
+With JSON, either returns the same complete row as log plus
+`schema:"hn.consumer/1"` and `history_scope:"visible_operative_history"`.
+
+Event reads verify native selected history and preserve existing shallow and
+pending-history refusal boundaries. Ordinary event selection applies existing
+contribution admission/visibility. Reviews, decisions, merges and run requests
+require their proposal candidate to remain selected; run results and withdrawals
+require their request, and hence its candidate, to remain selected. This prevents
+hidden or unadmitted candidate evidence bodies from leaking through event reads.
+A visible successor is not hidden merely because its predecessor is hidden:
+a revision's `subject` is immutable lineage, not a new authorization-parent rule.
+The separate raw log retains all verified native facts explicitly.
+
+These reads append no signed facts, load no signer and migrate no legacy private
+identity. Prefix lookup grants no mutation authority. Proposal status still takes
+a proposal ID; use event read/resolve separately for review/result evidence IDs.
+Every existing mutation still requires full IDs, and artifact's documented
+no-prefix rule is unchanged. No artifact command or signed wire bytes change.
