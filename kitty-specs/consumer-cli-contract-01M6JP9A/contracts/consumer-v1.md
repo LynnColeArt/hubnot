@@ -13,3 +13,5 @@ Read-only event resolution uses existing store.go resolveEvent; ambiguous prefix
 Static discovery works keyless outside repository without contribution lock, Git IO, authority or implicit initialization. Native-only builds advertise only compiled support. Nine contribution json flags retain actual always-JSON default output bytes, documented as existing separate schemas; no envelope migration in this mission.
 
 All existing non-JSON output and exits byte-identical. No event schema/signature/authority changes. Validation must prove actual CLI behavior, not just helper serialization.
+
+Attribution clarification: export observed current verdicts from visible operative history, including untrusted actors, with explicit policy qualification distinct from observation. Do not hide disagreement by selecting only qualifying approvals.

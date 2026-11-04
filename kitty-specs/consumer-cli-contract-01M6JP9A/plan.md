@@ -27,3 +27,5 @@ Each behavior is public CLI test-first with red evidence at stable entry point, 
 
 ## Risks
 Avoid recomputing decision receipts, using display names, inheriting predecessor votes, omitting protected-check deficits, treating reviewer pool as assignment list, claiming Ready implies terminal eligibility, mapping unkeyed failures to safe retry, or acquiring locks during static discovery. No global gate relaxation: framework no_coverage unsupported Python gate stays honestly documented.
+
+Attribution clarification: export observed current verdicts from visible operative history, including untrusted actors, with explicit policy qualification distinct from observation. Do not hide disagreement by selecting only qualifying approvals.

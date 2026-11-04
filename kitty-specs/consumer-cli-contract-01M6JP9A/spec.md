@@ -51,3 +51,5 @@ A keyless user outside a repository discovers capability/schema versions without
 
 ## Success Criteria
 All eight FRs have independently reviewed public contract evidence, existing native workflow checks pass, strict accept and local merge complete, fresh mission fidelity review and retrospective record precise source bindings and limitations. Root owns final PR/CI/main merge and issue closure.
+
+Attribution clarification: export observed current verdicts from visible operative history, including untrusted actors, with explicit policy qualification distinct from observation. Do not hide disagreement by selecting only qualifying approvals.
