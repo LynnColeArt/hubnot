@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "mission_slug": "consumer-cli-contract-01M6JP9A",
+  "mission_id": "01M6JP9AMBAX8T9CM978P8N1FM",
+  "mission_branch": "kitty/mission-consumer-cli-contract-01M6JP9A",
+  "target_branch": "feat/consumer-cli-contract",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01",
+        "WP02",
+        "WP03",
+        "WP04",
+        "WP05"
+      ],
+      "write_scope": [
+        "README.md",
+        "consumer_contract.go",
+        "consumer_contract_test.go",
+        "consumer_events_test.go",
+        "consumer_journey_test.go",
+        "consumer_proposal_test.go",
+        "consumer_receipts_test.go",
+        "docs/ci-v0.md",
+        "docs/consumer-cli-v1.md",
+        "docs/extensions.md",
+        "governance.go",
+        "main.go",
+        "proposal.go",
+        "store.go"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-11-04T07:21:47.258455+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "1c66a0c96c691d08196df38aedbf7986ea06ce72",
+  "collapse_report": {
+    "events": [
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP02",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'consumer_contract.go' vs 'consumer_contract.go', 'docs/consumer-cli-v1.md' vs 'docs/consumer-cli-v1.md'; WP02 depends on WP01"
+      },
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP03",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'main.go' vs 'main.go', 'consumer_contract.go' vs 'consumer_contract.go', 'docs/consumer-cli-v1.md' vs 'docs/consumer-cli-v1.md'"
+      },
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP04",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'consumer_contract.go' vs 'consumer_contract.go', 'docs/consumer-cli-v1.md' vs 'docs/consumer-cli-v1.md'"
+      },
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP05",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'docs/consumer-cli-v1.md' vs 'docs/consumer-cli-v1.md'"
+      }
+    ],
+    "total_merges": 4,
+    "independent_wps_collapsed": 0,
+    "by_rule": {
+      "write_scope_overlap": 4
+    }
+  }
+}
