@@ -1,6 +1,6 @@
 # Consumer contract acceptance trace (all five WPs independently approved)
 
-Authoritative requirement prose: kitty-specs/consumer-cli-contract-01M6JP9A/spec.md. This draft maps checks; it does not record acceptance verdicts. Canonical acceptance-verdict will be used after the completed final independent approval.
+Authoritative requirement prose: kitty-specs/consumer-cli-contract-01M6JP9A/spec.md. All eight FR verdicts were recorded through canonical acceptance-verdict after final independent approval; overall verdict pass. Strict local acceptance6610a8c7 passed. This table maps the full15 requirements to evidence; it does not replace canonical state.
 
 | Requirement | Evidence selectors |
 |---|---|
