@@ -73,6 +73,28 @@ case "${1-}" in
         export HN_WP20_CONSUMER="$scratch/fake-tracker" HN_WP21_CONSUMER="$scratch/charter" HN_WP22_CONSUMER="$scratch/inventory"
         export HN_PROJECT_CI_BINARY="$scratch/hn"
         test_name='Test(ProjectCINativePublicJourney|ArtifactFullPublicJourneyCLI|ExtensionNativeSixFamiliesCLI|ExtensionArtifactInterruptedRecoveryRawCLI|ExtensionFakeTrackerStandaloneRecovery|ExtensionCharterStandaloneJourney|InventoryStandalonePublicJourney|RunnerEfficiencyPublicJourney)'
+        # Keep all original eight roots above. Consumer coverage is explicit
+        # integration work, including the full actual default/native journey.
+        consumer_names='TestConsumerStaticDiscoveryCLI
+TestConsumerProposalProjectionCLI
+TestConsumerProposalErrorsCLI
+TestConsumerEventAndLogCLI
+TestConsumerEventResolverAmbiguity
+TestConsumerEventModerationCLI
+TestConsumerReceiptsCLI
+TestConsumerReceiptEarlyRefusalsCLI
+TestConsumerReceiptLaterRefusalPreservesWriterBehavior
+TestConsumerOutputGrammarCLI
+TestConsumerPublicJourney'
+        consumer_pattern=$(printf '%s\n' "$consumer_names" | paste -sd '|' -)
+        printf '%s\n' "$consumer_names" | LC_ALL=C sort > "$scratch/consumer-expected"
+        go test -list "^($consumer_pattern)$" . | sed -n '/^Test[A-Za-z0-9_]*$/p' |
+          LC_ALL=C sort > "$scratch/consumer-actual"
+        diff -u "$scratch/consumer-expected" "$scratch/consumer-actual"
+        # A future rename/removal or accidental fast-tier overlap must fail.
+        awk 'NR == FNR { fast[$0] = 1; next } $0 in fast { exit 1 }' \
+          ci/fast-tests.txt "$scratch/consumer-expected"
+        test_name="$test_name|$consumer_pattern"
         budget=8m
         ;;
       stress-counts) test_name=TestExtensionPackageInheritedPublicCountLimits; budget=30m;;

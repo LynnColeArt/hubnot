@@ -26,6 +26,11 @@ Current capability entries:
 | ID | Version | Meaning |
 |---|---|---|
 | `native.discovery` | 1 | The three static commands above. |
+| `native.proposal-read` | 1 | Optional JSON proposal show/status. |
+| `native.log-read` | 1 | Optional JSON raw signed log. |
+| `native.event-read` | 1 | Ordinary verified full-ID/prefix event show/resolve. |
+| `native.review-receipt` | 1 | Optional JSON exact created review receipt. |
+| `native.decision-receipt` | 1 | Optional JSON exact created decision receipt with stored policy/evidence. |
 | `contribution.existing-json` | 1 | The pre-existing contribution output described below; it does not use the consumer envelope. |
 
 All errors use the existing closed native code inventory in
@@ -208,3 +213,19 @@ No operation key or idempotency is added. `error.operation` remains null;
 `do_not_retry` is guidance to inspect before a fresh explicit intent. A missing
 acknowledgement is not proof the writer did nothing, and these receipts provide
 no automatic retry/lost-ack recovery or fabricated operation identity.
+
+## Validation and compatibility coverage
+
+The explicit native integration tier selects all eleven consumer regression
+roots, including the bounded resolver ambiguity fixture and the full public
+journey in actual default and `nogithub,noforge` child binaries. Existing eight
+integration roots remain selected; fast portability stays at its existing 21
+roots. The integration action validates the consumer test-name inventory and
+rejects overlap with fast selection, preventing silent omissions after renames.
+The package's eight-minute race-test cap and 600-second native pipeline step are
+unchanged. Consumer fixtures execute only tiny native actions and finite local
+history; no large hosted corpus or cryptographic collision search is required.
+
+This verifies reviewed source builds and native protocol behavior. It does not
+certify published release assets, macOS signing, exhaustive stress/soak limits or
+operation-key recovery for these unkeyed writers.
