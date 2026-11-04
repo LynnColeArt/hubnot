@@ -48,10 +48,10 @@
       "criterion_id": "FR-005",
       "description": "Verify FR-005 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "kitty-specs/consumer-cli-contract-01M6JP9A/reviews/WP03-independent.md: verified12hex/full read, typed unchanged resolver algorithm/Error text and distinct native ambiguous_id through bounded two-ID fixture/actual encoder; no mutation/artifact prefix relaxation; finalintegration ea505e40 PASS.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-04T08:26:22.848218+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
