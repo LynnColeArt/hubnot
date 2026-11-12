@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "mission_slug": "proposal-publication-01M78MW1",
+  "mission_id": "01M78MW1A8A6NA09XFF7C8M0QM",
+  "mission_branch": "kitty/mission-proposal-publication-01M78MW1",
+  "target_branch": "feat/workbox-proposal-publication",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "consumer_contract.go",
+        "event.go",
+        "main.go",
+        "proposal_publication.go",
+        "proposal_publication_test.go",
+        "store.go"
+      ],
+      "predicted_surfaces": [
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-11-12T19:49:51.659540+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "d9039b5d73958f69d6169d32e118e01ccc166c02"
+}
