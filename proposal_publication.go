@@ -297,6 +297,13 @@ func checkProposalPublicationCandidate(request proposalPublicationRequest) error
 			return publicationFailure("invalid_input", "The proposal requires two available, exact commits.")
 		}
 	}
+	_, hasPolicy, err := exactTreeEntry(request.base, ".hn/policy.json")
+	if err != nil {
+		return err
+	}
+	if !hasPolicy {
+		return publicationFailure("policy_required", "Commit a repository policy on the base branch before opening a proposal.")
+	}
 	if err := guardCandidateCreationDependencies("proposal open", request.base, request.head); err != nil {
 		return err
 	}

@@ -64,6 +64,10 @@ func TestProposalPublicationOperation(t *testing.T) {
 		}
 	}
 	requireFailure(lookup("missing"), "not_found")
+	noPolicy := mustGitText(t, "rev-parse", base+"^")
+	mustGit(t, "update-ref", "refs/heads/no-policy", noPolicy)
+	requireFailure(invoke("publish", "--base", noPolicy, "--base-ref", "refs/heads/no-policy", "--head", head,
+		"--actor", identity.Actor, "--operation", "policy-required", "--title", "Policy required", "--body", "", "--json"), "policy_required")
 	requireFailure(invoke(publish(strings.Repeat("0", 64), "first", "Exact title")...), "actor_mismatch")
 	if events, err := collectEvents(); err != nil || len(events) != 0 {
 		t.Fatalf("refusal changed history: %d events, %v", len(events), err)
