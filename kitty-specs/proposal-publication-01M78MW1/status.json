@@ -28,7 +28,8 @@
       "last_transition_at": "2026-11-12T19:53:40.754071+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Implement and verify native proposal publication and retry."
+        "Implement and verify native proposal publication and retry.",
+        "Independent review verified atomic Git ref publication, exact replay, contribution policy, and legacy proposal reads."
       ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
