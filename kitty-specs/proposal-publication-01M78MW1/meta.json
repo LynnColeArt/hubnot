@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-11-12T19:48:33.746111+00:00",
+  "flattened": false,
+  "friendly_name": "Safe native proposal publication",
+  "mission_id": "01M78MW1A8A6NA09XFF7C8M0QM",
+  "mission_number": null,
+  "mission_slug": "proposal-publication-01M78MW1",
+  "mission_type": "software-dev",
+  "purpose_context": "Support Workbox Settings with exact candidate publication, receipt lookup, and safe replay through native Hubnot.",
+  "purpose_tldr": "Publish a signer-bound Hubnot proposal exactly once per operation.",
+  "slug": "proposal-publication-01M78MW1",
+  "target_branch": "feat/workbox-proposal-publication",
+  "topology": "single_branch"
+}
