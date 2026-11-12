@@ -1,0 +1,69 @@
+{
+  "schema": "workbox.pipeline-templates/1",
+  "templates": [
+    {
+      "id": "go-test",
+      "label": "Go test",
+      "description": "Run Go tests for the selected packages. Defaults to all packages in the module.",
+      "inputs": [
+        {
+          "key": "packages",
+          "label": "Package pattern",
+          "type": "string",
+          "default": "./..."
+        },
+        {
+          "key": "timeout",
+          "label": "Step timeout (seconds)",
+          "type": "integer",
+          "default": 300
+        }
+      ],
+      "step": {
+        "name": "Go test",
+        "command": "go",
+        "args": [
+          "test",
+          {
+            "input": "packages"
+          }
+        ],
+        "timeoutSeconds": {
+          "input": "timeout"
+        }
+      }
+    },
+    {
+      "id": "go-build",
+      "label": "Go build",
+      "description": "Compile the selected Go packages. Add after Go test for a test-then-build workflow.",
+      "inputs": [
+        {
+          "key": "packages",
+          "label": "Package pattern",
+          "type": "string",
+          "default": "./..."
+        },
+        {
+          "key": "timeout",
+          "label": "Step timeout (seconds)",
+          "type": "integer",
+          "default": 300
+        }
+      ],
+      "step": {
+        "name": "Go build",
+        "command": "go",
+        "args": [
+          "build",
+          {
+            "input": "packages"
+          }
+        ],
+        "timeoutSeconds": {
+          "input": "timeout"
+        }
+      }
+    }
+  ]
+}
