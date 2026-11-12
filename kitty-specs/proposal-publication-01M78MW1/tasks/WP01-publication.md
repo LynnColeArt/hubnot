@@ -21,6 +21,7 @@ create_intent:
 - proposal_publication_test.go
 execution_mode: code_change
 owned_files:
+- docs/consumer-cli-v1.md
 - proposal_publication.go
 - proposal_publication_test.go
 - main.go
