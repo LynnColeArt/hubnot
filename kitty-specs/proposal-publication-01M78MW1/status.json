@@ -31,7 +31,11 @@
         "Implement and verify native proposal publication and retry."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer"
+      "role": "implementer",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done"
+      }
     }
   }
 }
