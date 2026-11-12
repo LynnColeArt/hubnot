@@ -313,7 +313,7 @@ func resumeProposalPublication(stored *StoredEvent, events []StoredEvent) (*prop
 		if commit, err := resolveCommit(stored.Event.Head); err != nil || commit != stored.Event.Head {
 			return receipt, publicationFailure("recovery_required", "The signed proposal code is unavailable.")
 		}
-		if err := createProposalRef(stored.ID, stored.Event.Head); err != nil {
+		if _, err := gitOutput("update-ref", "--no-deref", "-m", "hn: repair proposal code", proposalRef(stored.ID), stored.Event.Head, ""); err != nil {
 			head, exists, readErr := proposalHead(stored.ID)
 			if readErr != nil || !exists || head != stored.Event.Head {
 				return receipt, publicationFailure("recovery_required", "The signed proposal code reference could not be repaired.")
