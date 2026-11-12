@@ -2,47 +2,47 @@
   "mission_slug": "proposal-publication-01M78MW1",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "Verify FR-001 is satisfied",
+      "description": "TestProposalPublicationOperation verifies exact request and stable receipt. TestProposalPublicationContributionPolicy verifies authorization.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "TestProposalPublicationOperation verifies exact request and stable receipt. TestProposalPublicationContributionPolicy verifies authorization.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-12T19:56:29.029366+00:00",
+      "notes": "Linux feature verification. Full OS qualification is a release activity."
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "TestProposalPublicationOperation verifies concurrent identical requests, wrong actor, changed intent and base ref movement racing the transaction.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "TestProposalPublicationOperation verifies concurrent identical requests, wrong actor, changed intent and base ref movement racing the transaction.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-12T19:56:29.029372+00:00",
+      "notes": "Linux feature verification. Full OS qualification is a release activity."
     },
     {
       "criterion_id": "FR-003",
-      "description": "Verify FR-003 is satisfied",
+      "description": "TestProposalPublicationOperation verifies recovery after lost response, base advancement and missing code ref without duplicating the signed event.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "TestProposalPublicationOperation verifies recovery after lost response, base advancement and missing code ref without duplicating the signed event.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-12T19:56:29.029376+00:00",
+      "notes": "Linux feature verification. Full OS qualification is a release activity."
     },
     {
       "criterion_id": "FR-004",
-      "description": "Verify FR-004 is satisfied",
+      "description": "Native and consumer focused regressions passed. The previous Hubnot binary read a newly published signed proposal in a disposable fixture.",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Native and consumer focused regressions passed. The previous Hubnot binary read a newly published signed proposal in a disposable fixture.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-12T19:56:29.029379+00:00",
+      "notes": "Linux feature verification. Full OS qualification is a release activity."
     }
   ],
   "negative_invariants": []
