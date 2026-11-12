@@ -200,6 +200,19 @@ func appendEventWithAttachments(event Event, identity *Identity, attachments map
 	}
 	commitID := strings.TrimSpace(string(commit))
 
+	if event.Publication != nil {
+		old := previousCommit
+		if !hasPrevious {
+			old = strings.Repeat("0", len(commitID))
+		}
+		transaction := fmt.Sprintf("start\nverify %s %s\nupdate %s %s %s\ncreate %s %s\nprepare\ncommit\n",
+			event.Publication.BaseRef, event.Base, ref, commitID, old, proposalRef(id), event.Head)
+		if _, err := gitInput([]byte(transaction), nil, "update-ref", "--no-deref", "--stdin", "-m", "hn: publish proposal"); err != nil {
+			return nil, fmt.Errorf("publish proposal: %w", err)
+		}
+		return &StoredEvent{ID: id, Commit: commitID, Event: event, Payload: payload, Signature: signature, Attachments: attachments}, nil
+	}
+
 	updateArgs := []string{"update-ref", "-m", "hn: append " + event.Kind, ref, commitID}
 	if hasPrevious {
 		updateArgs = append(updateArgs, previousCommit)

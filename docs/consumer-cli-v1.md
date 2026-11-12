@@ -27,13 +27,14 @@ Current capability entries:
 |---|---|---|
 | `native.discovery` | 1 | The three static commands above. |
 | `native.proposal-read` | 1 | Optional JSON proposal show/status. |
+| `native.proposal-publication` | 1 | Keyed proposal publication and exact operation lookup. |
 | `native.log-read` | 1 | Optional JSON raw signed log. |
 | `native.event-read` | 1 | Ordinary verified full-ID/prefix event show/resolve. |
 | `native.review-receipt` | 1 | Optional JSON exact created review receipt. |
 | `native.decision-receipt` | 1 | Optional JSON exact created decision receipt with stored policy/evidence. |
 | `contribution.existing-json` | 1 | The pre-existing contribution output described below; it does not use the consumer envelope. |
 
-All errors use the existing closed native code inventory in
+The unkeyed consumer commands use the existing closed native code inventory in
 [extensions.md](extensions.md#closed-errors-and-immutable-recovery).
 The error object has exactly `origin`, `code`, `message`, `recovery`, `operation`.
 Messages are sanitized UTF-8 and at most 4096 bytes. This contract's unkeyed
@@ -118,13 +119,54 @@ Its `lineage_terminal` excludes superseded, closed and conflicting lineages.
 `acceptance.met` combines this with readiness and not-already-merged;
 `merge.met` also requires accepted and not rejected. These are scoped observed
 preconditions, **not permission to write or a merge-success guarantee**. A
-proposal binds no target branch; keyless reads neither identify the active
+proposal read does not bind a merge target branch; keyless reads neither identify the active
 signer nor probe target policy, fresh remote state or local target advancement.
 Writers recheck their existing actor, target, trust and concurrency guards.
 A superseded proposal can thus have `readiness:true` and
 `observed_preconditions.acceptance.met:false` without contradiction. An accepted
 proposal can later lose readiness after a newer review. Change requests are
 reported independently and do not silently change native acceptance policy.
+
+## Keyed proposal publication
+
+Discover `native.proposal-publication` version 1 before calling either command.
+
+```sh
+hn proposal publish --base FULL --base-ref refs/heads/BRANCH --head FULL \
+  --actor ACTOR --operation KEY --title TITLE --body BODY --json
+hn proposal operation --actor ACTOR --operation KEY --json
+```
+
+Use lowercase full Git object IDs and the unprefixed 64-hex fingerprint of the
+active identity. Operation keys contain 1 to 128 printable non-whitespace ASCII
+characters. Keep one key for the confirmed proposal. Its signed intent binds
+the repository's actor history, base ref, exact base and head, title, and body.
+Changing any of these inputs for an existing key returns `operation_conflict`.
+Ordinary `proposal open` retains its existing command and event shape.
+
+On a new publication Hubnot checks the candidate and contribution policy. One
+Git ref transaction verifies the base branch and advances the actor and
+proposal code refs together. A stale base or actor mismatch leaves signed
+history unchanged. A replay reads the original signed intent before checking
+the current base branch, so branch movement after success does not break
+recovery. If the code ref is absent, the same publish operation can restore it
+from the signed head. A conflicting ref requires inspection.
+
+Both commands emit `{ok,data,error}` as JSON. A receipt includes `id`, `base`,
+`base_ref`, `head`, `actor`, `operation`, `title`, `body`, `code_ready`,
+`ready` and `replayed`. Here `ready` means the exact code is available and the
+opening is visible under contribution policy. Proposal review readiness is
+reported separately by `proposal status`. Lookup is read-only and returns a
+receipt even when the code ref is absent. Lookup requires the expected active
+identity, including when recovering an opening still awaiting admission.
+
+A failure exits 1 and includes a controlled `error.code` and `error.message`.
+When the signed identity is known, `data` can carry the exact receipt alongside
+the failure. `not_found` means lookup found no signed opening in the verified
+history. `stale_base`, `actor_mismatch`, `operation_conflict`, `denied` and
+`invalid_input` identify refusals. For `concurrent_update`,
+`recovery_required` or `admission_pending`, inspect the same operation before
+deciding how to proceed. A missing response does not establish absence.
 
 ## Full signed log and ordinary event resolution
 

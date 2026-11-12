@@ -44,12 +44,13 @@ type Event struct {
 	Policy       string   `json:"policy,omitempty"`
 	Evidence     []string `json:"evidence,omitempty"`
 
-	Issue     *IssueState `json:"issue,omitempty"`
-	Parents   []string    `json:"parents,omitempty"`
-	Operation string      `json:"operation,omitempty"`
-	Request   string      `json:"request,omitempty"`
-	Intent    string      `json:"intent,omitempty"`
-	Audit     *AuditFact  `json:"audit,omitempty"`
+	Issue       *IssueState                `json:"issue,omitempty"`
+	Parents     []string                   `json:"parents,omitempty"`
+	Operation   string                     `json:"operation,omitempty"`
+	Request     string                     `json:"request,omitempty"`
+	Intent      string                     `json:"intent,omitempty"`
+	Audit       *AuditFact                 `json:"audit,omitempty"`
+	Publication *ProposalPublicationIntent `json:"publication,omitempty"`
 }
 
 type StoredEvent struct {
@@ -103,6 +104,11 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return Event{}, "", fmt.Errorf("invalid event JSON: %w", err)
 	}
+	if event.Publication != nil {
+		if err := strictResourceJSON(payload, &event, 512<<10); err != nil {
+			return Event{}, "", fmt.Errorf("invalid proposal publication JSON: %w", err)
+		}
+	}
 	if event.Kind == "run.withdraw" {
 		if err := strictRunWithdrawalJSON(payload, &event); err != nil {
 			return Event{}, "", fmt.Errorf("invalid run withdrawal JSON: %w", err)
@@ -150,6 +156,12 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 }
 
 func validateEventContent(event Event) error {
+	if event.Publication != nil {
+		if event.Kind != "proposal.open" || !validPublicationOperation(event.Publication.Operation) ||
+			!validPublicationBaseRef(event.Publication.BaseRef) || !validPublicationText(event.Title, event.Body) {
+			return fmt.Errorf("invalid proposal publication intent")
+		}
+	}
 	if isAuditKind(event.Kind) {
 		return validateAuditEvent(event)
 	}

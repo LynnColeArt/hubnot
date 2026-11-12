@@ -22,6 +22,24 @@ func main() {
 }
 
 func run(args []string) (result error) {
+	if len(args) > 1 && args[0] == "proposal" && (args[1] == "publish" || args[1] == "operation") {
+		// The keyed interface accepts exact object IDs. Keep local replacement
+		// refs and lazy fetches out of all indirect Git reads for this command.
+		for _, key := range []string{"GIT_NO_REPLACE_OBJECTS", "GIT_NO_LAZY_FETCH"} {
+			value, existed := os.LookupEnv(key)
+			if err := os.Setenv(key, "1"); err != nil {
+				return err
+			}
+			defer func() {
+				if existed {
+					_ = os.Setenv(key, value)
+				} else {
+					_ = os.Unsetenv(key)
+				}
+			}()
+		}
+		return cmdProposalPublication(args[1], args[2:])
+	}
 	machine, _, _, parseErr := consumerProposalOptions(args)
 	if len(args) > 0 && (args[0] == "review" || args[0] == "decide") {
 		machine, parseErr = consumerMutationOptions(args)
@@ -144,6 +162,8 @@ Usage:
   hn issue operation --actor ACTOR --operation KEY [--json]
   Issue mutations accept optional --actor ACTOR to pin the signing identity.
   hn proposal open --base REV --head REV [--body TEXT] TITLE
+  hn proposal publish --base FULL --base-ref REF --head FULL --actor ACTOR --operation KEY --title TITLE --body BODY --json
+  hn proposal operation --actor ACTOR --operation KEY --json
   hn proposal revise PREDECESSOR --base REV --head REV [--body TEXT]
   hn proposal list
   hn proposal show PROPOSAL

@@ -96,11 +96,15 @@ func cmdConsumerDiscovery(args []string) error {
 	return consumerOutput(map[string]any{
 		"schema": consumerSchema, "version": version,
 		"capabilities": map[string]any{
-			"native.discovery":           map[string]any{"version": 1, "commands": []string{"version --json", "--version --json", "capabilities --json"}},
-			"native.review-receipt":      map[string]any{"version": 1, "commands": []string{"review FULL_PROPOSAL --approve|--request-changes [--body TEXT] --json"}, "operation_key": false},
-			"native.decision-receipt":    map[string]any{"version": 1, "commands": []string{"decide FULL_PROPOSAL --accept|--reject [--body TEXT] --json"}, "operation_key": false},
-			"native.event-read":          map[string]any{"version": 1, "commands": []string{"event show EVENT [--json]", "event resolve EVENT [--json]"}, "minimum_prefix_hex": 12},
-			"native.log-read":            map[string]any{"version": 1, "commands": []string{"log --json"}, "history_scope": "raw_signed_history"},
+			"native.discovery":        map[string]any{"version": 1, "commands": []string{"version --json", "--version --json", "capabilities --json"}},
+			"native.review-receipt":   map[string]any{"version": 1, "commands": []string{"review FULL_PROPOSAL --approve|--request-changes [--body TEXT] --json"}, "operation_key": false},
+			"native.decision-receipt": map[string]any{"version": 1, "commands": []string{"decide FULL_PROPOSAL --accept|--reject [--body TEXT] --json"}, "operation_key": false},
+			"native.event-read":       map[string]any{"version": 1, "commands": []string{"event show EVENT [--json]", "event resolve EVENT [--json]"}, "minimum_prefix_hex": 12},
+			"native.log-read":         map[string]any{"version": 1, "commands": []string{"log --json"}, "history_scope": "raw_signed_history"},
+			"native.proposal-publication": map[string]any{"version": 1, "operation_key": true, "commands": []string{
+				"proposal publish --base FULL --base-ref REF --head FULL --actor ACTOR --operation KEY --title TITLE --body BODY --json",
+				"proposal operation --actor ACTOR --operation KEY --json",
+			}},
 			"native.proposal-read":       map[string]any{"version": 1, "commands": []string{"proposal show PROPOSAL --json", "proposal status PROPOSAL --json"}},
 			"contribution.existing-json": map[string]any{"version": 1, "envelope": false, "mode": "existing-default-json", "documentation": "docs/consumer-cli-v1.md"},
 		},
