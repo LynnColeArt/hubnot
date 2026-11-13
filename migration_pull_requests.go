@@ -17,6 +17,7 @@ type importedPullRequest struct {
 	Source   migration.Key `json:"source"`
 	Revision string        `json:"revision"`
 	Number   int           `json:"number"`
+	Body     string        `json:"body"`
 	Title    string        `json:"title"`
 	State    string        `json:"state"`
 	Author   string        `json:"author"`
@@ -95,6 +96,7 @@ func importedGitHubPullRequest(ctx context.Context, archive *migration.Archive, 
 	var source struct {
 		Number   int    `json:"number"`
 		Title    string `json:"title"`
+		Body     string `json:"body"`
 		State    string `json:"state"`
 		MergedAt string `json:"merged_at"`
 	}
@@ -120,7 +122,7 @@ func importedGitHubPullRequest(ctx context.Context, archive *migration.Archive, 
 		return date.UTC().Format("2006-01-02T15:04:05.000000000Z")
 	}
 	return importedPullRequest{
-		Source: record.Key, Revision: record.Revision, Number: number, Title: source.Title, State: source.State,
+		Source: record.Key, Revision: record.Revision, Number: number, Title: source.Title, Body: source.Body, State: source.State,
 		Author: record.Author, URL: record.SourceURL, Created: normalize(record.CreatedAt), Updated: normalize(record.UpdatedAt),
 	}, nil
 }

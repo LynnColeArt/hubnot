@@ -812,7 +812,7 @@ func TestMigrationPullRequestsOnlyChangeAfterExplicitReimport(t *testing.T) {
 	read := func(title string) importedPullRequest {
 		t.Helper()
 		rows, err := listImportedPullRequests(ctx, filepath.Join(repo, ".git"))
-		if err != nil || len(rows) != 1 || rows[0].Title != title || rows[0].Author != "original-author" || rows[0].State != "merged" {
+		if err != nil || len(rows) != 1 || rows[0].Title != title || rows[0].Body != "PR source" || rows[0].Author != "original-author" || rows[0].State != "merged" {
 			t.Fatalf("offline pull requests: %+v, %v", rows, err)
 		}
 		return rows[0]
