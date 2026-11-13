@@ -1,7 +1,7 @@
 {
-  "event_count": 2,
-  "last_event_id": "01M7AXMGCGJN112E368GASEX66",
-  "materialized_at": "2026-11-13T17:00:13.072062+00:00",
+  "event_count": 3,
+  "last_event_id": "01M7AXMHYAHJDRNJHYH19QEGCV",
+  "materialized_at": "2026-11-13T17:00:14.666965+00:00",
   "mission_number": "",
   "mission_slug": "offline-github-pr-history-01M7ATMR",
   "mission_type": "software-dev",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 2
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -30,6 +30,13 @@
       "lane": "planned",
       "last_event_id": "01M7AXMGCGJN112E368GASEX66",
       "last_transition_at": "2026-11-13T17:00:13.072062+00:00"
+    },
+    "WP03": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M7AXMHYAHJDRNJHYH19QEGCV",
+      "last_transition_at": "2026-11-13T17:00:14.666965+00:00"
     }
   }
 }
