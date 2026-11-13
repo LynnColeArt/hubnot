@@ -185,6 +185,7 @@ func cmdProposalChecks(args []string) error {
 
 // The result binds this intent through its signed request subject.
 type automaticRunIntent struct {
+	Target        string `json:"target"`
 	Version       string `json:"version"`
 	Configuration string `json:"configuration"`
 	Source        string `json:"source"`
@@ -193,6 +194,6 @@ type automaticRunIntent struct {
 }
 
 func (i automaticRunIntent) valid() bool {
-	return i.Version == proposalChecksVersion && validGitOID(i.Source) &&
+	return i.Version == proposalChecksVersion && validPublicationBaseRef(i.Target) && validGitOID(i.Source) &&
 		validEventID(i.Configuration) && validEventID(i.Check) && validEventID(i.Attempt)
 }

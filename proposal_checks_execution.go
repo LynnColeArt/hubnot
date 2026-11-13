@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -37,6 +38,12 @@ func automaticDefinition(request Event, candidate StoredEvent, policy PolicyDocu
 	if _, err := gitOutput("merge-base", "--is-ancestor", candidate.Event.Head, intent.Source); err == nil {
 		return false
 	}
+	if candidate.Event.Publication != nil && candidate.Event.Publication.BaseRef != intent.Target {
+		return false
+	}
+	if !automaticSourceOnTarget(intent.Target, intent.Source) {
+		return false
+	}
 	sourcePolicy, err := loadPolicyCommit(intent.Source)
 	if err != nil || !actorListed(request.Actor, sourcePolicy.Maintainers) {
 		return false
@@ -55,6 +62,52 @@ func automaticDefinition(request Event, candidate StoredEvent, policy PolicyDocu
 		}
 	}
 	return false
+}
+
+// An ordinary ancestry test would also admit definitions from a merged
+// side branch. Only commits that were themselves target tips are eligible.
+func automaticSourceOnTarget(target, source string) bool {
+	path, err := automaticLedgerPath()
+	if err != nil {
+		return false
+	}
+	ledger, err := readAutomaticLedger(path)
+	if err == nil {
+		if target != ledger.Target {
+			return false
+		}
+	} else if os.IsNotExist(err) {
+		const remotePrefix = "refs/remotes/origin/"
+		remote, _ := gitText("symbolic-ref", "--quiet", remotePrefix+"HEAD")
+		canonical := "refs/heads/main"
+		if name, ok := strings.CutPrefix(remote, remotePrefix); ok {
+			canonical = "refs/heads/" + name
+		}
+		if target != canonical {
+			return false
+		}
+	} else {
+		return false
+	}
+	tip, exists, err := refValue(target)
+	if err != nil || !exists {
+		return false
+	}
+	if tip == source {
+		return true
+	}
+	// Stop at the supplied source or at the first-parent history limit.
+	const maxHistory = 10000
+	raw, err := gitText("--no-replace-objects", "rev-list", "--first-parent", "--max-count=10000", tip, "^"+source)
+	if err != nil || raw == "" {
+		return false
+	}
+	commits := strings.Fields(raw)
+	if len(commits) > maxHistory {
+		return false
+	}
+	parent, err := gitText("--no-replace-objects", "rev-parse", "--verify", commits[len(commits)-1]+"^1")
+	return err == nil && parent == source
 }
 
 func automaticResultEligible(request, result Event) bool {
@@ -167,7 +220,7 @@ func automaticRunOnce(ctx context.Context) (bool, error) {
 			return false, err
 		}
 		request.Subject, request.Commit, request.Pipeline, request.Definition = check.Candidate, check.Commit, check.Pipeline, check.Definition
-		request.Automatic = &automaticRunIntent{proposalChecksVersion, check.Configuration, check.Source, check.ID, attemptID}
+		request.Automatic = &automaticRunIntent{Version: proposalChecksVersion, Target: ledger.Target, Configuration: check.Configuration, Source: check.Source, Check: check.ID, Attempt: attemptID}
 		if !automaticDefinition(request, candidate, policy) {
 			check.Status = "waiting"
 			check.Reason = "The scheduled definition or authority could not be verified."
