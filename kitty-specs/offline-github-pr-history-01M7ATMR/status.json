@@ -1,7 +1,7 @@
 {
-  "event_count": 4,
-  "last_event_id": "01M7AXMKFW2B1KPCPC9TRX55DE",
-  "materialized_at": "2026-11-13T17:00:16.252380+00:00",
+  "event_count": 5,
+  "last_event_id": "01M7AXYDMM4TWDXRANMY4VXRAT",
+  "materialized_at": "2026-11-13T17:05:37.940673+00:00",
   "mission_number": "",
   "mission_slug": "offline-github-pr-history-01M7ATMR",
   "mission_type": "software-dev",
@@ -9,20 +9,25 @@
     "approved": 0,
     "blocked": 0,
     "canceled": 0,
-    "claimed": 0,
+    "claimed": 1,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 4
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M7AXMES46Q7N2VVQHBAPR7J6",
-      "last_transition_at": "2026-11-13T17:00:11.428837+00:00"
+      "lane": "claimed",
+      "last_event_id": "01M7AXYDMM4TWDXRANMY4VXRAT",
+      "last_transition_at": "2026-11-13T17:05:37.940673+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer"
     },
     "WP02": {
       "actor": "finalize-tasks",
