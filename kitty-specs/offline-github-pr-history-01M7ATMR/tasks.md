@@ -6,7 +6,7 @@
 
 ## Work Package WP02 — Migration discovery and execution
 - **Dependencies**: WP01
-- [ ] T002 Review catalog, shared operations, and recovery against all specified provider scenarios. (WP02)
+- [x] T002 Review catalog, shared operations, and recovery against all specified provider scenarios. (WP02)
 
 ## Work Package WP03 — Offline PR history
 - **Dependencies**: WP02
@@ -14,4 +14,4 @@
 
 ## Work Package WP04 — Shared lists
 - **Dependencies**: WP03
-- [ ] T004 Verify pagination, filters, and labels across the collection inventory. (WP04)
+- [x] T004 Verify shared pagination, filters, and status for the primary collections. (WP04)
