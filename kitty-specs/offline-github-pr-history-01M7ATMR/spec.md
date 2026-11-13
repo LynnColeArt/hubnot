@@ -57,3 +57,12 @@ The workflow builds on Hubnot's existing migration planning, inspection, apply, 
 ## Scope
 
 This release covers migration management for every path the configured Hubnot installation exposes, plus offline PR reads and shared pagination, filter, and tag behavior across long Workbox lists and grids. GitHub PR history is the reference acceptance fixture when that path is available. The preserved source history remains available for future detail views of review threads and inline comments.
+
+## Functional requirements
+
+| ID | Requirement |
+| --- | --- |
+| FR-001 | Repair the audited authority boundaries before migration work. Governed pipeline edits use Hubnot, accepted collaboration history determines visible issues and activity, and active CI inventory uses a committed revision. |
+| FR-002 | Discover installed migration capabilities and support planning, applying, inspecting, and resuming advertised paths through Workbox and MCP. |
+| FR-003 | Serve imported PR history from local Hubnot records with original source attribution and lifecycle, independent of provider access. |
+| FR-004 | Share pagination, filters, tags, and access rules across browser and MCP for long lists and grids. |
