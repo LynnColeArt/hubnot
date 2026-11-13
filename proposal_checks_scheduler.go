@@ -35,7 +35,7 @@ type automaticLedger struct {
 }
 
 func automaticLedgerPath() (string, error) {
-	directory, err := gitText("rev-parse", "--path-format=absolute", "--git-common-dir")
+	directory, err := contributionGitDirectory()
 	if err != nil {
 		return "", err
 	}
@@ -284,6 +284,14 @@ func automaticCheckStatus(candidate string) error {
 		if readErr != nil {
 			return consumerOutput(nil, readErr)
 		}
+		revision, rootErr := lineage.candidate(candidate)
+		if rootErr != nil {
+			return consumerOutput(nil, consumerFailure("not_found", "Proposal revision is unavailable."))
+		}
+		policy, policyErr := loadPolicyCommit(revision.Event.Base)
+		if policyErr != nil {
+			return consumerOutput(nil, policyErr)
+		}
 		root, rootErr := lineage.root(candidate)
 		if rootErr != nil {
 			return consumerOutput(nil, consumerFailure("not_found", "Proposal revision is unavailable."))
@@ -291,7 +299,7 @@ func automaticCheckStatus(candidate string) error {
 		index := map[string]*automaticCheck{}
 		for _, request := range events {
 			intent := request.Event.Automatic
-			if intent == nil || request.Event.Subject != candidate {
+			if intent == nil || request.Event.Subject != candidate || !automaticDefinition(request.Event, revision, policy) {
 				continue
 			}
 			check := index[intent.Check]
