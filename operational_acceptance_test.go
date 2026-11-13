@@ -1287,3 +1287,33 @@ func runOperationalGitBytes(t *testing.T, directory string, args ...string) []by
 	}
 	return output
 }
+
+func TestReplicationAcceptanceReadAcrossReceiptPublication(t *testing.T) {
+	gitDir := setupOperationalLedgerRepository(t)
+	object := strings.Repeat("1", 40)
+	txn := replicationTransactionResult{ID: "txn-concurrent", Remote: "origin", pendingObjects: []string{object}}
+	if err := createReplicationPendingAnchor(gitDir, txn); err != nil {
+		t.Fatal(err)
+	}
+	staged, err := os.CreateTemp(replicationAnchorsPath(gitDir), ".hn-private-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := staged.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	reads := 0
+	denied, _, err := readReplicationAcceptanceSnapshot(func() (map[string]bool, map[string]replicationTransactionRecord, error) {
+		reads++
+		if reads == 2 {
+			if err := recordReplicationTransaction(gitDir, txn, "validated"); err != nil {
+				t.Fatal(err)
+			}
+		}
+		return loadReplicationAcceptanceSnapshot(gitDir)
+	})
+	if err != nil || reads != 2 || !denied[object] {
+		t.Fatalf("read did not converge to verified pending state: reads=%d denied=%v err=%v", reads, denied, err)
+	}
+}

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 type ShallowDependencyKind string
@@ -528,11 +529,18 @@ func loadReplicationPendingAnchors(gitDir string) ([]replicationPendingAnchor, e
 	}
 	anchors := make([]replicationPendingAnchor, 0, len(entries))
 	for _, entry := range entries {
+		// The atomic writer stages private files here before renaming them.
+		if strings.HasPrefix(entry.Name(), ".hn-private-") && entry.Type().IsRegular() {
+			continue
+		}
 		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
 			return nil, fmt.Errorf("invalid replication pending-anchor entry %s", entry.Name())
 		}
 		path := filepath.Join(directory, entry.Name())
 		encoded, err := readPrivateFileBounded(path, maxReplicationStateBytes)
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("%w: pending anchor %s disappeared", errReplicationSnapshotChanged, entry.Name())
+		}
 		if err != nil {
 			return nil, fmt.Errorf("read replication pending anchor %s: %w", entry.Name(), err)
 		}
@@ -553,12 +561,32 @@ func loadReplicationPendingAnchors(gitDir string) ([]replicationPendingAnchor, e
 	return anchors, nil
 }
 
+var errReplicationSnapshotChanged = errors.New("replication acceptance snapshot changed")
+
 func loadReplicationAcceptanceState(gitDir string) (map[string]bool, map[string]replicationTransactionRecord, error) {
-	records, err := loadReplicationTransactionRecords(gitDir)
+	return readReplicationAcceptanceSnapshot(func() (map[string]bool, map[string]replicationTransactionRecord, error) {
+		return loadReplicationAcceptanceSnapshot(gitDir)
+	})
+}
+
+func readReplicationAcceptanceSnapshot(read func() (map[string]bool, map[string]replicationTransactionRecord, error)) (map[string]bool, map[string]replicationTransactionRecord, error) {
+	for attempt := 0; ; attempt++ {
+		denied, pending, err := read()
+		if !errors.Is(err, errReplicationSnapshotChanged) || attempt == 4 {
+			return denied, pending, err
+		}
+		time.Sleep(10 * time.Millisecond << attempt)
+	}
+}
+
+func loadReplicationAcceptanceSnapshot(gitDir string) (map[string]bool, map[string]replicationTransactionRecord, error) {
+	// Read anchors before receipts so a completed receipt can account for
+	// an anchor removed after the directory was sampled.
+	anchors, err := loadReplicationPendingAnchors(gitDir)
 	if err != nil {
 		return nil, nil, err
 	}
-	anchors, err := loadReplicationPendingAnchors(gitDir)
+	records, err := loadReplicationTransactionRecords(gitDir)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -571,7 +599,7 @@ func loadReplicationAcceptanceState(gitDir string) (map[string]bool, map[string]
 		anchorsByID[anchor.ID] = anchor
 		record, exists := recordsByID[anchor.ID]
 		if !exists {
-			return nil, nil, fmt.Errorf("replication pending anchor %s has no durable transaction receipt", anchor.ID)
+			return nil, nil, fmt.Errorf("%w: replication pending anchor %s has no durable transaction receipt", errReplicationSnapshotChanged, anchor.ID)
 		}
 		if record.Version != replicationTransactionRecordVersion || record.Remote != anchor.Remote {
 			return nil, nil, fmt.Errorf("replication pending anchor %s does not match its transaction receipt", anchor.ID)
@@ -603,7 +631,7 @@ func loadReplicationAcceptanceState(gitDir string) (map[string]bool, map[string]
 		if record.State == "validated" {
 			anchor, exists := anchorsByID[record.ID]
 			if !exists {
-				return nil, nil, fmt.Errorf("validated replication transaction %s is missing its durable pending anchor", record.ID)
+				return nil, nil, fmt.Errorf("%w: validated replication transaction %s is missing its durable pending anchor", errReplicationSnapshotChanged, record.ID)
 			}
 			if !sameReplicationObjectSet(*record.PendingObjects, *anchor.PendingObjects) {
 				return nil, nil, fmt.Errorf("validated replication transaction %s differs from its durable pending anchor", record.ID)
