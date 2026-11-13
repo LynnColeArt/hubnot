@@ -1,4 +1,19 @@
 {
+  "accept_commit": "5479a553b3503d5ce9308509d9734ba3fde0ca60",
+  "acceptance_history": [
+    {
+      "accept_commit": "5479a553b3503d5ce9308509d9734ba3fde0ca60",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-13T13:10:18.951321+00:00",
+      "accepted_by": "lynn",
+      "accepted_from_commit": "c9eba0247666bea626bb81335853983f38e183f3"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-13T13:10:18.951321+00:00",
+  "accepted_by": "lynn",
+  "accepted_from_commit": "c9eba0247666bea626bb81335853983f38e183f3",
+  "baseline_merge_commit": "91f3e09d1883325cb3ee6236d0badc36f3cd76f2",
   "created_at": "2026-11-13T13:06:18.109162+00:00",
   "flattened": false,
   "friendly_name": "native automatic proposal checks",
@@ -9,6 +24,9 @@
   "purpose_context": "This mission advances native automatic proposal checks on codex/automatic-proposal-checks so stakeholders can track the work from mission creation onward.",
   "purpose_tldr": "Bind native automatic check evidence to the canonical target history",
   "slug": "native-automatic-proposal-checks-01M7AG85",
+  "status_phase": "1",
   "target_branch": "codex/automatic-proposal-checks",
-  "topology": "single_branch"
+  "topology": "single_branch",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-13T13:09:18.254635+00:00"
 }
