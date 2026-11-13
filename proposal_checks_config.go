@@ -104,6 +104,23 @@ func parseProposalChecksConfig(raw []byte, hasPipeline func(string) bool) (propo
 }
 
 func cmdProposalChecks(args []string) error {
+	if len(args) >= 2 && args[len(args)-1] == "--json" {
+		switch args[0] {
+		case "init":
+			if len(args) == 3 {
+				return consumerOutput(map[string]bool{"registered": true}, automaticSchedule("init", args[1]))
+			}
+		case "observe":
+			if len(args) == 2 {
+				return consumerOutput(map[string]bool{"observed": true}, automaticSchedule("observe", ""))
+			}
+		case "status":
+			if len(args) == 3 && validEventID(args[1]) {
+				return automaticCheckStatus(args[1])
+			}
+		}
+	}
+
 	if len(args) != 3 || args[2] != "--json" {
 		return consumerOutput(nil, consumerFailure("invalid_input", "expected proposal-checks read or validate with JSON output"))
 	}
