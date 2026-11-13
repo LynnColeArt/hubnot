@@ -2,13 +2,19 @@
 
 Workbox users can manage a migration from the browser or MCP and browse imported pull requests from local Hubnot data. Repositories can use Workbox with or without a GitHub account or remote. Native Hubnot proposals have their own tab and workflow.
 
+## Source of truth
+
+Git is authoritative for repository objects, refs, and history. Hubnot is authoritative for collaboration and migration records and their provenance. Workbox and MCP read those records through Hubnot and Git. Any Workbox index is a rebuildable projection of that local state.
+
+Git providers supply source records during explicit migrations. After apply, the imported record in Hubnot is the authoritative copy for Workbox, with its provider attribution and source-reported state preserved. A later provider change becomes visible through another explicit migration. Provider availability, credentials, and remote configuration have no bearing on browsing local history.
+
 ## In-app migration workflow
 
 1. Open **Migrations** from repository Settings. Select a migration path, source, destination, and content from the options exposed by the Hubnot installation Workbox uses. Saved local sessions can be reopened from this screen.
 2. Generate a plan. Show the selected source and destination, scope, expected effects, and Hubnot findings, including any mapping or preservation decisions the operator must make. Planning leaves the destination collaboration history untouched.
 3. Review the plan and explicitly apply it. Workbox enforces Hubnot's permissions and confirmation semantics in both the browser and MCP. Credentials stay outside the saved plan and are omitted from responses and logs.
 4. Show progress, completion counts, skipped records, failures, and recovery instructions. Reopening the migration after a restart shows its recorded state and offers resume when Hubnot supports it. A retry must avoid duplicate records and preserve the last successful local history if a later import fails.
-5. Open **Pull requests** to see the imported history. GitHub is contacted only when the operator starts or resumes a migration that requires the provider. Browsing and MCP lookups use local data, including when the network is unavailable or the GitHub remote has been removed.
+5. Open **Pull requests** to see the imported history. A provider is contacted only as part of an explicit migration that requires it. Browsing and MCP lookups use local data, including when the network is unavailable or the GitHub remote has been removed.
 
 The workflow builds on Hubnot's existing migration planning, inspection, apply, and resume operations.
 
@@ -38,6 +44,8 @@ The workflow builds on Hubnot's existing migration planning, inspection, apply, 
 5. Interrupt an import and resume it from its saved state. A failed import exposes a recoverable status and preserves previously available history. Browsing a repository with no import shows an empty-state link to Migrations.
 
 6. Use two Hubnot installations with different migration catalogs. Add a custom provider with its own inputs and remove a standard provider from one installation. Without rebuilding Workbox, verify that the browser and MCP expose the same supported paths, that the custom path can be planned and applied through its advertised operations, and that a session for the removed provider stays inspectable while apply and resume explain why they are unavailable.
+
+7. After importing history, change a PR on the provider, disconnect the provider, and rebuild the Workbox index from local Hubnot and Git state. Browser and MCP show the last successfully imported record. A subsequent explicit migration updates it while preserving its provenance.
 
 ## Scope
 
