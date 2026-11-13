@@ -141,17 +141,44 @@ func (d LocalMigrationDestination) Apply(ctx context.Context, in migration.Inten
 	if e = migrationCheckRefGuards(ctx, dir, w.Refs); e != nil {
 		return migration.Receipt{}, e
 	}
-	path, e := migrationLocalArchivePath(dir, w.SnapshotDigest, true)
-	if e != nil {
+	limits := migrationContextLimits(ac)
+	archiveSnapshot, portable := localMigrationMetadata(s)
+	digest := w.SnapshotDigest
+	if portable {
+		raw, err := migration.CanonicalSnapshot(archiveSnapshot, limits)
+		if err != nil {
+			return migration.Receipt{}, err
+		}
+		digest = migration.Digest(raw)
+	}
+	var path string
+	if portable {
+		temp, err := safepath.MkdirTemp("hn-pr-metadata-")
+		if err != nil {
+			return migration.Receipt{}, err
+		}
+		defer os.RemoveAll(temp)
+		path = filepath.Join(temp, "metadata.tar")
+	} else {
+		path, e = migrationLocalArchivePath(dir, digest, true)
+		if e != nil {
+			return migration.Receipt{}, e
+		}
+	}
+	if e = migrationPublishArchive(ctx, path, archiveSnapshot, migrationContextBlobs{ac}, limits); e != nil {
 		return migration.Receipt{}, e
 	}
-	if e = migrationPublishArchive(ctx, path, s, migrationContextBlobs{ac}, migrationContextLimits(ac)); e != nil {
+	if portable {
+		ref, err := migrationGitArchiveUpdate(ctx, dir, digest, path, limits)
+		if err != nil {
+			return migration.Receipt{}, err
+		}
+		w.Refs = append(w.Refs, ref)
+	}
+	if e = migrationPromote(ctx, dir, q, w, limits); e != nil {
 		return migration.Receipt{}, e
 	}
-	if e = migrationPromote(ctx, dir, q, w, migrationContextLimits(ac)); e != nil {
-		return migration.Receipt{}, e
-	}
-	return migrationReceipt(in, ac, migration.Locator{Kind: "local", Repository: d.Repository}, w.SnapshotDigest, w.SnapshotDigest), nil
+	return migrationReceipt(in, ac, migration.Locator{Kind: "local", Repository: d.Repository}, digest, digest), nil
 }
 func (d LocalMigrationDestination) Reconcile(ctx context.Context, in migration.Intent, ac migration.ApplyContext) (migration.Reconciliation, error) {
 	dir, w, e := migrationLocalWrite(ctx, d, in, ac)
@@ -167,12 +194,30 @@ func (d LocalMigrationDestination) Reconcile(ctx context.Context, in migration.I
 			return migration.Reconciliation{Status: "no_proof", Reason: "destination refs do not prove the exact completed promotion"}, nil
 		}
 	}
-	a, e := ReadLocalMigration(ctx, dir, w.SnapshotDigest, migrationContextLimits(ac))
+	snapshot, e := migrationContextSnapshot(ac, w.SnapshotDigest)
 	if e != nil {
-		return migration.Reconciliation{Status: "no_proof", Reason: "saved local archive is absent or does not verify"}, nil
+		return migration.Reconciliation{}, e
+	}
+	archiveSnapshot, portable := localMigrationMetadata(snapshot)
+	digest := w.SnapshotDigest
+	limits := migrationContextLimits(ac)
+	if portable {
+		raw, err := migration.CanonicalSnapshot(archiveSnapshot, limits)
+		if err != nil {
+			return migration.Reconciliation{}, err
+		}
+		digest = migration.Digest(raw)
+	}
+	read := ReadLocalMigration
+	if portable {
+		read = readMigrationGitArchive
+	}
+	a, e := read(ctx, dir, digest, limits)
+	if e != nil {
+		return migration.Reconciliation{Status: "no_proof", Reason: "saved archive is absent or does not verify"}, nil
 	}
 	a.Close()
-	r := migrationReceipt(in, ac, migration.Locator{Kind: "local", Repository: d.Repository}, w.SnapshotDigest, w.SnapshotDigest)
+	r := migrationReceipt(in, ac, migration.Locator{Kind: "local", Repository: d.Repository}, digest, digest)
 	return migration.Reconciliation{Status: "exact", Receipt: &r, Reason: "exact refs and verified immutable project archive"}, nil
 }
 
@@ -282,10 +327,16 @@ func migrationReadArchivePath(ctx context.Context, path string, l migration.Limi
 }
 func ReadLocalMigration(ctx context.Context, gitDir, digest string, l migration.Limits) (*migration.Archive, error) {
 	p, e := migrationLocalArchivePath(gitDir, digest, false)
-	if e != nil {
+	if e != nil && !os.IsNotExist(e) {
 		return nil, e
 	}
-	a, e := migrationReadArchivePath(ctx, p, l)
+	var a *migration.Archive
+	if e == nil {
+		a, e = migrationReadArchivePath(ctx, p, l)
+	}
+	if os.IsNotExist(e) {
+		a, e = readMigrationGitArchive(ctx, gitDir, digest, l)
+	}
 	if e != nil {
 		return nil, e
 	}
@@ -505,35 +556,45 @@ func ListLocalMigrations(gitDir string, l migration.Limits) ([]string, error) {
 	if e := l.Validate(); e != nil {
 		return nil, e
 	}
-	placeholder := migration.Digest(nil)
-	path, e := migrationLocalArchivePath(gitDir, placeholder, false)
-	if os.IsNotExist(e) {
-		return []string{}, nil
-	}
+	refs, e := projectGit(context.Background(), gitDir, nil, int64(l.Refs+1)*160, "for-each-ref", "--format=%(refname)", migrationArchiveRefPrefix)
 	if e != nil {
 		return nil, e
 	}
-	f, e := os.Open(filepath.Dir(path))
-	if e != nil {
+	seen := map[string]bool{}
+	for _, ref := range strings.Fields(string(refs)) {
+		digest := "sha256:" + strings.TrimPrefix(ref, migrationArchiveRefPrefix)
+		if !migration.ValidDigest(digest) {
+			return nil, fmt.Errorf("unexpected migration archive ref")
+		}
+		seen[digest] = true
+	}
+	path, e := migrationLocalArchivePath(gitDir, migration.Digest(nil), false)
+	if e != nil && !os.IsNotExist(e) {
 		return nil, e
 	}
-	defer f.Close()
-	entries, e := f.ReadDir(l.Refs + 1)
-	if e != nil && e != io.EOF {
-		return nil, e
+	if e == nil {
+		f, e := os.Open(filepath.Dir(path))
+		if e != nil {
+			return nil, e
+		}
+		defer f.Close()
+		entries, e := f.ReadDir(l.Refs + 1)
+		if e != nil && e != io.EOF {
+			return nil, e
+		}
+		for _, entry := range entries {
+			digest := "sha256:" + strings.TrimSuffix(entry.Name(), ".tar")
+			if entry.IsDir() || entry.Type()&os.ModeSymlink != 0 || !strings.HasSuffix(entry.Name(), ".tar") || !migration.ValidDigest(digest) {
+				return nil, fmt.Errorf("unexpected import store entry")
+			}
+			seen[digest] = true
+		}
 	}
-	if len(entries) > l.Refs {
+	if len(seen) > l.Refs {
 		return nil, fmt.Errorf("import listing exceeds ref budget")
 	}
-	out := []string{}
-	for _, entry := range entries {
-		if entry.IsDir() || entry.Type()&os.ModeSymlink != 0 || !strings.HasSuffix(entry.Name(), ".tar") {
-			return nil, fmt.Errorf("unexpected import store entry")
-		}
-		digest := "sha256:" + strings.TrimSuffix(entry.Name(), ".tar")
-		if !migration.ValidDigest(digest) {
-			return nil, fmt.Errorf("unexpected import store filename")
-		}
+	out := make([]string, 0, len(seen))
+	for digest := range seen {
 		out = append(out, digest)
 	}
 	sort.Strings(out)

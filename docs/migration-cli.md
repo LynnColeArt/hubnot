@@ -205,3 +205,18 @@ incomplete success. Archive admission rejects traversal, duplicates, links,
 unexpected members, digest errors and incomplete native closure before visibility.
 Imports do not activate workflows, permissions, audits, synchronization or any
 background service. Existing `hn transfer` commands retain their own contracts.
+
+### Offline pull request audits
+
+Select change requests and the review record kinds offered by the source. Pass
+`--source-git` with a local Git repository that contains the original PR base,
+head, and merge commits. Include closed PR heads in that repository before
+disconnecting the provider. Planning reports commit IDs missing from the supplied
+repository. Hubnot uses local Git objects to build the transfer, and applying
+publishes the metadata and pins the commits together.
+
+Preserve `refs/hn/migrations/*` and the migration code refs under
+`refs/hn/remotes/*` when replicating the destination. A Git mirror clone carries
+both. In a regular clone, fetch those namespaces explicitly from the Hubnot
+copy. The metadata archive carries source records and review evidence. Workbox
+reads commit authors and computes file diffs from the pinned Git history.

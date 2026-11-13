@@ -646,9 +646,7 @@ func migrationCLISource(ctx context.Context, o *migrationCLIOptions) (migration.
 		}
 	}
 	if o.sourceGit != "" {
-		if len(o.refs) == 0 {
-			return nil, fmt.Errorf("--source-git requires explicit --ref selections")
-		}
+
 		if c.Locator.Kind == "local" || c.Locator.Kind == "archive" || c.Locator.Kind == "saved" {
 			return nil, fmt.Errorf("source already contains Git material; --source-git is only for provider/imported companions")
 		}
@@ -656,7 +654,7 @@ func migrationCLISource(ctx context.Context, o *migrationCLIOptions) (migration.
 		if e != nil {
 			return nil, e
 		}
-		s = ComposeMigrationSources(s, LocalMigrationSource{GitDir: dir})
+		s = pullRequestGitSource{source: s, dir: dir}
 	} else if len(o.refs) > 0 && migrationCLIForeign(c.Locator.Kind) {
 		return nil, fmt.Errorf("provider refs require --source-git with already-present code; migration never clones implicitly")
 	}

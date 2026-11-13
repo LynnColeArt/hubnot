@@ -79,6 +79,10 @@ func ExportProjectSnapshot(ctx context.Context, gitDir string, refs []string, l 
 		s.NativeRefs = append(s.NativeRefs, migration.NativeRef{SourceRef: ref, OID: id, Kind: kind})
 		roots = append(roots, id)
 	}
+	return exportPinnedProjectSnapshot(ctx, gitDir, s, roots, l)
+}
+
+func exportPinnedProjectSnapshot(ctx context.Context, gitDir string, s migration.Snapshot, roots []string, l migration.Limits) (result *ProjectSnapshot, err error) {
 	// Native readers can unpack audit attachments. Inspect the selected ordinary
 	// closure in a disposable object DB so even source objects remain unchanged.
 	selected, e := projectObjectIDs(ctx, gitDir, roots, l)

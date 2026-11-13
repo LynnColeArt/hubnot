@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -827,5 +828,108 @@ func TestMigrationPullRequestsOnlyChangeAfterExplicitReimport(t *testing.T) {
 	second := read("Updated")
 	if second.Source != first.Source || second.Revision == first.Revision {
 		t.Fatalf("source identity or revision mismatch: %+v -> %+v", first, second)
+	}
+}
+
+func TestMigrationOfflinePRFreshMirror(t *testing.T) {
+	root := os.Getenv("HN_OFFLINE_PR_FIXTURE")
+	if root == "" {
+		root = t.TempDir()
+	}
+	source, destination, clone := filepath.Join(root, "source"), filepath.Join(root, "destination"), filepath.Join(root, "clone")
+	git := func(dir string, args ...string) string {
+		t.Helper()
+		raw, err := exec.Command("git", append([]string{"-C", dir}, args...)...).CombinedOutput()
+		if err != nil {
+			t.Fatalf("git %v: %v: %s", args, err, raw)
+		}
+		return strings.TrimSpace(string(raw))
+	}
+	git(root, "init", "-q", "-b", "main", source)
+	git(source, "config", "user.name", "Fixture Author")
+	git(source, "config", "user.email", "fixture@example.invalid")
+	write := func(value string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(source, "audit.txt"), []byte(value+"\n"), 0600); err != nil {
+			t.Fatal(err)
+		}
+		git(source, "add", "audit.txt")
+		git(source, "commit", "-qm", value)
+	}
+	write("base")
+	base := git(source, "rev-parse", "HEAD")
+	git(source, "switch", "-qc", "merged")
+	write("merged change")
+	merged := git(source, "rev-parse", "HEAD")
+	git(source, "switch", "-qc", "closed", base)
+	write("closed change")
+	closed := git(source, "rev-parse", "HEAD")
+	git(root, "init", "-q", "-b", "main", destination)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/repos/a/b":
+			fmt.Fprint(w, `{"id":42,"node_id":"R42","full_name":"a/b","created_at":"2026-01-01T00:00:00Z"}`)
+		case "/repos/a/b/pulls":
+			rows := []map[string]any{}
+			for i, oid := range []string{merged, closed} {
+				n := i + 1
+				row := map[string]any{"id": n, "node_id": fmt.Sprintf("PR%d", n), "number": n, "title": fmt.Sprintf("Offline fixture %d", n), "body": "Preserved description", "state": "closed", "html_url": fmt.Sprintf("https://example.invalid/a/b/pull/%d", n), "user": map[string]string{"login": "original-author"}, "base": map[string]string{"sha": base}, "head": map[string]string{"sha": oid}}
+				if i == 0 {
+					row["merged_at"] = "2026-01-02T00:00:00Z"
+					row["merge_commit_sha"] = merged
+				}
+				rows = append(rows, row)
+			}
+			json.NewEncoder(w).Encode(rows)
+		case "/repos/a/b/pulls/1/reviews", "/repos/a/b/pulls/2/reviews":
+			fmt.Fprintf(w, `[{"id":%d,"node_id":"RV11","user":{"login":"fixture-reviewer"},"body":"Preserved approval","state":"APPROVED","submitted_at":"2026-01-02T00:00:00Z"}]`, 11+int(r.URL.Path[17]))
+		case "/repos/a/b/pulls/1/comments", "/repos/a/b/pulls/2/comments":
+			fmt.Fprintf(w, `[{"id":%d,"node_id":"RC12","user":{"login":"fixture-reviewer"},"body":"Preserved inline review","path":"audit.txt","line":1}]`, 21+int(r.URL.Path[17]))
+		default:
+			fmt.Fprint(w, "[]")
+		}
+	}))
+	defer server.Close()
+	t.Setenv("HN_GITHUB_TOKEN", "fixture")
+	ctx := context.Background()
+	session := filepath.Join(root, "session")
+	args := []string{"plan", "--session", session, "--source-kind", "github", "--source-endpoint", server.URL, "--source-api-version", "2022-11-28", "--source-credential-mode", "bearer", "--source-repository", "a/b", "--source-git", source, "--kind", "change_request", "--kind", "review", "--kind", "inline_comment", "--destination-kind", "local", "--destination-repository", destination, "--decision", "local/governance=preserve"}
+	if err := runMigrationCLI(ctx, args, strings.NewReader(""), io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	server.Close()
+	if err := runMigrationCLI(ctx, []string{"apply", "--session", session, "--confirm-apply"}, strings.NewReader(""), io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	git(root, "clone", "--mirror", "--no-local", destination, clone)
+	git(clone, "remote", "remove", "origin")
+	digests, err := ListLocalMigrations(clone, migration.DefaultLimits())
+	if err != nil || len(digests) != 1 {
+		t.Fatalf("metadata archive: %v %v", digests, err)
+	}
+	archive, err := ReadLocalMigration(ctx, clone, digests[0], migration.DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if archive.Snapshot.GitBundle != "" || len(archive.Snapshot.NativeRefs) != 0 {
+		t.Fatal("metadata archive contains Git history")
+	}
+	archive.Close()
+	rows, err := listImportedPullRequests(ctx, clone)
+	if err != nil || len(rows) != 2 {
+		t.Fatalf("restored PR records: %v %v", rows, err)
+	}
+	for _, row := range rows {
+		wantState, wantDiff := "closed", "+closed change"
+		if row.Number == 1 {
+			wantState, wantDiff = "merged", "+merged change"
+		}
+		if row.State != wantState || len(row.Reviews) != 2 || row.Author != "original-author" || row.Reviews[0].Author != "fixture-reviewer" {
+			t.Fatalf("incomplete PR: %+v", row)
+		}
+		if !strings.Contains(git(clone, "diff", row.Base, row.Head, "--", "audit.txt"), wantDiff) || git(clone, "show", "-s", "--format=%an", row.Head) != "Fixture Author" {
+			t.Fatalf("missing audit history for PR %d", row.Number)
+		}
 	}
 }
