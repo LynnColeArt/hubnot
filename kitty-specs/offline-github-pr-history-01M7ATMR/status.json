@@ -1,7 +1,7 @@
 {
-  "event_count": 6,
-  "last_event_id": "01M7AXYGBVQ9RTV8J8D8A9FQNF",
-  "materialized_at": "2026-11-13T17:05:40.731217+00:00",
+  "event_count": 7,
+  "last_event_id": "01M7AY13W7FCX5FP8EMMGEKR5N",
+  "materialized_at": "2026-11-13T17:07:06.247406+00:00",
   "mission_number": "",
   "mission_slug": "offline-github-pr-history-01M7ATMR",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 1,
+    "for_review": 1,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 3
   },
@@ -23,36 +23,48 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M7AXYGBVQ9RTV8J8D8A9FQNF",
-      "last_transition_at": "2026-11-13T17:05:40.731217+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M7AY13W7FCX5FP8EMMGEKR5N",
+      "last_transition_at": "2026-11-13T17:07:06.247406+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Implementation and reconciliation test recorded in feature commits"
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer"
+      "role": "implementer",
+      "subtasks": {
+        "T001": "done"
+      }
     },
     "WP02": {
       "actor": "finalize-tasks",
       "force_count": 0,
       "lane": "planned",
       "last_event_id": "01M7AXMGCGJN112E368GASEX66",
-      "last_transition_at": "2026-11-13T17:00:13.072062+00:00"
+      "last_transition_at": "2026-11-13T17:00:13.072062+00:00",
+      "subtasks": {
+        "T002": "done"
+      }
     },
     "WP03": {
       "actor": "finalize-tasks",
       "force_count": 0,
       "lane": "planned",
       "last_event_id": "01M7AXMHYAHJDRNJHYH19QEGCV",
-      "last_transition_at": "2026-11-13T17:00:14.666965+00:00"
+      "last_transition_at": "2026-11-13T17:00:14.666965+00:00",
+      "subtasks": {
+        "T003": "done"
+      }
     },
     "WP04": {
       "actor": "finalize-tasks",
       "force_count": 0,
       "lane": "planned",
       "last_event_id": "01M7AXMKFW2B1KPCPC9TRX55DE",
-      "last_transition_at": "2026-11-13T17:00:16.252380+00:00"
+      "last_transition_at": "2026-11-13T17:00:16.252380+00:00",
+      "subtasks": {
+        "T004": "done"
+      }
     }
   }
 }
