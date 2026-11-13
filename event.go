@@ -50,6 +50,7 @@ type Event struct {
 	Request     string                     `json:"request,omitempty"`
 	Intent      string                     `json:"intent,omitempty"`
 	Audit       *AuditFact                 `json:"audit,omitempty"`
+	Automatic   *automaticRunIntent        `json:"automatic,omitempty"`
 	Publication *ProposalPublicationIntent `json:"publication,omitempty"`
 }
 
@@ -104,7 +105,7 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return Event{}, "", fmt.Errorf("invalid event JSON: %w", err)
 	}
-	if event.Publication != nil {
+	if event.Publication != nil || event.Automatic != nil {
 		if err := strictResourceJSON(payload, &event, 512<<10); err != nil {
 			return Event{}, "", fmt.Errorf("invalid proposal publication JSON: %w", err)
 		}
@@ -156,6 +157,12 @@ func verifyEvent(payload, signature []byte) (Event, string, error) {
 }
 
 func validateEventContent(event Event) error {
+	if event.Automatic != nil {
+		if event.Kind != "run.request" || !event.Automatic.valid() {
+			return fmt.Errorf("invalid automatic run intent")
+		}
+	}
+
 	if event.Publication != nil {
 		if event.Kind != "proposal.open" || !validPublicationOperation(event.Publication.Operation) ||
 			!validPublicationBaseRef(event.Publication.BaseRef) || !validPublicationText(event.Title, event.Body) {
