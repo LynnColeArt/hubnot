@@ -23,6 +23,9 @@ type importedPullRequest struct {
 	Author   string        `json:"author"`
 	URL      string        `json:"url"`
 	Created  string        `json:"created_at"`
+	Base     string        `json:"base_commit,omitempty"`
+	Head     string        `json:"head_commit,omitempty"`
+	Merge    string        `json:"merge_commit,omitempty"`
 	Updated  string        `json:"updated_at"`
 }
 
@@ -99,6 +102,13 @@ func importedGitHubPullRequest(ctx context.Context, archive *migration.Archive, 
 		Body     string `json:"body"`
 		State    string `json:"state"`
 		MergedAt string `json:"merged_at"`
+		Merge    string `json:"merge_commit_sha"`
+		Base     struct {
+			SHA string `json:"sha"`
+		} `json:"base"`
+		Head struct {
+			SHA string `json:"sha"`
+		} `json:"head"`
 	}
 	if err := json.Unmarshal(raw, &source); err != nil {
 		return importedPullRequest{}, err
@@ -123,6 +133,7 @@ func importedGitHubPullRequest(ctx context.Context, archive *migration.Archive, 
 	}
 	return importedPullRequest{
 		Source: record.Key, Revision: record.Revision, Number: number, Title: source.Title, Body: source.Body, State: source.State,
+		Base: source.Base.SHA, Head: source.Head.SHA, Merge: source.Merge,
 		Author: record.Author, URL: record.SourceURL, Created: normalize(record.CreatedAt), Updated: normalize(record.UpdatedAt),
 	}, nil
 }
