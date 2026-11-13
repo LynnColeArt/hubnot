@@ -276,6 +276,45 @@ func automaticCheckStatus(candidate string) error {
 	ledger, err := readAutomaticLedger(path)
 	checks := make([]*automaticCheck, 0)
 	if os.IsNotExist(err) {
+		events, readErr := automaticVisibleEvents()
+		if readErr != nil {
+			return consumerOutput(nil, readErr)
+		}
+		lineage, readErr := buildLineageIndex(events)
+		if readErr != nil {
+			return consumerOutput(nil, readErr)
+		}
+		root, rootErr := lineage.root(candidate)
+		if rootErr != nil {
+			return consumerOutput(nil, consumerFailure("not_found", "Proposal revision is unavailable."))
+		}
+		index := map[string]*automaticCheck{}
+		for _, request := range events {
+			intent := request.Event.Automatic
+			if intent == nil || request.Event.Subject != candidate {
+				continue
+			}
+			check := index[intent.Check]
+			if check == nil {
+				check = &automaticCheck{ID: intent.Check, Proposal: root, Candidate: candidate, Commit: request.Event.Commit,
+					Pipeline: request.Event.Pipeline, Definition: request.Event.Definition, Source: intent.Source,
+					Configuration: intent.Configuration, Status: "waiting", Created: request.Event.Timestamp}
+				index[intent.Check] = check
+			}
+			attempt := automaticAttempt{ID: intent.Attempt, Status: "waiting", Started: request.Event.Timestamp, Request: request.ID}
+			for _, result := range currentRunResults(events, request.ID) {
+				if !automaticResultEligible(request.Event, result.Event) {
+					continue
+				}
+				attempt.Status, attempt.Finished, attempt.Result = result.Event.Outcome, result.Event.Timestamp, result.ID
+				check.Status = attempt.Status
+			}
+			check.Attempts = append(check.Attempts, attempt)
+		}
+		for _, check := range index {
+			checks = append(checks, check)
+		}
+		sort.Slice(checks, func(i, j int) bool { return checks[i].ID < checks[j].ID })
 		return consumerOutput(map[string]any{"availability": "no_authority", "checks": checks}, nil)
 	}
 	if err != nil {
