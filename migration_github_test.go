@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -29,6 +30,7 @@ type githubMigrationFixture struct {
 	loseIssue, loseComment, hideIssue, hideComments, duplicate, dropLabel bool
 	defaultType                                                           string
 	pageCycle                                                             bool
+	pullTitle, pullUpdated                                                string
 }
 
 func newGithubMigrationFixture(t *testing.T) *githubMigrationFixture {
@@ -120,7 +122,9 @@ func newGithubMigrationFixture(t *testing.T) *githubMigrationFixture {
 				write(f.comments)
 			}
 		case r.URL.Path == "/repos/a/b/pulls":
-			write([]any{map[string]any{"id": 88, "node_id": "PR88", "number": 8, "body": "PR source", "head": map[string]any{"sha": strings.Repeat("a", 40)}}})
+			write([]any{map[string]any{"id": 88, "node_id": "PR88", "number": 8, "body": "PR source", "title": f.pullTitle, "state": "closed",
+				"created_at": "2026-01-02T00:00:00Z", "updated_at": f.pullUpdated, "merged_at": "2026-01-03T00:00:00Z",
+				"html_url": "https://example.invalid/a/b/pull/8", "user": map[string]any{"login": "original-author"}, "head": map[string]any{"sha": strings.Repeat("a", 40)}}})
 		case r.URL.Path == "/repos/a/b/issues/8/comments":
 			write([]githubapi.Comment{{ID: 100, NodeID: "PC100", Body: "PR conversation"}})
 		case r.URL.Path == "/repos/a/b/pulls/8/reviews":
@@ -774,5 +778,54 @@ func TestGitHubMigrationUnsupportedDestinationTypesNeverClaimUntypedSuccess(t *t
 				t.Fatal("uncertain type projection retried")
 			}
 		})
+	}
+}
+
+func TestMigrationPullRequestsOnlyChangeAfterExplicitReimport(t *testing.T) {
+	f := newGithubMigrationFixture(t)
+	root := t.TempDir()
+	repo := filepath.Join(root, "destination")
+	if output, err := exec.Command("git", "init", "-q", repo).CombinedOutput(); err != nil {
+		t.Fatalf("git init: %v: %s", err, output)
+	}
+	t.Setenv("HN_GITHUB_TOKEN", "supplied-secret")
+	ctx := context.Background()
+	importSnapshot := func(name string) {
+		t.Helper()
+		session := filepath.Join(root, name)
+		args := []string{"plan", "--session", session, "--source-kind", "github", "--source-endpoint", f.server.URL,
+			"--source-api-version", "2022-11-28", "--source-credential-mode", "bearer", "--source-repository", "a/b",
+			"--kind", "change_request", "--destination-kind", "local", "--destination-repository", repo,
+			"--decision", "local/governance=preserve"}
+		if err := runMigrationCLI(ctx, args, strings.NewReader(""), io.Discard); err != nil {
+			t.Fatal(err)
+		}
+		if err := runMigrationCLI(ctx, []string{"apply", "--session", session, "--confirm-apply"}, strings.NewReader(""), io.Discard); err != nil {
+			t.Fatal(err)
+		}
+	}
+	setSource := func(title, updated string) {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		f.pullTitle, f.pullUpdated = title, updated
+	}
+	read := func(title string) importedPullRequest {
+		t.Helper()
+		rows, err := listImportedPullRequests(ctx, filepath.Join(repo, ".git"))
+		if err != nil || len(rows) != 1 || rows[0].Title != title || rows[0].Author != "original-author" || rows[0].State != "merged" {
+			t.Fatalf("offline pull requests: %+v, %v", rows, err)
+		}
+		return rows[0]
+	}
+	setSource("Original", "2026-01-03T00:00:00Z")
+	importSnapshot("first")
+	first := read("Original")
+	setSource("Updated", "2026-01-04T00:00:00Z")
+	read("Original")
+	importSnapshot("second")
+	f.server.Close()
+	second := read("Updated")
+	if second.Source != first.Source || second.Revision == first.Revision {
+		t.Fatalf("source identity or revision mismatch: %+v -> %+v", first, second)
 	}
 }

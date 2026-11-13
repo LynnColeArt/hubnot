@@ -10,7 +10,7 @@
 
 ## Work Package WP03 — Offline PR history
 - **Dependencies**: WP02
-- [ ] T003 Verify offline PR history and the upstream-change/reimport scenario. (WP03)
+- [x] T003 Verify offline PR history and the upstream-change/reimport scenario. (WP03)
 
 ## Work Package WP04 — Shared lists
 - **Dependencies**: WP03
