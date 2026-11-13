@@ -1,7 +1,7 @@
 {
-  "event_count": 7,
-  "last_event_id": "01M7AY13W7FCX5FP8EMMGEKR5N",
-  "materialized_at": "2026-11-13T17:07:06.247406+00:00",
+  "event_count": 8,
+  "last_event_id": "01M7AY17CKYHWY5TXMHSS12JAN",
+  "materialized_at": "2026-11-13T17:07:09.843677+00:00",
   "mission_number": "",
   "mission_slug": "offline-github-pr-history-01M7ATMR",
   "mission_type": "software-dev",
@@ -9,12 +9,12 @@
     "approved": 0,
     "blocked": 0,
     "canceled": 0,
-    "claimed": 0,
+    "claimed": 1,
     "done": 0,
     "for_review": 1,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 3
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -28,7 +28,8 @@
       "last_transition_at": "2026-11-13T17:07:06.247406+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Implementation and reconciliation test recorded in feature commits"
+        "Implementation and reconciliation test recorded in feature commits",
+        "Native issue parity and replicated history reconciliation passed"
       ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
@@ -37,11 +38,16 @@
       }
     },
     "WP02": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M7AXMGCGJN112E368GASEX66",
-      "last_transition_at": "2026-11-13T17:00:13.072062+00:00",
+      "lane": "claimed",
+      "last_event_id": "01M7AY17CKYHWY5TXMHSS12JAN",
+      "last_transition_at": "2026-11-13T17:07:09.843677+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
       "subtasks": {
         "T002": "done"
       }
