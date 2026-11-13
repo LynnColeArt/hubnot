@@ -92,6 +92,15 @@ func automaticRunOnce(ctx context.Context) (bool, error) {
 	for _, event := range events {
 		byID[event.ID] = event
 	}
+	if err := contributionRunBoundary("runner", nil); err != nil {
+		for _, check := range ledger.Checks {
+			if check.Status == "queued" || check.Status == "waiting" {
+				check.Status = "waiting"
+				check.Reason = "Automatic execution is unavailable under the enabled contribution admission profile."
+			}
+		}
+		return false, writeAutomaticLedger(path, ledger)
+	}
 	backend := newBubblewrapBackend()
 	for _, check := range ledger.Checks {
 		if check.Status == "passed" || check.Status == "failed" || check.Status == "canceled" {
