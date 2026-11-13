@@ -147,5 +147,5 @@ func sandboxSystemDirectories() []string {
 }
 
 func sandboxPath() string {
-	return strings.Join(sandboxSystemDirectories(), string(os.PathListSeparator))
+	return strings.Join(append(sandboxSystemDirectories(), "/usr/local/go/bin"), string(os.PathListSeparator))
 }

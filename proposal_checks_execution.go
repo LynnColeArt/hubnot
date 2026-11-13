@@ -34,6 +34,9 @@ func automaticDefinition(request Event, candidate StoredEvent, policy PolicyDocu
 	if _, err := gitOutput("merge-base", "--is-ancestor", candidate.Event.Base, intent.Source); err != nil {
 		return false
 	}
+	if _, err := gitOutput("merge-base", "--is-ancestor", candidate.Event.Head, intent.Source); err == nil {
+		return false
+	}
 	sourcePolicy, err := loadPolicyCommit(intent.Source)
 	if err != nil || !actorListed(request.Actor, sourcePolicy.Maintainers) {
 		return false
