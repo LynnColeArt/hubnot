@@ -27,7 +27,7 @@ func eligiblePipelineRequest(request Event, candidate StoredEvent, manualDefinit
 
 func automaticDefinition(request Event, candidate StoredEvent, policy PolicyDocument) bool {
 	intent := request.Automatic
-	if intent == nil || request.Subject != candidate.ID || request.Commit != candidate.Event.Head ||
+	if intent == nil || intent.Source == candidate.Event.Head || request.Subject != candidate.ID || request.Commit != candidate.Event.Head ||
 		!actorListed(request.Actor, policy.Maintainers) {
 		return false
 	}
