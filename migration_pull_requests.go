@@ -32,15 +32,20 @@ type importedPullRequest struct {
 }
 
 type importedReview struct {
-	ID     string `json:"id"`
-	Kind   string `json:"kind"`
-	Author string `json:"author"`
-	Body   string `json:"body"`
-	State  string `json:"state,omitempty"`
-	Path   string `json:"path,omitempty"`
-	Line   int    `json:"line,omitempty"`
-	Date   string `json:"date,omitempty"`
-	Commit string `json:"commit,omitempty"`
+	OriginalCommit string `json:"original_commit,omitempty"`
+	OriginalLine   int    `json:"original_line,omitempty"`
+	Side           string `json:"side,omitempty"`
+	DiffHunk       string `json:"diff_hunk,omitempty"`
+	ReplyTo        string `json:"reply_to,omitempty"`
+	ID             string `json:"id"`
+	Kind           string `json:"kind"`
+	Author         string `json:"author"`
+	Body           string `json:"body"`
+	State          string `json:"state,omitempty"`
+	Path           string `json:"path,omitempty"`
+	Line           int    `json:"line,omitempty"`
+	Date           string `json:"date,omitempty"`
+	Commit         string `json:"commit,omitempty"`
 }
 
 func listImportedPullRequests(ctx context.Context, gitDir string) ([]importedPullRequest, error) {
@@ -111,13 +116,17 @@ func collectImportedPullRequests(ctx context.Context, archive *migration.Archive
 					return err
 				}
 				var data struct {
-					Body      string `json:"body"`
-					State     string `json:"state"`
-					Path      string `json:"path"`
-					Line      int    `json:"line"`
-					Commit    string `json:"commit_id"`
-					Submitted string `json:"submitted_at"`
-					Note      string `json:"note"`
+					OriginalCommit string `json:"original_commit_id"`
+					OriginalLine   int    `json:"original_line"`
+					Side           string `json:"side"`
+					DiffHunk       string `json:"diff_hunk"`
+					Body           string `json:"body"`
+					State          string `json:"state"`
+					Path           string `json:"path"`
+					Line           int    `json:"line"`
+					Commit         string `json:"commit_id"`
+					Submitted      string `json:"submitted_at"`
+					Note           string `json:"note"`
 				}
 				if err := json.Unmarshal(raw, &data); err != nil {
 					return err
@@ -132,7 +141,18 @@ func collectImportedPullRequests(ctx context.Context, archive *migration.Archive
 					reviews[link.Target] = map[string]importedReview{}
 				}
 				id := record.Key.Kind + ":" + record.Key.ID
-				reviews[link.Target][id] = importedReview{id, record.Key.Kind, record.Author, data.Body, data.State, data.Path, data.Line, data.Submitted, data.Commit}
+				var replyTo string
+				for _, relation := range record.Links {
+					if relation.Relation == "reply_to" && relation.Target.Kind == "inline_comment" {
+						replyTo = "inline_comment:" + relation.Target.ID
+					}
+				}
+				reviews[link.Target][id] = importedReview{
+					ID: id, Kind: record.Key.Kind, Author: record.Author, Body: data.Body,
+					State: data.State, Path: data.Path, Line: data.Line, Date: data.Submitted, Commit: data.Commit,
+					OriginalCommit: data.OriginalCommit, OriginalLine: data.OriginalLine,
+					Side: data.Side, DiffHunk: data.DiffHunk, ReplyTo: replyTo,
+				}
 			}
 		}
 	}

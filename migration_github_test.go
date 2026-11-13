@@ -885,7 +885,9 @@ func TestMigrationOfflinePRFreshMirror(t *testing.T) {
 		case "/repos/a/b/pulls/1/reviews", "/repos/a/b/pulls/2/reviews":
 			fmt.Fprintf(w, `[{"id":%d,"node_id":"RV11","user":{"login":"fixture-reviewer"},"body":"Preserved approval","state":"APPROVED","submitted_at":"2026-01-02T00:00:00Z"}]`, 11+int(r.URL.Path[17]))
 		case "/repos/a/b/pulls/1/comments", "/repos/a/b/pulls/2/comments":
-			fmt.Fprintf(w, `[{"id":%d,"node_id":"RC12","user":{"login":"fixture-reviewer"},"body":"Preserved inline review","path":"audit.txt","line":1}]`, 21+int(r.URL.Path[17]))
+			id := 21 + int(r.URL.Path[17])
+			fmt.Fprintf(w, `[{"id":%d,"node_id":"RC12","user":{"login":"fixture-reviewer"},"body":"Preserved inline review","path":"audit.txt","line":1,"original_line":1,"side":"RIGHT","original_commit_id":%q,"diff_hunk":%q},{"id":%d,"node_id":"RC13","user":{"login":"fixture-reviewer"},"body":"Preserved reply","in_reply_to_id":%d}]`,
+				id, merged, "@@ -1 +1 @@\n-base\n+merged change", id+100, id)
 		default:
 			fmt.Fprint(w, "[]")
 		}
@@ -925,7 +927,7 @@ func TestMigrationOfflinePRFreshMirror(t *testing.T) {
 		if row.Number == 1 {
 			wantState, wantDiff = "merged", "+merged change"
 		}
-		if row.State != wantState || len(row.Reviews) != 2 || row.Author != "original-author" || row.Reviews[0].Author != "fixture-reviewer" {
+		if row.State != wantState || len(row.Reviews) != 3 || row.Author != "original-author" || row.Reviews[0].Author != "fixture-reviewer" {
 			t.Fatalf("incomplete PR: %+v", row)
 		}
 		if !strings.Contains(git(clone, "diff", row.Base, row.Head, "--", "audit.txt"), wantDiff) || git(clone, "show", "-s", "--format=%an", row.Head) != "Fixture Author" {
