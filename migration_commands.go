@@ -21,9 +21,11 @@ const migrationCLIHelp = `Guided, inspectable project migration. No command dele
   hn migrate                         guided plan, then explicit apply question
   hn migrate plan [--guided] --session NEW_DIRECTORY [selection flags]
   hn migrate capabilities [source/destination configuration flags]
+  hn migrate catalog
   hn migrate inspect --session DIRECTORY [--blob sha256:DIGEST]
   hn migrate inspect --archive FILE [--blob sha256:DIGEST]
   hn migrate imports --repository REPOSITORY
+  hn migrate pull-requests --repository REPOSITORY
   hn migrate inspect --repository REPOSITORY --snapshot sha256:DIGEST
   hn migrate apply|resume --session DIRECTORY --confirm-apply [fresh credentials]
 Selection flags (all foreign configurations require an explicit profile/mode):
@@ -81,7 +83,7 @@ func parseMigrationOptions(args []string) (migrationCLIOptions, error) {
 		args = args[1:]
 	}
 	switch o.command {
-	case "plan", "capabilities", "inspect", "imports", "apply", "resume":
+	case "plan", "capabilities", "catalog", "inspect", "imports", "pull-requests", "apply", "resume":
 	default:
 		return o, fmt.Errorf("unknown migration command %q; use hn migrate help", o.command)
 	}
@@ -146,9 +148,11 @@ func parseMigrationOptions(args []string) (migrationCLIOptions, error) {
 	f.Visit(func(v *flag.Flag) {
 		allowed := true
 		switch o.command {
+		case "catalog":
+			allowed = false
 		case "inspect":
 			allowed = v.Name == "session" || v.Name == "archive" || v.Name == "repository" || v.Name == "snapshot" || v.Name == "blob"
-		case "imports":
+		case "imports", "pull-requests":
 			allowed = v.Name == "repository"
 		case "apply", "resume":
 			allowed = v.Name == "session" || v.Name == "guided" || v.Name == "confirm-apply" || v.Name == "actor" || v.Name == "destination-token-env" || v.Name == "git-origin" || v.Name == "git-auth-env" || v.Name == "git-ca-file"
@@ -254,15 +258,34 @@ func runMigrationCLI(ctx context.Context, args []string, in io.Reader, out io.Wr
 	}
 	w := newMigrationWizard(in, out)
 	switch o.command {
+	case "catalog":
+		return migrationCLIJSON(out, struct {
+			Schema       string   `json:"schema"`
+			Providers    []string `json:"providers"`
+			Sources      []string `json:"sources"`
+			Destinations []string `json:"destinations"`
+		}{"hn.migration-catalog/1", MigrationProviderKinds(),
+			append([]string{"local", "archive", "saved", "imported"}, MigrationProviderKinds()...),
+			append([]string{"local", "archive"}, MigrationProviderKinds()...)})
 	case "inspect":
 		return inspectMigrationCLI(ctx, o, out)
-	case "imports":
+	case "imports", "pull-requests":
 		if o.repository == "" {
 			return fmt.Errorf("missing --repository")
 		}
 		dir, e := migrationDestinationGitDir(ctx, o.repository)
 		if e != nil {
 			return e
+		}
+		if o.command == "pull-requests" {
+			rows, err := listImportedPullRequests(ctx, dir)
+			if err != nil {
+				return err
+			}
+			return migrationCLIJSON(out, struct {
+				Schema       string                `json:"schema"`
+				PullRequests []importedPullRequest `json:"pull_requests"`
+			}{"hn.migration-pull-requests/1", rows})
 		}
 		v, e := ListLocalMigrations(dir, migration.DefaultLimits())
 		if e != nil {
@@ -822,6 +845,7 @@ func inspectMigrationCLI(ctx context.Context, o migrationCLIOptions, out io.Writ
 	var s migration.Snapshot
 	var b migration.BlobSource
 	var p *migration.Plan
+	var progress map[string]int
 	selected := 0
 	for _, v := range []bool{o.session != "", o.archive != "", o.repository != ""} {
 		if v {
@@ -841,6 +865,21 @@ func inspectMigrationCLI(ctx context.Context, o migrationCLIOptions, out io.Writ
 			return e
 		}
 		p = &v.Plan
+		raw, e := migrationUnseal(v.Directory, "progress.json", v.Plan.Limits.ManifestBytes*4)
+		if e != nil {
+			return e
+		}
+		var checkpoint migration.Progress
+		if e = migration.StrictJSON(raw, &checkpoint); e != nil {
+			return e
+		}
+		if _, e = migration.CanonicalProgress(checkpoint, v.Plan); e != nil {
+			return e
+		}
+		progress = map[string]int{"total": len(v.Plan.Intents), "confirmed": 0, "inflight": 0}
+		for _, entry := range checkpoint.Entries {
+			progress[entry.State]++
+		}
 	} else if o.archive != "" {
 		var e error
 		s, b, e = (ArchiveMigrationSource{Path: o.archive}).Snapshot(ctx, migration.Selection{}, l)
@@ -878,5 +917,6 @@ func inspectMigrationCLI(ctx context.Context, o migrationCLIOptions, out io.Writ
 		Schema   string             `json:"schema"`
 		Plan     *migration.Plan    `json:"plan,omitempty"`
 		Snapshot migration.Snapshot `json:"snapshot"`
-	}{"hn.migration-inspect/1", p, s})
+		Progress map[string]int     `json:"progress,omitempty"`
+	}{"hn.migration-inspect/1", p, s, progress})
 }
