@@ -305,6 +305,9 @@ func consumerEventOptions(args []string) (machine bool, action, query string, er
 	flags := flag.NewFlagSet("event read", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	flags.Bool("json", false, "versioned JSON")
+	if action == "log" {
+		flags.Bool("visible", false, "visible operative history")
+	}
 	machine = issueMachineRequested(rest, flags)
 	parseErr := flags.Parse(rest)
 	if parseErr != nil || flags.NArg() != 0 || !valid || (action != "log" && !consumerValidEventQuery(query)) {
@@ -327,7 +330,7 @@ func consumerValidEventQuery(query string) bool {
 func consumerStoredEvent(s StoredEvent) map[string]any {
 	return map[string]any{"id": s.ID, "commit": s.Commit, "event": json.RawMessage(s.Payload), "signature": base64.RawStdEncoding.EncodeToString(s.Signature)}
 }
-func consumerLogData() (any, error) {
+func consumerLogData(visible bool) (any, error) {
 	if err := prepareShallowVerification(shallowVerificationScope{Operation: "log"}); err != nil {
 		return nil, err
 	}
@@ -338,11 +341,19 @@ func consumerLogData() (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	scope := "raw_signed_history"
+	if visible {
+		events, err = consumerSelectedEvents(events)
+		if err != nil {
+			return nil, err
+		}
+		scope = "visible_operative_history"
+	}
 	rows := []any{}
 	for _, event := range events {
 		rows = append(rows, consumerStoredEvent(event))
 	}
-	return map[string]any{"schema": consumerSchema, "history_scope": "raw_signed_history", "events": rows}, nil
+	return map[string]any{"schema": consumerSchema, "history_scope": scope, "events": rows}, nil
 }
 
 // Ordinary event reads preserve admission and visibility. Only evidence whose

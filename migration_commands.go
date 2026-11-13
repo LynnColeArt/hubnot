@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -129,6 +130,10 @@ func parseMigrationOptions(args []string) (migrationCLIOptions, error) {
 			return nil
 		})
 	}
+	o.source.Options = map[string]string{}
+	o.destination.Options = map[string]string{}
+	f.Func("source-option", "", func(s string) error { return migrationCLIMap(o.source.Options, s) })
+	f.Func("destination-option", "", func(s string) error { return migrationCLIMap(o.destination.Options, s) })
 	f.Func("map", "", func(s string) error { return migrationCLIMap(o.mappings, s) })
 	f.Func("decision", "", func(s string) error { return migrationCLIMap(o.decisions, s) })
 	f.BoolVar(&o.guided, "guided", o.guided, "")
@@ -198,6 +203,39 @@ func migrationCLIProfile(side string, c migration.ProviderConfig) error {
 		}
 		return nil
 	}
+	if registration, ok := migrationProviders.Lookup(c.Locator.Kind); ok {
+		fields := registration.SourceFields
+		if side == "destination" {
+			fields = registration.DestinationFields
+		}
+		if fields != nil {
+			values := map[string]string{"repository": c.Locator.Repository, "endpoint": c.Locator.Endpoint,
+				"version": c.APIVersion, "credentialMode": c.CredentialMode,
+				"organization": c.Locator.Organization, "project": c.Locator.Project}
+			for name, value := range c.Options {
+				values[name] = value
+			}
+			for _, field := range fields {
+				value := values[field.Name]
+				if field.Required && value == "" {
+					return fmt.Errorf("missing migration field %s", field.Name)
+				}
+				if value != "" && len(field.Choices) > 0 && !slices.Contains(field.Choices, value) {
+					return fmt.Errorf("invalid value for migration field %s", field.Name)
+				}
+				delete(values, field.Name)
+			}
+			for name := range c.Options {
+				if _, exists := values[name]; exists {
+					return fmt.Errorf("unknown migration field %s", name)
+				}
+			}
+			return nil
+		}
+	}
+	if len(c.Options) > 0 {
+		return fmt.Errorf("adapter does not advertise custom configuration fields")
+	}
 	if c.APIVersion == "" {
 		return fmt.Errorf("missing --%s-api-version; select an explicit adapter profile (hn migrate help)", side)
 	}
@@ -256,17 +294,13 @@ func runMigrationCLI(ctx context.Context, args []string, in io.Reader, out io.Wr
 	if e != nil {
 		return e
 	}
+	if o.command == "plan" && !migrationPathAvailable(o.source.Locator.Kind, o.destination.Locator.Kind) {
+		return fmt.Errorf("migration path unavailable")
+	}
 	w := newMigrationWizard(in, out)
 	switch o.command {
 	case "catalog":
-		return migrationCLIJSON(out, struct {
-			Schema       string   `json:"schema"`
-			Providers    []string `json:"providers"`
-			Sources      []string `json:"sources"`
-			Destinations []string `json:"destinations"`
-		}{"hn.migration-catalog/1", MigrationProviderKinds(),
-			append([]string{"local", "archive", "saved", "imported"}, MigrationProviderKinds()...),
-			append([]string{"local", "archive"}, MigrationProviderKinds()...)})
+		return writeMigrationCatalog(out)
 	case "inspect":
 		return inspectMigrationCLI(ctx, o, out)
 	case "imports", "pull-requests":
@@ -687,12 +721,21 @@ func migrationCLIDestination(ctx context.Context, o *migrationCLIOptions) (migra
 
 // This is adapter reconstruction metadata, never a second plan/progress store.
 // The closed allowlist deliberately has no Token or environment/config fields.
+type migrationCLIDescriptorBase struct {
+	Schema         string            `json:"schema"`
+	PlanDigest     string            `json:"plan_digest"`
+	Destination    migration.Locator `json:"destination"`
+	APIVersion     string            `json:"api_version"`
+	CredentialMode string            `json:"credential_mode"`
+}
+
 type migrationCLIDescriptor struct {
 	Schema         string            `json:"schema"`
 	PlanDigest     string            `json:"plan_digest"`
 	Destination    migration.Locator `json:"destination"`
 	APIVersion     string            `json:"api_version"`
 	CredentialMode string            `json:"credential_mode"`
+	Options        map[string]string `json:"options,omitempty"`
 }
 
 func saveMigrationCLI(s *MigrationSession, c migration.ProviderConfig) error {
@@ -706,7 +749,7 @@ func saveMigrationCLI(s *MigrationSession, c migration.ProviderConfig) error {
 	if e != nil {
 		return e
 	}
-	d := migrationCLIDescriptor{"hn.migration-cli/1", migration.Digest(b), c.Locator, c.APIVersion, c.CredentialMode}
+	d := migrationCLIDescriptor{"hn.migration-cli/1", migration.Digest(b), c.Locator, c.APIVersion, c.CredentialMode, c.Options}
 	raw, e := json.Marshal(d)
 	if e != nil {
 		return e
@@ -722,7 +765,19 @@ func loadMigrationCLI(s *MigrationSession) (migration.ProviderConfig, error) {
 		return migration.ProviderConfig{}, fmt.Errorf("saved CLI descriptor missing/invalid; inspect plan and recover explicitly: %w", e)
 	}
 	var d migrationCLIDescriptor
-	if e = migration.StrictJSON(raw, &d); e != nil {
+	var fields map[string]json.RawMessage
+	if e = json.Unmarshal(raw, &fields); e != nil {
+		return migration.ProviderConfig{}, e
+	}
+	// StrictJSON requires every declared field. Keep old sealed plans readable.
+	if _, hasOptions := fields["options"]; !hasOptions {
+		var base migrationCLIDescriptorBase
+		e = migration.StrictJSON(raw, &base)
+		d = migrationCLIDescriptor{base.Schema, base.PlanDigest, base.Destination, base.APIVersion, base.CredentialMode, nil}
+	} else {
+		e = migration.StrictJSON(raw, &d)
+	}
+	if e != nil {
 		return migration.ProviderConfig{}, e
 	}
 	canonical, e := json.Marshal(d)
@@ -736,7 +791,7 @@ func loadMigrationCLI(s *MigrationSession) (migration.ProviderConfig, error) {
 	if d.Schema != "hn.migration-cli/1" || d.PlanDigest != migration.Digest(b) || d.Destination != s.Plan.Destination {
 		return migration.ProviderConfig{}, fmt.Errorf("CLI descriptor does not bind saved plan/destination")
 	}
-	c := migration.ProviderConfig{Locator: d.Destination, APIVersion: d.APIVersion, CredentialMode: d.CredentialMode}
+	c := migration.ProviderConfig{Locator: d.Destination, APIVersion: d.APIVersion, CredentialMode: d.CredentialMode, Options: d.Options}
 	if e = migrationCLIProfile("destination", c); e != nil {
 		return c, e
 	}
@@ -746,7 +801,7 @@ func applyMigrationCLI(ctx context.Context, o migrationCLIOptions, w *migrationW
 	if o.session == "" {
 		return fmt.Errorf("missing --session DIRECTORY")
 	}
-	if o.source.Locator.Kind != "" || o.destination.Locator.Kind != "" || o.remote != "" || len(o.refs) > 0 || len(o.kinds) > 0 || len(o.mappings) > 0 || len(o.decisions) > 0 || o.destination.APIVersion != "" || o.destination.CredentialMode != "" || o.destination.Locator.Endpoint != "" || o.destination.Locator.Repository != "" || o.destination.Locator.Organization != "" || o.destination.Locator.Project != "" {
+	if o.source.Locator.Kind != "" || o.destination.Locator.Kind != "" || o.remote != "" || len(o.refs) > 0 || len(o.kinds) > 0 || len(o.mappings) > 0 || len(o.decisions) > 0 || len(o.source.Options) > 0 || len(o.destination.Options) > 0 || o.destination.APIVersion != "" || o.destination.CredentialMode != "" || o.destination.Locator.Endpoint != "" || o.destination.Locator.Repository != "" || o.destination.Locator.Organization != "" || o.destination.Locator.Project != "" {
 		return fmt.Errorf("apply/resume uses the exact saved intents and destination profile; selection overrides are refused")
 	}
 	s, e := OpenMigrationSession(ctx, o.session)

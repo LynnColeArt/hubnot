@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"unicode"
@@ -187,7 +188,7 @@ func cmdLog(args []string) error {
 		if err != nil {
 			return err
 		}
-		data, err := consumerLogData()
+		data, err := consumerLogData(slices.Contains(args, "--visible"))
 		if err != nil {
 			return err
 		}

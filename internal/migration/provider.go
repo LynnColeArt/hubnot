@@ -18,17 +18,41 @@ type ProviderConfig struct {
 	WorkflowRef       string
 	PlanningSelectors []string
 	Attachments       []AttachmentSelection
+	Options           map[string]string // Non-secret provider configuration.
 }
 type AttachmentSelection struct {
 	URL, Name string
 	Parent    Key
 }
+
+// ProviderField describes a named CLI configuration input for a migration adapter.
+type ProviderField struct {
+	Name     string   `json:"name"`
+	Label    string   `json:"label"`
+	Required bool     `json:"required"`
+	Choices  []string `json:"choices,omitempty"`
+}
+
 type ProviderRegistration struct {
-	Kind             string
-	TokenEnv         string
-	NewSource        func(ProviderConfig) (Source, error)
-	NewDestination   func(ProviderConfig) (Destination, error)
-	RequiredCoverage []CoverageRequirement
+	Kind              string
+	TokenEnv          string
+	NewSource         func(ProviderConfig) (Source, error)
+	NewDestination    func(ProviderConfig) (Destination, error)
+	RequiredCoverage  []CoverageRequirement
+	Destinations      []string // Nil allows all installed destination kinds.
+	SourceFields      []ProviderField
+	DestinationFields []ProviderField
+}
+
+func cloneProviderFields(fields []ProviderField) []ProviderField {
+	if fields == nil {
+		return nil
+	}
+	copyFields := append([]ProviderField{}, fields...)
+	for i := range copyFields {
+		copyFields[i].Choices = append([]string(nil), fields[i].Choices...)
+	}
+	return copyFields
 }
 
 // Registry supports disjoint optional provider files without native-engine
@@ -56,6 +80,11 @@ func (r *Registry) Register(p ProviderRegistration) error {
 		return fmt.Errorf("provider already registered: %s", p.Kind)
 	}
 	p.RequiredCoverage = append([]CoverageRequirement{}, p.RequiredCoverage...)
+	if p.Destinations != nil {
+		p.Destinations = append([]string{}, p.Destinations...)
+	}
+	p.SourceFields = cloneProviderFields(p.SourceFields)
+	p.DestinationFields = cloneProviderFields(p.DestinationFields)
 	r.entries[p.Kind] = p
 	return nil
 }
@@ -64,6 +93,11 @@ func (r *Registry) Lookup(kind string) (ProviderRegistration, bool) {
 	defer r.mu.RUnlock()
 	p, ok := r.entries[kind]
 	p.RequiredCoverage = append([]CoverageRequirement{}, p.RequiredCoverage...)
+	if p.Destinations != nil {
+		p.Destinations = append([]string{}, p.Destinations...)
+	}
+	p.SourceFields = cloneProviderFields(p.SourceFields)
+	p.DestinationFields = cloneProviderFields(p.DestinationFields)
 	return p, ok
 }
 func (r *Registry) Kinds() []string {
