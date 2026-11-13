@@ -28,7 +28,8 @@
       "last_transition_at": "2026-11-13T13:10:14.326161+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Native provenance and sync tests plus seven paired tests passed."
+        "Native provenance and sync tests plus seven paired tests passed.",
+        "Verified exact target binding and merged-side-branch rejection regression."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
