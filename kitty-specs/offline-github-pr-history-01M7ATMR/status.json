@@ -19,6 +19,7 @@
   "work_packages": {
     "WP01": {
       "actor": "codex",
+      "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
@@ -26,6 +27,9 @@
       "last_event_id": "01M7AXYGBVQ9RTV8J8D8A9FQNF",
       "last_transition_at": "2026-11-13T17:05:40.731217+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Implementation and reconciliation test recorded in feature commits"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer"
     },
