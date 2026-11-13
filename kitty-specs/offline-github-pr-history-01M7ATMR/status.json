@@ -1,7 +1,7 @@
 {
-  "event_count": 18,
-  "last_event_id": "01M7AY30EX12P34RE9CPN1CMNY",
-  "materialized_at": "2026-11-13T17:08:08.285456+00:00",
+  "event_count": 19,
+  "last_event_id": "01M7AY368DD8SG7K7VMW3G704F",
+  "materialized_at": "2026-11-13T17:08:14.221136+00:00",
   "mission_number": "",
   "mission_slug": "offline-github-pr-history-01M7ATMR",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 3,
+    "for_review": 2,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
@@ -29,7 +29,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Implementation and reconciliation test recorded in feature commits",
-        "Native issue parity and replicated history reconciliation passed"
+        "Native issue parity and replicated history reconciliation passed",
+        "Code and focused acceptance evidence reviewed. Release qualification follow-ups recorded."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
@@ -43,21 +44,21 @@
       }
     },
     "WP02": {
-      "actor": "codex",
+      "actor": "user",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M7AY1EFW2DQT9DWJEASFDWFX",
-      "last_transition_at": "2026-11-13T17:07:17.116329+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M7AY368DD8SG7K7VMW3G704F",
+      "last_transition_at": "2026-11-13T17:08:14.221136+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Implementation and test evidence recorded on feature branches",
         "Focused Linux verification passed"
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
+      "role": "reviewer",
       "subtasks": {
         "T002": "done"
       }
