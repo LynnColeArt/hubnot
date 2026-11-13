@@ -307,6 +307,15 @@ func checkProposalPublicationCandidate(request proposalPublicationRequest) error
 	if err := guardCandidateCreationDependencies("proposal open", request.base, request.head); err != nil {
 		return err
 	}
+	changed, err := gitText("diff", "--name-only", request.base, request.head, "--", proposalChecksPath, ".hn/pipelines/")
+	if err != nil {
+		return err
+	}
+	if changed != "" {
+		if _, _, err := automaticConfigAt(request.head); err != nil {
+			return publicationFailure("invalid_input", "The proposed automatic check configuration is invalid.")
+		}
+	}
 	_, err = policyAmendmentDiagnostic(request.base, request.head)
 	return err
 }

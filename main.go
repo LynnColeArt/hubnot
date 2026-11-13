@@ -22,6 +22,9 @@ func main() {
 }
 
 func run(args []string) (result error) {
+	if len(args) >= 2 && args[0] == "runner" && (args[1] == "automatic-once" || args[1] == "automatic-watch") {
+		return cmdRunner(args[1:])
+	}
 	if len(args) > 0 && args[0] == "proposal-checks" {
 		return cmdProposalChecks(args[1:])
 	}

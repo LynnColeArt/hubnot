@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -26,6 +27,8 @@ func cmdRunner(args []string) error {
 		return usageError("usage: hn runner <once|watch> --accept-pipeline NAME --accept-actor ACTOR")
 	}
 	switch args[0] {
+	case "automatic-once", "automatic-watch":
+		return runAutomaticRunner(args[0], args[1:])
 	case "once":
 		options, err := parseRunnerOptions("runner once", args[1:], false)
 		if err != nil {
@@ -116,7 +119,7 @@ func runnerOnceContext(ctx context.Context, options runnerOptions) (bool, error)
 	var firstError error
 	for index := range events {
 		request := &events[index]
-		if request.Event.Kind != "run.request" || request.Event.Pipeline != options.Pipeline || request.Event.Actor != options.AcceptedActor {
+		if request.Event.Kind != "run.request" || request.Event.Automatic != nil || request.Event.Pipeline != options.Pipeline || request.Event.Actor != options.AcceptedActor {
 			continue
 		}
 		if withdrawal := findRunWithdrawal(events, request.ID); withdrawal != nil {
@@ -227,4 +230,51 @@ func runnerSync(remote string) error {
 		runnerLog("Runner sync completed for %s after %s", safeDiagnostic(remote), time.Since(started).Round(time.Millisecond))
 	}
 	return err
+}
+
+func runAutomaticRunner(action string, args []string) error {
+	flags := quietFlags(action)
+	remote := flags.String("remote", "origin", "Git remote to synchronize")
+	interval := flags.Duration("interval", 30*time.Second, "poll interval")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() != 0 || *interval < time.Second || *remote == "" || strings.HasPrefix(*remote, "-") {
+		return fmt.Errorf("invalid automatic runner options")
+	}
+	path, err := automaticLedgerPath()
+	if err != nil {
+		return err
+	}
+	if _, err := readAutomaticLedger(path); err != nil {
+		return fmt.Errorf("register the automatic runner before starting it: %w", err)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	for {
+		err := runnerSync(*remote)
+		if err == nil {
+			err = automaticSchedule("observe", "")
+		}
+		if err == nil {
+			var ran bool
+			ran, err = automaticRunOnce(ctx)
+			if ran && err == nil {
+				err = runnerSync(*remote)
+			}
+		}
+		if action == "automatic-once" {
+			return err
+		}
+		if err != nil {
+			runnerError("automatic checks: %v", err)
+		}
+		timer := time.NewTimer(*interval)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil
+		case <-timer.C:
+		}
+	}
 }

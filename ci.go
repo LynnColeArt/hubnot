@@ -465,6 +465,10 @@ func cmdRunExecute(args []string) error {
 }
 
 func executeRunRequest(ctx context.Context, events []StoredEvent, request *StoredEvent, identity *Identity, backend executionBackend, rerun bool) (*StoredEvent, error) {
+	if request.Event.Automatic != nil {
+		return nil, fmt.Errorf("automatic run requests are reserved for the automatic runner")
+	}
+
 	if err := guardRunNotWithdrawn(events, request.ID); err != nil {
 		return nil, err
 	}
@@ -503,14 +507,18 @@ func executeRunRequest(ctx context.Context, events []StoredEvent, request *Store
 	if err != nil {
 		return nil, err
 	}
+	return signRunResult(request.Event, request.ID, identity, backend, result)
+}
+
+func signRunResult(request Event, requestID string, identity *Identity, backend executionBackend, result executionResult) (*StoredEvent, error) {
 	event, err := nextEvent(identity, "run.result")
 	if err != nil {
 		return nil, err
 	}
-	event.Subject = request.ID
-	event.Pipeline = request.Event.Pipeline
-	event.Definition = request.Event.Definition
-	event.Commit = request.Event.Commit
+	event.Subject = requestID
+	event.Pipeline = request.Pipeline
+	event.Definition = request.Definition
+	event.Commit = request.Commit
 	event.Outcome = result.Outcome
 	event.ExitCode = result.ExitCode
 	event.DurationMS = result.DurationMS

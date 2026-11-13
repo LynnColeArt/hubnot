@@ -11,17 +11,18 @@ import (
 )
 
 type automaticCheck struct {
-	ID            string `json:"id"`
-	Proposal      string `json:"proposal"`
-	Candidate     string `json:"candidate"`
-	Commit        string `json:"commit"`
-	Pipeline      string `json:"pipeline"`
-	Definition    string `json:"definition"`
-	Source        string `json:"source"`
-	Configuration string `json:"configuration"`
-	Status        string `json:"status"`
-	Reason        string `json:"reason,omitempty"`
-	Created       string `json:"created"`
+	Attempts      []automaticAttempt `json:"attempts,omitempty"`
+	ID            string             `json:"id"`
+	Proposal      string             `json:"proposal"`
+	Candidate     string             `json:"candidate"`
+	Commit        string             `json:"commit"`
+	Pipeline      string             `json:"pipeline"`
+	Definition    string             `json:"definition"`
+	Source        string             `json:"source"`
+	Configuration string             `json:"configuration"`
+	Status        string             `json:"status"`
+	Reason        string             `json:"reason,omitempty"`
+	Created       string             `json:"created"`
 }
 
 type automaticLedger struct {

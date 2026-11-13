@@ -318,13 +318,20 @@ func evaluatePipelineResults(proposalID, name, expectedDefinition string, events
 		return pipelineEvaluation, false
 	}
 	latestByRunner := make(map[string]StoredEvent)
+	var candidate StoredEvent
+	for _, event := range events {
+		if event.ID == proposalID {
+			candidate = event
+			break
+		}
+	}
 	for _, request := range events {
 		if request.Event.Kind != "run.request" || request.Event.Subject != proposalID || request.Event.Pipeline != name ||
-			request.Event.Definition != expectedDefinition || !mayRequestRun(policy, name, request.Event.Actor) {
+			!eligiblePipelineRequest(request.Event, candidate, expectedDefinition, policy) {
 			continue
 		}
 		for _, result := range currentRunResults(events, request.ID) {
-			if !actorListed(result.Event.Actor, pipelinePolicy.TrustedRunners) {
+			if !actorListed(result.Event.Actor, pipelinePolicy.TrustedRunners) || !automaticResultEligible(request.Event, result.Event) {
 				continue
 			}
 			previous, found := latestByRunner[result.Event.Actor]
@@ -519,7 +526,7 @@ func validateDecisionEvent(decision, proposal StoredEvent, byID map[string]Store
 				continue
 			}
 			pipelinePolicy, exists := policy.Pipelines[request.Event.Pipeline]
-			if exists && request.Event.Definition == pipelineDefinitions[request.Event.Pipeline] && actorListed(evidence.Event.Actor, pipelinePolicy.TrustedRunners) {
+			if exists && eligiblePipelineRequest(request.Event, proposal, pipelineDefinitions[request.Event.Pipeline], policy) && automaticResultEligible(request.Event, evidence.Event) && actorListed(evidence.Event.Actor, pipelinePolicy.TrustedRunners) {
 				pipelineRunners[request.Event.Pipeline][evidence.Event.Actor] = true
 			}
 		}

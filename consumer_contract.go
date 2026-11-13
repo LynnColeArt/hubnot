@@ -105,6 +105,7 @@ func cmdConsumerDiscovery(args []string) error {
 				"proposal publish --base FULL --base-ref REF --head FULL --actor ACTOR --operation KEY --title TITLE --body BODY --json",
 				"proposal operation --actor ACTOR --operation KEY --json",
 			}},
+			"native.proposal-checks-runner":   map[string]any{"version": 1, "commands": []string{"runner automatic-once", "runner automatic-watch"}},
 			"native.proposal-checks-observer": map[string]any{"version": 1, "commands": []string{"proposal-checks init REF --json", "proposal-checks observe --json", "proposal-checks status CANDIDATE --json"}},
 			"native.proposal-checks-config":   map[string]any{"version": 1, "commands": []string{"proposal-checks read FULL --json", "proposal-checks validate - --json"}},
 			"native.proposal-read":            map[string]any{"version": 1, "commands": []string{"proposal show PROPOSAL --json", "proposal status PROPOSAL --json"}},
