@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "mission_slug": "native-automatic-proposal-checks-01M7AG85",
+  "mission_id": "01M7AG85QTW0CP6EQ1Z86BQ9H6",
+  "mission_branch": "kitty/mission-native-automatic-proposal-checks-01M7AG85",
+  "target_branch": "codex/automatic-proposal-checks",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/automatic-proposal-checks.md",
+        "proposal_checks_config.go",
+        "proposal_checks_execution.go",
+        "proposal_checks_provenance_test.go",
+        "proposal_checks_scheduler.go"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-11-13T13:08:47.055523+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "686aafbf5e15d204ead617df22328287911f0c23"
+}

@@ -22,6 +22,12 @@ func main() {
 }
 
 func run(args []string) (result error) {
+	if len(args) >= 2 && args[0] == "runner" && (args[1] == "automatic-once" || args[1] == "automatic-watch") {
+		return cmdRunner(args[1:])
+	}
+	if len(args) > 0 && args[0] == "proposal-checks" {
+		return cmdProposalChecks(args[1:])
+	}
 	if len(args) > 1 && args[0] == "proposal" && (args[1] == "publish" || args[1] == "operation") {
 		// The keyed interface accepts exact object IDs. Keep local replacement
 		// refs and lazy fetches out of all indirect Git reads for this command.
