@@ -2,47 +2,47 @@
   "mission_slug": "offline-github-pr-history-01M7ATMR",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
       "description": "Verify FR-001 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "contracts/evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-13T17:08:22.987164+00:00",
+      "notes": "Operative history, index reconciliation and production native issue parity"
     },
     {
       "criterion_id": "FR-002",
       "description": "Verify FR-002 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "contracts/evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-13T17:08:22.987179+00:00",
+      "notes": "Catalog changes, custom-provider browser execution, and crash recovery"
     },
     {
       "criterion_id": "FR-003",
       "description": "Verify FR-003 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "contracts/evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-13T17:08:22.987182+00:00",
+      "notes": "Offline 24-PR parity and upstream-change/reimport regression"
     },
     {
       "criterion_id": "FR-004",
       "description": "Verify FR-004 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "contracts/evidence.md",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-11-13T17:08:22.987183+00:00",
+      "notes": "Shared primary lists and browser/MCP settings, filters, and status behavior"
     }
   ],
   "negative_invariants": []
