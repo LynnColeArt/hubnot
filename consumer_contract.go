@@ -377,7 +377,7 @@ func consumerSelectedEvents(events []StoredEvent) ([]StoredEvent, error) {
 	}
 	for _, s := range selected {
 		switch s.Event.Kind {
-		case "review.submit", "proposal.decision", "proposal.merged", "run.request":
+		case "proposal.inline", "review.submit", "proposal.decision", "proposal.merged", "run.request":
 			candidate, ok := byID[s.Event.Subject]
 			if !ok || !isProposalKind(candidate.Event.Kind) {
 				delete(byID, s.ID)

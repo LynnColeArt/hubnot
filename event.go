@@ -52,6 +52,7 @@ type Event struct {
 	Audit       *AuditFact                 `json:"audit,omitempty"`
 	Automatic   *automaticRunIntent        `json:"automatic,omitempty"`
 	Publication *ProposalPublicationIntent `json:"publication,omitempty"`
+	Inline      *proposalInlineAnchor      `json:"inline,omitempty"`
 }
 
 type StoredEvent struct {
@@ -209,6 +210,8 @@ func validateEventContent(event Event) error {
 		if event.Title != "" {
 			return fmt.Errorf("proposal revision inherits its title from its predecessor")
 		}
+	case "proposal.inline":
+		return validateInlineContent(event)
 	case "review.submit":
 		if !validEventID(event.Subject) || (event.Verdict != "approve" && event.Verdict != "request-changes") {
 			return fmt.Errorf("review requires a proposal subject and valid verdict")

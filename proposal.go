@@ -7,6 +7,9 @@ import (
 )
 
 func cmdProposal(args []string) error {
+	if len(args) > 0 && (args[0] == "inline-list" || args[0] == "inline-post") {
+		return cmdProposalInline(args[0], args[1:])
+	}
 	if machine, action, query, err := consumerProposalOptions(append([]string{"proposal"}, args...)); machine {
 		if err != nil {
 			return err
@@ -18,7 +21,7 @@ func cmdProposal(args []string) error {
 		return consumerOutput(data, nil)
 	}
 	if len(args) == 0 {
-		return usageError("usage: hn proposal <open|revise|list|show|status>")
+		return usageError("usage: hn proposal <open|revise|list|show|status|inline-list|inline-post>")
 	}
 	switch args[0] {
 	case "open":

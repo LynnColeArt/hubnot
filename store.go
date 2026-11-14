@@ -565,6 +565,13 @@ func validateEventRelationships(events []StoredEvent) error {
 			if predecessor.Event.Actor != event.Actor {
 				return fmt.Errorf("revision %s is not signed by predecessor author %s", shortID(stored.ID), shortID(predecessor.Event.Actor))
 			}
+		case "proposal.inline":
+			if subject, ok := byID[event.Subject]; !ok || !isProposalKind(subject.Event.Kind) {
+				return fmt.Errorf("inline comment proposal unavailable")
+			}
+			if event.Inline.ReplyTo != "" && !matchingInlineThread(event, byID[event.Inline.ReplyTo].Event) {
+				return fmt.Errorf("inline comment thread unavailable")
+			}
 		case "review.submit":
 			subject, exists := byID[event.Subject]
 			if !exists || !isProposalKind(subject.Event.Kind) {

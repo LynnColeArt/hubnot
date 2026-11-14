@@ -1084,6 +1084,12 @@ func replicationEventDependency(gitDir, acceptedGitDir string, event StoredEvent
 			return nil, fmt.Errorf("revision is not signed by predecessor author %s", byID[e.Subject].Event.Actor)
 		}
 		return dependency, err
+	case "proposal.inline":
+		dependency, err := require(e.Subject, "proposal", func(value StoredEvent) bool { return isProposalKind(value.Event.Kind) })
+		if err != nil || dependency != nil || e.Inline.ReplyTo == "" {
+			return dependency, err
+		}
+		return require(e.Inline.ReplyTo, "inline thread", func(value StoredEvent) bool { return matchingInlineThread(e, value.Event) })
 	case "review.submit":
 		return require(e.Subject, "proposal", func(value StoredEvent) bool { return isProposalKind(value.Event.Kind) })
 	case "run.request":
@@ -1144,6 +1150,11 @@ func replicationEventReferences(event Event) []string {
 	references = append(references, resourceReferences(event)...)
 	references = append(references, auditReferences(event)...)
 	switch event.Kind {
+	case "proposal.inline":
+		references = append(references, event.Subject)
+		if event.Inline.ReplyTo != "" {
+			references = append(references, event.Inline.ReplyTo)
+		}
 	case "issue.comment", "proposal.revise", "review.submit", "run.request", "run.result", "run.withdraw", "proposal.decision", "proposal.merged", "identity.accept":
 		references = append(references, event.Subject)
 	}

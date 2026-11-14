@@ -533,7 +533,7 @@ func contributionOperativeEvidence(events []StoredEvent, v *c.View) []StoredEven
 	}
 	filtered := []StoredEvent{}
 	for _, s := range out {
-		if (s.Event.Kind == "proposal.merged" || s.Event.Kind == "proposal.decision" || s.Event.Kind == "review.submit" || s.Event.Kind == "run.request") && !v.Admitted[s.Event.Subject] {
+		if (s.Event.Kind == "proposal.merged" || s.Event.Kind == "proposal.decision" || s.Event.Kind == "review.submit" || s.Event.Kind == "proposal.inline" || s.Event.Kind == "run.request") && !v.Admitted[s.Event.Subject] {
 			continue
 		}
 		filtered = append(filtered, s)
