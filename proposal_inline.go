@@ -14,6 +14,7 @@ type proposalInlineAnchor struct {
 	Side      string `json:"side"`
 	Line      int    `json:"line"`
 	ReplyTo   string `json:"replyTo,omitempty"`
+	State     string `json:"state,omitempty"`
 	Operation string `json:"operation"`
 }
 
@@ -59,9 +60,13 @@ func validateInlineContent(event Event) error {
 	if a == nil || !validEventID(event.Subject) || !utf8.ValidString(a.Path) ||
 		len(a.Path) == 0 || len(a.Path) > 4096 || strings.ContainsRune(a.Path, 0) ||
 		(a.Side != "LEFT" && a.Side != "RIGHT") || a.Line < 1 ||
-		(a.ReplyTo != "" && !validEventID(a.ReplyTo)) || strings.TrimSpace(event.Body) == "" || len(event.Body) > 16384 ||
+		(a.ReplyTo != "" && !validEventID(a.ReplyTo)) || len(event.Body) > 16384 ||
 		!validEventID(a.Operation) {
 		return fmt.Errorf("invalid inline review comment")
+	}
+	if a.State == "" && strings.TrimSpace(event.Body) == "" ||
+		a.State != "" && (a.State != "resolved" && a.State != "open" || a.ReplyTo == "" || event.Body != "") {
+		return fmt.Errorf("invalid inline thread state or comment body")
 	}
 	return nil
 }
@@ -78,6 +83,7 @@ func runProposalInline(action string, args []string) error {
 	path := flags.String("path", "", "")
 	side := flags.String("side", "", "")
 	line := flags.Int("line", 0, "")
+	state := flags.String("state", "", "")
 	reply := flags.String("reply-to", "", "")
 	body := flags.String("body", "", "")
 	actor := flags.String("actor", "", "")
@@ -134,21 +140,51 @@ func runProposalInline(action string, args []string) error {
 		return fmt.Errorf("proposal revision is unavailable")
 	}
 	rows := make([]any, 0, len(comments))
+	states := map[string]StoredEvent{}
+	roots := map[string]StoredEvent{}
 	for _, comment := range comments {
-		rows = append(rows, consumerStoredEvent(comment))
+		if comment.Event.Inline.ReplyTo == "" {
+			roots[comment.ID] = comment
+		}
+	}
+	for _, comment := range comments {
+		inline := comment.Event.Inline
+		if inline.State == "" || !matchingInlineThread(comment.Event, roots[inline.ReplyTo].Event) {
+			continue
+		}
+		prior := states[inline.ReplyTo]
+		if comment.Event.Sequence > prior.Event.Sequence ||
+			(comment.Event.Sequence == prior.Event.Sequence && comment.ID > prior.ID) {
+			states[inline.ReplyTo] = comment
+		}
+	}
+	threadStates := map[string]string{}
+	for id, root := range roots {
+		threadStates[id] = "open"
+		if change, ok := states[root.ID]; ok {
+			threadStates[id] = change.Event.Inline.State
+		}
+	}
+	for _, comment := range comments {
+		if comment.Event.Inline.State == "" {
+			rows = append(rows, consumerStoredEvent(comment))
+		}
 	}
 	if action == "inline-list" {
 		signer := ""
 		if signerErr == nil {
 			signer = identity.Actor
 		}
-		return consumerOutput(map[string]any{"comments": rows, "actor": signer}, nil)
+		return consumerOutput(map[string]any{"comments": rows, "actor": signer, "threadStates": threadStates}, nil)
 	}
-	anchor := proposalInlineAnchor{Path: *path, Side: *side, Line: *line, ReplyTo: *reply}
+	anchor := proposalInlineAnchor{Path: *path, Side: *side, Line: *line, ReplyTo: *reply, State: *state}
 	if *reply != "" {
 		found := false
 		for _, comment := range comments {
 			if comment.ID == *reply && comment.Event.Inline.ReplyTo == "" {
+				if *state != "" && comment.Event.Actor != identity.Actor {
+					return fmt.Errorf("only the thread author can change its status")
+				}
 				parent := comment.Event.Inline
 				if parent.Path != anchor.Path || parent.Side != anchor.Side || parent.Line != anchor.Line {
 					return fmt.Errorf("reply anchor differs from thread")
@@ -170,7 +206,11 @@ func runProposalInline(action string, args []string) error {
 			return consumerOutput(consumerMutationReceipt(&comment), nil)
 		}
 	}
-	if err := validateInlineLine(proposal.Event, anchor); err != nil {
+	if *state != "" {
+		if threadStates[*reply] == *state {
+			return fmt.Errorf("thread already has this status")
+		}
+	} else if err := validateInlineLine(proposal.Event, anchor); err != nil {
 		return err
 	}
 	event.Subject, event.Body, event.Inline = revision, *body, &anchor
@@ -184,5 +224,6 @@ func runProposalInline(action string, args []string) error {
 func matchingInlineThread(reply, root Event) bool {
 	return root.Kind == "proposal.inline" && root.Subject == reply.Subject &&
 		root.Inline != nil && reply.Inline != nil && root.Inline.ReplyTo == "" &&
+		(reply.Inline.State == "" || root.Actor == reply.Actor) &&
 		root.Inline.Path == reply.Inline.Path && root.Inline.Side == reply.Inline.Side && root.Inline.Line == reply.Inline.Line
 }
