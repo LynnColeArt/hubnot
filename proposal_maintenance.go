@@ -16,15 +16,20 @@ func maintainProposal(args []string) (any, error) {
 	id := args[0]
 	flags := quietFlags("proposal maintain")
 	action := flags.String("action", "inspect", "")
+	reason := flags.String("reason", "", "")
 	actor := flags.String("actor", "", "")
 	branch := flags.String("branch", "", "")
 	commit := flags.String("commit", "", "")
 	flags.Bool("json", false, "")
 	if err := flags.Parse(args[1:]); err != nil || flags.NArg() != 0 ||
-		(*action != "inspect" && *action != "accept" && *action != "merge") ||
+		(*action != "inspect" && *action != "accept" && *action != "reject" && *action != "merge") ||
 		(*action != "inspect" && !validActorID(*actor)) ||
 		(*action == "merge" && (*branch == "" || !validGitOID(*commit))) {
 		return nil, consumerFailure("invalid_input", "Provide the action, signer and confirmed merge target.")
+	}
+	*reason = strings.TrimSpace(*reason)
+	if *action == "reject" && (*reason == "" || len(*reason) > 4096) {
+		return nil, consumerFailure("invalid_input", "Provide a rejection reason of up to 4096 bytes.")
 	}
 	if *action != "inspect" {
 		dir, err := contributionSharedDirectory(true)
@@ -76,6 +81,7 @@ func maintainProposal(args []string) (any, error) {
 		target, blocker := inspectProposalMergeTarget(proposal, evaluation, *branch)
 		return map[string]any{
 			"actor": signer, "maintainer": maintainer, "target": target, "merge_blocker": blocker,
+			"reject": maintainer && terminal,
 			"accept": maintainer && terminal && evaluation.Ready && !alreadyAccepted && !evaluation.Accepted,
 			"merge": maintainer && terminal && evaluation.Ready && evaluation.Accepted &&
 				len(evaluation.BlockingReviewThreads) == 0 && blocker == "",
@@ -86,6 +92,17 @@ func maintainProposal(args []string) (any, error) {
 	}
 	if !maintainer {
 		return nil, consumerFailure("permission_denied", "Only a maintainer under this revision’s policy can perform this action.")
+	}
+	if *action == "reject" {
+		for _, prior := range evaluation.RejectDecisions {
+			if prior.Event.Actor == signer && prior.Event.Body == *reason {
+				return consumerMutationReceipt(&prior), nil
+			}
+		}
+		if !terminal {
+			return nil, consumerFailure("stale_revision", "This revision can no longer be rejected.")
+		}
+		return nil, decideProposal([]string{id, "--reject", "--body", *reason, "--json"}, *actor)
 	}
 	if *action == "accept" {
 		if !terminal {
@@ -116,6 +133,9 @@ func maintainProposal(args []string) (any, error) {
 			}
 		}
 		return nil, consumerFailure("stale_revision", "This revision already merged. Refresh to view its merge record.")
+	}
+	if evaluation.Rejected {
+		return nil, consumerFailure("stale_revision", "A maintainer rejected this revision. Open its rejection reason before proposing a new revision.")
 	}
 	_, blocker := inspectProposalMergeTarget(proposal, evaluation, target.Branch)
 	if blocker != "" && blocker != mergeRepairBlocker {
