@@ -281,21 +281,21 @@ func validateProtectedDecisionAt(gitDir, acceptedGitDir string, policy PolicyDoc
 	return validateProtectedDecisionEvidence(policy, decision, proposal, byID, changed)
 }
 
-func guardTargetProtectedPolicy(target string, evaluation *ProposalEvaluation) error {
+func guardTargetMergePolicy(target string, evaluation *ProposalEvaluation) error {
 	// Do not introduce target-policy parsing into legacy repositories. Inspect
 	// exact bytes for the optional section first; opted-in or malformed optional
 	// configuration then goes through the normal strict parser.
 	encoded, err := boundedPolicyGitOutput("", maxPolicySize, "show", target+":.hn/policy.json")
 	if err != nil {
-		if evaluation.Policy.ProtectedChecks != nil {
-			return fmt.Errorf("target protection policy unavailable: %w", err)
+		if evaluation.Policy.ProtectedChecks != nil || evaluation.Policy.Proposals.RequireResolvedReviewThreads {
+			return fmt.Errorf("target merge policy unavailable: %w", err)
 		}
 		return nil
 	}
 	var fields map[string]json.RawMessage
 	if err := json.Unmarshal(encoded, &fields); err != nil {
-		if evaluation.Policy.ProtectedChecks != nil {
-			return fmt.Errorf("target protection policy: %w", err)
+		if evaluation.Policy.ProtectedChecks != nil || evaluation.Policy.Proposals.RequireResolvedReviewThreads {
+			return fmt.Errorf("target merge policy: %w", err)
 		}
 		return nil
 	}
@@ -303,7 +303,15 @@ func guardTargetProtectedPolicy(target string, evaluation *ProposalEvaluation) e
 	for name, raw := range fields {
 		if strings.EqualFold(name, "protectedChecks") && !bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
 			present = true
-			break
+		}
+		if strings.EqualFold(name, "proposals") {
+			var proposals struct {
+				RequireResolvedReviewThreads json.RawMessage
+			}
+			if json.Unmarshal(raw, &proposals) == nil {
+				flag := bytes.TrimSpace(proposals.RequireResolvedReviewThreads)
+				present = present || (len(flag) > 0 && !bytes.Equal(flag, []byte("false")))
+			}
 		}
 	}
 	if !present {
@@ -311,7 +319,10 @@ func guardTargetProtectedPolicy(target string, evaluation *ProposalEvaluation) e
 	}
 	policy, digest, err := parsePolicyBytes(encoded)
 	if err != nil {
-		return fmt.Errorf("target protection policy: %w", err)
+		return fmt.Errorf("target merge policy: %w", err)
+	}
+	if policy.Proposals.RequireResolvedReviewThreads && digest != evaluation.PolicyDigest {
+		return fmt.Errorf("target review thread requirement uses a different policy; revise the proposal against the current target before merging")
 	}
 	if policy.ProtectedChecks != nil {
 		if digest != evaluation.PolicyDigest {

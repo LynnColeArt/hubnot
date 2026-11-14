@@ -99,13 +99,17 @@ func runProposalInline(action string, args []string) error {
 	identity, signerErr := loadIdentity()
 	var event Event
 	if action == "inline-post" {
+		unlock, err := lockProposalThreadWrites()
+		if err != nil {
+			return err
+		}
+		defer unlock()
 		if signerErr != nil {
 			return signerErr
 		}
 		if *actor != identity.Actor || strings.TrimSpace(*operation) == "" || len(*operation) > 128 {
 			return fmt.Errorf("active signer or operation ID is invalid")
 		}
-		var err error
 		event, err = nextEvent(identity, "proposal.inline")
 		if err != nil {
 			return err
@@ -140,31 +144,7 @@ func runProposalInline(action string, args []string) error {
 		return fmt.Errorf("proposal revision is unavailable")
 	}
 	rows := make([]any, 0, len(comments))
-	states := map[string]StoredEvent{}
-	roots := map[string]StoredEvent{}
-	for _, comment := range comments {
-		if comment.Event.Inline.ReplyTo == "" {
-			roots[comment.ID] = comment
-		}
-	}
-	for _, comment := range comments {
-		inline := comment.Event.Inline
-		if inline.State == "" || !matchingInlineThread(comment.Event, roots[inline.ReplyTo].Event) {
-			continue
-		}
-		prior := states[inline.ReplyTo]
-		if comment.Event.Sequence > prior.Event.Sequence ||
-			(comment.Event.Sequence == prior.Event.Sequence && comment.ID > prior.ID) {
-			states[inline.ReplyTo] = comment
-		}
-	}
-	threadStates := map[string]string{}
-	for id, root := range roots {
-		threadStates[id] = "open"
-		if change, ok := states[root.ID]; ok {
-			threadStates[id] = change.Event.Inline.State
-		}
-	}
+	_, threadStates := projectInlineThreads(comments, revision)
 	for _, comment := range comments {
 		if comment.Event.Inline.State == "" {
 			rows = append(rows, consumerStoredEvent(comment))
@@ -226,4 +206,85 @@ func matchingInlineThread(reply, root Event) bool {
 		root.Inline != nil && reply.Inline != nil && root.Inline.ReplyTo == "" &&
 		(reply.Inline.State == "" || root.Actor == reply.Actor) &&
 		root.Inline.Path == reply.Inline.Path && root.Inline.Side == reply.Inline.Side && root.Inline.Line == reply.Inline.Line
+}
+
+// projectInlineThreads folds the selected signed history for one exact revision.
+func projectInlineThreads(events []StoredEvent, revision string) (map[string]StoredEvent, map[string]string) {
+	var comments []StoredEvent
+	for _, event := range events {
+		if event.Event.Kind == "proposal.inline" && event.Event.Subject == revision && event.Event.Inline != nil {
+			comments = append(comments, event)
+		}
+	}
+	states := map[string]StoredEvent{}
+	roots := map[string]StoredEvent{}
+	for _, comment := range comments {
+		if comment.Event.Inline.ReplyTo == "" {
+			roots[comment.ID] = comment
+		}
+	}
+	for _, comment := range comments {
+		inline := comment.Event.Inline
+		if inline.State == "" || !matchingInlineThread(comment.Event, roots[inline.ReplyTo].Event) {
+			continue
+		}
+		prior := states[inline.ReplyTo]
+		if comment.Event.Sequence > prior.Event.Sequence ||
+			(comment.Event.Sequence == prior.Event.Sequence && comment.ID > prior.ID) {
+			states[inline.ReplyTo] = comment
+		}
+	}
+	threadStates := map[string]string{}
+	for id, root := range roots {
+		threadStates[id] = "open"
+		if change, ok := states[root.ID]; ok {
+			threadStates[id] = change.Event.Inline.State
+		}
+	}
+	return roots, threadStates
+}
+
+type blockingReviewThread struct {
+	ID    string `json:"id"`
+	Path  string `json:"path"`
+	Side  string `json:"side"`
+	Line  int    `json:"line"`
+	Actor string `json:"actor"`
+}
+
+func unresolvedReviewThreads(events []StoredEvent, revision string) []blockingReviewThread {
+	roots, states := projectInlineThreads(events, revision)
+	open := make([]StoredEvent, 0, len(roots))
+	for id, root := range roots {
+		if states[id] == "open" {
+			open = append(open, root)
+		}
+	}
+	sortStoredEvents(open)
+	threads := make([]blockingReviewThread, 0, len(open))
+	for _, root := range open {
+		anchor := root.Event.Inline
+		threads = append(threads, blockingReviewThread{root.ID, anchor.Path, anchor.Side, anchor.Line, root.Event.Actor})
+	}
+	return threads
+}
+
+func requireResolvedReviewThreads(evaluation *ProposalEvaluation) error {
+	if len(evaluation.BlockingReviewThreads) > 0 {
+		return fmt.Errorf("cannot merge: resolve %d review thread(s) on proposal revision %s", len(evaluation.BlockingReviewThreads), evaluation.Proposal.ID)
+	}
+	return nil
+}
+
+// Serialize local thread writes with merge's last policy observation across linked worktrees.
+func lockProposalThreadWrites() (func(), error) {
+	dir, err := contributionSharedDirectory(true)
+	if err != nil {
+		return nil, err
+	}
+	unlock, err := lockRepositoryOperation(dir, "proposal-review")
+	if err != nil {
+		return nil, fmt.Errorf("lock proposal review: %w", err)
+	}
+	return unlock, nil
 }

@@ -270,16 +270,26 @@ func consumerProposalProjection(e *ProposalEvaluation, events []StoredEvent) map
 		protection = map[string]any{"applies": applies, "paths": consumerStrings(e.Policy.ProtectedChecks.Paths), "changed_paths": consumerStrings(pc.ChangedPaths), "eligible_actors": protectedEligible, "trusted_reviewer_pool": consumerStrings(e.Policy.ProtectedChecks.TrustedReviewers), "required": pc.Required, "approvals": len(pc.Approvals), "deficit": need, "satisfied": met, "evidence": consumerIDs(pc.Approvals)}
 		requirement("protected_checks", met)
 	}
+	var reviewThreads any
+	if e.Policy.Proposals.RequireResolvedReviewThreads {
+		blocking := e.BlockingReviewThreads
+		if blocking == nil {
+			blocking = []blockingReviewThread{}
+		}
+		met := len(blocking) == 0
+		requirement("review_threads", met)
+		reviewThreads = map[string]any{"required": true, "satisfied": met, "blocking": blocking}
+	}
 	l := e.Lineage
 	lineageTerminal := !l.MergeConflict && !l.Superseded && !l.LineageClosed
 	return map[string]any{
 		"schema": consumerSchema, "id": p.ID, "kind": p.Event.Kind, "actor": p.Event.Actor, "actor_name": p.Event.ActorName, "title": e.DisplayTitle, "body": p.Event.Body, "base": p.Event.Base, "head": p.Event.Head, "policy": e.PolicyDigest, "status": proposalStatus(e),
 		"current_reviews": reviews, "readiness": e.Ready, "evidence": consumerStrings(e.Evidence),
-		"requirements":           map[string]any{"satisfied": satisfied, "missing": missing, "code": map[string]any{"available": e.CodeAvailable, "matches": e.CodeMatches}, "reviews": map[string]any{"eligible_actors": eligible, "trusted_reviewer_pool": consumerStrings(e.Policy.Proposals.TrustedReviewers), "allow_author_approval": e.Policy.Proposals.AllowAuthorApproval, "required": e.Policy.Proposals.RequiredApprovals, "approvals": len(e.Approvals), "deficit": deficit(e.Policy.Proposals.RequiredApprovals, len(e.Approvals)), "satisfied": len(e.Approvals) >= e.Policy.Proposals.RequiredApprovals, "evidence": consumerIDs(e.Approvals)}, "pipelines": pipelines, "protected_checks": protection},
+		"requirements":           map[string]any{"satisfied": satisfied, "missing": missing, "code": map[string]any{"available": e.CodeAvailable, "matches": e.CodeMatches}, "reviews": map[string]any{"eligible_actors": eligible, "trusted_reviewer_pool": consumerStrings(e.Policy.Proposals.TrustedReviewers), "allow_author_approval": e.Policy.Proposals.AllowAuthorApproval, "required": e.Policy.Proposals.RequiredApprovals, "approvals": len(e.Approvals), "deficit": deficit(e.Policy.Proposals.RequiredApprovals, len(e.Approvals)), "satisfied": len(e.Approvals) >= e.Policy.Proposals.RequiredApprovals, "evidence": consumerIDs(e.Approvals)}, "pipelines": pipelines, "protected_checks": protection, "review_threads": reviewThreads},
 		"lineage":                map[string]any{"root": l.RootID, "predecessor": l.PredecessorID, "successors": consumerStrings(l.SuccessorIDs), "siblings": consumerStrings(l.SiblingIDs), "ancestors": consumerStrings(l.AncestorIDs), "descendants": consumerStrings(l.DescendantIDs), "members": consumerStrings(l.MemberIDs), "merge_events": consumerStrings(l.MergeEventIDs), "merged_candidates": consumerStrings(l.MergedCandidateIDs), "merged": l.Merged, "superseded": l.Superseded, "closed": l.LineageClosed, "merge_conflict": l.MergeConflict},
 		"disagreements":          map[string]any{"observed_change_requests": observedChanges, "qualified_change_requests": len(e.ChangeRequests), "observed_approvals": observedApprovals, "conflicting_current_verdicts": observedApprovals > 0 && observedChanges > 0},
 		"decisions":              map[string]any{"eligible_actors": consumerStrings(e.Policy.Maintainers), "required_accepts": e.Policy.Proposals.RequiredAccepts, "accepts": consumerIDs(e.AcceptDecisions), "rejects": consumerIDs(e.RejectDecisions), "accept_deficit": deficit(e.Policy.Proposals.RequiredAccepts, len(e.AcceptDecisions)), "accepted": e.Accepted, "rejected": e.Rejected, "merged": e.Merged, "merge_events": consumerIDs(e.MergeEvents)},
-		"observed_preconditions": map[string]any{"scope": "selected_history_evidence_and_lineage_only", "lineage_terminal": lineageTerminal, "acceptance": map[string]any{"met": e.Ready && lineageTerminal && !e.Merged, "evidence_ready": e.Ready, "not_merged": !e.Merged}, "merge": map[string]any{"met": e.Ready && e.Accepted && !e.Rejected && lineageTerminal && !e.Merged, "evidence_ready": e.Ready, "accepted": e.Accepted, "not_rejected": !e.Rejected, "not_merged": !e.Merged}},
+		"observed_preconditions": map[string]any{"scope": "selected_history_evidence_and_lineage_only", "lineage_terminal": lineageTerminal, "acceptance": map[string]any{"met": e.Ready && lineageTerminal && !e.Merged, "evidence_ready": e.Ready, "not_merged": !e.Merged}, "merge": map[string]any{"met": len(e.BlockingReviewThreads) == 0 && e.Ready && e.Accepted && !e.Rejected && lineageTerminal && !e.Merged, "evidence_ready": e.Ready, "accepted": e.Accepted, "not_rejected": !e.Rejected, "not_merged": !e.Merged}},
 	}
 }
 

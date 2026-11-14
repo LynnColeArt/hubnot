@@ -217,6 +217,13 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 	if contained && guard != nil {
 		return fmt.Errorf("proposal head is already in target; use 'hn merge %s' for manual merge-event repair", proposal.ID)
 	}
+	if evaluation.Policy.Proposals.RequireResolvedReviewThreads {
+		unlock, err := lockProposalThreadWrites()
+		if err != nil {
+			return err
+		}
+		defer unlock()
+	}
 	if contained {
 		currentEvents, err := collectGovernedEvents()
 		if err != nil {
@@ -248,6 +255,9 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 		if !actorListed(identity.Actor, currentEvaluation.Policy.Maintainers) {
 			return fmt.Errorf("identity %s is not a maintainer under proposal policy", shortID(identity.Actor))
 		}
+		if err := requireResolvedReviewThreads(currentEvaluation); err != nil {
+			return err
+		}
 		mergeCommit, err := findProposalMergeCommit(currentProposal, current)
 		if err != nil {
 			return err
@@ -261,10 +271,10 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 	}
 	// Prospective enforcement only: recording a missing historical merge event
 	// above is governed by its signed base, not a policy the merge itself amended.
-	if err := guardTargetProtectedPolicy(current, evaluation); err != nil {
+	if err := guardTargetMergePolicy(current, evaluation); err != nil {
 		return err
 	}
-	if evaluation.Policy.ProtectedChecks != nil || guard != nil {
+	if evaluation.Policy.ProtectedChecks != nil || evaluation.Policy.Proposals.RequireResolvedReviewThreads || guard != nil {
 		currentEvents, err := collectGovernedEvents()
 		if err != nil {
 			return err
@@ -294,6 +304,9 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 		}
 		proposal = currentProposal
 	}
+	if err := requireResolvedReviewThreads(evaluation); err != nil {
+		return err
+	}
 	finalBranch, err := gitText("symbolic-ref", "--quiet", "--short", "HEAD")
 	if err != nil || finalBranch != branch {
 		return fmt.Errorf("target branch changed before merge")
@@ -305,7 +318,7 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 	if finalHead != current {
 		return fmt.Errorf("target head changed before merge; retry against current target")
 	}
-	if err := guardTargetProtectedPolicy(finalHead, evaluation); err != nil {
+	if err := guardTargetMergePolicy(finalHead, evaluation); err != nil {
 		return err
 	}
 	finalWorktree, err := gitText("status", "--porcelain", "--untracked-files=normal")

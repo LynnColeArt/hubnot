@@ -447,6 +447,14 @@ hn proposal open --base main --head HEAD \
   "Amend collaboration policy"
 ```
 
+Set `proposals.requireResolvedReviewThreads` to `true` in a project's
+`.hn/policy.json` to require resolution of every native inline review thread
+on the exact proposal revision before manual or automatic merge. The default
+is off. Maintainer acceptance is independent of thread resolution. A reopened
+thread blocks merging again, and threads stay on the revision where they were
+posted. After enabling the rule, revise outstanding proposals against the
+current target policy before merging them.
+
 Continuity relationships and replication selections never grant maintainer,
 reviewer, runner, or decision authority. Only the explicit full actor lists in
 the candidate's base policy do.

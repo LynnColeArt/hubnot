@@ -570,7 +570,11 @@ func contributionCommandLock(args []string) (func(), error) {
 	if e != nil {
 		return nil, e
 	}
-	fd, e := syscall.Open(filepath.Join(dir, "operation.lock"), syscall.O_CREAT|syscall.O_RDWR|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0600)
+	return lockRepositoryOperation(dir, "operation")
+}
+
+func lockRepositoryOperation(dir, name string) (func(), error) {
+	fd, e := syscall.Open(filepath.Join(dir, name+".lock"), syscall.O_CREAT|syscall.O_RDWR|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0600)
 	if e != nil {
 		return nil, e
 	}

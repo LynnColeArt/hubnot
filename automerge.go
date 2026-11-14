@@ -222,6 +222,9 @@ func inspectAutomerge(query, ruleName string) (*automergeInspection, error) {
 	if !evaluation.Ready {
 		result.Blockers = append(result.Blockers, "current approval, protected check or CI evidence is not ready")
 	}
+	if err := requireResolvedReviewThreads(evaluation); err != nil {
+		result.Blockers = append(result.Blockers, err.Error())
+	}
 	if !evaluation.Accepted {
 		result.Blockers = append(result.Blockers, "current required maintainer acceptances are missing")
 	}

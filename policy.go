@@ -41,10 +41,11 @@ type MemoryPolicy struct {
 }
 
 type ProposalPolicy struct {
-	RequiredApprovals   int      `json:"requiredApprovals"`
-	RequiredAccepts     int      `json:"requiredAccepts"`
-	TrustedReviewers    []string `json:"trustedReviewers"`
-	AllowAuthorApproval bool     `json:"allowAuthorApproval"`
+	RequireResolvedReviewThreads bool     `json:"requireResolvedReviewThreads,omitempty"`
+	RequiredApprovals            int      `json:"requiredApprovals"`
+	RequiredAccepts              int      `json:"requiredAccepts"`
+	TrustedReviewers             []string `json:"trustedReviewers"`
+	AllowAuthorApproval          bool     `json:"allowAuthorApproval"`
 }
 
 type PipelinePolicy struct {
@@ -72,25 +73,26 @@ type PipelineEvaluation struct {
 }
 
 type ProposalEvaluation struct {
-	Proposal        *StoredEvent
-	DisplayTitle    string
-	Lineage         proposalLineageState
-	Policy          PolicyDocument
-	PolicyDigest    string
-	CodeAvailable   bool
-	CodeMatches     bool
-	Approvals       []StoredEvent
-	ChangeRequests  []StoredEvent
-	Pipelines       []PipelineEvaluation
-	AcceptDecisions []StoredEvent
-	RejectDecisions []StoredEvent
-	MergeEvents     []StoredEvent
-	Ready           bool
-	Accepted        bool
-	Rejected        bool
-	Merged          bool
-	Evidence        []string
-	ProtectedChecks *ProtectedChecksEvaluation
+	Proposal              *StoredEvent
+	DisplayTitle          string
+	Lineage               proposalLineageState
+	Policy                PolicyDocument
+	PolicyDigest          string
+	CodeAvailable         bool
+	CodeMatches           bool
+	Approvals             []StoredEvent
+	ChangeRequests        []StoredEvent
+	Pipelines             []PipelineEvaluation
+	AcceptDecisions       []StoredEvent
+	RejectDecisions       []StoredEvent
+	MergeEvents           []StoredEvent
+	Ready                 bool
+	Accepted              bool
+	Rejected              bool
+	Merged                bool
+	Evidence              []string
+	ProtectedChecks       *ProtectedChecksEvaluation
+	BlockingReviewThreads []blockingReviewThread
 }
 
 func loadPolicy(commit string) (PolicyDocument, []byte, string, error) {
@@ -481,6 +483,9 @@ func evaluateProposal(proposal *StoredEvent, events []StoredEvent) (*ProposalEva
 	evaluation.Rejected = len(evaluation.RejectDecisions) > 0
 	evaluation.Accepted = !evaluation.Rejected && len(evaluation.AcceptDecisions) >= policy.Proposals.RequiredAccepts
 	evaluation.Merged = len(evaluation.MergeEvents) > 0
+	if policy.Proposals.RequireResolvedReviewThreads && !evaluation.Merged {
+		evaluation.BlockingReviewThreads = unresolvedReviewThreads(events, proposal.ID)
+	}
 	return evaluation, nil
 }
 
@@ -648,6 +653,12 @@ func cmdProposalStatus(query string) error {
 		fmt.Printf("Protected checks: enabled; %d changed path(s); %d/%d designated approvals\n", len(protection.ChangedPaths), len(protection.Approvals), protection.Required)
 		for _, p := range protection.ChangedPaths {
 			fmt.Printf("  %q\n", p)
+		}
+	}
+	if policy := evaluation.Policy.Proposals; policy.RequireResolvedReviewThreads {
+		fmt.Printf("Review threads: %d unresolved on this revision\n", len(evaluation.BlockingReviewThreads))
+		for _, thread := range evaluation.BlockingReviewThreads {
+			fmt.Printf("  %s %q %s line %d\n", thread.ID, thread.Path, thread.Side, thread.Line)
 		}
 	}
 	fmt.Printf("Decision: %d/%d accepts; %d rejects\n", len(evaluation.AcceptDecisions), evaluation.Policy.Proposals.RequiredAccepts, len(evaluation.RejectDecisions))
