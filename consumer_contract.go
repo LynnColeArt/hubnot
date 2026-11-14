@@ -108,6 +108,7 @@ func cmdConsumerDiscovery(args []string) error {
 			"native.proposal-checks-runner":   map[string]any{"version": 1, "commands": []string{"runner automatic-once", "runner automatic-watch"}},
 			"native.proposal-checks-observer": map[string]any{"version": 1, "commands": []string{"proposal-checks init REF --json", "proposal-checks observe --json", "proposal-checks status CANDIDATE --json"}},
 			"native.proposal-checks-config":   map[string]any{"version": 1, "commands": []string{"proposal-checks read FULL --json", "proposal-checks validate - --json"}},
+			"native.proposal-maintenance":     map[string]any{"version": 1, "commands": []string{"proposal maintain PROPOSAL --action inspect|accept|merge --json"}},
 			"native.proposal-read":            map[string]any{"version": 1, "commands": []string{"proposal show PROPOSAL --json", "proposal status PROPOSAL --json"}},
 			"contribution.existing-json":      map[string]any{"version": 1, "envelope": false, "mode": "existing-default-json", "documentation": "docs/consumer-cli-v1.md"},
 		},

@@ -452,3 +452,35 @@ func TestShallowRecoverySelectionErrorHasCurrentSemantics(t *testing.T) {
 		t.Fatalf("stale shallow recovery sentinel: %q", message)
 	}
 }
+
+func TestMergeRetryMaintenanceRepairsOnlyConfirmedTarget(t *testing.T) {
+	fixture := setupMergeRepairFixture(t)
+	branch := mustGitText(t, "branch", "--show-current")
+	base := mustGitText(t, "rev-parse", "HEAD")
+	merged := crashAfterCodeMerge(t, fixture)
+	run := func(tip string) (any, error) {
+		return maintainProposal([]string{fixture.proposal.ID, "--action=merge", "--actor=" + fixture.maintainer.Actor,
+			"--branch=" + branch, "--commit=" + tip, "--json"})
+	}
+	if _, err := run(merged); err == nil {
+		t.Fatal("repair accepted an unrelated confirmed tip")
+	}
+	output, err := captureTestOutput(t, func() error {
+		_, err := run(base)
+		return err
+	})
+	if err != nil || !strings.Contains(output, merged) {
+		t.Fatalf("repair output %q, error %v", output, err)
+	}
+	retry, err := run(base)
+	if err != nil || retry == nil {
+		t.Fatalf("retry receipt %v, error %v", retry, err)
+	}
+	events, err := collectEvents()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count := len(mergeEventsForProposal(events, fixture.proposal.ID)); count != 1 {
+		t.Fatalf("expected one merge event, got %d", count)
+	}
+}

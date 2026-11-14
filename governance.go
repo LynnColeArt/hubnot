@@ -5,7 +5,9 @@ import (
 	"strings"
 )
 
-func cmdDecide(args []string) error {
+func cmdDecide(args []string) error { return decideProposal(args, "") }
+
+func decideProposal(args []string, expectedActor string) error {
 	if len(args) < 1 {
 		return usageError("usage: hn decide PROPOSAL <--accept|--reject> [--body TEXT]")
 	}
@@ -63,6 +65,9 @@ func cmdDecide(args []string) error {
 	if err != nil {
 		return err
 	}
+	if expectedActor != "" && (identity.Actor != expectedActor || !*accept) {
+		return consumerFailure("actor_mismatch", "The selected signing identity changed.")
+	}
 	if !actorListed(identity.Actor, evaluation.Policy.Maintainers) {
 		return fmt.Errorf("identity %s is not a maintainer under policy %s", shortID(identity.Actor), shortID(evaluation.PolicyDigest))
 	}
@@ -90,6 +95,19 @@ func cmdDecide(args []string) error {
 		}
 		if !currentEvaluation.Ready {
 			return fmt.Errorf("proposal is not ready; run 'hn proposal status %s' for missing evidence", proposal.ID)
+		}
+		if expectedActor != "" {
+			if currentEvaluation.Rejected || currentEvaluation.Merged {
+				return consumerFailure("stale_revision", "This revision can no longer be accepted.")
+			}
+			for _, prior := range currentEvaluation.AcceptDecisions {
+				if prior.Event.Actor == expectedActor {
+					return consumerOutput(consumerMutationReceipt(&prior), nil)
+				}
+			}
+			if currentEvaluation.Accepted {
+				return consumerFailure("stale_revision", "This revision already has sufficient acceptance.")
+			}
 		}
 		evaluation = currentEvaluation
 	}
@@ -124,6 +142,8 @@ func cmdDecide(args []string) error {
 // implementation without duplicating native merge evidence or repair semantics.
 type proposalMergeGuard struct {
 	ExpectedActor string
+	Receipt       func(*StoredEvent) error
+	RepairCheck   func(string, string) error
 	Check         func(*StoredEvent, *ProposalEvaluation, string, string) error
 	Advance       func(*StoredEvent, *ProposalEvaluation, string, string, string) (string, error)
 }
@@ -214,7 +234,7 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 			ObjectType: "commit", OwnerKind: replicationProposal, OwnerID: proposal.ID,
 		}, fmt.Errorf("exact proposal containment requires unavailable parent %s", missing))
 	}
-	if contained && guard != nil {
+	if contained && guard != nil && guard.RepairCheck == nil {
 		return fmt.Errorf("proposal head is already in target; use 'hn merge %s' for manual merge-event repair", proposal.ID)
 	}
 	if evaluation.Policy.Proposals.RequireResolvedReviewThreads {
@@ -262,9 +282,17 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 		if err != nil {
 			return err
 		}
+		if guard != nil && guard.RepairCheck != nil {
+			if err := guard.RepairCheck(branch, mergeCommit); err != nil {
+				return err
+			}
+		}
 		stored, err := appendProposalMergeEvent(identity, currentProposal, currentEvaluation, mergeCommit)
 		if err != nil {
 			return fmt.Errorf("merge event repair at %s failed: %w", shortOID(mergeCommit), err)
+		}
+		if guard != nil && guard.Receipt != nil {
+			return guard.Receipt(stored)
 		}
 		fmt.Printf("Recorded missing merge event %s for proposal %s at %s with %d acceptance decision(s)\n", shortID(stored.ID), shortID(currentProposal.ID), shortOID(mergeCommit), len(stored.Event.Evidence))
 		return nil
@@ -345,6 +373,9 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 			if _, abortErr := gitOutput("merge", "--abort"); abortErr != nil {
 				return fmt.Errorf("merge failed and automatic abort also failed: %v; abort error: %v", err, abortErr)
 			}
+			if guard != nil && guard.Receipt != nil {
+				return consumerFailure("stale_revision", "Git could not merge this revision. Check for conflicts and review a revision against the current target.")
+			}
 			return fmt.Errorf("merge failed and was aborted for proposal %s; recover with 'hn proposal revise %s --base REV --head REV': %w", proposal.ID, proposal.ID, err)
 		}
 		mergeCommit, err = resolveCommit("HEAD")
@@ -355,6 +386,9 @@ func mergeProposal(args []string, guard *proposalMergeGuard) error {
 	stored, err := appendProposalMergeEvent(identity, proposal, evaluation, mergeCommit)
 	if err != nil {
 		return fmt.Errorf("code merged at %s but recording failed: %w", shortOID(mergeCommit), err)
+	}
+	if guard != nil && guard.Receipt != nil {
+		return guard.Receipt(stored)
 	}
 	fmt.Printf("Merged proposal %s into %s at %s\n", shortID(proposal.ID), branch, shortOID(mergeCommit))
 	fmt.Printf("Recorded merge event %s with %d acceptance decision(s)\n", shortID(stored.ID), len(stored.Event.Evidence))

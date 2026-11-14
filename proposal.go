@@ -7,6 +7,13 @@ import (
 )
 
 func cmdProposal(args []string) error {
+	if len(args) > 0 && args[0] == "maintain" {
+		data, err := maintainProposal(args[1:])
+		if err != nil || data != nil {
+			return consumerOutput(data, err)
+		}
+		return nil
+	}
 	if len(args) > 0 && (args[0] == "inline-list" || args[0] == "inline-post") {
 		return cmdProposalInline(args[0], args[1:])
 	}
