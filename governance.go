@@ -65,7 +65,7 @@ func decideProposal(args []string, expectedActor string) error {
 	if err != nil {
 		return err
 	}
-	if expectedActor != "" && (identity.Actor != expectedActor || !*accept) {
+	if expectedActor != "" && identity.Actor != expectedActor {
 		return consumerFailure("actor_mismatch", "The selected signing identity changed.")
 	}
 	if !actorListed(identity.Actor, evaluation.Policy.Maintainers) {
@@ -74,7 +74,7 @@ func decideProposal(args []string, expectedActor string) error {
 	if *accept && !evaluation.Ready {
 		return fmt.Errorf("proposal is not ready; run 'hn proposal status %s' for missing evidence", proposal.ID)
 	}
-	if *accept {
+	if *accept || expectedActor != "" {
 		currentEvents, err := collectGovernedEvents()
 		if err != nil {
 			return err
@@ -90,13 +90,22 @@ func decideProposal(args []string, expectedActor string) error {
 		if err != nil {
 			return err
 		}
-		if err := requireLineageTerminalEligibility("accept", proposal.ID, currentEvaluation.Lineage); err != nil {
+		action := "accept"
+		if *reject {
+			action = "reject"
+		}
+		if err := requireLineageTerminalEligibility(action, proposal.ID, currentEvaluation.Lineage); err != nil {
 			return err
 		}
-		if !currentEvaluation.Ready {
+		if *accept && !currentEvaluation.Ready {
 			return fmt.Errorf("proposal is not ready; run 'hn proposal status %s' for missing evidence", proposal.ID)
 		}
-		if expectedActor != "" {
+		if expectedActor != "" && *reject {
+			if currentEvaluation.Merged || currentEvaluation.Rejected {
+				return consumerFailure("stale_revision", "This revision can no longer be rejected.")
+			}
+		}
+		if expectedActor != "" && *accept {
 			if currentEvaluation.Rejected || currentEvaluation.Merged {
 				return consumerFailure("stale_revision", "This revision can no longer be accepted.")
 			}
